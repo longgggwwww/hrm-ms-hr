@@ -43,8 +43,8 @@ func (pc *PositionCreate) SetDepartmentID(u uuid.UUID) *PositionCreate {
 }
 
 // SetParentID sets the "parent_id" field.
-func (pc *PositionCreate) SetParentID(u uuid.UUID) *PositionCreate {
-	pc.mutation.SetParentID(u)
+func (pc *PositionCreate) SetParentID(uu uuid.NullUUID) *PositionCreate {
+	pc.mutation.SetParentID(uu)
 	return pc
 }
 
@@ -318,7 +318,7 @@ func (u *PositionUpsert) UpdateDepartmentID() *PositionUpsert {
 }
 
 // SetParentID sets the "parent_id" field.
-func (u *PositionUpsert) SetParentID(v uuid.UUID) *PositionUpsert {
+func (u *PositionUpsert) SetParentID(v uuid.NullUUID) *PositionUpsert {
 	u.Set(position.FieldParentID, v)
 	return u
 }
@@ -435,7 +435,7 @@ func (u *PositionUpsertOne) UpdateDepartmentID() *PositionUpsertOne {
 }
 
 // SetParentID sets the "parent_id" field.
-func (u *PositionUpsertOne) SetParentID(v uuid.UUID) *PositionUpsertOne {
+func (u *PositionUpsertOne) SetParentID(v uuid.NullUUID) *PositionUpsertOne {
 	return u.Update(func(s *PositionUpsert) {
 		s.SetParentID(v)
 	})
@@ -723,7 +723,7 @@ func (u *PositionUpsertBulk) UpdateDepartmentID() *PositionUpsertBulk {
 }
 
 // SetParentID sets the "parent_id" field.
-func (u *PositionUpsertBulk) SetParentID(v uuid.UUID) *PositionUpsertBulk {
+func (u *PositionUpsertBulk) SetParentID(v uuid.NullUUID) *PositionUpsertBulk {
 	return u.Update(func(s *PositionUpsert) {
 		s.SetParentID(v)
 	})

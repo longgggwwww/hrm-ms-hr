@@ -71,7 +71,7 @@ func DepartmentID(v uuid.UUID) predicate.Position {
 }
 
 // ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
-func ParentID(v uuid.UUID) predicate.Position {
+func ParentID(v uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldEQ(FieldParentID, v))
 }
 
@@ -256,42 +256,42 @@ func DepartmentIDLTE(v uuid.UUID) predicate.Position {
 }
 
 // ParentIDEQ applies the EQ predicate on the "parent_id" field.
-func ParentIDEQ(v uuid.UUID) predicate.Position {
+func ParentIDEQ(v uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldEQ(FieldParentID, v))
 }
 
 // ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
-func ParentIDNEQ(v uuid.UUID) predicate.Position {
+func ParentIDNEQ(v uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldNEQ(FieldParentID, v))
 }
 
 // ParentIDIn applies the In predicate on the "parent_id" field.
-func ParentIDIn(vs ...uuid.UUID) predicate.Position {
+func ParentIDIn(vs ...uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldIn(FieldParentID, vs...))
 }
 
 // ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
-func ParentIDNotIn(vs ...uuid.UUID) predicate.Position {
+func ParentIDNotIn(vs ...uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldNotIn(FieldParentID, vs...))
 }
 
 // ParentIDGT applies the GT predicate on the "parent_id" field.
-func ParentIDGT(v uuid.UUID) predicate.Position {
+func ParentIDGT(v uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldGT(FieldParentID, v))
 }
 
 // ParentIDGTE applies the GTE predicate on the "parent_id" field.
-func ParentIDGTE(v uuid.UUID) predicate.Position {
+func ParentIDGTE(v uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldGTE(FieldParentID, v))
 }
 
 // ParentIDLT applies the LT predicate on the "parent_id" field.
-func ParentIDLT(v uuid.UUID) predicate.Position {
+func ParentIDLT(v uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldLT(FieldParentID, v))
 }
 
 // ParentIDLTE applies the LTE predicate on the "parent_id" field.
-func ParentIDLTE(v uuid.UUID) predicate.Position {
+func ParentIDLTE(v uuid.NullUUID) predicate.Position {
 	return predicate.Position(sql.FieldLTE(FieldParentID, v))
 }
 

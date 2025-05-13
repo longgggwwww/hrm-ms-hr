@@ -25,7 +25,7 @@ type Position struct {
 	// DepartmentID holds the value of the "department_id" field.
 	DepartmentID uuid.UUID `json:"department_id,omitempty"`
 	// ParentID holds the value of the "parent_id" field.
-	ParentID uuid.UUID `json:"parent_id,omitempty"`
+	ParentID uuid.NullUUID `json:"parent_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -42,7 +42,9 @@ func (*Position) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case position.FieldCreatedAt, position.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case position.FieldID, position.FieldDepartmentID, position.FieldParentID:
+		case position.FieldParentID:
+			values[i] = new(uuid.NullUUID)
+		case position.FieldID, position.FieldDepartmentID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -84,7 +86,7 @@ func (po *Position) assignValues(columns []string, values []any) error {
 				po.DepartmentID = *value
 			}
 		case position.FieldParentID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*uuid.NullUUID); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
 			} else if value != nil {
 				po.ParentID = *value

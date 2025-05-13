@@ -2613,7 +2613,7 @@ type PositionMutation struct {
 	name          *string
 	code          *string
 	department_id *uuid.UUID
-	parent_id     *uuid.UUID
+	parent_id     *uuid.NullUUID
 	created_at    *time.Time
 	updated_at    *time.Time
 	clearedFields map[string]struct{}
@@ -2835,12 +2835,12 @@ func (m *PositionMutation) ResetDepartmentID() {
 }
 
 // SetParentID sets the "parent_id" field.
-func (m *PositionMutation) SetParentID(u uuid.UUID) {
-	m.parent_id = &u
+func (m *PositionMutation) SetParentID(uu uuid.NullUUID) {
+	m.parent_id = &uu
 }
 
 // ParentID returns the value of the "parent_id" field in the mutation.
-func (m *PositionMutation) ParentID() (r uuid.UUID, exists bool) {
+func (m *PositionMutation) ParentID() (r uuid.NullUUID, exists bool) {
 	v := m.parent_id
 	if v == nil {
 		return
@@ -2851,7 +2851,7 @@ func (m *PositionMutation) ParentID() (r uuid.UUID, exists bool) {
 // OldParentID returns the old "parent_id" field's value of the Position entity.
 // If the Position object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PositionMutation) OldParentID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *PositionMutation) OldParentID(ctx context.Context) (v uuid.NullUUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldParentID is only allowed on UpdateOne operations")
 	}
@@ -3067,7 +3067,7 @@ func (m *PositionMutation) SetField(name string, value ent.Value) error {
 		m.SetDepartmentID(v)
 		return nil
 	case position.FieldParentID:
-		v, ok := value.(uuid.UUID)
+		v, ok := value.(uuid.NullUUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

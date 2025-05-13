@@ -145,7 +145,7 @@ func (svc *PositionService) Update(ctx context.Context, req *UpdatePositionReque
 	m.SetDepartmentID(positionDepartmentID)
 	positionName := position.GetName()
 	m.SetName(positionName)
-	var positionParentID uuid.UUID
+	var positionParentID uuid.NullUUID
 	if err := (&positionParentID).UnmarshalBinary(position.GetParentId()); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}
@@ -296,7 +296,7 @@ func (svc *PositionService) createBuilder(position *Position) (*ent.PositionCrea
 	m.SetDepartmentID(positionDepartmentID)
 	positionName := position.GetName()
 	m.SetName(positionName)
-	var positionParentID uuid.UUID
+	var positionParentID uuid.NullUUID
 	if err := (&positionParentID).UnmarshalBinary(position.GetParentId()); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}

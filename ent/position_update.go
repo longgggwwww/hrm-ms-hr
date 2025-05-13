@@ -72,15 +72,15 @@ func (pu *PositionUpdate) SetNillableDepartmentID(u *uuid.UUID) *PositionUpdate 
 }
 
 // SetParentID sets the "parent_id" field.
-func (pu *PositionUpdate) SetParentID(u uuid.UUID) *PositionUpdate {
-	pu.mutation.SetParentID(u)
+func (pu *PositionUpdate) SetParentID(uu uuid.NullUUID) *PositionUpdate {
+	pu.mutation.SetParentID(uu)
 	return pu
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (pu *PositionUpdate) SetNillableParentID(u *uuid.UUID) *PositionUpdate {
-	if u != nil {
-		pu.SetParentID(*u)
+func (pu *PositionUpdate) SetNillableParentID(uu *uuid.NullUUID) *PositionUpdate {
+	if uu != nil {
+		pu.SetParentID(*uu)
 	}
 	return pu
 }
@@ -237,15 +237,15 @@ func (puo *PositionUpdateOne) SetNillableDepartmentID(u *uuid.UUID) *PositionUpd
 }
 
 // SetParentID sets the "parent_id" field.
-func (puo *PositionUpdateOne) SetParentID(u uuid.UUID) *PositionUpdateOne {
-	puo.mutation.SetParentID(u)
+func (puo *PositionUpdateOne) SetParentID(uu uuid.NullUUID) *PositionUpdateOne {
+	puo.mutation.SetParentID(uu)
 	return puo
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (puo *PositionUpdateOne) SetNillableParentID(u *uuid.UUID) *PositionUpdateOne {
-	if u != nil {
-		puo.SetParentID(*u)
+func (puo *PositionUpdateOne) SetNillableParentID(uu *uuid.NullUUID) *PositionUpdateOne {
+	if uu != nil {
+		puo.SetParentID(*uu)
 	}
 	return puo
 }
