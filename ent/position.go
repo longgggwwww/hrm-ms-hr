@@ -25,7 +25,7 @@ type Position struct {
 	// DepartmentID holds the value of the "department_id" field.
 	DepartmentID uuid.UUID `json:"department_id,omitempty"`
 	// ParentID holds the value of the "parent_id" field.
-	ParentID *uuid.UUID `json:"parent_id,omitempty"`
+	ParentID uuid.UUID `json:"parent_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -38,13 +38,11 @@ func (*Position) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case position.FieldParentID:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case position.FieldName, position.FieldCode:
 			values[i] = new(sql.NullString)
 		case position.FieldCreatedAt, position.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case position.FieldID, position.FieldDepartmentID:
+		case position.FieldID, position.FieldDepartmentID, position.FieldParentID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -86,11 +84,10 @@ func (po *Position) assignValues(columns []string, values []any) error {
 				po.DepartmentID = *value
 			}
 		case position.FieldParentID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
-			} else if value.Valid {
-				po.ParentID = new(uuid.UUID)
-				*po.ParentID = *value.S.(*uuid.UUID)
+			} else if value != nil {
+				po.ParentID = *value
 			}
 		case position.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -149,10 +146,8 @@ func (po *Position) String() string {
 	builder.WriteString("department_id=")
 	builder.WriteString(fmt.Sprintf("%v", po.DepartmentID))
 	builder.WriteString(", ")
-	if v := po.ParentID; v != nil {
-		builder.WriteString("parent_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("parent_id=")
+	builder.WriteString(fmt.Sprintf("%v", po.ParentID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(po.CreatedAt.Format(time.ANSIC))

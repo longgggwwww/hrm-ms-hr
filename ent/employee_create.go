@@ -88,6 +88,12 @@ func (ec *EmployeeCreate) SetNillableUpdatedAt(t *time.Time) *EmployeeCreate {
 	return ec
 }
 
+// SetDepartmentID sets the "department_id" field.
+func (ec *EmployeeCreate) SetDepartmentID(u uuid.UUID) *EmployeeCreate {
+	ec.mutation.SetDepartmentID(u)
+	return ec
+}
+
 // SetID sets the "id" field.
 func (ec *EmployeeCreate) SetID(u uuid.UUID) *EmployeeCreate {
 	ec.mutation.SetID(u)
@@ -177,6 +183,9 @@ func (ec *EmployeeCreate) check() error {
 	if _, ok := ec.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Employee.updated_at"`)}
 	}
+	if _, ok := ec.mutation.DepartmentID(); !ok {
+		return &ValidationError{Name: "department_id", err: errors.New(`ent: missing required field "Employee.department_id"`)}
+	}
 	return nil
 }
 
@@ -244,6 +253,10 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 	if value, ok := ec.mutation.UpdatedAt(); ok {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := ec.mutation.DepartmentID(); ok {
+		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
+		_node.DepartmentID = value
 	}
 	return _node, _spec
 }
@@ -390,6 +403,18 @@ func (u *EmployeeUpsert) SetUpdatedAt(v time.Time) *EmployeeUpsert {
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *EmployeeUpsert) UpdateUpdatedAt() *EmployeeUpsert {
 	u.SetExcluded(employee.FieldUpdatedAt)
+	return u
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *EmployeeUpsert) SetDepartmentID(v uuid.UUID) *EmployeeUpsert {
+	u.Set(employee.FieldDepartmentID, v)
+	return u
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateDepartmentID() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldDepartmentID)
 	return u
 }
 
@@ -550,6 +575,20 @@ func (u *EmployeeUpsertOne) SetUpdatedAt(v time.Time) *EmployeeUpsertOne {
 func (u *EmployeeUpsertOne) UpdateUpdatedAt() *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *EmployeeUpsertOne) SetDepartmentID(v uuid.UUID) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetDepartmentID(v)
+	})
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateDepartmentID() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateDepartmentID()
 	})
 }
 
@@ -877,6 +916,20 @@ func (u *EmployeeUpsertBulk) SetUpdatedAt(v time.Time) *EmployeeUpsertBulk {
 func (u *EmployeeUpsertBulk) UpdateUpdatedAt() *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *EmployeeUpsertBulk) SetDepartmentID(v uuid.UUID) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetDepartmentID(v)
+	})
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateDepartmentID() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateDepartmentID()
 	})
 }
 

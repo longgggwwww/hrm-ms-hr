@@ -6,12 +6,13 @@ require (
 	entgo.io/contrib v0.6.0
 	entgo.io/ent v0.14.4
 	github.com/google/uuid v1.6.0
+	google.golang.org/grpc v1.72.0
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
-	ariga.io/atlas v0.32.1 // indirect
+	ariga.io/atlas v0.33.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/bufbuild/protocompile v0.14.1 // indirect
@@ -24,11 +25,13 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/zclconf/go-cty v1.16.2 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.24.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
 	golang.org/x/tools v0.33.0 // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250512202823-5a2f75b736a9 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

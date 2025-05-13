@@ -48,14 +48,6 @@ func (pc *PositionCreate) SetParentID(u uuid.UUID) *PositionCreate {
 	return pc
 }
 
-// SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (pc *PositionCreate) SetNillableParentID(u *uuid.UUID) *PositionCreate {
-	if u != nil {
-		pc.SetParentID(*u)
-	}
-	return pc
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (pc *PositionCreate) SetCreatedAt(t time.Time) *PositionCreate {
 	pc.mutation.SetCreatedAt(t)
@@ -168,6 +160,9 @@ func (pc *PositionCreate) check() error {
 	if _, ok := pc.mutation.DepartmentID(); !ok {
 		return &ValidationError{Name: "department_id", err: errors.New(`ent: missing required field "Position.department_id"`)}
 	}
+	if _, ok := pc.mutation.ParentID(); !ok {
+		return &ValidationError{Name: "parent_id", err: errors.New(`ent: missing required field "Position.parent_id"`)}
+	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Position.created_at"`)}
 	}
@@ -224,7 +219,7 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.ParentID(); ok {
 		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
-		_node.ParentID = &value
+		_node.ParentID = value
 	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(position.FieldCreatedAt, field.TypeTime, value)
@@ -331,12 +326,6 @@ func (u *PositionUpsert) SetParentID(v uuid.UUID) *PositionUpsert {
 // UpdateParentID sets the "parent_id" field to the value that was provided on create.
 func (u *PositionUpsert) UpdateParentID() *PositionUpsert {
 	u.SetExcluded(position.FieldParentID)
-	return u
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (u *PositionUpsert) ClearParentID() *PositionUpsert {
-	u.SetNull(position.FieldParentID)
 	return u
 }
 
@@ -456,13 +445,6 @@ func (u *PositionUpsertOne) SetParentID(v uuid.UUID) *PositionUpsertOne {
 func (u *PositionUpsertOne) UpdateParentID() *PositionUpsertOne {
 	return u.Update(func(s *PositionUpsert) {
 		s.UpdateParentID()
-	})
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (u *PositionUpsertOne) ClearParentID() *PositionUpsertOne {
-	return u.Update(func(s *PositionUpsert) {
-		s.ClearParentID()
 	})
 }
 
@@ -751,13 +733,6 @@ func (u *PositionUpsertBulk) SetParentID(v uuid.UUID) *PositionUpsertBulk {
 func (u *PositionUpsertBulk) UpdateParentID() *PositionUpsertBulk {
 	return u.Update(func(s *PositionUpsert) {
 		s.UpdateParentID()
-	})
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (u *PositionUpsertBulk) ClearParentID() *PositionUpsertBulk {
-	return u.Update(func(s *PositionUpsert) {
-		s.ClearParentID()
 	})
 }
 

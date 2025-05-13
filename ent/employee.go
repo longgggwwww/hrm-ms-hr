@@ -33,7 +33,9 @@ type Employee struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// DepartmentID holds the value of the "department_id" field.
+	DepartmentID uuid.UUID `json:"department_id,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -48,7 +50,7 @@ func (*Employee) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case employee.FieldJoiningAt, employee.FieldCreatedAt, employee.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case employee.FieldID, employee.FieldPositionID, employee.FieldBranchID:
+		case employee.FieldID, employee.FieldPositionID, employee.FieldBranchID, employee.FieldDepartmentID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -119,6 +121,12 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.UpdatedAt = value.Time
 			}
+		case employee.FieldDepartmentID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field department_id", values[i])
+			} else if value != nil {
+				e.DepartmentID = *value
+			}
 		default:
 			e.selectValues.Set(columns[i], values[i])
 		}
@@ -178,6 +186,9 @@ func (e *Employee) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(e.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("department_id=")
+	builder.WriteString(fmt.Sprintf("%v", e.DepartmentID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -85,12 +85,6 @@ func (pu *PositionUpdate) SetNillableParentID(u *uuid.UUID) *PositionUpdate {
 	return pu
 }
 
-// ClearParentID clears the value of the "parent_id" field.
-func (pu *PositionUpdate) ClearParentID() *PositionUpdate {
-	pu.mutation.ClearParentID()
-	return pu
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (pu *PositionUpdate) SetUpdatedAt(t time.Time) *PositionUpdate {
 	pu.mutation.SetUpdatedAt(t)
@@ -177,9 +171,6 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.ParentID(); ok {
 		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
 	}
-	if pu.mutation.ParentIDCleared() {
-		_spec.ClearField(position.FieldParentID, field.TypeUUID)
-	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(position.FieldUpdatedAt, field.TypeTime, value)
 	}
@@ -256,12 +247,6 @@ func (puo *PositionUpdateOne) SetNillableParentID(u *uuid.UUID) *PositionUpdateO
 	if u != nil {
 		puo.SetParentID(*u)
 	}
-	return puo
-}
-
-// ClearParentID clears the value of the "parent_id" field.
-func (puo *PositionUpdateOne) ClearParentID() *PositionUpdateOne {
-	puo.mutation.ClearParentID()
 	return puo
 }
 
@@ -380,9 +365,6 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 	}
 	if value, ok := puo.mutation.ParentID(); ok {
 		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
-	}
-	if puo.mutation.ParentIDCleared() {
-		_spec.ClearField(position.FieldParentID, field.TypeUUID)
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(position.FieldUpdatedAt, field.TypeTime, value)

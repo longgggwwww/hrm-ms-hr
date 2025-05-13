@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/branch"
+	"github.com/longgggwwww/hrm-ms-hr/ent/company"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
@@ -16,6 +18,38 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	branchFields := schema.Branch{}.Fields()
+	_ = branchFields
+	// branchDescCreatedAt is the schema descriptor for created_at field.
+	branchDescCreatedAt := branchFields[5].Descriptor()
+	// branch.DefaultCreatedAt holds the default value on creation for the created_at field.
+	branch.DefaultCreatedAt = branchDescCreatedAt.Default.(func() time.Time)
+	// branchDescUpdatedAt is the schema descriptor for updated_at field.
+	branchDescUpdatedAt := branchFields[6].Descriptor()
+	// branch.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	branch.DefaultUpdatedAt = branchDescUpdatedAt.Default.(func() time.Time)
+	// branch.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	branch.UpdateDefaultUpdatedAt = branchDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// branchDescID is the schema descriptor for id field.
+	branchDescID := branchFields[0].Descriptor()
+	// branch.DefaultID holds the default value on creation for the id field.
+	branch.DefaultID = branchDescID.Default.(func() uuid.UUID)
+	companyFields := schema.Company{}.Fields()
+	_ = companyFields
+	// companyDescCreatedAt is the schema descriptor for created_at field.
+	companyDescCreatedAt := companyFields[3].Descriptor()
+	// company.DefaultCreatedAt holds the default value on creation for the created_at field.
+	company.DefaultCreatedAt = companyDescCreatedAt.Default.(func() time.Time)
+	// companyDescUpdatedAt is the schema descriptor for updated_at field.
+	companyDescUpdatedAt := companyFields[4].Descriptor()
+	// company.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	company.DefaultUpdatedAt = companyDescUpdatedAt.Default.(func() time.Time)
+	// company.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	company.UpdateDefaultUpdatedAt = companyDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// companyDescID is the schema descriptor for id field.
+	companyDescID := companyFields[0].Descriptor()
+	// company.DefaultID holds the default value on creation for the id field.
+	company.DefaultID = companyDescID.Default.(func() uuid.UUID)
 	departmentFields := schema.Department{}.Fields()
 	_ = departmentFields
 	// departmentDescCreatedAt is the schema descriptor for created_at field.

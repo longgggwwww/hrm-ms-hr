@@ -6,6 +6,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Branch is the predicate function for branch builders.
+type Branch func(*sql.Selector)
+
+// Company is the predicate function for company builders.
+type Company func(*sql.Selector)
+
 // Department is the predicate function for department builders.
 type Department func(*sql.Selector)
 

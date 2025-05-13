@@ -30,6 +30,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldDepartmentID holds the string denoting the department_id field in the database.
+	FieldDepartmentID = "department_id"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 )
@@ -45,6 +47,7 @@ var Columns = []string{
 	FieldBranchID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldDepartmentID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -114,4 +117,9 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByDepartmentID orders the results by the department_id field.
+func ByDepartmentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDepartmentID, opts...).ToFunc()
 }

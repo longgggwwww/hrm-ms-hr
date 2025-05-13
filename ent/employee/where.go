@@ -95,6 +95,11 @@ func UpdatedAt(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// DepartmentID applies equality check predicate on the "department_id" field. It's identical to DepartmentIDEQ.
+func DepartmentID(v uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldDepartmentID, v))
+}
+
 // EmployeeIDEQ applies the EQ predicate on the "employee_id" field.
 func EmployeeIDEQ(v string) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldEmployeeID, v))
@@ -433,6 +438,46 @@ func UpdatedAtLT(v time.Time) predicate.Employee {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// DepartmentIDEQ applies the EQ predicate on the "department_id" field.
+func DepartmentIDEQ(v uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldDepartmentID, v))
+}
+
+// DepartmentIDNEQ applies the NEQ predicate on the "department_id" field.
+func DepartmentIDNEQ(v uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldNEQ(FieldDepartmentID, v))
+}
+
+// DepartmentIDIn applies the In predicate on the "department_id" field.
+func DepartmentIDIn(vs ...uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldIn(FieldDepartmentID, vs...))
+}
+
+// DepartmentIDNotIn applies the NotIn predicate on the "department_id" field.
+func DepartmentIDNotIn(vs ...uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldNotIn(FieldDepartmentID, vs...))
+}
+
+// DepartmentIDGT applies the GT predicate on the "department_id" field.
+func DepartmentIDGT(v uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldGT(FieldDepartmentID, v))
+}
+
+// DepartmentIDGTE applies the GTE predicate on the "department_id" field.
+func DepartmentIDGTE(v uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldGTE(FieldDepartmentID, v))
+}
+
+// DepartmentIDLT applies the LT predicate on the "department_id" field.
+func DepartmentIDLT(v uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldLT(FieldDepartmentID, v))
+}
+
+// DepartmentIDLTE applies the LTE predicate on the "department_id" field.
+func DepartmentIDLTE(v uuid.UUID) predicate.Employee {
+	return predicate.Employee(sql.FieldLTE(FieldDepartmentID, v))
 }
 
 // And groups predicates with the AND operator between them.

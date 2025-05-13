@@ -133,6 +133,20 @@ func (eu *EmployeeUpdate) SetUpdatedAt(t time.Time) *EmployeeUpdate {
 	return eu
 }
 
+// SetDepartmentID sets the "department_id" field.
+func (eu *EmployeeUpdate) SetDepartmentID(u uuid.UUID) *EmployeeUpdate {
+	eu.mutation.SetDepartmentID(u)
+	return eu
+}
+
+// SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
+func (eu *EmployeeUpdate) SetNillableDepartmentID(u *uuid.UUID) *EmployeeUpdate {
+	if u != nil {
+		eu.SetDepartmentID(*u)
+	}
+	return eu
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (eu *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return eu.mutation
@@ -206,6 +220,9 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := eu.mutation.UpdatedAt(); ok {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := eu.mutation.DepartmentID(); ok {
+		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -331,6 +348,20 @@ func (euo *EmployeeUpdateOne) SetUpdatedAt(t time.Time) *EmployeeUpdateOne {
 	return euo
 }
 
+// SetDepartmentID sets the "department_id" field.
+func (euo *EmployeeUpdateOne) SetDepartmentID(u uuid.UUID) *EmployeeUpdateOne {
+	euo.mutation.SetDepartmentID(u)
+	return euo
+}
+
+// SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
+func (euo *EmployeeUpdateOne) SetNillableDepartmentID(u *uuid.UUID) *EmployeeUpdateOne {
+	if u != nil {
+		euo.SetDepartmentID(*u)
+	}
+	return euo
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (euo *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return euo.mutation
@@ -434,6 +465,9 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 	}
 	if value, ok := euo.mutation.UpdatedAt(); ok {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := euo.mutation.DepartmentID(); ok {
+		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
 	}
 	_node = &Employee{config: euo.config}
 	_spec.Assign = _node.assignValues

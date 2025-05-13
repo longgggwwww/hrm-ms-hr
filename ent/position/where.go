@@ -295,16 +295,6 @@ func ParentIDLTE(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldLTE(FieldParentID, v))
 }
 
-// ParentIDIsNil applies the IsNil predicate on the "parent_id" field.
-func ParentIDIsNil() predicate.Position {
-	return predicate.Position(sql.FieldIsNull(FieldParentID))
-}
-
-// ParentIDNotNil applies the NotNil predicate on the "parent_id" field.
-func ParentIDNotNil() predicate.Position {
-	return predicate.Position(sql.FieldNotNull(FieldParentID))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Position {
 	return predicate.Position(sql.FieldEQ(FieldCreatedAt, v))

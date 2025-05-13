@@ -8,6 +8,45 @@ import (
 )
 
 var (
+	// BranchesColumns holds the columns for the "branches" table.
+	BranchesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "address", Type: field.TypeString},
+		{Name: "contact_info", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "company_branches", Type: field.TypeUUID, Nullable: true},
+	}
+	// BranchesTable holds the schema information for the "branches" table.
+	BranchesTable = &schema.Table{
+		Name:       "branches",
+		Columns:    BranchesColumns,
+		PrimaryKey: []*schema.Column{BranchesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "branches_companies_branches",
+				Columns:    []*schema.Column{BranchesColumns[7]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// CompaniesColumns holds the columns for the "companies" table.
+	CompaniesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "address", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// CompaniesTable holds the schema information for the "companies" table.
+	CompaniesTable = &schema.Table{
+		Name:       "companies",
+		Columns:    CompaniesColumns,
+		PrimaryKey: []*schema.Column{CompaniesColumns[0]},
+	}
 	// DepartmentsColumns holds the columns for the "departments" table.
 	DepartmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -34,6 +73,7 @@ var (
 		{Name: "branch_id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "department_id", Type: field.TypeUUID},
 	}
 	// EmployeesTable holds the schema information for the "employees" table.
 	EmployeesTable = &schema.Table{
@@ -47,7 +87,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "department_id", Type: field.TypeUUID},
-		{Name: "parent_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "parent_id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -59,6 +99,8 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		BranchesTable,
+		CompaniesTable,
 		DepartmentsTable,
 		EmployeesTable,
 		PositionsTable,
@@ -66,4 +108,5 @@ var (
 )
 
 func init() {
+	BranchesTable.ForeignKeys[0].RefTable = CompaniesTable
 }
