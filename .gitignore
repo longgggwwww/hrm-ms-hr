@@ -1,0 +1,8 @@
+# Ignore IDE/editor specific files
+*.swp
+
+# Ignore environment files
+.env
+
+# Ignore temporary files and directories
+tmp/
