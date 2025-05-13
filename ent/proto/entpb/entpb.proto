@@ -7,8 +7,6 @@ import "google/protobuf/empty.proto";
 
 import "google/protobuf/timestamp.proto";
 
-import "google/protobuf/wrappers.proto";
-
 option go_package = "github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb";
 
 message Department {
@@ -99,6 +97,8 @@ message Employee {
   google.protobuf.Timestamp created_at = 8;
 
   google.protobuf.Timestamp updated_at = 9;
+
+  bytes department_id = 10;
 }
 
 message CreateEmployeeRequest {
@@ -166,7 +166,7 @@ message Position {
 
   bytes department_id = 4;
 
-  google.protobuf.BytesValue parent_id = 5;
+  bytes parent_id = 5;
 
   google.protobuf.Timestamp created_at = 6;
 
