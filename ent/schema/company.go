@@ -5,6 +5,7 @@ import (
 
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -35,6 +36,14 @@ func (Company) Fields() []ent.Field {
 
 func (Company) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("branches", Branch.Type),
+		edge.To("branches", Branch.Type).
+			Annotations(entproto.Field(6)),
+	}
+}
+
+func (Company) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entproto.Message(),
+		entproto.Service(),
 	}
 }
