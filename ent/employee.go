@@ -19,8 +19,8 @@ type Employee struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// EmployeeID holds the value of the "employee_id" field.
-	EmployeeID string `json:"employee_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID string `json:"user_id,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Status holds the value of the "status" field.
@@ -70,7 +70,7 @@ func (*Employee) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case employee.FieldStatus:
 			values[i] = new(sql.NullBool)
-		case employee.FieldEmployeeID, employee.FieldCode:
+		case employee.FieldUserID, employee.FieldCode:
 			values[i] = new(sql.NullString)
 		case employee.FieldJoiningAt, employee.FieldCreatedAt, employee.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -97,11 +97,11 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				e.ID = *value
 			}
-		case employee.FieldEmployeeID:
+		case employee.FieldUserID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field employee_id", values[i])
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
-				e.EmployeeID = value.String
+				e.UserID = value.String
 			}
 		case employee.FieldCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -192,8 +192,8 @@ func (e *Employee) String() string {
 	var builder strings.Builder
 	builder.WriteString("Employee(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", e.ID))
-	builder.WriteString("employee_id=")
-	builder.WriteString(e.EmployeeID)
+	builder.WriteString("user_id=")
+	builder.WriteString(e.UserID)
 	builder.WriteString(", ")
 	builder.WriteString("code=")
 	builder.WriteString(e.Code)

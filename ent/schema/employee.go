@@ -22,7 +22,7 @@ func (Employee) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New).
 			Annotations(entproto.Field(1)),
-		field.String("employee_id").
+		field.String("user_id").
 			Unique().
 			Annotations(entproto.Field(2)),
 		field.String("code").

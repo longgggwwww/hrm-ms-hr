@@ -21,11 +21,11 @@ func init() {
 	branchFields := schema.Branch{}.Fields()
 	_ = branchFields
 	// branchDescCreatedAt is the schema descriptor for created_at field.
-	branchDescCreatedAt := branchFields[5].Descriptor()
+	branchDescCreatedAt := branchFields[6].Descriptor()
 	// branch.DefaultCreatedAt holds the default value on creation for the created_at field.
 	branch.DefaultCreatedAt = branchDescCreatedAt.Default.(func() time.Time)
 	// branchDescUpdatedAt is the schema descriptor for updated_at field.
-	branchDescUpdatedAt := branchFields[6].Descriptor()
+	branchDescUpdatedAt := branchFields[7].Descriptor()
 	// branch.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	branch.DefaultUpdatedAt = branchDescUpdatedAt.Default.(func() time.Time)
 	// branch.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

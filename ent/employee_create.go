@@ -22,9 +22,9 @@ type EmployeeCreate struct {
 	hooks    []Hook
 }
 
-// SetEmployeeID sets the "employee_id" field.
-func (ec *EmployeeCreate) SetEmployeeID(s string) *EmployeeCreate {
-	ec.mutation.SetEmployeeID(s)
+// SetUserID sets the "user_id" field.
+func (ec *EmployeeCreate) SetUserID(s string) *EmployeeCreate {
+	ec.mutation.SetUserID(s)
 	return ec
 }
 
@@ -162,8 +162,8 @@ func (ec *EmployeeCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ec *EmployeeCreate) check() error {
-	if _, ok := ec.mutation.EmployeeID(); !ok {
-		return &ValidationError{Name: "employee_id", err: errors.New(`ent: missing required field "Employee.employee_id"`)}
+	if _, ok := ec.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Employee.user_id"`)}
 	}
 	if _, ok := ec.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Employee.code"`)}
@@ -227,9 +227,9 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ec.mutation.EmployeeID(); ok {
-		_spec.SetField(employee.FieldEmployeeID, field.TypeString, value)
-		_node.EmployeeID = value
+	if value, ok := ec.mutation.UserID(); ok {
+		_spec.SetField(employee.FieldUserID, field.TypeString, value)
+		_node.UserID = value
 	}
 	if value, ok := ec.mutation.Code(); ok {
 		_spec.SetField(employee.FieldCode, field.TypeString, value)

@@ -414,7 +414,9 @@ func (cq *CompanyQuery) loadBranches(ctx context.Context, query *BranchQuery, no
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(branch.FieldCompanyID)
+	}
 	query.Where(predicate.Branch(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(company.BranchesColumn), fks...))
 	}))
@@ -423,13 +425,10 @@ func (cq *CompanyQuery) loadBranches(ctx context.Context, query *BranchQuery, no
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.company_branches
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "company_branches" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.CompanyID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "company_branches" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "company_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

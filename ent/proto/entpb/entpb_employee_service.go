@@ -48,8 +48,6 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 		return nil, err
 	}
 	v.DepartmentId = department_id
-	employee_id := e.EmployeeID
-	v.EmployeeId = employee_id
 	id, err := e.ID.MarshalBinary()
 	if err != nil {
 		return nil, err
@@ -66,6 +64,8 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v.Status = status
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
+	user_id := e.UserID
+	v.UserId = user_id
 	if edg := e.Edges.Position; edg != nil {
 		id, err := edg.ID.MarshalBinary()
 		if err != nil {
@@ -172,8 +172,6 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}
 	m.SetDepartmentID(employeeDepartmentID)
-	employeeEmployeeID := employee.GetEmployeeId()
-	m.SetEmployeeID(employeeEmployeeID)
 	employeeJoiningAt := runtime.ExtractTime(employee.GetJoiningAt())
 	m.SetJoiningAt(employeeJoiningAt)
 	var employeePositionID uuid.UUID
@@ -185,6 +183,8 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
+	employeeUserID := employee.GetUserId()
+	m.SetUserID(employeeUserID)
 	if employee.GetPosition() != nil {
 		var employeePosition uuid.UUID
 		if err := (&employeePosition).UnmarshalBinary(employee.GetPosition().GetId()); err != nil {
@@ -342,8 +342,6 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}
 	m.SetDepartmentID(employeeDepartmentID)
-	employeeEmployeeID := employee.GetEmployeeId()
-	m.SetEmployeeID(employeeEmployeeID)
 	employeeJoiningAt := runtime.ExtractTime(employee.GetJoiningAt())
 	m.SetJoiningAt(employeeJoiningAt)
 	var employeePositionID uuid.UUID
@@ -355,6 +353,8 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
+	employeeUserID := employee.GetUserId()
+	m.SetUserID(employeeUserID)
 	if employee.GetPosition() != nil {
 		var employeePosition uuid.UUID
 		if err := (&employeePosition).UnmarshalBinary(employee.GetPosition().GetId()); err != nil {

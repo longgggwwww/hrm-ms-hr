@@ -30,16 +30,16 @@ func (eu *EmployeeUpdate) Where(ps ...predicate.Employee) *EmployeeUpdate {
 	return eu
 }
 
-// SetEmployeeID sets the "employee_id" field.
-func (eu *EmployeeUpdate) SetEmployeeID(s string) *EmployeeUpdate {
-	eu.mutation.SetEmployeeID(s)
+// SetUserID sets the "user_id" field.
+func (eu *EmployeeUpdate) SetUserID(s string) *EmployeeUpdate {
+	eu.mutation.SetUserID(s)
 	return eu
 }
 
-// SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
-func (eu *EmployeeUpdate) SetNillableEmployeeID(s *string) *EmployeeUpdate {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (eu *EmployeeUpdate) SetNillableUserID(s *string) *EmployeeUpdate {
 	if s != nil {
-		eu.SetEmployeeID(*s)
+		eu.SetUserID(*s)
 	}
 	return eu
 }
@@ -220,8 +220,8 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := eu.mutation.EmployeeID(); ok {
-		_spec.SetField(employee.FieldEmployeeID, field.TypeString, value)
+	if value, ok := eu.mutation.UserID(); ok {
+		_spec.SetField(employee.FieldUserID, field.TypeString, value)
 	}
 	if value, ok := eu.mutation.Code(); ok {
 		_spec.SetField(employee.FieldCode, field.TypeString, value)
@@ -293,16 +293,16 @@ type EmployeeUpdateOne struct {
 	mutation *EmployeeMutation
 }
 
-// SetEmployeeID sets the "employee_id" field.
-func (euo *EmployeeUpdateOne) SetEmployeeID(s string) *EmployeeUpdateOne {
-	euo.mutation.SetEmployeeID(s)
+// SetUserID sets the "user_id" field.
+func (euo *EmployeeUpdateOne) SetUserID(s string) *EmployeeUpdateOne {
+	euo.mutation.SetUserID(s)
 	return euo
 }
 
-// SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
-func (euo *EmployeeUpdateOne) SetNillableEmployeeID(s *string) *EmployeeUpdateOne {
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (euo *EmployeeUpdateOne) SetNillableUserID(s *string) *EmployeeUpdateOne {
 	if s != nil {
-		euo.SetEmployeeID(*s)
+		euo.SetUserID(*s)
 	}
 	return euo
 }
@@ -513,8 +513,8 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			}
 		}
 	}
-	if value, ok := euo.mutation.EmployeeID(); ok {
-		_spec.SetField(employee.FieldEmployeeID, field.TypeString, value)
+	if value, ok := euo.mutation.UserID(); ok {
+		_spec.SetField(employee.FieldUserID, field.TypeString, value)
 	}
 	if value, ok := euo.mutation.Code(); ok {
 		_spec.SetField(employee.FieldCode, field.TypeString, value)

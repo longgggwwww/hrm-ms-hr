@@ -19,6 +19,8 @@ const (
 	FieldName = "name"
 	// FieldCode holds the string denoting the code field in the database.
 	FieldCode = "code"
+	// FieldCompanyID holds the string denoting the company_id field in the database.
+	FieldCompanyID = "company_id"
 	// FieldAddress holds the string denoting the address field in the database.
 	FieldAddress = "address"
 	// FieldContactInfo holds the string denoting the contact_info field in the database.
@@ -37,7 +39,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "company" package.
 	CompanyInverseTable = "companies"
 	// CompanyColumn is the table column denoting the company relation/edge.
-	CompanyColumn = "company_branches"
+	CompanyColumn = "company_id"
 )
 
 // Columns holds all SQL columns for branch fields.
@@ -45,27 +47,17 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldCode,
+	FieldCompanyID,
 	FieldAddress,
 	FieldContactInfo,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "branches"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"company_branches",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -99,6 +91,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByCode orders the results by the code field.
 func ByCode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCode, opts...).ToFunc()
+}
+
+// ByCompanyID orders the results by the company_id field.
+func ByCompanyID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompanyID, opts...).ToFunc()
 }
 
 // ByAddress orders the results by the address field.

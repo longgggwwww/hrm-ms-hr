@@ -23,6 +23,8 @@ type Branch struct {
 	Name string `json:"name,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
+	// CompanyID holds the value of the "company_id" field.
+	CompanyID uuid.UUID `json:"company_id,omitempty"`
 	// Address holds the value of the "address" field.
 	Address string `json:"address,omitempty"`
 	// ContactInfo holds the value of the "contact_info" field.
@@ -33,9 +35,8 @@ type Branch struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BranchQuery when eager-loading is set.
-	Edges            BranchEdges `json:"edges"`
-	company_branches *uuid.UUID
-	selectValues     sql.SelectValues
+	Edges        BranchEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // BranchEdges holds the relations/edges for other nodes in the graph.
@@ -67,10 +68,8 @@ func (*Branch) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case branch.FieldCreatedAt, branch.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case branch.FieldID:
+		case branch.FieldID, branch.FieldCompanyID:
 			values[i] = new(uuid.UUID)
-		case branch.ForeignKeys[0]: // company_branches
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -104,6 +103,12 @@ func (b *Branch) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				b.Code = value.String
 			}
+		case branch.FieldCompanyID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field company_id", values[i])
+			} else if value != nil {
+				b.CompanyID = *value
+			}
 		case branch.FieldAddress:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field address", values[i])
@@ -127,13 +132,6 @@ func (b *Branch) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				b.UpdatedAt = value.Time
-			}
-		case branch.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field company_branches", values[i])
-			} else if value.Valid {
-				b.company_branches = new(uuid.UUID)
-				*b.company_branches = *value.S.(*uuid.UUID)
 			}
 		default:
 			b.selectValues.Set(columns[i], values[i])
@@ -181,6 +179,9 @@ func (b *Branch) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("code=")
 	builder.WriteString(b.Code)
+	builder.WriteString(", ")
+	builder.WriteString("company_id=")
+	builder.WriteString(fmt.Sprintf("%v", b.CompanyID))
 	builder.WriteString(", ")
 	builder.WriteString("address=")
 	builder.WriteString(b.Address)

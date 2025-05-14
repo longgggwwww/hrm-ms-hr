@@ -232,6 +232,42 @@ func (m *BranchMutation) ResetCode() {
 	m.code = nil
 }
 
+// SetCompanyID sets the "company_id" field.
+func (m *BranchMutation) SetCompanyID(u uuid.UUID) {
+	m.company = &u
+}
+
+// CompanyID returns the value of the "company_id" field in the mutation.
+func (m *BranchMutation) CompanyID() (r uuid.UUID, exists bool) {
+	v := m.company
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompanyID returns the old "company_id" field's value of the Branch entity.
+// If the Branch object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BranchMutation) OldCompanyID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompanyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompanyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompanyID: %w", err)
+	}
+	return oldValue.CompanyID, nil
+}
+
+// ResetCompanyID resets all changes to the "company_id" field.
+func (m *BranchMutation) ResetCompanyID() {
+	m.company = nil
+}
+
 // SetAddress sets the "address" field.
 func (m *BranchMutation) SetAddress(s string) {
 	m.address = &s
@@ -402,27 +438,15 @@ func (m *BranchMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetCompanyID sets the "company" edge to the Company entity by id.
-func (m *BranchMutation) SetCompanyID(id uuid.UUID) {
-	m.company = &id
-}
-
 // ClearCompany clears the "company" edge to the Company entity.
 func (m *BranchMutation) ClearCompany() {
 	m.clearedcompany = true
+	m.clearedFields[branch.FieldCompanyID] = struct{}{}
 }
 
 // CompanyCleared reports if the "company" edge to the Company entity was cleared.
 func (m *BranchMutation) CompanyCleared() bool {
 	return m.clearedcompany
-}
-
-// CompanyID returns the "company" edge ID in the mutation.
-func (m *BranchMutation) CompanyID() (id uuid.UUID, exists bool) {
-	if m.company != nil {
-		return *m.company, true
-	}
-	return
 }
 
 // CompanyIDs returns the "company" edge IDs in the mutation.
@@ -475,12 +499,15 @@ func (m *BranchMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BranchMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, branch.FieldName)
 	}
 	if m.code != nil {
 		fields = append(fields, branch.FieldCode)
+	}
+	if m.company != nil {
+		fields = append(fields, branch.FieldCompanyID)
 	}
 	if m.address != nil {
 		fields = append(fields, branch.FieldAddress)
@@ -506,6 +533,8 @@ func (m *BranchMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case branch.FieldCode:
 		return m.Code()
+	case branch.FieldCompanyID:
+		return m.CompanyID()
 	case branch.FieldAddress:
 		return m.Address()
 	case branch.FieldContactInfo:
@@ -527,6 +556,8 @@ func (m *BranchMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldName(ctx)
 	case branch.FieldCode:
 		return m.OldCode(ctx)
+	case branch.FieldCompanyID:
+		return m.OldCompanyID(ctx)
 	case branch.FieldAddress:
 		return m.OldAddress(ctx)
 	case branch.FieldContactInfo:
@@ -557,6 +588,13 @@ func (m *BranchMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCode(v)
+		return nil
+	case branch.FieldCompanyID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompanyID(v)
 		return nil
 	case branch.FieldAddress:
 		v, ok := value.(string)
@@ -655,6 +693,9 @@ func (m *BranchMutation) ResetField(name string) error {
 		return nil
 	case branch.FieldCode:
 		m.ResetCode()
+		return nil
+	case branch.FieldCompanyID:
+		m.ResetCompanyID()
 		return nil
 	case branch.FieldAddress:
 		m.ResetAddress()
@@ -2056,7 +2097,7 @@ type EmployeeMutation struct {
 	op              Op
 	typ             string
 	id              *uuid.UUID
-	employee_id     *string
+	user_id         *string
 	code            *string
 	status          *bool
 	joining_at      *time.Time
@@ -2176,40 +2217,40 @@ func (m *EmployeeMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetEmployeeID sets the "employee_id" field.
-func (m *EmployeeMutation) SetEmployeeID(s string) {
-	m.employee_id = &s
+// SetUserID sets the "user_id" field.
+func (m *EmployeeMutation) SetUserID(s string) {
+	m.user_id = &s
 }
 
-// EmployeeID returns the value of the "employee_id" field in the mutation.
-func (m *EmployeeMutation) EmployeeID() (r string, exists bool) {
-	v := m.employee_id
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *EmployeeMutation) UserID() (r string, exists bool) {
+	v := m.user_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldEmployeeID returns the old "employee_id" field's value of the Employee entity.
+// OldUserID returns the old "user_id" field's value of the Employee entity.
 // If the Employee object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EmployeeMutation) OldEmployeeID(ctx context.Context) (v string, err error) {
+func (m *EmployeeMutation) OldUserID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEmployeeID requires an ID field in the mutation")
+		return v, errors.New("OldUserID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEmployeeID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
 	}
-	return oldValue.EmployeeID, nil
+	return oldValue.UserID, nil
 }
 
-// ResetEmployeeID resets all changes to the "employee_id" field.
-func (m *EmployeeMutation) ResetEmployeeID() {
-	m.employee_id = nil
+// ResetUserID resets all changes to the "user_id" field.
+func (m *EmployeeMutation) ResetUserID() {
+	m.user_id = nil
 }
 
 // SetCode sets the "code" field.
@@ -2562,8 +2603,8 @@ func (m *EmployeeMutation) Type() string {
 // AddedFields().
 func (m *EmployeeMutation) Fields() []string {
 	fields := make([]string, 0, 9)
-	if m.employee_id != nil {
-		fields = append(fields, employee.FieldEmployeeID)
+	if m.user_id != nil {
+		fields = append(fields, employee.FieldUserID)
 	}
 	if m.code != nil {
 		fields = append(fields, employee.FieldCode)
@@ -2597,8 +2638,8 @@ func (m *EmployeeMutation) Fields() []string {
 // schema.
 func (m *EmployeeMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case employee.FieldEmployeeID:
-		return m.EmployeeID()
+	case employee.FieldUserID:
+		return m.UserID()
 	case employee.FieldCode:
 		return m.Code()
 	case employee.FieldStatus:
@@ -2624,8 +2665,8 @@ func (m *EmployeeMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *EmployeeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case employee.FieldEmployeeID:
-		return m.OldEmployeeID(ctx)
+	case employee.FieldUserID:
+		return m.OldUserID(ctx)
 	case employee.FieldCode:
 		return m.OldCode(ctx)
 	case employee.FieldStatus:
@@ -2651,12 +2692,12 @@ func (m *EmployeeMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *EmployeeMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case employee.FieldEmployeeID:
+	case employee.FieldUserID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetEmployeeID(v)
+		m.SetUserID(v)
 		return nil
 	case employee.FieldCode:
 		v, ok := value.(string)
@@ -2763,8 +2804,8 @@ func (m *EmployeeMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *EmployeeMutation) ResetField(name string) error {
 	switch name {
-	case employee.FieldEmployeeID:
-		m.ResetEmployeeID()
+	case employee.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case employee.FieldCode:
 		m.ResetCode()

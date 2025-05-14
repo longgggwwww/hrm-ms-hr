@@ -15,8 +15,8 @@ const (
 	Label = "employee"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldEmployeeID holds the string denoting the employee_id field in the database.
-	FieldEmployeeID = "employee_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldCode holds the string denoting the code field in the database.
 	FieldCode = "code"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -49,7 +49,7 @@ const (
 // Columns holds all SQL columns for employee fields.
 var Columns = []string{
 	FieldID,
-	FieldEmployeeID,
+	FieldUserID,
 	FieldCode,
 	FieldStatus,
 	FieldPositionID,
@@ -89,9 +89,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByEmployeeID orders the results by the employee_id field.
-func ByEmployeeID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEmployeeID, opts...).ToFunc()
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByCode orders the results by the code field.

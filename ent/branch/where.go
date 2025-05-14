@@ -66,6 +66,11 @@ func Code(v string) predicate.Branch {
 	return predicate.Branch(sql.FieldEQ(FieldCode, v))
 }
 
+// CompanyID applies equality check predicate on the "company_id" field. It's identical to CompanyIDEQ.
+func CompanyID(v uuid.UUID) predicate.Branch {
+	return predicate.Branch(sql.FieldEQ(FieldCompanyID, v))
+}
+
 // Address applies equality check predicate on the "address" field. It's identical to AddressEQ.
 func Address(v string) predicate.Branch {
 	return predicate.Branch(sql.FieldEQ(FieldAddress, v))
@@ -214,6 +219,26 @@ func CodeEqualFold(v string) predicate.Branch {
 // CodeContainsFold applies the ContainsFold predicate on the "code" field.
 func CodeContainsFold(v string) predicate.Branch {
 	return predicate.Branch(sql.FieldContainsFold(FieldCode, v))
+}
+
+// CompanyIDEQ applies the EQ predicate on the "company_id" field.
+func CompanyIDEQ(v uuid.UUID) predicate.Branch {
+	return predicate.Branch(sql.FieldEQ(FieldCompanyID, v))
+}
+
+// CompanyIDNEQ applies the NEQ predicate on the "company_id" field.
+func CompanyIDNEQ(v uuid.UUID) predicate.Branch {
+	return predicate.Branch(sql.FieldNEQ(FieldCompanyID, v))
+}
+
+// CompanyIDIn applies the In predicate on the "company_id" field.
+func CompanyIDIn(vs ...uuid.UUID) predicate.Branch {
+	return predicate.Branch(sql.FieldIn(FieldCompanyID, vs...))
+}
+
+// CompanyIDNotIn applies the NotIn predicate on the "company_id" field.
+func CompanyIDNotIn(vs ...uuid.UUID) predicate.Branch {
+	return predicate.Branch(sql.FieldNotIn(FieldCompanyID, vs...))
 }
 
 // AddressEQ applies the EQ predicate on the "address" field.

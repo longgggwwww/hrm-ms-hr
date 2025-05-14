@@ -18,15 +18,17 @@ message Branch {
 
   string code = 3;
 
-  google.protobuf.StringValue address = 4;
+  bytes company_id = 5;
 
-  google.protobuf.StringValue contact_info = 5;
+  google.protobuf.StringValue address = 6;
 
-  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.StringValue contact_info = 7;
 
-  google.protobuf.Timestamp updated_at = 7;
+  google.protobuf.Timestamp created_at = 8;
 
-  Company company = 8;
+  google.protobuf.Timestamp updated_at = 9;
+
+  Company company = 10;
 }
 
 message CreateBranchRequest {
@@ -232,7 +234,7 @@ message BatchCreateDepartmentsResponse {
 message Employee {
   bytes id = 1;
 
-  string employee_id = 2;
+  string user_id = 2;
 
   string code = 3;
 

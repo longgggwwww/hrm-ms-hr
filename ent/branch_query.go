@@ -25,7 +25,6 @@ type BranchQuery struct {
 	inters      []Interceptor
 	predicates  []predicate.Branch
 	withCompany *CompanyQuery
-	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -371,18 +370,11 @@ func (bq *BranchQuery) prepareQuery(ctx context.Context) error {
 func (bq *BranchQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Branch, error) {
 	var (
 		nodes       = []*Branch{}
-		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
 		loadedTypes = [1]bool{
 			bq.withCompany != nil,
 		}
 	)
-	if bq.withCompany != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, branch.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Branch).scanValues(nil, columns)
 	}
@@ -414,10 +406,7 @@ func (bq *BranchQuery) loadCompany(ctx context.Context, query *CompanyQuery, nod
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Branch)
 	for i := range nodes {
-		if nodes[i].company_branches == nil {
-			continue
-		}
-		fk := *nodes[i].company_branches
+		fk := nodes[i].CompanyID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -434,7 +423,7 @@ func (bq *BranchQuery) loadCompany(ctx context.Context, query *CompanyQuery, nod
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "company_branches" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "company_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -467,6 +456,9 @@ func (bq *BranchQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != branch.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if bq.withCompany != nil {
+			_spec.Node.AddColumnOnce(branch.FieldCompanyID)
 		}
 	}
 	if ps := bq.predicates; len(ps) > 0 {

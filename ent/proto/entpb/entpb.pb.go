@@ -521,11 +521,12 @@ type Branch struct {
 	Id            []byte                  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Code          string                  `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
-	Address       *wrapperspb.StringValue `protobuf:"bytes,4,opt,name=address,proto3" json:"address,omitempty"`
-	ContactInfo   *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=contact_info,json=contactInfo,proto3" json:"contact_info,omitempty"`
-	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Company       *Company                `protobuf:"bytes,8,opt,name=company,proto3" json:"company,omitempty"`
+	CompanyId     []byte                  `protobuf:"bytes,5,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"`
+	Address       *wrapperspb.StringValue `protobuf:"bytes,6,opt,name=address,proto3" json:"address,omitempty"`
+	ContactInfo   *wrapperspb.StringValue `protobuf:"bytes,7,opt,name=contact_info,json=contactInfo,proto3" json:"contact_info,omitempty"`
+	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Company       *Company                `protobuf:"bytes,10,opt,name=company,proto3" json:"company,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -579,6 +580,13 @@ func (x *Branch) GetCode() string {
 		return x.Code
 	}
 	return ""
+}
+
+func (x *Branch) GetCompanyId() []byte {
+	if x != nil {
+		return x.CompanyId
+	}
+	return nil
 }
 
 func (x *Branch) GetAddress() *wrapperspb.StringValue {
@@ -1955,7 +1963,7 @@ func (x *BatchCreateDepartmentsResponse) GetDepartments() []*Department {
 type Employee struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	EmployeeId    string                 `protobuf:"bytes,2,opt,name=employee_id,json=employeeId,proto3" json:"employee_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Code          string                 `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
 	Status        bool                   `protobuf:"varint,4,opt,name=status,proto3" json:"status,omitempty"`
 	PositionId    []byte                 `protobuf:"bytes,5,opt,name=position_id,json=positionId,proto3" json:"position_id,omitempty"`
@@ -2006,9 +2014,9 @@ func (x *Employee) GetId() []byte {
 	return nil
 }
 
-func (x *Employee) GetEmployeeId() string {
+func (x *Employee) GetUserId() string {
 	if x != nil {
-		return x.EmployeeId
+		return x.UserId
 	}
 	return ""
 }
@@ -2956,18 +2964,21 @@ var File_entpb_entpb_proto protoreflect.FileDescriptor
 
 const file_entpb_entpb_proto_rawDesc = "" +
 	"\n" +
-	"\x11entpb/entpb.proto\x12\x05entpb\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\xd9\x02\n" +
+	"\x11entpb/entpb.proto\x12\x05entpb\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\xf8\x02\n" +
 	"\x06Branch\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\fR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04code\x18\x03 \x01(\tR\x04code\x126\n" +
-	"\aaddress\x18\x04 \x01(\v2\x1c.google.protobuf.StringValueR\aaddress\x12?\n" +
-	"\fcontact_info\x18\x05 \x01(\v2\x1c.google.protobuf.StringValueR\vcontactInfo\x129\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"company_id\x18\x05 \x01(\fR\tcompanyId\x126\n" +
+	"\aaddress\x18\x06 \x01(\v2\x1c.google.protobuf.StringValueR\aaddress\x12?\n" +
+	"\fcontact_info\x18\a \x01(\v2\x1c.google.protobuf.StringValueR\vcontactInfo\x129\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12(\n" +
-	"\acompany\x18\b \x01(\v2\x0e.entpb.CompanyR\acompany\"<\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12(\n" +
+	"\acompany\x18\n" +
+	" \x01(\v2\x0e.entpb.CompanyR\acompany\"<\n" +
 	"\x13CreateBranchRequest\x12%\n" +
 	"\x06branch\x18\x01 \x01(\v2\r.entpb.BranchR\x06branch\"\x90\x01\n" +
 	"\x10GetBranchRequest\x12\x0e\n" +
@@ -3080,11 +3091,10 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x1dBatchCreateDepartmentsRequest\x12:\n" +
 	"\brequests\x18\x01 \x03(\v2\x1e.entpb.CreateDepartmentRequestR\brequests\"U\n" +
 	"\x1eBatchCreateDepartmentsResponse\x123\n" +
-	"\vdepartments\x18\x01 \x03(\v2\x11.entpb.DepartmentR\vdepartments\"\xa8\x03\n" +
+	"\vdepartments\x18\x01 \x03(\v2\x11.entpb.DepartmentR\vdepartments\"\xa0\x03\n" +
 	"\bEmployee\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\x12\x1f\n" +
-	"\vemployee_id\x18\x02 \x01(\tR\n" +
-	"employeeId\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\fR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
 	"\x04code\x18\x03 \x01(\tR\x04code\x12\x16\n" +
 	"\x06status\x18\x04 \x01(\bR\x06status\x12\x1f\n" +
 	"\vposition_id\x18\x05 \x01(\fR\n" +

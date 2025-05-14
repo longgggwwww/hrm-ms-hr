@@ -58,6 +58,20 @@ func (bu *BranchUpdate) SetNillableCode(s *string) *BranchUpdate {
 	return bu
 }
 
+// SetCompanyID sets the "company_id" field.
+func (bu *BranchUpdate) SetCompanyID(u uuid.UUID) *BranchUpdate {
+	bu.mutation.SetCompanyID(u)
+	return bu
+}
+
+// SetNillableCompanyID sets the "company_id" field if the given value is not nil.
+func (bu *BranchUpdate) SetNillableCompanyID(u *uuid.UUID) *BranchUpdate {
+	if u != nil {
+		bu.SetCompanyID(*u)
+	}
+	return bu
+}
+
 // SetAddress sets the "address" field.
 func (bu *BranchUpdate) SetAddress(s string) *BranchUpdate {
 	bu.mutation.SetAddress(s)
@@ -101,20 +115,6 @@ func (bu *BranchUpdate) ClearContactInfo() *BranchUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (bu *BranchUpdate) SetUpdatedAt(t time.Time) *BranchUpdate {
 	bu.mutation.SetUpdatedAt(t)
-	return bu
-}
-
-// SetCompanyID sets the "company" edge to the Company entity by ID.
-func (bu *BranchUpdate) SetCompanyID(id uuid.UUID) *BranchUpdate {
-	bu.mutation.SetCompanyID(id)
-	return bu
-}
-
-// SetNillableCompanyID sets the "company" edge to the Company entity by ID if the given value is not nil.
-func (bu *BranchUpdate) SetNillableCompanyID(id *uuid.UUID) *BranchUpdate {
-	if id != nil {
-		bu = bu.SetCompanyID(*id)
-	}
 	return bu
 }
 
@@ -170,7 +170,18 @@ func (bu *BranchUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (bu *BranchUpdate) check() error {
+	if bu.mutation.CompanyCleared() && len(bu.mutation.CompanyIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Branch.company"`)
+	}
+	return nil
+}
+
 func (bu *BranchUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := bu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(branch.Table, branch.Columns, sqlgraph.NewFieldSpec(branch.FieldID, field.TypeUUID))
 	if ps := bu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -277,6 +288,20 @@ func (buo *BranchUpdateOne) SetNillableCode(s *string) *BranchUpdateOne {
 	return buo
 }
 
+// SetCompanyID sets the "company_id" field.
+func (buo *BranchUpdateOne) SetCompanyID(u uuid.UUID) *BranchUpdateOne {
+	buo.mutation.SetCompanyID(u)
+	return buo
+}
+
+// SetNillableCompanyID sets the "company_id" field if the given value is not nil.
+func (buo *BranchUpdateOne) SetNillableCompanyID(u *uuid.UUID) *BranchUpdateOne {
+	if u != nil {
+		buo.SetCompanyID(*u)
+	}
+	return buo
+}
+
 // SetAddress sets the "address" field.
 func (buo *BranchUpdateOne) SetAddress(s string) *BranchUpdateOne {
 	buo.mutation.SetAddress(s)
@@ -320,20 +345,6 @@ func (buo *BranchUpdateOne) ClearContactInfo() *BranchUpdateOne {
 // SetUpdatedAt sets the "updated_at" field.
 func (buo *BranchUpdateOne) SetUpdatedAt(t time.Time) *BranchUpdateOne {
 	buo.mutation.SetUpdatedAt(t)
-	return buo
-}
-
-// SetCompanyID sets the "company" edge to the Company entity by ID.
-func (buo *BranchUpdateOne) SetCompanyID(id uuid.UUID) *BranchUpdateOne {
-	buo.mutation.SetCompanyID(id)
-	return buo
-}
-
-// SetNillableCompanyID sets the "company" edge to the Company entity by ID if the given value is not nil.
-func (buo *BranchUpdateOne) SetNillableCompanyID(id *uuid.UUID) *BranchUpdateOne {
-	if id != nil {
-		buo = buo.SetCompanyID(*id)
-	}
 	return buo
 }
 
@@ -402,7 +413,18 @@ func (buo *BranchUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (buo *BranchUpdateOne) check() error {
+	if buo.mutation.CompanyCleared() && len(buo.mutation.CompanyIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Branch.company"`)
+	}
+	return nil
+}
+
 func (buo *BranchUpdateOne) sqlSave(ctx context.Context) (_node *Branch, err error) {
+	if err := buo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(branch.Table, branch.Columns, sqlgraph.NewFieldSpec(branch.FieldID, field.TypeUUID))
 	id, ok := buo.mutation.ID()
 	if !ok {

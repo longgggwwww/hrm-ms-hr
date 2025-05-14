@@ -17,7 +17,7 @@ var (
 		{Name: "contact_info", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "company_branches", Type: field.TypeUUID, Nullable: true},
+		{Name: "company_id", Type: field.TypeUUID},
 	}
 	// BranchesTable holds the schema information for the "branches" table.
 	BranchesTable = &schema.Table{
@@ -29,7 +29,7 @@ var (
 				Symbol:     "branches_companies_branches",
 				Columns:    []*schema.Column{BranchesColumns[7]},
 				RefColumns: []*schema.Column{CompaniesColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -66,7 +66,7 @@ var (
 	// EmployeesColumns holds the columns for the "employees" table.
 	EmployeesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "employee_id", Type: field.TypeString, Unique: true},
+		{Name: "user_id", Type: field.TypeString, Unique: true},
 		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "status", Type: field.TypeBool},
 		{Name: "joining_at", Type: field.TypeTime},

@@ -34,6 +34,12 @@ func (bc *BranchCreate) SetCode(s string) *BranchCreate {
 	return bc
 }
 
+// SetCompanyID sets the "company_id" field.
+func (bc *BranchCreate) SetCompanyID(u uuid.UUID) *BranchCreate {
+	bc.mutation.SetCompanyID(u)
+	return bc
+}
+
 // SetAddress sets the "address" field.
 func (bc *BranchCreate) SetAddress(s string) *BranchCreate {
 	bc.mutation.SetAddress(s)
@@ -104,20 +110,6 @@ func (bc *BranchCreate) SetNillableID(u *uuid.UUID) *BranchCreate {
 	return bc
 }
 
-// SetCompanyID sets the "company" edge to the Company entity by ID.
-func (bc *BranchCreate) SetCompanyID(id uuid.UUID) *BranchCreate {
-	bc.mutation.SetCompanyID(id)
-	return bc
-}
-
-// SetNillableCompanyID sets the "company" edge to the Company entity by ID if the given value is not nil.
-func (bc *BranchCreate) SetNillableCompanyID(id *uuid.UUID) *BranchCreate {
-	if id != nil {
-		bc = bc.SetCompanyID(*id)
-	}
-	return bc
-}
-
 // SetCompany sets the "company" edge to the Company entity.
 func (bc *BranchCreate) SetCompany(c *Company) *BranchCreate {
 	return bc.SetCompanyID(c.ID)
@@ -180,11 +172,17 @@ func (bc *BranchCreate) check() error {
 	if _, ok := bc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Branch.code"`)}
 	}
+	if _, ok := bc.mutation.CompanyID(); !ok {
+		return &ValidationError{Name: "company_id", err: errors.New(`ent: missing required field "Branch.company_id"`)}
+	}
 	if _, ok := bc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Branch.created_at"`)}
 	}
 	if _, ok := bc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Branch.updated_at"`)}
+	}
+	if len(bc.mutation.CompanyIDs()) == 0 {
+		return &ValidationError{Name: "company", err: errors.New(`ent: missing required edge "Branch.company"`)}
 	}
 	return nil
 }
@@ -259,7 +257,7 @@ func (bc *BranchCreate) createSpec() (*Branch, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.company_branches = &nodes[0]
+		_node.CompanyID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

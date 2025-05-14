@@ -56,9 +56,9 @@ func IDLTE(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldID, id))
 }
 
-// EmployeeID applies equality check predicate on the "employee_id" field. It's identical to EmployeeIDEQ.
-func EmployeeID(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldEmployeeID, v))
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldUserID, v))
 }
 
 // Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
@@ -101,69 +101,69 @@ func DepartmentID(v uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldDepartmentID, v))
 }
 
-// EmployeeIDEQ applies the EQ predicate on the "employee_id" field.
-func EmployeeIDEQ(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldEmployeeID, v))
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldUserID, v))
 }
 
-// EmployeeIDNEQ applies the NEQ predicate on the "employee_id" field.
-func EmployeeIDNEQ(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldNEQ(FieldEmployeeID, v))
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldNEQ(FieldUserID, v))
 }
 
-// EmployeeIDIn applies the In predicate on the "employee_id" field.
-func EmployeeIDIn(vs ...string) predicate.Employee {
-	return predicate.Employee(sql.FieldIn(FieldEmployeeID, vs...))
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...string) predicate.Employee {
+	return predicate.Employee(sql.FieldIn(FieldUserID, vs...))
 }
 
-// EmployeeIDNotIn applies the NotIn predicate on the "employee_id" field.
-func EmployeeIDNotIn(vs ...string) predicate.Employee {
-	return predicate.Employee(sql.FieldNotIn(FieldEmployeeID, vs...))
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...string) predicate.Employee {
+	return predicate.Employee(sql.FieldNotIn(FieldUserID, vs...))
 }
 
-// EmployeeIDGT applies the GT predicate on the "employee_id" field.
-func EmployeeIDGT(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldGT(FieldEmployeeID, v))
+// UserIDGT applies the GT predicate on the "user_id" field.
+func UserIDGT(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldGT(FieldUserID, v))
 }
 
-// EmployeeIDGTE applies the GTE predicate on the "employee_id" field.
-func EmployeeIDGTE(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldGTE(FieldEmployeeID, v))
+// UserIDGTE applies the GTE predicate on the "user_id" field.
+func UserIDGTE(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldGTE(FieldUserID, v))
 }
 
-// EmployeeIDLT applies the LT predicate on the "employee_id" field.
-func EmployeeIDLT(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldLT(FieldEmployeeID, v))
+// UserIDLT applies the LT predicate on the "user_id" field.
+func UserIDLT(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldLT(FieldUserID, v))
 }
 
-// EmployeeIDLTE applies the LTE predicate on the "employee_id" field.
-func EmployeeIDLTE(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldLTE(FieldEmployeeID, v))
+// UserIDLTE applies the LTE predicate on the "user_id" field.
+func UserIDLTE(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldLTE(FieldUserID, v))
 }
 
-// EmployeeIDContains applies the Contains predicate on the "employee_id" field.
-func EmployeeIDContains(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldContains(FieldEmployeeID, v))
+// UserIDContains applies the Contains predicate on the "user_id" field.
+func UserIDContains(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldContains(FieldUserID, v))
 }
 
-// EmployeeIDHasPrefix applies the HasPrefix predicate on the "employee_id" field.
-func EmployeeIDHasPrefix(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldHasPrefix(FieldEmployeeID, v))
+// UserIDHasPrefix applies the HasPrefix predicate on the "user_id" field.
+func UserIDHasPrefix(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldHasPrefix(FieldUserID, v))
 }
 
-// EmployeeIDHasSuffix applies the HasSuffix predicate on the "employee_id" field.
-func EmployeeIDHasSuffix(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldHasSuffix(FieldEmployeeID, v))
+// UserIDHasSuffix applies the HasSuffix predicate on the "user_id" field.
+func UserIDHasSuffix(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldHasSuffix(FieldUserID, v))
 }
 
-// EmployeeIDEqualFold applies the EqualFold predicate on the "employee_id" field.
-func EmployeeIDEqualFold(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldEqualFold(FieldEmployeeID, v))
+// UserIDEqualFold applies the EqualFold predicate on the "user_id" field.
+func UserIDEqualFold(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEqualFold(FieldUserID, v))
 }
 
-// EmployeeIDContainsFold applies the ContainsFold predicate on the "employee_id" field.
-func EmployeeIDContainsFold(v string) predicate.Employee {
-	return predicate.Employee(sql.FieldContainsFold(FieldEmployeeID, v))
+// UserIDContainsFold applies the ContainsFold predicate on the "user_id" field.
+func UserIDContainsFold(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldContainsFold(FieldUserID, v))
 }
 
 // CodeEQ applies the EQ predicate on the "code" field.

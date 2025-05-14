@@ -299,12 +299,12 @@ func (eq *EmployeeQuery) WithPosition(opts ...func(*PositionQuery)) *EmployeeQue
 // Example:
 //
 //	var v []struct {
-//		EmployeeID string `json:"employee_id,omitempty"`
+//		UserID string `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Employee.Query().
-//		GroupBy(employee.FieldEmployeeID).
+//		GroupBy(employee.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (eq *EmployeeQuery) GroupBy(field string, fields ...string) *EmployeeGroupBy {
@@ -322,11 +322,11 @@ func (eq *EmployeeQuery) GroupBy(field string, fields ...string) *EmployeeGroupB
 // Example:
 //
 //	var v []struct {
-//		EmployeeID string `json:"employee_id,omitempty"`
+//		UserID string `json:"user_id,omitempty"`
 //	}
 //
 //	client.Employee.Query().
-//		Select(employee.FieldEmployeeID).
+//		Select(employee.FieldUserID).
 //		Scan(ctx, &v)
 func (eq *EmployeeQuery) Select(fields ...string) *EmployeeSelect {
 	eq.ctx.Fields = append(eq.ctx.Fields, fields...)

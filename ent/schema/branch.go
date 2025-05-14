@@ -25,20 +25,22 @@ func (Branch) Fields() []ent.Field {
 		field.String("code").
 			Unique().
 			Annotations(entproto.Field(3)),
+		field.UUID("company_id", uuid.UUID{}).
+			Annotations(entproto.Field(5)),
 		field.String("address").
 			Optional().
-			Annotations(entproto.Field(4)),
+			Annotations(entproto.Field(6)),
 		field.String("contact_info").
 			Optional().
-			Annotations(entproto.Field(5)),
+			Annotations(entproto.Field(7)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
-			Annotations(entproto.Field(6)),
+			Annotations(entproto.Field(8)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
-			Annotations(entproto.Field(7)),
+			Annotations(entproto.Field(9)),
 	}
 }
 
@@ -46,8 +48,10 @@ func (Branch) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("company", Company.Type).
 			Ref("branches").
+			Field("company_id").
 			Unique().
-			Annotations(entproto.Field(8)),
+			Required().
+			Annotations(entproto.Field(10)),
 	}
 }
 
