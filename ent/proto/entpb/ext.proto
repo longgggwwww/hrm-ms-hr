@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package entpb;
+
+import "entpb/entpb.proto";
+
+option go_package = "github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb";
+
+import "google/protobuf/empty.proto";
+
+// Service definition
+service ExtService {
+  rpc GetBranchByUserId ( google.protobuf.Empty ) returns ( Branch );
+}

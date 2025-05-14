@@ -29,6 +29,7 @@ func startGRPCServer(cli *ent.Client) {
 	entpb.RegisterEmployeeServiceServer(server, employee)
 	entpb.RegisterPositionServiceServer(server, position)
 	entpb.RegisterDepartmentServiceServer(server, department)
+	entpb.RegisterExtServiceServer(server, entpb.NewExtService(cli))
 
 	lis, err := net.Listen("tcp", ":5000")
 	if err != nil {
