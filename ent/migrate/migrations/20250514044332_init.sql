@@ -15,8 +15,8 @@ CREATE TABLE "public"."positions" ("id" uuid NOT NULL, "name" character varying 
 -- Create index "positions_code_key" to table: "positions"
 CREATE UNIQUE INDEX "positions_code_key" ON "public"."positions" ("code");
 -- Create "employees" table
-CREATE TABLE "public"."employees" ("id" uuid NOT NULL, "employee_id" character varying NOT NULL, "code" character varying NOT NULL, "status" boolean NOT NULL, "joining_at" timestamptz NOT NULL, "branch_id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "department_id" uuid NOT NULL, "position_id" uuid NOT NULL, PRIMARY KEY ("id"), CONSTRAINT "employees_positions_employees" FOREIGN KEY ("position_id") REFERENCES "public"."positions" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION);
+CREATE TABLE "public"."employees" ("id" uuid NOT NULL, "user_id" character varying NOT NULL, "code" character varying NOT NULL, "status" boolean NOT NULL, "joining_at" timestamptz NOT NULL, "branch_id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "department_id" uuid NOT NULL, "position_id" uuid NOT NULL, PRIMARY KEY ("id"), CONSTRAINT "employees_positions_employees" FOREIGN KEY ("position_id") REFERENCES "public"."positions" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION);
 -- Create index "employees_code_key" to table: "employees"
 CREATE UNIQUE INDEX "employees_code_key" ON "public"."employees" ("code");
--- Create index "employees_employee_id_key" to table: "employees"
-CREATE UNIQUE INDEX "employees_employee_id_key" ON "public"."employees" ("employee_id");
+-- Create index "employees_user_id_key" to table: "employees"
+CREATE UNIQUE INDEX "employees_user_id_key" ON "public"."employees" ("user_id");
