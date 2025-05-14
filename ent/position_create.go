@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
@@ -40,8 +42,8 @@ func (pc *PositionCreate) SetDepartmentID(u uuid.UUID) *PositionCreate {
 }
 
 // SetParentID sets the "parent_id" field.
-func (pc *PositionCreate) SetParentID(uu uuid.NullUUID) *PositionCreate {
-	pc.mutation.SetParentID(uu)
+func (pc *PositionCreate) SetParentID(u uuid.UUID) *PositionCreate {
+	pc.mutation.SetParentID(u)
 	return pc
 }
 
@@ -85,6 +87,26 @@ func (pc *PositionCreate) SetNillableID(u *uuid.UUID) *PositionCreate {
 		pc.SetID(*u)
 	}
 	return pc
+}
+
+// AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
+func (pc *PositionCreate) AddEmployeeIDs(ids ...uuid.UUID) *PositionCreate {
+	pc.mutation.AddEmployeeIDs(ids...)
+	return pc
+}
+
+// AddEmployees adds the "employees" edges to the Employee entity.
+func (pc *PositionCreate) AddEmployees(e ...*Employee) *PositionCreate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return pc.AddEmployeeIDs(ids...)
+}
+
+// SetDepartment sets the "department" edge to the Department entity.
+func (pc *PositionCreate) SetDepartment(d *Department) *PositionCreate {
+	return pc.SetDepartmentID(d.ID)
 }
 
 // Mutation returns the PositionMutation object of the builder.
@@ -149,11 +171,6 @@ func (pc *PositionCreate) check() error {
 	if _, ok := pc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Position.code"`)}
 	}
-	if v, ok := pc.mutation.Code(); ok {
-		if err := position.CodeValidator(v); err != nil {
-			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Position.code": %w`, err)}
-		}
-	}
 	if _, ok := pc.mutation.DepartmentID(); !ok {
 		return &ValidationError{Name: "department_id", err: errors.New(`ent: missing required field "Position.department_id"`)}
 	}
@@ -165,6 +182,9 @@ func (pc *PositionCreate) check() error {
 	}
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Position.updated_at"`)}
+	}
+	if len(pc.mutation.DepartmentIDs()) == 0 {
+		return &ValidationError{Name: "department", err: errors.New(`ent: missing required edge "Position.department"`)}
 	}
 	return nil
 }
@@ -209,10 +229,6 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 		_spec.SetField(position.FieldCode, field.TypeString, value)
 		_node.Code = value
 	}
-	if value, ok := pc.mutation.DepartmentID(); ok {
-		_spec.SetField(position.FieldDepartmentID, field.TypeUUID, value)
-		_node.DepartmentID = value
-	}
 	if value, ok := pc.mutation.ParentID(); ok {
 		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
 		_node.ParentID = value
@@ -224,6 +240,39 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(position.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := pc.mutation.EmployeesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.EmployeesTable,
+			Columns: []string{position.EmployeesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.DepartmentID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

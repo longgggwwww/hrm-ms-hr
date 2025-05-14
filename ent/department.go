@@ -27,8 +27,29 @@ type Department struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the DepartmentQuery when eager-loading is set.
+	Edges        DepartmentEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// DepartmentEdges holds the relations/edges for other nodes in the graph.
+type DepartmentEdges struct {
+	// Positions holds the value of the positions edge.
+	Positions []*Position `json:"positions,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PositionsOrErr returns the Positions value or an error if the edge
+// was not loaded in eager-loading.
+func (e DepartmentEdges) PositionsOrErr() ([]*Position, error) {
+	if e.loadedTypes[0] {
+		return e.Positions, nil
+	}
+	return nil, &NotLoadedError{edge: "positions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -104,6 +125,11 @@ func (d *Department) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (d *Department) Value(name string) (ent.Value, error) {
 	return d.selectValues.Get(name)
+}
+
+// QueryPositions queries the "positions" edge of the Department entity.
+func (d *Department) QueryPositions() *PositionQuery {
+	return NewDepartmentClient(d.config).QueryPositions(d)
 }
 
 // Update returns a builder for updating this Department.

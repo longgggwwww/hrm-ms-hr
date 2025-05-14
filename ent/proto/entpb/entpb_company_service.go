@@ -16,6 +16,7 @@ import (
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // CompanyService implements CompanyServiceServer
@@ -34,8 +35,10 @@ func NewCompanyService(client *ent.Client) *CompanyService {
 // toProtoCompany transforms the ent type to the pb type
 func toProtoCompany(e *ent.Company) (*Company, error) {
 	v := &Company{}
-	address := e.Address
+	address := wrapperspb.String(e.Address)
 	v.Address = address
+	code := e.Code
+	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
 	id, err := e.ID.MarshalBinary()
@@ -139,10 +142,12 @@ func (svc *CompanyService) Update(ctx context.Context, req *UpdateCompanyRequest
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}
 	m := svc.client.Company.UpdateOneID(companyID)
-	companyAddress := company.GetAddress()
-	m.SetAddress(companyAddress)
-	companyCreatedAt := runtime.ExtractTime(company.GetCreatedAt())
-	m.SetCreatedAt(companyCreatedAt)
+	if company.GetAddress() != nil {
+		companyAddress := company.GetAddress().GetValue()
+		m.SetAddress(companyAddress)
+	}
+	companyCode := company.GetCode()
+	m.SetCode(companyCode)
 	companyName := company.GetName()
 	m.SetName(companyName)
 	companyUpdatedAt := runtime.ExtractTime(company.GetUpdatedAt())
@@ -290,8 +295,12 @@ func (svc *CompanyService) BatchCreate(ctx context.Context, req *BatchCreateComp
 
 func (svc *CompanyService) createBuilder(company *Company) (*ent.CompanyCreate, error) {
 	m := svc.client.Company.Create()
-	companyAddress := company.GetAddress()
-	m.SetAddress(companyAddress)
+	if company.GetAddress() != nil {
+		companyAddress := company.GetAddress().GetValue()
+		m.SetAddress(companyAddress)
+	}
+	companyCode := company.GetCode()
+	m.SetCode(companyCode)
 	companyCreatedAt := runtime.ExtractTime(company.GetCreatedAt())
 	m.SetCreatedAt(companyCreatedAt)
 	companyName := company.GetName()

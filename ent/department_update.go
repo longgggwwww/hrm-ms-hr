@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
@@ -99,9 +100,45 @@ func (du *DepartmentUpdate) SetNillableUpdatedAt(t *time.Time) *DepartmentUpdate
 	return du
 }
 
+// AddPositionIDs adds the "positions" edge to the Position entity by IDs.
+func (du *DepartmentUpdate) AddPositionIDs(ids ...uuid.UUID) *DepartmentUpdate {
+	du.mutation.AddPositionIDs(ids...)
+	return du
+}
+
+// AddPositions adds the "positions" edges to the Position entity.
+func (du *DepartmentUpdate) AddPositions(p ...*Position) *DepartmentUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return du.AddPositionIDs(ids...)
+}
+
 // Mutation returns the DepartmentMutation object of the builder.
 func (du *DepartmentUpdate) Mutation() *DepartmentMutation {
 	return du.mutation
+}
+
+// ClearPositions clears all "positions" edges to the Position entity.
+func (du *DepartmentUpdate) ClearPositions() *DepartmentUpdate {
+	du.mutation.ClearPositions()
+	return du
+}
+
+// RemovePositionIDs removes the "positions" edge to Position entities by IDs.
+func (du *DepartmentUpdate) RemovePositionIDs(ids ...uuid.UUID) *DepartmentUpdate {
+	du.mutation.RemovePositionIDs(ids...)
+	return du
+}
+
+// RemovePositions removes "positions" edges to Position entities.
+func (du *DepartmentUpdate) RemovePositions(p ...*Position) *DepartmentUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return du.RemovePositionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -154,6 +191,51 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := du.mutation.UpdatedAt(); ok {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if du.mutation.PositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.PositionsTable,
+			Columns: []string{department.PositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedPositionsIDs(); len(nodes) > 0 && !du.mutation.PositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.PositionsTable,
+			Columns: []string{department.PositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.PositionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.PositionsTable,
+			Columns: []string{department.PositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -245,9 +327,45 @@ func (duo *DepartmentUpdateOne) SetNillableUpdatedAt(t *time.Time) *DepartmentUp
 	return duo
 }
 
+// AddPositionIDs adds the "positions" edge to the Position entity by IDs.
+func (duo *DepartmentUpdateOne) AddPositionIDs(ids ...uuid.UUID) *DepartmentUpdateOne {
+	duo.mutation.AddPositionIDs(ids...)
+	return duo
+}
+
+// AddPositions adds the "positions" edges to the Position entity.
+func (duo *DepartmentUpdateOne) AddPositions(p ...*Position) *DepartmentUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return duo.AddPositionIDs(ids...)
+}
+
 // Mutation returns the DepartmentMutation object of the builder.
 func (duo *DepartmentUpdateOne) Mutation() *DepartmentMutation {
 	return duo.mutation
+}
+
+// ClearPositions clears all "positions" edges to the Position entity.
+func (duo *DepartmentUpdateOne) ClearPositions() *DepartmentUpdateOne {
+	duo.mutation.ClearPositions()
+	return duo
+}
+
+// RemovePositionIDs removes the "positions" edge to Position entities by IDs.
+func (duo *DepartmentUpdateOne) RemovePositionIDs(ids ...uuid.UUID) *DepartmentUpdateOne {
+	duo.mutation.RemovePositionIDs(ids...)
+	return duo
+}
+
+// RemovePositions removes "positions" edges to Position entities.
+func (duo *DepartmentUpdateOne) RemovePositions(p ...*Position) *DepartmentUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return duo.RemovePositionIDs(ids...)
 }
 
 // Where appends a list predicates to the DepartmentUpdate builder.
@@ -330,6 +448,51 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 	}
 	if value, ok := duo.mutation.UpdatedAt(); ok {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if duo.mutation.PositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.PositionsTable,
+			Columns: []string{department.PositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedPositionsIDs(); len(nodes) > 0 && !duo.mutation.PositionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.PositionsTable,
+			Columns: []string{department.PositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.PositionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.PositionsTable,
+			Columns: []string{department.PositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Department{config: duo.config}
 	_spec.Assign = _node.assignValues

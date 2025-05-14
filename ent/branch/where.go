@@ -271,6 +271,16 @@ func AddressHasSuffix(v string) predicate.Branch {
 	return predicate.Branch(sql.FieldHasSuffix(FieldAddress, v))
 }
 
+// AddressIsNil applies the IsNil predicate on the "address" field.
+func AddressIsNil() predicate.Branch {
+	return predicate.Branch(sql.FieldIsNull(FieldAddress))
+}
+
+// AddressNotNil applies the NotNil predicate on the "address" field.
+func AddressNotNil() predicate.Branch {
+	return predicate.Branch(sql.FieldNotNull(FieldAddress))
+}
+
 // AddressEqualFold applies the EqualFold predicate on the "address" field.
 func AddressEqualFold(v string) predicate.Branch {
 	return predicate.Branch(sql.FieldEqualFold(FieldAddress, v))
@@ -334,6 +344,16 @@ func ContactInfoHasPrefix(v string) predicate.Branch {
 // ContactInfoHasSuffix applies the HasSuffix predicate on the "contact_info" field.
 func ContactInfoHasSuffix(v string) predicate.Branch {
 	return predicate.Branch(sql.FieldHasSuffix(FieldContactInfo, v))
+}
+
+// ContactInfoIsNil applies the IsNil predicate on the "contact_info" field.
+func ContactInfoIsNil() predicate.Branch {
+	return predicate.Branch(sql.FieldIsNull(FieldContactInfo))
+}
+
+// ContactInfoNotNil applies the NotNil predicate on the "contact_info" field.
+func ContactInfoNotNil() predicate.Branch {
+	return predicate.Branch(sql.FieldNotNull(FieldContactInfo))
 }
 
 // ContactInfoEqualFold applies the EqualFold predicate on the "contact_info" field.

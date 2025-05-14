@@ -13,8 +13,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "address", Type: field.TypeString},
-		{Name: "contact_info", Type: field.TypeString},
+		{Name: "address", Type: field.TypeString, Nullable: true},
+		{Name: "contact_info", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "company_branches", Type: field.TypeUUID, Nullable: true},
@@ -37,7 +37,8 @@ var (
 	CompaniesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
-		{Name: "address", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "address", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -68,34 +69,50 @@ var (
 		{Name: "employee_id", Type: field.TypeString, Unique: true},
 		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "status", Type: field.TypeBool},
-		{Name: "position_id", Type: field.TypeUUID},
 		{Name: "joining_at", Type: field.TypeTime},
 		{Name: "branch_id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "department_id", Type: field.TypeUUID},
+		{Name: "position_id", Type: field.TypeUUID},
 	}
 	// EmployeesTable holds the schema information for the "employees" table.
 	EmployeesTable = &schema.Table{
 		Name:       "employees",
 		Columns:    EmployeesColumns,
 		PrimaryKey: []*schema.Column{EmployeesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "employees_positions_employees",
+				Columns:    []*schema.Column{EmployeesColumns[9]},
+				RefColumns: []*schema.Column{PositionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// PositionsColumns holds the columns for the "positions" table.
 	PositionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "department_id", Type: field.TypeUUID},
 		{Name: "parent_id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "department_id", Type: field.TypeUUID},
 	}
 	// PositionsTable holds the schema information for the "positions" table.
 	PositionsTable = &schema.Table{
 		Name:       "positions",
 		Columns:    PositionsColumns,
 		PrimaryKey: []*schema.Column{PositionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "positions_departments_positions",
+				Columns:    []*schema.Column{PositionsColumns[6]},
+				RefColumns: []*schema.Column{DepartmentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
@@ -109,4 +126,6 @@ var (
 
 func init() {
 	BranchesTable.ForeignKeys[0].RefTable = CompaniesTable
+	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
+	PositionsTable.ForeignKeys[0].RefTable = DepartmentsTable
 }

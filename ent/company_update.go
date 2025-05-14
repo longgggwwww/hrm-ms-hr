@@ -44,6 +44,20 @@ func (cu *CompanyUpdate) SetNillableName(s *string) *CompanyUpdate {
 	return cu
 }
 
+// SetCode sets the "code" field.
+func (cu *CompanyUpdate) SetCode(s string) *CompanyUpdate {
+	cu.mutation.SetCode(s)
+	return cu
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (cu *CompanyUpdate) SetNillableCode(s *string) *CompanyUpdate {
+	if s != nil {
+		cu.SetCode(*s)
+	}
+	return cu
+}
+
 // SetAddress sets the "address" field.
 func (cu *CompanyUpdate) SetAddress(s string) *CompanyUpdate {
 	cu.mutation.SetAddress(s)
@@ -58,17 +72,9 @@ func (cu *CompanyUpdate) SetNillableAddress(s *string) *CompanyUpdate {
 	return cu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (cu *CompanyUpdate) SetCreatedAt(t time.Time) *CompanyUpdate {
-	cu.mutation.SetCreatedAt(t)
-	return cu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (cu *CompanyUpdate) SetNillableCreatedAt(t *time.Time) *CompanyUpdate {
-	if t != nil {
-		cu.SetCreatedAt(*t)
-	}
+// ClearAddress clears the value of the "address" field.
+func (cu *CompanyUpdate) ClearAddress() *CompanyUpdate {
+	cu.mutation.ClearAddress()
 	return cu
 }
 
@@ -167,11 +173,14 @@ func (cu *CompanyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.Name(); ok {
 		_spec.SetField(company.FieldName, field.TypeString, value)
 	}
+	if value, ok := cu.mutation.Code(); ok {
+		_spec.SetField(company.FieldCode, field.TypeString, value)
+	}
 	if value, ok := cu.mutation.Address(); ok {
 		_spec.SetField(company.FieldAddress, field.TypeString, value)
 	}
-	if value, ok := cu.mutation.CreatedAt(); ok {
-		_spec.SetField(company.FieldCreatedAt, field.TypeTime, value)
+	if cu.mutation.AddressCleared() {
+		_spec.ClearField(company.FieldAddress, field.TypeString)
 	}
 	if value, ok := cu.mutation.UpdatedAt(); ok {
 		_spec.SetField(company.FieldUpdatedAt, field.TypeTime, value)
@@ -255,6 +264,20 @@ func (cuo *CompanyUpdateOne) SetNillableName(s *string) *CompanyUpdateOne {
 	return cuo
 }
 
+// SetCode sets the "code" field.
+func (cuo *CompanyUpdateOne) SetCode(s string) *CompanyUpdateOne {
+	cuo.mutation.SetCode(s)
+	return cuo
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (cuo *CompanyUpdateOne) SetNillableCode(s *string) *CompanyUpdateOne {
+	if s != nil {
+		cuo.SetCode(*s)
+	}
+	return cuo
+}
+
 // SetAddress sets the "address" field.
 func (cuo *CompanyUpdateOne) SetAddress(s string) *CompanyUpdateOne {
 	cuo.mutation.SetAddress(s)
@@ -269,17 +292,9 @@ func (cuo *CompanyUpdateOne) SetNillableAddress(s *string) *CompanyUpdateOne {
 	return cuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (cuo *CompanyUpdateOne) SetCreatedAt(t time.Time) *CompanyUpdateOne {
-	cuo.mutation.SetCreatedAt(t)
-	return cuo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (cuo *CompanyUpdateOne) SetNillableCreatedAt(t *time.Time) *CompanyUpdateOne {
-	if t != nil {
-		cuo.SetCreatedAt(*t)
-	}
+// ClearAddress clears the value of the "address" field.
+func (cuo *CompanyUpdateOne) ClearAddress() *CompanyUpdateOne {
+	cuo.mutation.ClearAddress()
 	return cuo
 }
 
@@ -408,11 +423,14 @@ func (cuo *CompanyUpdateOne) sqlSave(ctx context.Context) (_node *Company, err e
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.SetField(company.FieldName, field.TypeString, value)
 	}
+	if value, ok := cuo.mutation.Code(); ok {
+		_spec.SetField(company.FieldCode, field.TypeString, value)
+	}
 	if value, ok := cuo.mutation.Address(); ok {
 		_spec.SetField(company.FieldAddress, field.TypeString, value)
 	}
-	if value, ok := cuo.mutation.CreatedAt(); ok {
-		_spec.SetField(company.FieldCreatedAt, field.TypeTime, value)
+	if cuo.mutation.AddressCleared() {
+		_spec.ClearField(company.FieldAddress, field.TypeString)
 	}
 	if value, ok := cuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(company.FieldUpdatedAt, field.TypeTime, value)

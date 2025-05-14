@@ -37,11 +37,11 @@ func init() {
 	companyFields := schema.Company{}.Fields()
 	_ = companyFields
 	// companyDescCreatedAt is the schema descriptor for created_at field.
-	companyDescCreatedAt := companyFields[3].Descriptor()
+	companyDescCreatedAt := companyFields[4].Descriptor()
 	// company.DefaultCreatedAt holds the default value on creation for the created_at field.
 	company.DefaultCreatedAt = companyDescCreatedAt.Default.(func() time.Time)
 	// companyDescUpdatedAt is the schema descriptor for updated_at field.
-	companyDescUpdatedAt := companyFields[4].Descriptor()
+	companyDescUpdatedAt := companyFields[5].Descriptor()
 	// company.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	company.DefaultUpdatedAt = companyDescUpdatedAt.Default.(func() time.Time)
 	// company.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -86,10 +86,6 @@ func init() {
 	positionDescName := positionFields[1].Descriptor()
 	// position.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	position.NameValidator = positionDescName.Validators[0].(func(string) error)
-	// positionDescCode is the schema descriptor for code field.
-	positionDescCode := positionFields[2].Descriptor()
-	// position.CodeValidator is a validator for the "code" field. It is called by the builders before save.
-	position.CodeValidator = positionDescCode.Validators[0].(func(string) error)
 	// positionDescCreatedAt is the schema descriptor for created_at field.
 	positionDescCreatedAt := positionFields[5].Descriptor()
 	// position.DefaultCreatedAt holds the default value on creation for the created_at field.

@@ -6,6 +6,7 @@ import (
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -49,7 +50,14 @@ func (Employee) Fields() []ent.Field {
 
 // Edges of the Employee.
 func (Employee) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("position", Position.Type).
+			Ref("employees").
+			Field("position_id").
+			Unique().
+			Required().
+			Annotations(entproto.Field(11)),
+	}
 }
 
 func (Employee) Annotations() []schema.Annotation {

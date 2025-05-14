@@ -13,16 +13,18 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
 // EmployeeQuery is the builder for querying Employee entities.
 type EmployeeQuery struct {
 	config
-	ctx        *QueryContext
-	order      []employee.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Employee
+	ctx          *QueryContext
+	order        []employee.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.Employee
+	withPosition *PositionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +59,28 @@ func (eq *EmployeeQuery) Unique(unique bool) *EmployeeQuery {
 func (eq *EmployeeQuery) Order(o ...employee.OrderOption) *EmployeeQuery {
 	eq.order = append(eq.order, o...)
 	return eq
+}
+
+// QueryPosition chains the current query on the "position" edge.
+func (eq *EmployeeQuery) QueryPosition() *PositionQuery {
+	query := (&PositionClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(position.Table, position.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, employee.PositionTable, employee.PositionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Employee entity from the query.
@@ -246,15 +270,27 @@ func (eq *EmployeeQuery) Clone() *EmployeeQuery {
 		return nil
 	}
 	return &EmployeeQuery{
-		config:     eq.config,
-		ctx:        eq.ctx.Clone(),
-		order:      append([]employee.OrderOption{}, eq.order...),
-		inters:     append([]Interceptor{}, eq.inters...),
-		predicates: append([]predicate.Employee{}, eq.predicates...),
+		config:       eq.config,
+		ctx:          eq.ctx.Clone(),
+		order:        append([]employee.OrderOption{}, eq.order...),
+		inters:       append([]Interceptor{}, eq.inters...),
+		predicates:   append([]predicate.Employee{}, eq.predicates...),
+		withPosition: eq.withPosition.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
 	}
+}
+
+// WithPosition tells the query-builder to eager-load the nodes that are connected to
+// the "position" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithPosition(opts ...func(*PositionQuery)) *EmployeeQuery {
+	query := (&PositionClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withPosition = query
+	return eq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,8 +369,11 @@ func (eq *EmployeeQuery) prepareQuery(ctx context.Context) error {
 
 func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Employee, error) {
 	var (
-		nodes = []*Employee{}
-		_spec = eq.querySpec()
+		nodes       = []*Employee{}
+		_spec       = eq.querySpec()
+		loadedTypes = [1]bool{
+			eq.withPosition != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Employee).scanValues(nil, columns)
@@ -342,6 +381,7 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Employee{config: eq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -353,7 +393,43 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := eq.withPosition; query != nil {
+		if err := eq.loadPosition(ctx, query, nodes, nil,
+			func(n *Employee, e *Position) { n.Edges.Position = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (eq *EmployeeQuery) loadPosition(ctx context.Context, query *PositionQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Position)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Employee)
+	for i := range nodes {
+		fk := nodes[i].PositionID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(position.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "position_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (eq *EmployeeQuery) sqlCount(ctx context.Context) (int, error) {
@@ -380,6 +456,9 @@ func (eq *EmployeeQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != employee.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if eq.withPosition != nil {
+			_spec.Node.AddColumnOnce(employee.FieldPositionID)
 		}
 	}
 	if ps := eq.predicates; len(ps) > 0 {

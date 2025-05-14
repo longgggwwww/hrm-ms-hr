@@ -16,6 +16,7 @@ import (
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // BranchService implements BranchServiceServer
@@ -34,11 +35,11 @@ func NewBranchService(client *ent.Client) *BranchService {
 // toProtoBranch transforms the ent type to the pb type
 func toProtoBranch(e *ent.Branch) (*Branch, error) {
 	v := &Branch{}
-	address := e.Address
+	address := wrapperspb.String(e.Address)
 	v.Address = address
 	code := e.Code
 	v.Code = code
-	contact_info := e.ContactInfo
+	contact_info := wrapperspb.String(e.ContactInfo)
 	v.ContactInfo = contact_info
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
@@ -143,14 +144,16 @@ func (svc *BranchService) Update(ctx context.Context, req *UpdateBranchRequest) 
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}
 	m := svc.client.Branch.UpdateOneID(branchID)
-	branchAddress := branch.GetAddress()
-	m.SetAddress(branchAddress)
+	if branch.GetAddress() != nil {
+		branchAddress := branch.GetAddress().GetValue()
+		m.SetAddress(branchAddress)
+	}
 	branchCode := branch.GetCode()
 	m.SetCode(branchCode)
-	branchContactInfo := branch.GetContactInfo()
-	m.SetContactInfo(branchContactInfo)
-	branchCreatedAt := runtime.ExtractTime(branch.GetCreatedAt())
-	m.SetCreatedAt(branchCreatedAt)
+	if branch.GetContactInfo() != nil {
+		branchContactInfo := branch.GetContactInfo().GetValue()
+		m.SetContactInfo(branchContactInfo)
+	}
 	branchName := branch.GetName()
 	m.SetName(branchName)
 	branchUpdatedAt := runtime.ExtractTime(branch.GetUpdatedAt())
@@ -298,12 +301,16 @@ func (svc *BranchService) BatchCreate(ctx context.Context, req *BatchCreateBranc
 
 func (svc *BranchService) createBuilder(branch *Branch) (*ent.BranchCreate, error) {
 	m := svc.client.Branch.Create()
-	branchAddress := branch.GetAddress()
-	m.SetAddress(branchAddress)
+	if branch.GetAddress() != nil {
+		branchAddress := branch.GetAddress().GetValue()
+		m.SetAddress(branchAddress)
+	}
 	branchCode := branch.GetCode()
 	m.SetCode(branchCode)
-	branchContactInfo := branch.GetContactInfo()
-	m.SetContactInfo(branchContactInfo)
+	if branch.GetContactInfo() != nil {
+		branchContactInfo := branch.GetContactInfo().GetValue()
+		m.SetContactInfo(branchContactInfo)
+	}
 	branchCreatedAt := runtime.ExtractTime(branch.GetCreatedAt())
 	m.SetCreatedAt(branchCreatedAt)
 	branchName := branch.GetName()

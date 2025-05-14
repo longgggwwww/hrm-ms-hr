@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
@@ -25,12 +26,46 @@ type Position struct {
 	// DepartmentID holds the value of the "department_id" field.
 	DepartmentID uuid.UUID `json:"department_id,omitempty"`
 	// ParentID holds the value of the "parent_id" field.
-	ParentID uuid.NullUUID `json:"parent_id,omitempty"`
+	ParentID uuid.UUID `json:"parent_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PositionQuery when eager-loading is set.
+	Edges        PositionEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// PositionEdges holds the relations/edges for other nodes in the graph.
+type PositionEdges struct {
+	// Employees holds the value of the employees edge.
+	Employees []*Employee `json:"employees,omitempty"`
+	// Department holds the value of the department edge.
+	Department *Department `json:"department,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// EmployeesOrErr returns the Employees value or an error if the edge
+// was not loaded in eager-loading.
+func (e PositionEdges) EmployeesOrErr() ([]*Employee, error) {
+	if e.loadedTypes[0] {
+		return e.Employees, nil
+	}
+	return nil, &NotLoadedError{edge: "employees"}
+}
+
+// DepartmentOrErr returns the Department value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PositionEdges) DepartmentOrErr() (*Department, error) {
+	if e.Department != nil {
+		return e.Department, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: department.Label}
+	}
+	return nil, &NotLoadedError{edge: "department"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -42,9 +77,7 @@ func (*Position) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case position.FieldCreatedAt, position.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case position.FieldParentID:
-			values[i] = new(uuid.NullUUID)
-		case position.FieldID, position.FieldDepartmentID:
+		case position.FieldID, position.FieldDepartmentID, position.FieldParentID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -86,7 +119,7 @@ func (po *Position) assignValues(columns []string, values []any) error {
 				po.DepartmentID = *value
 			}
 		case position.FieldParentID:
-			if value, ok := values[i].(*uuid.NullUUID); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_id", values[i])
 			} else if value != nil {
 				po.ParentID = *value
@@ -114,6 +147,16 @@ func (po *Position) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (po *Position) Value(name string) (ent.Value, error) {
 	return po.selectValues.Get(name)
+}
+
+// QueryEmployees queries the "employees" edge of the Position entity.
+func (po *Position) QueryEmployees() *EmployeeQuery {
+	return NewPositionClient(po.config).QueryEmployees(po)
+}
+
+// QueryDepartment queries the "department" edge of the Position entity.
+func (po *Position) QueryDepartment() *DepartmentQuery {
+	return NewPositionClient(po.config).QueryDepartment(po)
 }
 
 // Update returns a builder for updating this Position.

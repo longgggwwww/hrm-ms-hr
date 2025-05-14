@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
 // EmployeeCreate is the builder for creating a Employee entity.
@@ -105,6 +106,11 @@ func (ec *EmployeeCreate) SetNillableID(u *uuid.UUID) *EmployeeCreate {
 	return ec
 }
 
+// SetPosition sets the "position" edge to the Position entity.
+func (ec *EmployeeCreate) SetPosition(p *Position) *EmployeeCreate {
+	return ec.SetPositionID(p.ID)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (ec *EmployeeCreate) Mutation() *EmployeeMutation {
 	return ec.mutation
@@ -183,6 +189,9 @@ func (ec *EmployeeCreate) check() error {
 	if _, ok := ec.mutation.DepartmentID(); !ok {
 		return &ValidationError{Name: "department_id", err: errors.New(`ent: missing required field "Employee.department_id"`)}
 	}
+	if len(ec.mutation.PositionIDs()) == 0 {
+		return &ValidationError{Name: "position", err: errors.New(`ent: missing required edge "Employee.position"`)}
+	}
 	return nil
 }
 
@@ -230,10 +239,6 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 		_spec.SetField(employee.FieldStatus, field.TypeBool, value)
 		_node.Status = value
 	}
-	if value, ok := ec.mutation.PositionID(); ok {
-		_spec.SetField(employee.FieldPositionID, field.TypeUUID, value)
-		_node.PositionID = value
-	}
 	if value, ok := ec.mutation.JoiningAt(); ok {
 		_spec.SetField(employee.FieldJoiningAt, field.TypeTime, value)
 		_node.JoiningAt = value
@@ -253,6 +258,23 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 	if value, ok := ec.mutation.DepartmentID(); ok {
 		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
 		_node.DepartmentID = value
+	}
+	if nodes := ec.mutation.PositionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   employee.PositionTable,
+			Columns: []string{employee.PositionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.PositionID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

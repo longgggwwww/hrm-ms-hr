@@ -11,6 +11,7 @@ import (
 	uuid "github.com/google/uuid"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
+	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -51,6 +52,15 @@ func toProtoDepartment(e *ent.Department) (*Department, error) {
 	v.Name = name
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
+	for _, edg := range e.Edges.Positions {
+		id, err := edg.ID.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		v.Positions = append(v.Positions, &Position{
+			Id: id,
+		})
+	}
 	return v, nil
 }
 
@@ -108,6 +118,9 @@ func (svc *DepartmentService) Get(ctx context.Context, req *GetDepartmentRequest
 	case GetDepartmentRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Department.Query().
 			Where(department.ID(id)).
+			WithPositions(func(query *ent.PositionQuery) {
+				query.Select(position.FieldID)
+			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -144,6 +157,13 @@ func (svc *DepartmentService) Update(ctx context.Context, req *UpdateDepartmentR
 	m.SetName(departmentName)
 	departmentUpdatedAt := runtime.ExtractTime(department.GetUpdatedAt())
 	m.SetUpdatedAt(departmentUpdatedAt)
+	for _, item := range department.GetPositions() {
+		var positions uuid.UUID
+		if err := (&positions).UnmarshalBinary(item.GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.AddPositionIDs(positions)
+	}
 
 	res, err := m.Save(ctx)
 	switch {
@@ -216,6 +236,9 @@ func (svc *DepartmentService) List(ctx context.Context, req *ListDepartmentReque
 		entList, err = listQuery.All(ctx)
 	case ListDepartmentRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithPositions(func(query *ent.PositionQuery) {
+				query.Select(position.FieldID)
+			}).
 			All(ctx)
 	}
 	switch {
@@ -290,5 +313,12 @@ func (svc *DepartmentService) createBuilder(department *Department) (*ent.Depart
 	m.SetName(departmentName)
 	departmentUpdatedAt := runtime.ExtractTime(department.GetUpdatedAt())
 	m.SetUpdatedAt(departmentUpdatedAt)
+	for _, item := range department.GetPositions() {
+		var positions uuid.UUID
+		if err := (&positions).UnmarshalBinary(item.GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.AddPositionIDs(positions)
+	}
 	return m, nil
 }

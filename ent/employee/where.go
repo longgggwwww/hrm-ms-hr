@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
@@ -260,26 +261,6 @@ func PositionIDNotIn(vs ...uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldNotIn(FieldPositionID, vs...))
 }
 
-// PositionIDGT applies the GT predicate on the "position_id" field.
-func PositionIDGT(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldGT(FieldPositionID, v))
-}
-
-// PositionIDGTE applies the GTE predicate on the "position_id" field.
-func PositionIDGTE(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldGTE(FieldPositionID, v))
-}
-
-// PositionIDLT applies the LT predicate on the "position_id" field.
-func PositionIDLT(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldLT(FieldPositionID, v))
-}
-
-// PositionIDLTE applies the LTE predicate on the "position_id" field.
-func PositionIDLTE(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldLTE(FieldPositionID, v))
-}
-
 // JoiningAtEQ applies the EQ predicate on the "joining_at" field.
 func JoiningAtEQ(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldJoiningAt, v))
@@ -478,6 +459,29 @@ func DepartmentIDLT(v uuid.UUID) predicate.Employee {
 // DepartmentIDLTE applies the LTE predicate on the "department_id" field.
 func DepartmentIDLTE(v uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldDepartmentID, v))
+}
+
+// HasPosition applies the HasEdge predicate on the "position" edge.
+func HasPosition() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, PositionTable, PositionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPositionWith applies the HasEdge predicate on the "position" edge with a given conditions (other predicates).
+func HasPositionWith(preds ...predicate.Position) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newPositionStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,16 +14,18 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
 // DepartmentQuery is the builder for querying Department entities.
 type DepartmentQuery struct {
 	config
-	ctx        *QueryContext
-	order      []department.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Department
+	ctx           *QueryContext
+	order         []department.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Department
+	withPositions *PositionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +60,28 @@ func (dq *DepartmentQuery) Unique(unique bool) *DepartmentQuery {
 func (dq *DepartmentQuery) Order(o ...department.OrderOption) *DepartmentQuery {
 	dq.order = append(dq.order, o...)
 	return dq
+}
+
+// QueryPositions chains the current query on the "positions" edge.
+func (dq *DepartmentQuery) QueryPositions() *PositionQuery {
+	query := (&PositionClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, selector),
+			sqlgraph.To(position.Table, position.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, department.PositionsTable, department.PositionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Department entity from the query.
@@ -246,15 +271,27 @@ func (dq *DepartmentQuery) Clone() *DepartmentQuery {
 		return nil
 	}
 	return &DepartmentQuery{
-		config:     dq.config,
-		ctx:        dq.ctx.Clone(),
-		order:      append([]department.OrderOption{}, dq.order...),
-		inters:     append([]Interceptor{}, dq.inters...),
-		predicates: append([]predicate.Department{}, dq.predicates...),
+		config:        dq.config,
+		ctx:           dq.ctx.Clone(),
+		order:         append([]department.OrderOption{}, dq.order...),
+		inters:        append([]Interceptor{}, dq.inters...),
+		predicates:    append([]predicate.Department{}, dq.predicates...),
+		withPositions: dq.withPositions.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
 	}
+}
+
+// WithPositions tells the query-builder to eager-load the nodes that are connected to
+// the "positions" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DepartmentQuery) WithPositions(opts ...func(*PositionQuery)) *DepartmentQuery {
+	query := (&PositionClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withPositions = query
+	return dq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,8 +370,11 @@ func (dq *DepartmentQuery) prepareQuery(ctx context.Context) error {
 
 func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Department, error) {
 	var (
-		nodes = []*Department{}
-		_spec = dq.querySpec()
+		nodes       = []*Department{}
+		_spec       = dq.querySpec()
+		loadedTypes = [1]bool{
+			dq.withPositions != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Department).scanValues(nil, columns)
@@ -342,6 +382,7 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Department{config: dq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -353,7 +394,45 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := dq.withPositions; query != nil {
+		if err := dq.loadPositions(ctx, query, nodes,
+			func(n *Department) { n.Edges.Positions = []*Position{} },
+			func(n *Department, e *Position) { n.Edges.Positions = append(n.Edges.Positions, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (dq *DepartmentQuery) loadPositions(ctx context.Context, query *PositionQuery, nodes []*Department, init func(*Department), assign func(*Department, *Position)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Department)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(position.FieldDepartmentID)
+	}
+	query.Where(predicate.Position(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(department.PositionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.DepartmentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "department_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (dq *DepartmentQuery) sqlCount(ctx context.Context) (int, error) {

@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
@@ -72,15 +74,15 @@ func (pu *PositionUpdate) SetNillableDepartmentID(u *uuid.UUID) *PositionUpdate 
 }
 
 // SetParentID sets the "parent_id" field.
-func (pu *PositionUpdate) SetParentID(uu uuid.NullUUID) *PositionUpdate {
-	pu.mutation.SetParentID(uu)
+func (pu *PositionUpdate) SetParentID(u uuid.UUID) *PositionUpdate {
+	pu.mutation.SetParentID(u)
 	return pu
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (pu *PositionUpdate) SetNillableParentID(uu *uuid.NullUUID) *PositionUpdate {
-	if uu != nil {
-		pu.SetParentID(*uu)
+func (pu *PositionUpdate) SetNillableParentID(u *uuid.UUID) *PositionUpdate {
+	if u != nil {
+		pu.SetParentID(*u)
 	}
 	return pu
 }
@@ -91,9 +93,56 @@ func (pu *PositionUpdate) SetUpdatedAt(t time.Time) *PositionUpdate {
 	return pu
 }
 
+// AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
+func (pu *PositionUpdate) AddEmployeeIDs(ids ...uuid.UUID) *PositionUpdate {
+	pu.mutation.AddEmployeeIDs(ids...)
+	return pu
+}
+
+// AddEmployees adds the "employees" edges to the Employee entity.
+func (pu *PositionUpdate) AddEmployees(e ...*Employee) *PositionUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return pu.AddEmployeeIDs(ids...)
+}
+
+// SetDepartment sets the "department" edge to the Department entity.
+func (pu *PositionUpdate) SetDepartment(d *Department) *PositionUpdate {
+	return pu.SetDepartmentID(d.ID)
+}
+
 // Mutation returns the PositionMutation object of the builder.
 func (pu *PositionUpdate) Mutation() *PositionMutation {
 	return pu.mutation
+}
+
+// ClearEmployees clears all "employees" edges to the Employee entity.
+func (pu *PositionUpdate) ClearEmployees() *PositionUpdate {
+	pu.mutation.ClearEmployees()
+	return pu
+}
+
+// RemoveEmployeeIDs removes the "employees" edge to Employee entities by IDs.
+func (pu *PositionUpdate) RemoveEmployeeIDs(ids ...uuid.UUID) *PositionUpdate {
+	pu.mutation.RemoveEmployeeIDs(ids...)
+	return pu
+}
+
+// RemoveEmployees removes "employees" edges to Employee entities.
+func (pu *PositionUpdate) RemoveEmployees(e ...*Employee) *PositionUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return pu.RemoveEmployeeIDs(ids...)
+}
+
+// ClearDepartment clears the "department" edge to the Department entity.
+func (pu *PositionUpdate) ClearDepartment() *PositionUpdate {
+	pu.mutation.ClearDepartment()
+	return pu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -139,10 +188,8 @@ func (pu *PositionUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Position.name": %w`, err)}
 		}
 	}
-	if v, ok := pu.mutation.Code(); ok {
-		if err := position.CodeValidator(v); err != nil {
-			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Position.code": %w`, err)}
-		}
+	if pu.mutation.DepartmentCleared() && len(pu.mutation.DepartmentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Position.department"`)
 	}
 	return nil
 }
@@ -165,14 +212,85 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Code(); ok {
 		_spec.SetField(position.FieldCode, field.TypeString, value)
 	}
-	if value, ok := pu.mutation.DepartmentID(); ok {
-		_spec.SetField(position.FieldDepartmentID, field.TypeUUID, value)
-	}
 	if value, ok := pu.mutation.ParentID(); ok {
 		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
 	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(position.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if pu.mutation.EmployeesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.EmployeesTable,
+			Columns: []string{position.EmployeesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedEmployeesIDs(); len(nodes) > 0 && !pu.mutation.EmployeesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.EmployeesTable,
+			Columns: []string{position.EmployeesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.EmployeesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.EmployeesTable,
+			Columns: []string{position.EmployeesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.DepartmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -237,15 +355,15 @@ func (puo *PositionUpdateOne) SetNillableDepartmentID(u *uuid.UUID) *PositionUpd
 }
 
 // SetParentID sets the "parent_id" field.
-func (puo *PositionUpdateOne) SetParentID(uu uuid.NullUUID) *PositionUpdateOne {
-	puo.mutation.SetParentID(uu)
+func (puo *PositionUpdateOne) SetParentID(u uuid.UUID) *PositionUpdateOne {
+	puo.mutation.SetParentID(u)
 	return puo
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (puo *PositionUpdateOne) SetNillableParentID(uu *uuid.NullUUID) *PositionUpdateOne {
-	if uu != nil {
-		puo.SetParentID(*uu)
+func (puo *PositionUpdateOne) SetNillableParentID(u *uuid.UUID) *PositionUpdateOne {
+	if u != nil {
+		puo.SetParentID(*u)
 	}
 	return puo
 }
@@ -256,9 +374,56 @@ func (puo *PositionUpdateOne) SetUpdatedAt(t time.Time) *PositionUpdateOne {
 	return puo
 }
 
+// AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
+func (puo *PositionUpdateOne) AddEmployeeIDs(ids ...uuid.UUID) *PositionUpdateOne {
+	puo.mutation.AddEmployeeIDs(ids...)
+	return puo
+}
+
+// AddEmployees adds the "employees" edges to the Employee entity.
+func (puo *PositionUpdateOne) AddEmployees(e ...*Employee) *PositionUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return puo.AddEmployeeIDs(ids...)
+}
+
+// SetDepartment sets the "department" edge to the Department entity.
+func (puo *PositionUpdateOne) SetDepartment(d *Department) *PositionUpdateOne {
+	return puo.SetDepartmentID(d.ID)
+}
+
 // Mutation returns the PositionMutation object of the builder.
 func (puo *PositionUpdateOne) Mutation() *PositionMutation {
 	return puo.mutation
+}
+
+// ClearEmployees clears all "employees" edges to the Employee entity.
+func (puo *PositionUpdateOne) ClearEmployees() *PositionUpdateOne {
+	puo.mutation.ClearEmployees()
+	return puo
+}
+
+// RemoveEmployeeIDs removes the "employees" edge to Employee entities by IDs.
+func (puo *PositionUpdateOne) RemoveEmployeeIDs(ids ...uuid.UUID) *PositionUpdateOne {
+	puo.mutation.RemoveEmployeeIDs(ids...)
+	return puo
+}
+
+// RemoveEmployees removes "employees" edges to Employee entities.
+func (puo *PositionUpdateOne) RemoveEmployees(e ...*Employee) *PositionUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return puo.RemoveEmployeeIDs(ids...)
+}
+
+// ClearDepartment clears the "department" edge to the Department entity.
+func (puo *PositionUpdateOne) ClearDepartment() *PositionUpdateOne {
+	puo.mutation.ClearDepartment()
+	return puo
 }
 
 // Where appends a list predicates to the PositionUpdate builder.
@@ -317,10 +482,8 @@ func (puo *PositionUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Position.name": %w`, err)}
 		}
 	}
-	if v, ok := puo.mutation.Code(); ok {
-		if err := position.CodeValidator(v); err != nil {
-			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Position.code": %w`, err)}
-		}
+	if puo.mutation.DepartmentCleared() && len(puo.mutation.DepartmentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Position.department"`)
 	}
 	return nil
 }
@@ -360,14 +523,85 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 	if value, ok := puo.mutation.Code(); ok {
 		_spec.SetField(position.FieldCode, field.TypeString, value)
 	}
-	if value, ok := puo.mutation.DepartmentID(); ok {
-		_spec.SetField(position.FieldDepartmentID, field.TypeUUID, value)
-	}
 	if value, ok := puo.mutation.ParentID(); ok {
 		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(position.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if puo.mutation.EmployeesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.EmployeesTable,
+			Columns: []string{position.EmployeesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedEmployeesIDs(); len(nodes) > 0 && !puo.mutation.EmployeesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.EmployeesTable,
+			Columns: []string{position.EmployeesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.EmployeesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.EmployeesTable,
+			Columns: []string{position.EmployeesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.DepartmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Position{config: puo.config}
 	_spec.Assign = _node.assignValues

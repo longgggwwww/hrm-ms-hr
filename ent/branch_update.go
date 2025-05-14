@@ -72,6 +72,12 @@ func (bu *BranchUpdate) SetNillableAddress(s *string) *BranchUpdate {
 	return bu
 }
 
+// ClearAddress clears the value of the "address" field.
+func (bu *BranchUpdate) ClearAddress() *BranchUpdate {
+	bu.mutation.ClearAddress()
+	return bu
+}
+
 // SetContactInfo sets the "contact_info" field.
 func (bu *BranchUpdate) SetContactInfo(s string) *BranchUpdate {
 	bu.mutation.SetContactInfo(s)
@@ -86,17 +92,9 @@ func (bu *BranchUpdate) SetNillableContactInfo(s *string) *BranchUpdate {
 	return bu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (bu *BranchUpdate) SetCreatedAt(t time.Time) *BranchUpdate {
-	bu.mutation.SetCreatedAt(t)
-	return bu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (bu *BranchUpdate) SetNillableCreatedAt(t *time.Time) *BranchUpdate {
-	if t != nil {
-		bu.SetCreatedAt(*t)
-	}
+// ClearContactInfo clears the value of the "contact_info" field.
+func (bu *BranchUpdate) ClearContactInfo() *BranchUpdate {
+	bu.mutation.ClearContactInfo()
 	return bu
 }
 
@@ -190,11 +188,14 @@ func (bu *BranchUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.Address(); ok {
 		_spec.SetField(branch.FieldAddress, field.TypeString, value)
 	}
+	if bu.mutation.AddressCleared() {
+		_spec.ClearField(branch.FieldAddress, field.TypeString)
+	}
 	if value, ok := bu.mutation.ContactInfo(); ok {
 		_spec.SetField(branch.FieldContactInfo, field.TypeString, value)
 	}
-	if value, ok := bu.mutation.CreatedAt(); ok {
-		_spec.SetField(branch.FieldCreatedAt, field.TypeTime, value)
+	if bu.mutation.ContactInfoCleared() {
+		_spec.ClearField(branch.FieldContactInfo, field.TypeString)
 	}
 	if value, ok := bu.mutation.UpdatedAt(); ok {
 		_spec.SetField(branch.FieldUpdatedAt, field.TypeTime, value)
@@ -290,6 +291,12 @@ func (buo *BranchUpdateOne) SetNillableAddress(s *string) *BranchUpdateOne {
 	return buo
 }
 
+// ClearAddress clears the value of the "address" field.
+func (buo *BranchUpdateOne) ClearAddress() *BranchUpdateOne {
+	buo.mutation.ClearAddress()
+	return buo
+}
+
 // SetContactInfo sets the "contact_info" field.
 func (buo *BranchUpdateOne) SetContactInfo(s string) *BranchUpdateOne {
 	buo.mutation.SetContactInfo(s)
@@ -304,17 +311,9 @@ func (buo *BranchUpdateOne) SetNillableContactInfo(s *string) *BranchUpdateOne {
 	return buo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (buo *BranchUpdateOne) SetCreatedAt(t time.Time) *BranchUpdateOne {
-	buo.mutation.SetCreatedAt(t)
-	return buo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (buo *BranchUpdateOne) SetNillableCreatedAt(t *time.Time) *BranchUpdateOne {
-	if t != nil {
-		buo.SetCreatedAt(*t)
-	}
+// ClearContactInfo clears the value of the "contact_info" field.
+func (buo *BranchUpdateOne) ClearContactInfo() *BranchUpdateOne {
+	buo.mutation.ClearContactInfo()
 	return buo
 }
 
@@ -438,11 +437,14 @@ func (buo *BranchUpdateOne) sqlSave(ctx context.Context) (_node *Branch, err err
 	if value, ok := buo.mutation.Address(); ok {
 		_spec.SetField(branch.FieldAddress, field.TypeString, value)
 	}
+	if buo.mutation.AddressCleared() {
+		_spec.ClearField(branch.FieldAddress, field.TypeString)
+	}
 	if value, ok := buo.mutation.ContactInfo(); ok {
 		_spec.SetField(branch.FieldContactInfo, field.TypeString, value)
 	}
-	if value, ok := buo.mutation.CreatedAt(); ok {
-		_spec.SetField(branch.FieldCreatedAt, field.TypeTime, value)
+	if buo.mutation.ContactInfoCleared() {
+		_spec.ClearField(branch.FieldContactInfo, field.TypeString)
 	}
 	if value, ok := buo.mutation.UpdatedAt(); ok {
 		_spec.SetField(branch.FieldUpdatedAt, field.TypeTime, value)

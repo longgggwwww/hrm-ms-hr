@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -32,8 +33,17 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDepartmentID holds the string denoting the department_id field in the database.
 	FieldDepartmentID = "department_id"
+	// EdgePosition holds the string denoting the position edge name in mutations.
+	EdgePosition = "position"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
+	// PositionTable is the table that holds the position relation/edge.
+	PositionTable = "employees"
+	// PositionInverseTable is the table name for the Position entity.
+	// It exists in this package in order to avoid circular dependency with the "position" package.
+	PositionInverseTable = "positions"
+	// PositionColumn is the table column denoting the position relation/edge.
+	PositionColumn = "position_id"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -122,4 +132,18 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByDepartmentID orders the results by the department_id field.
 func ByDepartmentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDepartmentID, opts...).ToFunc()
+}
+
+// ByPositionField orders the results by position field.
+func ByPositionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPositionStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newPositionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PositionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, PositionTable, PositionColumn),
+	)
 }

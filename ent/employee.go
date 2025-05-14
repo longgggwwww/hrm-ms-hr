@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
 // Employee is the model entity for the Employee schema.
@@ -36,7 +37,30 @@ type Employee struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// DepartmentID holds the value of the "department_id" field.
 	DepartmentID uuid.UUID `json:"department_id,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the EmployeeQuery when eager-loading is set.
+	Edges        EmployeeEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// EmployeeEdges holds the relations/edges for other nodes in the graph.
+type EmployeeEdges struct {
+	// Position holds the value of the position edge.
+	Position *Position `json:"position,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PositionOrErr returns the Position value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e EmployeeEdges) PositionOrErr() (*Position, error) {
+	if e.Position != nil {
+		return e.Position, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: position.Label}
+	}
+	return nil, &NotLoadedError{edge: "position"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -138,6 +162,11 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (e *Employee) Value(name string) (ent.Value, error) {
 	return e.selectValues.Get(name)
+}
+
+// QueryPosition queries the "position" edge of the Employee entity.
+func (e *Employee) QueryPosition() *PositionQuery {
+	return NewEmployeeClient(e.config).QueryPosition(e)
 }
 
 // Update returns a builder for updating this Employee.

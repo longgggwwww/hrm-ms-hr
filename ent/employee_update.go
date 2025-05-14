@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
@@ -147,9 +148,20 @@ func (eu *EmployeeUpdate) SetNillableDepartmentID(u *uuid.UUID) *EmployeeUpdate 
 	return eu
 }
 
+// SetPosition sets the "position" edge to the Position entity.
+func (eu *EmployeeUpdate) SetPosition(p *Position) *EmployeeUpdate {
+	return eu.SetPositionID(p.ID)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (eu *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return eu.mutation
+}
+
+// ClearPosition clears the "position" edge to the Position entity.
+func (eu *EmployeeUpdate) ClearPosition() *EmployeeUpdate {
+	eu.mutation.ClearPosition()
+	return eu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -188,7 +200,18 @@ func (eu *EmployeeUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (eu *EmployeeUpdate) check() error {
+	if eu.mutation.PositionCleared() && len(eu.mutation.PositionIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Employee.position"`)
+	}
+	return nil
+}
+
 func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := eu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
 	if ps := eu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -206,9 +229,6 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := eu.mutation.Status(); ok {
 		_spec.SetField(employee.FieldStatus, field.TypeBool, value)
 	}
-	if value, ok := eu.mutation.PositionID(); ok {
-		_spec.SetField(employee.FieldPositionID, field.TypeUUID, value)
-	}
 	if value, ok := eu.mutation.JoiningAt(); ok {
 		_spec.SetField(employee.FieldJoiningAt, field.TypeTime, value)
 	}
@@ -223,6 +243,35 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := eu.mutation.DepartmentID(); ok {
 		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
+	}
+	if eu.mutation.PositionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   employee.PositionTable,
+			Columns: []string{employee.PositionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.PositionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   employee.PositionTable,
+			Columns: []string{employee.PositionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -362,9 +411,20 @@ func (euo *EmployeeUpdateOne) SetNillableDepartmentID(u *uuid.UUID) *EmployeeUpd
 	return euo
 }
 
+// SetPosition sets the "position" edge to the Position entity.
+func (euo *EmployeeUpdateOne) SetPosition(p *Position) *EmployeeUpdateOne {
+	return euo.SetPositionID(p.ID)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (euo *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return euo.mutation
+}
+
+// ClearPosition clears the "position" edge to the Position entity.
+func (euo *EmployeeUpdateOne) ClearPosition() *EmployeeUpdateOne {
+	euo.mutation.ClearPosition()
+	return euo
 }
 
 // Where appends a list predicates to the EmployeeUpdate builder.
@@ -416,7 +476,18 @@ func (euo *EmployeeUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (euo *EmployeeUpdateOne) check() error {
+	if euo.mutation.PositionCleared() && len(euo.mutation.PositionIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Employee.position"`)
+	}
+	return nil
+}
+
 func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err error) {
+	if err := euo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
 	id, ok := euo.mutation.ID()
 	if !ok {
@@ -451,9 +522,6 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 	if value, ok := euo.mutation.Status(); ok {
 		_spec.SetField(employee.FieldStatus, field.TypeBool, value)
 	}
-	if value, ok := euo.mutation.PositionID(); ok {
-		_spec.SetField(employee.FieldPositionID, field.TypeUUID, value)
-	}
 	if value, ok := euo.mutation.JoiningAt(); ok {
 		_spec.SetField(employee.FieldJoiningAt, field.TypeTime, value)
 	}
@@ -468,6 +536,35 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 	}
 	if value, ok := euo.mutation.DepartmentID(); ok {
 		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
+	}
+	if euo.mutation.PositionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   employee.PositionTable,
+			Columns: []string{employee.PositionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.PositionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   employee.PositionTable,
+			Columns: []string{employee.PositionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Employee{config: euo.config}
 	_spec.Assign = _node.assignValues

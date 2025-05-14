@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,6 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
@@ -19,10 +22,12 @@ import (
 // PositionQuery is the builder for querying Position entities.
 type PositionQuery struct {
 	config
-	ctx        *QueryContext
-	order      []position.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Position
+	ctx            *QueryContext
+	order          []position.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Position
+	withEmployees  *EmployeeQuery
+	withDepartment *DepartmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +62,50 @@ func (pq *PositionQuery) Unique(unique bool) *PositionQuery {
 func (pq *PositionQuery) Order(o ...position.OrderOption) *PositionQuery {
 	pq.order = append(pq.order, o...)
 	return pq
+}
+
+// QueryEmployees chains the current query on the "employees" edge.
+func (pq *PositionQuery) QueryEmployees() *EmployeeQuery {
+	query := (&EmployeeClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(position.Table, position.FieldID, selector),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, position.EmployeesTable, position.EmployeesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDepartment chains the current query on the "department" edge.
+func (pq *PositionQuery) QueryDepartment() *DepartmentQuery {
+	query := (&DepartmentClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(position.Table, position.FieldID, selector),
+			sqlgraph.To(department.Table, department.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, position.DepartmentTable, position.DepartmentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Position entity from the query.
@@ -246,15 +295,39 @@ func (pq *PositionQuery) Clone() *PositionQuery {
 		return nil
 	}
 	return &PositionQuery{
-		config:     pq.config,
-		ctx:        pq.ctx.Clone(),
-		order:      append([]position.OrderOption{}, pq.order...),
-		inters:     append([]Interceptor{}, pq.inters...),
-		predicates: append([]predicate.Position{}, pq.predicates...),
+		config:         pq.config,
+		ctx:            pq.ctx.Clone(),
+		order:          append([]position.OrderOption{}, pq.order...),
+		inters:         append([]Interceptor{}, pq.inters...),
+		predicates:     append([]predicate.Position{}, pq.predicates...),
+		withEmployees:  pq.withEmployees.Clone(),
+		withDepartment: pq.withDepartment.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
 	}
+}
+
+// WithEmployees tells the query-builder to eager-load the nodes that are connected to
+// the "employees" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PositionQuery) WithEmployees(opts ...func(*EmployeeQuery)) *PositionQuery {
+	query := (&EmployeeClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withEmployees = query
+	return pq
+}
+
+// WithDepartment tells the query-builder to eager-load the nodes that are connected to
+// the "department" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PositionQuery) WithDepartment(opts ...func(*DepartmentQuery)) *PositionQuery {
+	query := (&DepartmentClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withDepartment = query
+	return pq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,8 +406,12 @@ func (pq *PositionQuery) prepareQuery(ctx context.Context) error {
 
 func (pq *PositionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Position, error) {
 	var (
-		nodes = []*Position{}
-		_spec = pq.querySpec()
+		nodes       = []*Position{}
+		_spec       = pq.querySpec()
+		loadedTypes = [2]bool{
+			pq.withEmployees != nil,
+			pq.withDepartment != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Position).scanValues(nil, columns)
@@ -342,6 +419,7 @@ func (pq *PositionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pos
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Position{config: pq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -353,7 +431,80 @@ func (pq *PositionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pos
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := pq.withEmployees; query != nil {
+		if err := pq.loadEmployees(ctx, query, nodes,
+			func(n *Position) { n.Edges.Employees = []*Employee{} },
+			func(n *Position, e *Employee) { n.Edges.Employees = append(n.Edges.Employees, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withDepartment; query != nil {
+		if err := pq.loadDepartment(ctx, query, nodes, nil,
+			func(n *Position, e *Department) { n.Edges.Department = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (pq *PositionQuery) loadEmployees(ctx context.Context, query *EmployeeQuery, nodes []*Position, init func(*Position), assign func(*Position, *Employee)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Position)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(employee.FieldPositionID)
+	}
+	query.Where(predicate.Employee(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(position.EmployeesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.PositionID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "position_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (pq *PositionQuery) loadDepartment(ctx context.Context, query *DepartmentQuery, nodes []*Position, init func(*Position), assign func(*Position, *Department)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Position)
+	for i := range nodes {
+		fk := nodes[i].DepartmentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(department.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "department_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (pq *PositionQuery) sqlCount(ctx context.Context) (int, error) {
@@ -380,6 +531,9 @@ func (pq *PositionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != position.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if pq.withDepartment != nil {
+			_spec.Node.AddColumnOnce(position.FieldDepartmentID)
 		}
 	}
 	if ps := pq.predicates; len(ps) > 0 {

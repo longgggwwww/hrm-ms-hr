@@ -22,22 +22,27 @@ func (Company) Fields() []ent.Field {
 			Annotations(entproto.Field(1)),
 		field.String("name").
 			Annotations(entproto.Field(2)),
-		field.String("address").
+		field.String("code").
+			Unique().
 			Annotations(entproto.Field(3)),
+		field.String("address").
+			Optional().
+			Annotations(entproto.Field(5)),
 		field.Time("created_at").
+			Immutable().
 			Default(time.Now).
-			Annotations(entproto.Field(4)),
+			Annotations(entproto.Field(6)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
-			Annotations(entproto.Field(5)),
+			Annotations(entproto.Field(7)),
 	}
 }
 
 func (Company) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("branches", Branch.Type).
-			Annotations(entproto.Field(6)),
+			Annotations(entproto.Field(8)),
 	}
 }
 

@@ -40,9 +40,25 @@ func (bc *BranchCreate) SetAddress(s string) *BranchCreate {
 	return bc
 }
 
+// SetNillableAddress sets the "address" field if the given value is not nil.
+func (bc *BranchCreate) SetNillableAddress(s *string) *BranchCreate {
+	if s != nil {
+		bc.SetAddress(*s)
+	}
+	return bc
+}
+
 // SetContactInfo sets the "contact_info" field.
 func (bc *BranchCreate) SetContactInfo(s string) *BranchCreate {
 	bc.mutation.SetContactInfo(s)
+	return bc
+}
+
+// SetNillableContactInfo sets the "contact_info" field if the given value is not nil.
+func (bc *BranchCreate) SetNillableContactInfo(s *string) *BranchCreate {
+	if s != nil {
+		bc.SetContactInfo(*s)
+	}
 	return bc
 }
 
@@ -163,12 +179,6 @@ func (bc *BranchCreate) check() error {
 	}
 	if _, ok := bc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Branch.code"`)}
-	}
-	if _, ok := bc.mutation.Address(); !ok {
-		return &ValidationError{Name: "address", err: errors.New(`ent: missing required field "Branch.address"`)}
-	}
-	if _, ok := bc.mutation.ContactInfo(); !ok {
-		return &ValidationError{Name: "contact_info", err: errors.New(`ent: missing required field "Branch.contact_info"`)}
 	}
 	if _, ok := bc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Branch.created_at"`)}

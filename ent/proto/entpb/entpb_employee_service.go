@@ -11,6 +11,7 @@ import (
 	uuid "github.com/google/uuid"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -56,15 +57,24 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v.Id = id
 	joining_at := timestamppb.New(e.JoiningAt)
 	v.JoiningAt = joining_at
-	position_id, err := e.PositionID.MarshalBinary()
+	position, err := e.PositionID.MarshalBinary()
 	if err != nil {
 		return nil, err
 	}
-	v.PositionId = position_id
+	v.PositionId = position
 	status := e.Status
 	v.Status = status
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
+	if edg := e.Edges.Position; edg != nil {
+		id, err := edg.ID.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		v.Position = &Position{
+			Id: id,
+		}
+	}
 	return v, nil
 }
 
@@ -122,6 +132,9 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 	case GetEmployeeRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Employee.Query().
 			Where(employee.ID(id)).
+			WithPosition(func(query *ent.PositionQuery) {
+				query.Select(position.FieldID)
+			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -172,6 +185,13 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
+	if employee.GetPosition() != nil {
+		var employeePosition uuid.UUID
+		if err := (&employeePosition).UnmarshalBinary(employee.GetPosition().GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.SetPositionID(employeePosition)
+	}
 
 	res, err := m.Save(ctx)
 	switch {
@@ -244,6 +264,9 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 		entList, err = listQuery.All(ctx)
 	case ListEmployeeRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithPosition(func(query *ent.PositionQuery) {
+				query.Select(position.FieldID)
+			}).
 			All(ctx)
 	}
 	switch {
@@ -332,5 +355,12 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
+	if employee.GetPosition() != nil {
+		var employeePosition uuid.UUID
+		if err := (&employeePosition).UnmarshalBinary(employee.GetPosition().GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.SetPositionID(employeePosition)
+	}
 	return m, nil
 }

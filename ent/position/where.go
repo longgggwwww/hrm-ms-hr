@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
@@ -71,7 +72,7 @@ func DepartmentID(v uuid.UUID) predicate.Position {
 }
 
 // ParentID applies equality check predicate on the "parent_id" field. It's identical to ParentIDEQ.
-func ParentID(v uuid.NullUUID) predicate.Position {
+func ParentID(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldEQ(FieldParentID, v))
 }
 
@@ -235,63 +236,43 @@ func DepartmentIDNotIn(vs ...uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldNotIn(FieldDepartmentID, vs...))
 }
 
-// DepartmentIDGT applies the GT predicate on the "department_id" field.
-func DepartmentIDGT(v uuid.UUID) predicate.Position {
-	return predicate.Position(sql.FieldGT(FieldDepartmentID, v))
-}
-
-// DepartmentIDGTE applies the GTE predicate on the "department_id" field.
-func DepartmentIDGTE(v uuid.UUID) predicate.Position {
-	return predicate.Position(sql.FieldGTE(FieldDepartmentID, v))
-}
-
-// DepartmentIDLT applies the LT predicate on the "department_id" field.
-func DepartmentIDLT(v uuid.UUID) predicate.Position {
-	return predicate.Position(sql.FieldLT(FieldDepartmentID, v))
-}
-
-// DepartmentIDLTE applies the LTE predicate on the "department_id" field.
-func DepartmentIDLTE(v uuid.UUID) predicate.Position {
-	return predicate.Position(sql.FieldLTE(FieldDepartmentID, v))
-}
-
 // ParentIDEQ applies the EQ predicate on the "parent_id" field.
-func ParentIDEQ(v uuid.NullUUID) predicate.Position {
+func ParentIDEQ(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldEQ(FieldParentID, v))
 }
 
 // ParentIDNEQ applies the NEQ predicate on the "parent_id" field.
-func ParentIDNEQ(v uuid.NullUUID) predicate.Position {
+func ParentIDNEQ(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldNEQ(FieldParentID, v))
 }
 
 // ParentIDIn applies the In predicate on the "parent_id" field.
-func ParentIDIn(vs ...uuid.NullUUID) predicate.Position {
+func ParentIDIn(vs ...uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldIn(FieldParentID, vs...))
 }
 
 // ParentIDNotIn applies the NotIn predicate on the "parent_id" field.
-func ParentIDNotIn(vs ...uuid.NullUUID) predicate.Position {
+func ParentIDNotIn(vs ...uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldNotIn(FieldParentID, vs...))
 }
 
 // ParentIDGT applies the GT predicate on the "parent_id" field.
-func ParentIDGT(v uuid.NullUUID) predicate.Position {
+func ParentIDGT(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldGT(FieldParentID, v))
 }
 
 // ParentIDGTE applies the GTE predicate on the "parent_id" field.
-func ParentIDGTE(v uuid.NullUUID) predicate.Position {
+func ParentIDGTE(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldGTE(FieldParentID, v))
 }
 
 // ParentIDLT applies the LT predicate on the "parent_id" field.
-func ParentIDLT(v uuid.NullUUID) predicate.Position {
+func ParentIDLT(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldLT(FieldParentID, v))
 }
 
 // ParentIDLTE applies the LTE predicate on the "parent_id" field.
-func ParentIDLTE(v uuid.NullUUID) predicate.Position {
+func ParentIDLTE(v uuid.UUID) predicate.Position {
 	return predicate.Position(sql.FieldLTE(FieldParentID, v))
 }
 
@@ -373,6 +354,52 @@ func UpdatedAtLT(v time.Time) predicate.Position {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Position {
 	return predicate.Position(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasEmployees applies the HasEdge predicate on the "employees" edge.
+func HasEmployees() predicate.Position {
+	return predicate.Position(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, EmployeesTable, EmployeesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEmployeesWith applies the HasEdge predicate on the "employees" edge with a given conditions (other predicates).
+func HasEmployeesWith(preds ...predicate.Employee) predicate.Position {
+	return predicate.Position(func(s *sql.Selector) {
+		step := newEmployeesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDepartment applies the HasEdge predicate on the "department" edge.
+func HasDepartment() predicate.Position {
+	return predicate.Position(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DepartmentTable, DepartmentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDepartmentWith applies the HasEdge predicate on the "department" edge with a given conditions (other predicates).
+func HasDepartmentWith(preds ...predicate.Department) predicate.Position {
+	return predicate.Position(func(s *sql.Selector) {
+		step := newDepartmentStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

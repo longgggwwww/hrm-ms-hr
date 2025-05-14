@@ -26,10 +26,13 @@ func (Branch) Fields() []ent.Field {
 			Unique().
 			Annotations(entproto.Field(3)),
 		field.String("address").
+			Optional().
 			Annotations(entproto.Field(4)),
 		field.String("contact_info").
+			Optional().
 			Annotations(entproto.Field(5)),
 		field.Time("created_at").
+			Immutable().
 			Default(time.Now).
 			Annotations(entproto.Field(6)),
 		field.Time("updated_at").

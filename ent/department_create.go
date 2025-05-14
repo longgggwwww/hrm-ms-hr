@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
 // DepartmentCreate is the builder for creating a Department entity.
@@ -79,6 +80,21 @@ func (dc *DepartmentCreate) SetNillableID(u *uuid.UUID) *DepartmentCreate {
 		dc.SetID(*u)
 	}
 	return dc
+}
+
+// AddPositionIDs adds the "positions" edge to the Position entity by IDs.
+func (dc *DepartmentCreate) AddPositionIDs(ids ...uuid.UUID) *DepartmentCreate {
+	dc.mutation.AddPositionIDs(ids...)
+	return dc
+}
+
+// AddPositions adds the "positions" edges to the Position entity.
+func (dc *DepartmentCreate) AddPositions(p ...*Position) *DepartmentCreate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return dc.AddPositionIDs(ids...)
 }
 
 // Mutation returns the DepartmentMutation object of the builder.
@@ -201,6 +217,22 @@ func (dc *DepartmentCreate) createSpec() (*Department, *sqlgraph.CreateSpec) {
 	if value, ok := dc.mutation.UpdatedAt(); ok {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := dc.mutation.PositionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.PositionsTable,
+			Columns: []string{department.PositionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -10,6 +10,8 @@ import (
 	fmt "fmt"
 	uuid "github.com/google/uuid"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
+	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -37,11 +39,11 @@ func toProtoPosition(e *ent.Position) (*Position, error) {
 	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	department_id, err := e.DepartmentID.MarshalBinary()
+	department, err := e.DepartmentID.MarshalBinary()
 	if err != nil {
 		return nil, err
 	}
-	v.DepartmentId = department_id
+	v.DepartmentId = department
 	id, err := e.ID.MarshalBinary()
 	if err != nil {
 		return nil, err
@@ -56,6 +58,24 @@ func toProtoPosition(e *ent.Position) (*Position, error) {
 	v.ParentId = parent_id
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
+	if edg := e.Edges.Department; edg != nil {
+		id, err := edg.ID.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		v.Department = &Department{
+			Id: id,
+		}
+	}
+	for _, edg := range e.Edges.Employees {
+		id, err := edg.ID.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		v.Employees = append(v.Employees, &Employee{
+			Id: id,
+		})
+	}
 	return v, nil
 }
 
@@ -113,6 +133,12 @@ func (svc *PositionService) Get(ctx context.Context, req *GetPositionRequest) (*
 	case GetPositionRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Position.Query().
 			Where(position.ID(id)).
+			WithDepartment(func(query *ent.DepartmentQuery) {
+				query.Select(department.FieldID)
+			}).
+			WithEmployees(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -145,13 +171,27 @@ func (svc *PositionService) Update(ctx context.Context, req *UpdatePositionReque
 	m.SetDepartmentID(positionDepartmentID)
 	positionName := position.GetName()
 	m.SetName(positionName)
-	var positionParentID uuid.NullUUID
+	var positionParentID uuid.UUID
 	if err := (&positionParentID).UnmarshalBinary(position.GetParentId()); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}
 	m.SetParentID(positionParentID)
 	positionUpdatedAt := runtime.ExtractTime(position.GetUpdatedAt())
 	m.SetUpdatedAt(positionUpdatedAt)
+	if position.GetDepartment() != nil {
+		var positionDepartment uuid.UUID
+		if err := (&positionDepartment).UnmarshalBinary(position.GetDepartment().GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.SetDepartmentID(positionDepartment)
+	}
+	for _, item := range position.GetEmployees() {
+		var employees uuid.UUID
+		if err := (&employees).UnmarshalBinary(item.GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.AddEmployeeIDs(employees)
+	}
 
 	res, err := m.Save(ctx)
 	switch {
@@ -224,6 +264,12 @@ func (svc *PositionService) List(ctx context.Context, req *ListPositionRequest) 
 		entList, err = listQuery.All(ctx)
 	case ListPositionRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithDepartment(func(query *ent.DepartmentQuery) {
+				query.Select(department.FieldID)
+			}).
+			WithEmployees(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
 			All(ctx)
 	}
 	switch {
@@ -296,12 +342,26 @@ func (svc *PositionService) createBuilder(position *Position) (*ent.PositionCrea
 	m.SetDepartmentID(positionDepartmentID)
 	positionName := position.GetName()
 	m.SetName(positionName)
-	var positionParentID uuid.NullUUID
+	var positionParentID uuid.UUID
 	if err := (&positionParentID).UnmarshalBinary(position.GetParentId()); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
 	}
 	m.SetParentID(positionParentID)
 	positionUpdatedAt := runtime.ExtractTime(position.GetUpdatedAt())
 	m.SetUpdatedAt(positionUpdatedAt)
+	if position.GetDepartment() != nil {
+		var positionDepartment uuid.UUID
+		if err := (&positionDepartment).UnmarshalBinary(position.GetDepartment().GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.SetDepartmentID(positionDepartment)
+	}
+	for _, item := range position.GetEmployees() {
+		var employees uuid.UUID
+		if err := (&employees).UnmarshalBinary(item.GetId()); err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
+		}
+		m.AddEmployeeIDs(employees)
+	}
 	return m, nil
 }
