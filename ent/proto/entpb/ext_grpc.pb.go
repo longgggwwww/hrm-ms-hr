@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -29,7 +28,7 @@ const (
 //
 // Service definition
 type ExtServiceClient interface {
-	GetBranchByUserId(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Branch, error)
+	GetBranchByUserId(ctx context.Context, in *GetBranchByUserIdRequest, opts ...grpc.CallOption) (*Branch, error)
 }
 
 type extServiceClient struct {
@@ -40,7 +39,7 @@ func NewExtServiceClient(cc grpc.ClientConnInterface) ExtServiceClient {
 	return &extServiceClient{cc}
 }
 
-func (c *extServiceClient) GetBranchByUserId(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Branch, error) {
+func (c *extServiceClient) GetBranchByUserId(ctx context.Context, in *GetBranchByUserIdRequest, opts ...grpc.CallOption) (*Branch, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Branch)
 	err := c.cc.Invoke(ctx, ExtService_GetBranchByUserId_FullMethodName, in, out, cOpts...)
@@ -56,7 +55,7 @@ func (c *extServiceClient) GetBranchByUserId(ctx context.Context, in *emptypb.Em
 //
 // Service definition
 type ExtServiceServer interface {
-	GetBranchByUserId(context.Context, *emptypb.Empty) (*Branch, error)
+	GetBranchByUserId(context.Context, *GetBranchByUserIdRequest) (*Branch, error)
 	mustEmbedUnimplementedExtServiceServer()
 }
 
@@ -67,7 +66,7 @@ type ExtServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedExtServiceServer struct{}
 
-func (UnimplementedExtServiceServer) GetBranchByUserId(context.Context, *emptypb.Empty) (*Branch, error) {
+func (UnimplementedExtServiceServer) GetBranchByUserId(context.Context, *GetBranchByUserIdRequest) (*Branch, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBranchByUserId not implemented")
 }
 func (UnimplementedExtServiceServer) mustEmbedUnimplementedExtServiceServer() {}
@@ -92,7 +91,7 @@ func RegisterExtServiceServer(s grpc.ServiceRegistrar, srv ExtServiceServer) {
 }
 
 func _ExtService_GetBranchByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(GetBranchByUserIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -104,7 +103,7 @@ func _ExtService_GetBranchByUserId_Handler(srv interface{}, ctx context.Context,
 		FullMethod: ExtService_GetBranchByUserId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExtServiceServer).GetBranchByUserId(ctx, req.(*emptypb.Empty))
+		return srv.(ExtServiceServer).GetBranchByUserId(ctx, req.(*GetBranchByUserIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
