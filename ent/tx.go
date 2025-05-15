@@ -22,6 +22,10 @@ type Tx struct {
 	Employee *EmployeeClient
 	// Position is the client for interacting with the Position builders.
 	Position *PositionClient
+	// Project is the client for interacting with the Project builders.
+	Project *ProjectClient
+	// Task is the client for interacting with the Task builders.
+	Task *TaskClient
 
 	// lazily loaded.
 	client     *Client
@@ -158,6 +162,8 @@ func (tx *Tx) init() {
 	tx.Department = NewDepartmentClient(tx.config)
 	tx.Employee = NewEmployeeClient(tx.config)
 	tx.Position = NewPositionClient(tx.config)
+	tx.Project = NewProjectClient(tx.config)
+	tx.Task = NewTaskClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

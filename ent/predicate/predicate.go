@@ -20,3 +20,9 @@ type Employee func(*sql.Selector)
 
 // Position is the predicate function for position builders.
 type Position func(*sql.Selector)
+
+// Project is the predicate function for project builders.
+type Project func(*sql.Selector)
+
+// Task is the predicate function for task builders.
+type Task func(*sql.Selector)

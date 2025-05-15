@@ -21,6 +21,8 @@ func startGRPCServer(cli *ent.Client) {
 	employee := entpb.NewEmployeeService(cli)
 	position := entpb.NewPositionService(cli)
 	department := entpb.NewDepartmentService(cli)
+	project := entpb.NewProjectService(cli)
+	task := entpb.NewTaskService(cli)
 
 	server := grpc.NewServer()
 	fmt.Println("Starting gRPC server on port 5000...")
@@ -30,6 +32,8 @@ func startGRPCServer(cli *ent.Client) {
 	entpb.RegisterEmployeeServiceServer(server, employee)
 	entpb.RegisterPositionServiceServer(server, position)
 	entpb.RegisterDepartmentServiceServer(server, department)
+	entpb.RegisterProjectServiceServer(server, project)
+	entpb.RegisterTaskServiceServer(server, task)
 	entpb.RegisterExtServiceServer(server, entpb.NewExtService(cli))
 
 	lis, err := net.Listen("tcp", ":5000")

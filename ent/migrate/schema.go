@@ -114,6 +114,56 @@ var (
 			},
 		},
 	}
+	// ProjectsColumns holds the columns for the "projects" table.
+	ProjectsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "start_at", Type: field.TypeTime},
+		{Name: "end_at", Type: field.TypeTime, Nullable: true},
+		{Name: "creator_id", Type: field.TypeUUID},
+		{Name: "updater_id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "branch_id", Type: field.TypeUUID},
+		{Name: "process", Type: field.TypeInt},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"not_started", "in_progress", "completed"}, Default: "not_started"},
+	}
+	// ProjectsTable holds the schema information for the "projects" table.
+	ProjectsTable = &schema.Table{
+		Name:       "projects",
+		Columns:    ProjectsColumns,
+		PrimaryKey: []*schema.Column{ProjectsColumns[0]},
+	}
+	// TasksColumns holds the columns for the "tasks" table.
+	TasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "title", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "process", Type: field.TypeInt},
+		{Name: "status", Type: field.TypeBool},
+		{Name: "start_at", Type: field.TypeTime},
+		{Name: "branch_id", Type: field.TypeUUID},
+		{Name: "creator_id", Type: field.TypeUUID},
+		{Name: "updater_id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "project_id", Type: field.TypeUUID},
+	}
+	// TasksTable holds the schema information for the "tasks" table.
+	TasksTable = &schema.Table{
+		Name:       "tasks",
+		Columns:    TasksColumns,
+		PrimaryKey: []*schema.Column{TasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tasks_projects_tasks",
+				Columns:    []*schema.Column{TasksColumns[11]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		BranchesTable,
@@ -121,6 +171,8 @@ var (
 		DepartmentsTable,
 		EmployeesTable,
 		PositionsTable,
+		ProjectsTable,
+		TasksTable,
 	}
 )
 
@@ -128,4 +180,5 @@ func init() {
 	BranchesTable.ForeignKeys[0].RefTable = CompaniesTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
 	PositionsTable.ForeignKeys[0].RefTable = DepartmentsTable
+	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
 }
