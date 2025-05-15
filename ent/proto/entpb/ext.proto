@@ -6,9 +6,11 @@ import "entpb/entpb.proto";
 
 option go_package = "github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb";
 
-import "google/protobuf/empty.proto";
+message GetBranchByUserIdRequest {
+  string user_id = 1;
+}
 
 // Service definition
 service ExtService {
-  rpc GetBranchByUserId ( google.protobuf.Empty ) returns ( Branch );
+  rpc GetBranchByUserId (GetBranchByUserIdRequest) returns (Branch);
 }

@@ -9,8 +9,8 @@ package entpb
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
+	sync "sync"
 	unsafe "unsafe"
 )
 
@@ -21,21 +21,80 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type GetBranchByUserIdRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetBranchByUserIdRequest) Reset() {
+	*x = GetBranchByUserIdRequest{}
+	mi := &file_entpb_ext_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBranchByUserIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBranchByUserIdRequest) ProtoMessage() {}
+
+func (x *GetBranchByUserIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_ext_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBranchByUserIdRequest.ProtoReflect.Descriptor instead.
+func (*GetBranchByUserIdRequest) Descriptor() ([]byte, []int) {
+	return file_entpb_ext_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GetBranchByUserIdRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
 var File_entpb_ext_proto protoreflect.FileDescriptor
 
 const file_entpb_ext_proto_rawDesc = "" +
 	"\n" +
-	"\x0fentpb/ext.proto\x12\x05entpb\x1a\x11entpb/entpb.proto\x1a\x1bgoogle/protobuf/empty.proto2H\n" +
+	"\x0fentpb/ext.proto\x12\x05entpb\x1a\x11entpb/entpb.proto\"3\n" +
+	"\x18GetBranchByUserIdRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId2Q\n" +
 	"\n" +
-	"ExtService\x12:\n" +
-	"\x11GetBranchByUserId\x12\x16.google.protobuf.Empty\x1a\r.entpb.BranchB2Z0github.com/longgggwwww/hrm-ms-hr/ent/proto/entpbb\x06proto3"
+	"ExtService\x12C\n" +
+	"\x11GetBranchByUserId\x12\x1f.entpb.GetBranchByUserIdRequest\x1a\r.entpb.BranchB2Z0github.com/longgggwwww/hrm-ms-hr/ent/proto/entpbb\x06proto3"
 
+var (
+	file_entpb_ext_proto_rawDescOnce sync.Once
+	file_entpb_ext_proto_rawDescData []byte
+)
+
+func file_entpb_ext_proto_rawDescGZIP() []byte {
+	file_entpb_ext_proto_rawDescOnce.Do(func() {
+		file_entpb_ext_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_entpb_ext_proto_rawDesc), len(file_entpb_ext_proto_rawDesc)))
+	})
+	return file_entpb_ext_proto_rawDescData
+}
+
+var file_entpb_ext_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_entpb_ext_proto_goTypes = []any{
-	(*emptypb.Empty)(nil), // 0: google.protobuf.Empty
-	(*Branch)(nil),        // 1: entpb.Branch
+	(*GetBranchByUserIdRequest)(nil), // 0: entpb.GetBranchByUserIdRequest
+	(*Branch)(nil),                   // 1: entpb.Branch
 }
 var file_entpb_ext_proto_depIdxs = []int32{
-	0, // 0: entpb.ExtService.GetBranchByUserId:input_type -> google.protobuf.Empty
+	0, // 0: entpb.ExtService.GetBranchByUserId:input_type -> entpb.GetBranchByUserIdRequest
 	1, // 1: entpb.ExtService.GetBranchByUserId:output_type -> entpb.Branch
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
@@ -56,12 +115,13 @@ func file_entpb_ext_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_entpb_ext_proto_rawDesc), len(file_entpb_ext_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   0,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_entpb_ext_proto_goTypes,
 		DependencyIndexes: file_entpb_ext_proto_depIdxs,
+		MessageInfos:      file_entpb_ext_proto_msgTypes,
 	}.Build()
 	File_entpb_ext_proto = out.File
 	file_entpb_ext_proto_goTypes = nil

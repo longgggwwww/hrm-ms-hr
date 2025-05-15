@@ -5,7 +5,6 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -22,12 +21,9 @@ func NewExtService(client *ent.Client) *ExtService {
 		client: client,
 	}
 }
+func (s *ExtService) GetBranchByUserId(ctx context.Context, req *GetBranchByUserIdRequest) (*Branch, error) {
+	userID := req.GetUserId()
 
-func (s *ExtService) GetBranchByUserId(ctx context.Context, req *emptypb.Empty) (*Branch, error) {
-	// Retrieve userID from the request
-	userID := req.String()
-
-	// Query the employee by user ID
 	employee, err := s.client.Employee.
 		Query().
 		Where(employee.UserID(userID)).
@@ -36,14 +32,12 @@ func (s *ExtService) GetBranchByUserId(ctx context.Context, req *emptypb.Empty) 
 		return nil, err
 	}
 
-	// Query the branch by branch ID from the employee
 	branchEntity, err := s.client.Branch.
 		Get(ctx, employee.BranchID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Convert the branch entity to the protobuf Branch message
 	return &Branch{
 		Id:          branchEntity.ID[:],
 		Name:        branchEntity.Name,
