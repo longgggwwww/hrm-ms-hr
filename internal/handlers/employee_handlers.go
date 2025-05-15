@@ -22,15 +22,17 @@ func NewEmployeeHandler(client *ent.Client, userClient *pb.UserServiceClient) *E
 	}
 }
 
+// GetEmployees trả về danh sách tất cả nhân viên
 func (h *EmployeeHandler) GetEmployees(c *gin.Context) {
 	employees, err := h.Client.Employee.Query().All(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch employees"})
 		return
 	}
-	c.JSON(200, employees)
+	c.JSON(http.StatusOK, employees)
 }
 
+// GetEmployeeByID trả về thông tin nhân viên theo ID
 func (h *EmployeeHandler) GetEmployeeByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -40,16 +42,18 @@ func (h *EmployeeHandler) GetEmployeeByID(c *gin.Context) {
 
 	employee, err := h.Client.Employee.Get(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(404, gin.H{"error": "Employee not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
 		return
 	}
 	c.JSON(http.StatusOK, employee)
 }
 
+// UpdateEmployee cập nhật thông tin nhân viên (chưa implement)
 func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
-	// Implement the logic to update an existing employee
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
 }
 
+// DeleteEmployee xóa nhân viên theo ID
 func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -65,11 +69,11 @@ func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
 }
 
 func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
-	group := r.Group("/employees")
+	employees := r.Group("/employees")
 	{
-		group.GET("/", h.GetEmployees)
-		group.GET("/:id", h.GetEmployeeByID)
-		group.PUT("/:id", h.UpdateEmployee)
-		group.DELETE("/:id", h.DeleteEmployee)
+		employees.GET("/", h.GetEmployees)
+		employees.GET("/:id", h.GetEmployeeByID)
+		employees.PUT("/:id", h.UpdateEmployee)
+		employees.DELETE("/:id", h.DeleteEmployee)
 	}
 }

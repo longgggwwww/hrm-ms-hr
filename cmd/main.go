@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -15,26 +14,21 @@ import (
 	"google.golang.org/grpc"
 )
 
-func startGRPCServer(cli *ent.Client) {
-	branch := entpb.NewBranchService(cli)
-	company := entpb.NewCompanyService(cli)
-	employee := entpb.NewEmployeeService(cli)
-	position := entpb.NewPositionService(cli)
-	department := entpb.NewDepartmentService(cli)
-	project := entpb.NewProjectService(cli)
-	task := entpb.NewTaskService(cli)
-
-	server := grpc.NewServer()
-	fmt.Println("Starting gRPC server on port 5000...")
-
-	entpb.RegisterBranchServiceServer(server, branch)
-	entpb.RegisterCompanyServiceServer(server, company)
-	entpb.RegisterEmployeeServiceServer(server, employee)
-	entpb.RegisterPositionServiceServer(server, position)
-	entpb.RegisterDepartmentServiceServer(server, department)
-	entpb.RegisterProjectServiceServer(server, project)
-	entpb.RegisterTaskServiceServer(server, task)
+func registerGRPCServices(server *grpc.Server, cli *ent.Client) {
+	entpb.RegisterBranchServiceServer(server, entpb.NewBranchService(cli))
+	entpb.RegisterCompanyServiceServer(server, entpb.NewCompanyService(cli))
+	entpb.RegisterEmployeeServiceServer(server, entpb.NewEmployeeService(cli))
+	entpb.RegisterPositionServiceServer(server, entpb.NewPositionService(cli))
+	entpb.RegisterDepartmentServiceServer(server, entpb.NewDepartmentService(cli))
+	entpb.RegisterProjectServiceServer(server, entpb.NewProjectService(cli))
+	entpb.RegisterTaskServiceServer(server, entpb.NewTaskService(cli))
 	entpb.RegisterExtServiceServer(server, entpb.NewExtService(cli))
+}
+
+func startGRPCServer(cli *ent.Client) {
+	server := grpc.NewServer()
+	log.Println("Starting gRPC server on port 5000...")
+	registerGRPCServices(server, cli)
 
 	lis, err := net.Listen("tcp", ":5000")
 	if err != nil {
@@ -49,36 +43,53 @@ func startGRPCServer(cli *ent.Client) {
 func startHTTPServer(cli *ent.Client) {
 	r := gin.Default()
 
-	employee := handlers.NewEmployeeHandler(cli, nil)
-	employee.RegisterRoutes(r)
-	branch := handlers.NewBranchHandler(cli, nil)
-	branch.RegisterRoutes(r)
+	// Register all handlers and routes
+	handlersList := []struct {
+		register func(*gin.Engine)
+	}{
+		{handlers.NewEmployeeHandler(cli, nil).RegisterRoutes},
+		{handlers.NewBranchHandler(cli, nil).RegisterRoutes},
+	}
+	for _, h := range handlersList {
+		h.register(r)
+	}
 
 	if err := r.Run(":8080"); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
 }
 
-func main() {
-	DB_URL := os.Getenv("DB_URL")
-	if DB_URL == "" {
+// getDBClient loads the DB_URL from environment and returns a connected ent.Client.
+func getDBClient() *ent.Client {
+	connStr := os.Getenv("DB_URL")
+	if connStr == "" {
 		log.Fatal("DB_URL environment variable is not set")
 	}
-
-	cli, err := ent.Open("postgres", DB_URL)
+	client, err := ent.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
+	return client
+}
+
+// initUserClient initializes the gRPC user client.
+func initUserClient() (interface{}, error) {
+	return grpc_clients.NewUserClient()
+}
+
+func main() {
+	// Initialize database client
+	cli := getDBClient()
 	defer cli.Close()
 
 	// Initialize gRPC clients
-	userClient, err := grpc_clients.NewUserClient()
+	userClient, err := initUserClient()
 	if err != nil {
 		log.Fatalf("failed to initialize user client: %v", err)
 	}
+	log.Println("User client initialized successfully", userClient)
 
-	fmt.Println("User client initialized successfully", userClient)
-
+	// Start HTTP and gRPC servers
 	go startHTTPServer(cli)
 	startGRPCServer(cli)
 }

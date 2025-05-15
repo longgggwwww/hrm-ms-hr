@@ -1,7 +1,7 @@
 package grpc_clients
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	pb "github.com/huynhthanhthao/hrm_user_service/generated"
@@ -9,16 +9,17 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func NewUserClient() (*pb.UserServiceClient, error) {
+// NewUserClient creates and returns a new UserServiceClient connected to the USER_SERVICE address.
+func NewUserClient() (pb.UserServiceClient, error) {
 	url := os.Getenv("USER_SERVICE")
 	if url == "" {
-		return nil, log.Output(2, "USER_SERVICE environment variable is not set")
-	}
-	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("USER_SERVICE environment variable is not set")
 	}
 
-	client := pb.NewUserServiceClient(conn)
-	return &client, nil
+	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to user service: %w", err)
+	}
+
+	return pb.NewUserServiceClient(conn), nil
 }
