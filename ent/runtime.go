@@ -38,6 +38,14 @@ func init() {
 	branch.DefaultID = branchDescID.Default.(func() uuid.UUID)
 	companyFields := schema.Company{}.Fields()
 	_ = companyFields
+	// companyDescName is the schema descriptor for name field.
+	companyDescName := companyFields[1].Descriptor()
+	// company.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	company.NameValidator = companyDescName.Validators[0].(func(string) error)
+	// companyDescCode is the schema descriptor for code field.
+	companyDescCode := companyFields[2].Descriptor()
+	// company.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	company.CodeValidator = companyDescCode.Validators[0].(func(string) error)
 	// companyDescCreatedAt is the schema descriptor for created_at field.
 	companyDescCreatedAt := companyFields[4].Descriptor()
 	// company.DefaultCreatedAt holds the default value on creation for the created_at field.

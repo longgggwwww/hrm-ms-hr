@@ -159,8 +159,18 @@ func (cc *CompanyCreate) check() error {
 	if _, ok := cc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Company.name"`)}
 	}
+	if v, ok := cc.mutation.Name(); ok {
+		if err := company.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Company.name": %w`, err)}
+		}
+	}
 	if _, ok := cc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Company.code"`)}
+	}
+	if v, ok := cc.mutation.Code(); ok {
+		if err := company.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Company.code": %w`, err)}
+		}
 	}
 	if _, ok := cc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Company.created_at"`)}

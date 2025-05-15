@@ -97,6 +97,40 @@ func (h *BranchHandler) GetBranchFromToken(c *gin.Context) {
 	c.JSON(http.StatusOK, branch)
 }
 
+// CreateBranch tạo mới một chi nhánh
+func (h *BranchHandler) CreateBranch(c *gin.Context) {
+	var req struct {
+		Name        string `json:"name" binding:"required"`
+		Code        string `json:"code" binding:"required"`
+		CompanyID   string `json:"company_id" binding:"required"`
+		Address     string `json:"address"`
+		ContactInfo string `json:"contact_info"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	companyID, err := uuid.Parse(req.CompanyID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid company_id"})
+		return
+	}
+
+	branch, err := h.Client.Branch.Create().
+		SetName(req.Name).
+		SetCode(req.Code).
+		SetCompanyID(companyID).
+		SetNillableAddress(&req.Address).
+		SetNillableContactInfo(&req.ContactInfo).
+		Save(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, branch)
+}
+
 // UpdateBranch cập nhật thông tin chi nhánh (chưa implement)
 func (h *BranchHandler) UpdateBranch(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
@@ -123,6 +157,7 @@ func (h *BranchHandler) RegisterRoutes(r *gin.Engine) {
 		branches.GET("/", h.GetBranches)
 		branches.GET("/:id", h.GetBranchByID)
 		branches.GET("/from-token", h.GetBranchFromToken)
+		branches.POST("/", h.CreateBranch)
 		branches.PUT("/:id", h.UpdateBranch)
 		branches.DELETE("/:id", h.DeleteBranch)
 	}

@@ -21,8 +21,10 @@ func (Company) Fields() []ent.Field {
 			Default(uuid.New).
 			Annotations(entproto.Field(1)),
 		field.String("name").
+			NotEmpty().
 			Annotations(entproto.Field(2)),
 		field.String("code").
+			NotEmpty().
 			Unique().
 			Annotations(entproto.Field(3)),
 		field.String("address").
