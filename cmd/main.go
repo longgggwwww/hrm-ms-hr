@@ -11,6 +11,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb"
 	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
+	"github.com/longgggwwww/hrm-ms-hr/internal/handlers"
 	"google.golang.org/grpc"
 )
 
@@ -43,6 +44,11 @@ func startGRPCServer(cli *ent.Client) {
 
 func startHTTPServer(cli *ent.Client) {
 	r := gin.Default()
+
+	employee := handlers.NewEmployeeHandler(cli, nil)
+	employee.RegisterRoutes(r)
+	branch := handlers.NewBranchHandler(cli, nil)
+	branch.RegisterRoutes(r)
 
 	if err := r.Run(":8080"); err != nil {
 		log.Fatalf("failed to start server: %v", err)
