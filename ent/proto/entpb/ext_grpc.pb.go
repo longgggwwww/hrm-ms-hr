@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	ExtService_GetBranchByUserId_FullMethodName      = "/entpb.ExtService/GetBranchByUserId"
 	ExtService_DeleteEmployeeByUserId_FullMethodName = "/entpb.ExtService/DeleteEmployeeByUserId"
+	ExtService_GetEmployeeByUserId_FullMethodName    = "/entpb.ExtService/GetEmployeeByUserId"
 )
 
 // ExtServiceClient is the client API for ExtService service.
@@ -31,6 +32,7 @@ const (
 type ExtServiceClient interface {
 	GetBranchByUserId(ctx context.Context, in *GetBranchByUserIdRequest, opts ...grpc.CallOption) (*Branch, error)
 	DeleteEmployeeByUserId(ctx context.Context, in *DeleteEmployeeByUserIdRequest, opts ...grpc.CallOption) (*DeleteEmployeeByUserIdResponse, error)
+	GetEmployeeByUserId(ctx context.Context, in *GetEmployeeByUserIdRequest, opts ...grpc.CallOption) (*Employee, error)
 }
 
 type extServiceClient struct {
@@ -61,6 +63,16 @@ func (c *extServiceClient) DeleteEmployeeByUserId(ctx context.Context, in *Delet
 	return out, nil
 }
 
+func (c *extServiceClient) GetEmployeeByUserId(ctx context.Context, in *GetEmployeeByUserIdRequest, opts ...grpc.CallOption) (*Employee, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Employee)
+	err := c.cc.Invoke(ctx, ExtService_GetEmployeeByUserId_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExtServiceServer is the server API for ExtService service.
 // All implementations must embed UnimplementedExtServiceServer
 // for forward compatibility.
@@ -69,6 +81,7 @@ func (c *extServiceClient) DeleteEmployeeByUserId(ctx context.Context, in *Delet
 type ExtServiceServer interface {
 	GetBranchByUserId(context.Context, *GetBranchByUserIdRequest) (*Branch, error)
 	DeleteEmployeeByUserId(context.Context, *DeleteEmployeeByUserIdRequest) (*DeleteEmployeeByUserIdResponse, error)
+	GetEmployeeByUserId(context.Context, *GetEmployeeByUserIdRequest) (*Employee, error)
 	mustEmbedUnimplementedExtServiceServer()
 }
 
@@ -84,6 +97,9 @@ func (UnimplementedExtServiceServer) GetBranchByUserId(context.Context, *GetBran
 }
 func (UnimplementedExtServiceServer) DeleteEmployeeByUserId(context.Context, *DeleteEmployeeByUserIdRequest) (*DeleteEmployeeByUserIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteEmployeeByUserId not implemented")
+}
+func (UnimplementedExtServiceServer) GetEmployeeByUserId(context.Context, *GetEmployeeByUserIdRequest) (*Employee, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEmployeeByUserId not implemented")
 }
 func (UnimplementedExtServiceServer) mustEmbedUnimplementedExtServiceServer() {}
 func (UnimplementedExtServiceServer) testEmbeddedByValue()                    {}
@@ -142,6 +158,24 @@ func _ExtService_DeleteEmployeeByUserId_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExtService_GetEmployeeByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEmployeeByUserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExtServiceServer).GetEmployeeByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExtService_GetEmployeeByUserId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExtServiceServer).GetEmployeeByUserId(ctx, req.(*GetEmployeeByUserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExtService_ServiceDesc is the grpc.ServiceDesc for ExtService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -156,6 +190,10 @@ var ExtService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteEmployeeByUserId",
 			Handler:    _ExtService_DeleteEmployeeByUserId_Handler,
+		},
+		{
+			MethodName: "GetEmployeeByUserId",
+			Handler:    _ExtService_GetEmployeeByUserId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

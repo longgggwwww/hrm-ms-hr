@@ -67,3 +67,28 @@ func (s *ExtService) DeleteEmployeeByUserId(ctx context.Context, req *DeleteEmpl
 		Success: true,
 	}, nil
 }
+
+func (s *ExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeByUserIdRequest) (*Employee, error) {
+	userID := req.GetUserId()
+
+	emp, err := s.client.Employee.
+		Query().
+		Where(employee.UserID(userID)).
+		Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Employee{
+		Id:           emp.ID[:],
+		UserId:       emp.UserID,
+		Code:         emp.Code,
+		Status:       emp.Status,
+		PositionId:   emp.PositionID[:],
+		JoiningAt:    timestamppb.New(emp.JoiningAt),
+		BranchId:     emp.BranchID[:],
+		CreatedAt:    timestamppb.New(emp.CreatedAt),
+		UpdatedAt:    timestamppb.New(emp.UpdatedAt),
+		DepartmentId: emp.DepartmentID[:],
+	}, nil
+}
