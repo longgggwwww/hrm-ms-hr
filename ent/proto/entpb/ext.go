@@ -49,3 +49,21 @@ func (s *ExtService) GetBranchByUserId(ctx context.Context, req *GetBranchByUser
 		UpdatedAt:   timestamppb.New(branchEntity.UpdatedAt),
 	}, nil
 }
+
+func (s *ExtService) DeleteEmployeeByUserId(ctx context.Context, req *DeleteEmployeeByUserIdRequest) (*DeleteEmployeeByUserIdResponse, error) {
+	userID := req.GetUserId()
+
+	_, err := s.client.Employee.
+		Delete().
+		Where(employee.UserID(userID)).
+		Exec(ctx)
+	if err != nil {
+		return &DeleteEmployeeByUserIdResponse{
+			Success: false,
+		}, nil
+	}
+
+	return &DeleteEmployeeByUserIdResponse{
+		Success: true,
+	}, nil
+}
