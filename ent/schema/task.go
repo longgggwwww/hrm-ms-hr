@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // Task holds the schema definition for the Task entity.
@@ -19,29 +18,34 @@ type Task struct {
 // Fields of the Task.
 func (Task) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Annotations(entproto.Field(1)),
-		field.String("title").
+		field.String("name").
 			Annotations(entproto.Field(2)),
 		field.String("description").
 			Optional().
 			Annotations(entproto.Field(3)),
 		field.Int("process").
+			Default(0).
 			Annotations(entproto.Field(4)),
-		field.Bool("status").
-			Annotations(entproto.Field(5)),
+		field.Enum("status").
+			Values("not_started", "in_progress", "completed").
+			Default("not_started").
+			Annotations(entproto.Field(5), entproto.Enum(map[string]int32{
+				"not_started": 0,
+				"in_progress": 1,
+				"completed":   2,
+			})),
 		field.Time("start_at").
 			Annotations(entproto.Field(6)),
-		field.UUID("project_id", uuid.UUID{}).
+		field.Int("project_id").
 			Annotations(entproto.Field(7)),
-		field.UUID("branch_id", uuid.NullUUID{}).
+		field.Int("org_id").
 			Annotations(entproto.Field(8)),
-		field.UUID("creator_id", uuid.UUID{}).
+		field.Int("creator_id").
 			Annotations(entproto.Field(9)),
-		field.UUID("updater_id", uuid.NullUUID{}).
+		field.Int("updater_id").
 			Annotations(entproto.Field(10)),
 		field.Time("created_at").
+			Immutable().
 			Default(time.Now).
 			Annotations(entproto.Field(11)),
 		field.Time("updated_at").

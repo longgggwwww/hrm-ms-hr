@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // Position holds the schema definition for the Position entity.
@@ -19,18 +18,16 @@ type Position struct {
 // Fields of the Position.
 func (Position) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Annotations(entproto.Field(1)),
 		field.String("name").
 			NotEmpty().
 			Annotations(entproto.Field(2)),
 		field.String("code").
+			NotEmpty().
 			Unique().
 			Annotations(entproto.Field(3)),
-		field.UUID("department_id", uuid.UUID{}).
+		field.Int("department_id").
 			Annotations(entproto.Field(4)),
-		field.UUID("parent_id", uuid.UUID{}).
+		field.Int("parent_id").
 			Annotations(entproto.Field(5)),
 		field.Time("created_at").
 			Immutable().
