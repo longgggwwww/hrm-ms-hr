@@ -74,9 +74,21 @@ func (s *ExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeBy
 	emp, err := s.client.Employee.
 		Query().
 		Where(employee.UserID(userID)).
+		WithPosition().
 		Only(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	var position *Position
+	if emp.Edges.Position != nil {
+		position = &Position{
+			Id:        emp.Edges.Position.ID[:],
+			Name:      emp.Edges.Position.Name,
+			Code:      emp.Edges.Position.Code,
+			CreatedAt: timestamppb.New(emp.Edges.Position.CreatedAt),
+			UpdatedAt: timestamppb.New(emp.Edges.Position.UpdatedAt),
+		}
 	}
 
 	return &Employee{
@@ -90,5 +102,6 @@ func (s *ExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeBy
 		CreatedAt:    timestamppb.New(emp.CreatedAt),
 		UpdatedAt:    timestamppb.New(emp.UpdatedAt),
 		DepartmentId: emp.DepartmentID[:],
+		Position:     position,
 	}, nil
 }
