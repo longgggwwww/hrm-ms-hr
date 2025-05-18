@@ -16,6 +16,9 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/company"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -79,13 +82,16 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			branch.Table:     branch.ValidColumn,
-			company.Table:    company.ValidColumn,
-			department.Table: department.ValidColumn,
-			employee.Table:   employee.ValidColumn,
-			position.Table:   position.ValidColumn,
-			project.Table:    project.ValidColumn,
-			task.Table:       task.ValidColumn,
+			branch.Table:        branch.ValidColumn,
+			company.Table:       company.ValidColumn,
+			department.Table:    department.ValidColumn,
+			employee.Table:      employee.ValidColumn,
+			leaveapproval.Table: leaveapproval.ValidColumn,
+			leaverequest.Table:  leaverequest.ValidColumn,
+			organization.Table:  organization.ValidColumn,
+			position.Table:      position.ValidColumn,
+			project.Table:       project.ValidColumn,
+			task.Table:          task.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

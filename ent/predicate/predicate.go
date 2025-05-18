@@ -18,6 +18,15 @@ type Department func(*sql.Selector)
 // Employee is the predicate function for employee builders.
 type Employee func(*sql.Selector)
 
+// LeaveApproval is the predicate function for leaveapproval builders.
+type LeaveApproval func(*sql.Selector)
+
+// LeaveRequest is the predicate function for leaverequest builders.
+type LeaveRequest func(*sql.Selector)
+
+// Organization is the predicate function for organization builders.
+type Organization func(*sql.Selector)
+
 // Position is the predicate function for position builders.
 type Position func(*sql.Selector)
 
