@@ -11,162 +11,14 @@ import "google/protobuf/wrappers.proto";
 
 option go_package = "github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb";
 
-message Branch {
-  bytes id = 1;
-
-  string name = 2;
-
-  string code = 3;
-
-  bytes company_id = 5;
-
-  google.protobuf.StringValue address = 6;
-
-  google.protobuf.StringValue contact_info = 7;
-
-  google.protobuf.Timestamp created_at = 8;
-
-  google.protobuf.Timestamp updated_at = 9;
-
-  Company company = 10;
-}
-
-message CreateBranchRequest {
-  Branch branch = 1;
-}
-
-message GetBranchRequest {
-  bytes id = 1;
-
-  View view = 2;
-
-  enum View {
-    VIEW_UNSPECIFIED = 0;
-
-    BASIC = 1;
-
-    WITH_EDGE_IDS = 2;
-  }
-}
-
-message UpdateBranchRequest {
-  Branch branch = 1;
-}
-
-message DeleteBranchRequest {
-  bytes id = 1;
-}
-
-message ListBranchRequest {
-  int32 page_size = 1;
-
-  string page_token = 2;
-
-  View view = 3;
-
-  enum View {
-    VIEW_UNSPECIFIED = 0;
-
-    BASIC = 1;
-
-    WITH_EDGE_IDS = 2;
-  }
-}
-
-message ListBranchResponse {
-  repeated Branch branch_list = 1;
-
-  string next_page_token = 2;
-}
-
-message BatchCreateBranchesRequest {
-  repeated CreateBranchRequest requests = 1;
-}
-
-message BatchCreateBranchesResponse {
-  repeated Branch branches = 1;
-}
-
-message Company {
-  bytes id = 1;
-
-  string name = 2;
-
-  string code = 3;
-
-  google.protobuf.StringValue address = 5;
-
-  google.protobuf.Timestamp created_at = 6;
-
-  google.protobuf.Timestamp updated_at = 7;
-
-  repeated Branch branches = 8;
-}
-
-message CreateCompanyRequest {
-  Company company = 1;
-}
-
-message GetCompanyRequest {
-  bytes id = 1;
-
-  View view = 2;
-
-  enum View {
-    VIEW_UNSPECIFIED = 0;
-
-    BASIC = 1;
-
-    WITH_EDGE_IDS = 2;
-  }
-}
-
-message UpdateCompanyRequest {
-  Company company = 1;
-}
-
-message DeleteCompanyRequest {
-  bytes id = 1;
-}
-
-message ListCompanyRequest {
-  int32 page_size = 1;
-
-  string page_token = 2;
-
-  View view = 3;
-
-  enum View {
-    VIEW_UNSPECIFIED = 0;
-
-    BASIC = 1;
-
-    WITH_EDGE_IDS = 2;
-  }
-}
-
-message ListCompanyResponse {
-  repeated Company company_list = 1;
-
-  string next_page_token = 2;
-}
-
-message BatchCreateCompaniesRequest {
-  repeated CreateCompanyRequest requests = 1;
-}
-
-message BatchCreateCompaniesResponse {
-  repeated Company companies = 1;
-}
-
 message Department {
-  bytes id = 1;
+  int64 id = 1;
 
   string name = 2;
 
   string code = 3;
 
-  bytes branch_id = 4;
+  int64 org_id = 4;
 
   google.protobuf.Timestamp created_at = 5;
 
@@ -180,7 +32,7 @@ message CreateDepartmentRequest {
 }
 
 message GetDepartmentRequest {
-  bytes id = 1;
+  int64 id = 1;
 
   View view = 2;
 
@@ -198,7 +50,7 @@ message UpdateDepartmentRequest {
 }
 
 message DeleteDepartmentRequest {
-  bytes id = 1;
+  int64 id = 1;
 }
 
 message ListDepartmentRequest {
@@ -232,27 +84,31 @@ message BatchCreateDepartmentsResponse {
 }
 
 message Employee {
-  bytes id = 1;
+  int64 id = 1;
 
   string user_id = 2;
 
   string code = 3;
 
-  bool status = 4;
+  Status status = 4;
 
-  bytes position_id = 5;
+  int64 position_id = 5;
 
   google.protobuf.Timestamp joining_at = 6;
 
-  bytes branch_id = 7;
+  int64 org_id = 7;
 
   google.protobuf.Timestamp created_at = 8;
 
   google.protobuf.Timestamp updated_at = 9;
 
-  bytes department_id = 10;
+  Position position = 10;
 
-  Position position = 11;
+  enum Status {
+    STATUS_ACTIVE = 0;
+
+    STATUS_INACTIVE = 1;
+  }
 }
 
 message CreateEmployeeRequest {
@@ -260,7 +116,7 @@ message CreateEmployeeRequest {
 }
 
 message GetEmployeeRequest {
-  bytes id = 1;
+  int64 id = 1;
 
   View view = 2;
 
@@ -278,7 +134,7 @@ message UpdateEmployeeRequest {
 }
 
 message DeleteEmployeeRequest {
-  bytes id = 1;
+  int64 id = 1;
 }
 
 message ListEmployeeRequest {
@@ -476,7 +332,7 @@ message Organization {
 
   string code = 3;
 
-  google.protobuf.StringValue logo = 4;
+  google.protobuf.StringValue logo_url = 4;
 
   google.protobuf.StringValue address = 5;
 
@@ -492,9 +348,9 @@ message Organization {
 
   google.protobuf.Int64Value parent_id = 11;
 
-  repeated Organization children = 13;
-
   Organization parent = 12;
+
+  repeated Organization children = 13;
 }
 
 message CreateOrganizationRequest {
@@ -554,15 +410,15 @@ message BatchCreateOrganizationsResponse {
 }
 
 message Position {
-  bytes id = 1;
+  int64 id = 1;
 
   string name = 2;
 
   string code = 3;
 
-  bytes department_id = 4;
+  int64 department_id = 4;
 
-  bytes parent_id = 5;
+  google.protobuf.Int64Value parent_id = 5;
 
   google.protobuf.Timestamp created_at = 6;
 
@@ -571,6 +427,10 @@ message Position {
   repeated Employee employees = 8;
 
   Department department = 9;
+
+  repeated Position children = 10;
+
+  Position parent = 11;
 }
 
 message CreatePositionRequest {
@@ -578,7 +438,7 @@ message CreatePositionRequest {
 }
 
 message GetPositionRequest {
-  bytes id = 1;
+  int64 id = 1;
 
   View view = 2;
 
@@ -596,7 +456,7 @@ message UpdatePositionRequest {
 }
 
 message DeletePositionRequest {
-  bytes id = 1;
+  int64 id = 1;
 }
 
 message ListPositionRequest {
@@ -803,34 +663,6 @@ message BatchCreateTasksRequest {
 
 message BatchCreateTasksResponse {
   repeated Task tasks = 1;
-}
-
-service BranchService {
-  rpc Create ( CreateBranchRequest ) returns ( Branch );
-
-  rpc Get ( GetBranchRequest ) returns ( Branch );
-
-  rpc Update ( UpdateBranchRequest ) returns ( Branch );
-
-  rpc Delete ( DeleteBranchRequest ) returns ( google.protobuf.Empty );
-
-  rpc List ( ListBranchRequest ) returns ( ListBranchResponse );
-
-  rpc BatchCreate ( BatchCreateBranchesRequest ) returns ( BatchCreateBranchesResponse );
-}
-
-service CompanyService {
-  rpc Create ( CreateCompanyRequest ) returns ( Company );
-
-  rpc Get ( GetCompanyRequest ) returns ( Company );
-
-  rpc Update ( UpdateCompanyRequest ) returns ( Company );
-
-  rpc Delete ( DeleteCompanyRequest ) returns ( google.protobuf.Empty );
-
-  rpc List ( ListCompanyRequest ) returns ( ListCompanyResponse );
-
-  rpc BatchCreate ( BatchCreateCompaniesRequest ) returns ( BatchCreateCompaniesResponse );
 }
 
 service DepartmentService {

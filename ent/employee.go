@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
@@ -18,25 +17,23 @@ import (
 type Employee struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID string `json:"user_id,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Status holds the value of the "status" field.
-	Status bool `json:"status,omitempty"`
+	Status employee.Status `json:"status,omitempty"`
 	// PositionID holds the value of the "position_id" field.
-	PositionID uuid.UUID `json:"position_id,omitempty"`
+	PositionID int `json:"position_id,omitempty"`
 	// JoiningAt holds the value of the "joining_at" field.
 	JoiningAt time.Time `json:"joining_at,omitempty"`
-	// BranchID holds the value of the "branch_id" field.
-	BranchID uuid.UUID `json:"branch_id,omitempty"`
+	// OrgID holds the value of the "org_id" field.
+	OrgID int `json:"org_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// DepartmentID holds the value of the "department_id" field.
-	DepartmentID uuid.UUID `json:"department_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EmployeeQuery when eager-loading is set.
 	Edges        EmployeeEdges `json:"edges"`
@@ -68,14 +65,12 @@ func (*Employee) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case employee.FieldStatus:
-			values[i] = new(sql.NullBool)
-		case employee.FieldUserID, employee.FieldCode:
+		case employee.FieldID, employee.FieldPositionID, employee.FieldOrgID:
+			values[i] = new(sql.NullInt64)
+		case employee.FieldUserID, employee.FieldCode, employee.FieldStatus:
 			values[i] = new(sql.NullString)
 		case employee.FieldJoiningAt, employee.FieldCreatedAt, employee.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case employee.FieldID, employee.FieldPositionID, employee.FieldBranchID, employee.FieldDepartmentID:
-			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -92,11 +87,11 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case employee.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				e.ID = *value
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
 			}
+			e.ID = int(value.Int64)
 		case employee.FieldUserID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
@@ -110,16 +105,16 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 				e.Code = value.String
 			}
 		case employee.FieldStatus:
-			if value, ok := values[i].(*sql.NullBool); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				e.Status = value.Bool
+				e.Status = employee.Status(value.String)
 			}
 		case employee.FieldPositionID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field position_id", values[i])
-			} else if value != nil {
-				e.PositionID = *value
+			} else if value.Valid {
+				e.PositionID = int(value.Int64)
 			}
 		case employee.FieldJoiningAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -127,11 +122,11 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.JoiningAt = value.Time
 			}
-		case employee.FieldBranchID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field branch_id", values[i])
-			} else if value != nil {
-				e.BranchID = *value
+		case employee.FieldOrgID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field org_id", values[i])
+			} else if value.Valid {
+				e.OrgID = int(value.Int64)
 			}
 		case employee.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -144,12 +139,6 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				e.UpdatedAt = value.Time
-			}
-		case employee.FieldDepartmentID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field department_id", values[i])
-			} else if value != nil {
-				e.DepartmentID = *value
 			}
 		default:
 			e.selectValues.Set(columns[i], values[i])
@@ -207,17 +196,14 @@ func (e *Employee) String() string {
 	builder.WriteString("joining_at=")
 	builder.WriteString(e.JoiningAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("branch_id=")
-	builder.WriteString(fmt.Sprintf("%v", e.BranchID))
+	builder.WriteString("org_id=")
+	builder.WriteString(fmt.Sprintf("%v", e.OrgID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(e.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(e.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("department_id=")
-	builder.WriteString(fmt.Sprintf("%v", e.DepartmentID))
 	builder.WriteByte(')')
 	return builder.String()
 }

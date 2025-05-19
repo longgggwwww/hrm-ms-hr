@@ -1,0 +1,4 @@
+code,name,parent_code,logo_url,address,phone,email,website
+iit-jsc, CÔNG TY CỔ PHÀN IIT-JSC,,"https://www.iit.vn/assets/iit/logo.png","Số 38/2D Đường Mậu Thân, Phường An Hòa, Quận Ninh Kiều, Thành phố Cần Thơ, Việt Nam", 0368909968,info@iit.vn,https://iit.vn
+nha-in, CÔNG TY NHÀ IN,iit-jsc,,,,,
+bac-nam, CÔNG TY BẮC NAM,iit-jsc,,,,,

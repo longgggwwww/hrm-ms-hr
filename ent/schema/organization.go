@@ -19,29 +19,32 @@ type Organization struct {
 func (Organization) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
+			NotEmpty().
 			Annotations(entproto.Field(2)),
 		field.String("code").
+			NotEmpty().
+			Unique().
 			Annotations(entproto.Field(3)),
-		field.String("logo").
+		field.String("logo_url").
 			Annotations(entproto.Field(4)).
 			Optional().
-      Nillable(),
+			Nillable(),
 		field.String("address").
 			Annotations(entproto.Field(5)).
 			Optional().
-      Nillable(),
+			Nillable(),
 		field.String("phone").
 			Annotations(entproto.Field(6)).
 			Optional().
-      Nillable(),
+			Nillable(),
 		field.String("email").
 			Annotations(entproto.Field(7)).
 			Optional().
-      Nillable(),
+			Nillable(),
 		field.String("website").
 			Annotations(entproto.Field(8)).
 			Optional().
-      Nillable(),
+			Nillable(),
 		field.Time("created_at").
 			Annotations(entproto.Field(9)).
 			Default(time.Now),
@@ -59,16 +62,16 @@ func (Organization) Fields() []ent.Field {
 // Edges of the Organization.
 func (Organization) Edges() []ent.Edge {
 	return []ent.Edge{
-		// edge đến các công ty con
-		edge.To("children", Organization.Type).
-			Annotations(entproto.Field(13)), // QUAN TRỌNG: để entproto generate RPC field
-
 		// edge đến công ty cha
 		edge.From("parent", Organization.Type).
 			Ref("children").
 			Unique().
 			Field("parent_id").
 			Annotations(entproto.Field(12)),
+
+		// edge đến các công ty con
+		edge.To("children", Organization.Type).
+			Annotations(entproto.Field(13)), // QUAN TRỌNG: để entproto generate RPC field
 	}
 }
 

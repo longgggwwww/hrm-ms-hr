@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
@@ -107,8 +106,8 @@ func (eq *EmployeeQuery) FirstX(ctx context.Context) *Employee {
 
 // FirstID returns the first Employee ID from the query.
 // Returns a *NotFoundError when no Employee ID was found.
-func (eq *EmployeeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (eq *EmployeeQuery) FirstID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = eq.Limit(1).IDs(setContextOp(ctx, eq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -120,7 +119,7 @@ func (eq *EmployeeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (eq *EmployeeQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (eq *EmployeeQuery) FirstIDX(ctx context.Context) int {
 	id, err := eq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -158,8 +157,8 @@ func (eq *EmployeeQuery) OnlyX(ctx context.Context) *Employee {
 // OnlyID is like Only, but returns the only Employee ID in the query.
 // Returns a *NotSingularError when more than one Employee ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (eq *EmployeeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (eq *EmployeeQuery) OnlyID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = eq.Limit(2).IDs(setContextOp(ctx, eq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -175,7 +174,7 @@ func (eq *EmployeeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (eq *EmployeeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (eq *EmployeeQuery) OnlyIDX(ctx context.Context) int {
 	id, err := eq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -203,7 +202,7 @@ func (eq *EmployeeQuery) AllX(ctx context.Context) []*Employee {
 }
 
 // IDs executes the query and returns a list of Employee IDs.
-func (eq *EmployeeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+func (eq *EmployeeQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if eq.ctx.Unique == nil && eq.path != nil {
 		eq.Unique(true)
 	}
@@ -215,7 +214,7 @@ func (eq *EmployeeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (eq *EmployeeQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (eq *EmployeeQuery) IDsX(ctx context.Context) []int {
 	ids, err := eq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -403,8 +402,8 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 }
 
 func (eq *EmployeeQuery) loadPosition(ctx context.Context, query *PositionQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Position)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Employee)
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Employee)
 	for i := range nodes {
 		fk := nodes[i].PositionID
 		if _, ok := nodeids[fk]; !ok {
@@ -442,7 +441,7 @@ func (eq *EmployeeQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (eq *EmployeeQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewQuerySpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
 	_spec.From = eq.sql
 	if unique := eq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

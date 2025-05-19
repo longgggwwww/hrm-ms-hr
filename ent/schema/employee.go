@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // Employee holds the schema definition for the Employee entity.
@@ -19,22 +18,27 @@ type Employee struct {
 // Fields of the Employee.
 func (Employee) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Annotations(entproto.Field(1)),
 		field.String("user_id").
 			Unique().
 			Annotations(entproto.Field(2)),
 		field.String("code").
+			NotEmpty().
 			Unique().
 			Annotations(entproto.Field(3)),
-		field.Bool("status").
-			Annotations(entproto.Field(4)),
-		field.UUID("position_id", uuid.UUID{}).
+		field.Enum("status").
+			Values("active", "inactive").
+			Default("active").
+			Annotations(entproto.Field(4),
+				entproto.Enum(map[string]int32{
+					"active":   0,
+					"inactive": 1,
+				}),
+			),
+		field.Int("position_id").
 			Annotations(entproto.Field(5)),
 		field.Time("joining_at").
 			Annotations(entproto.Field(6)),
-		field.UUID("branch_id", uuid.UUID{}).
+		field.Int("org_id").
 			Annotations(entproto.Field(7)),
 		field.Time("created_at").
 			Default(time.Now).
@@ -43,8 +47,6 @@ func (Employee) Fields() []ent.Field {
 			Default(time.Now).
 			UpdateDefault(time.Now).
 			Annotations(entproto.Field(9)),
-		field.UUID("department_id", uuid.UUID{}).
-			Annotations(entproto.Field(10)),
 	}
 }
 
@@ -56,7 +58,7 @@ func (Employee) Edges() []ent.Edge {
 			Field("position_id").
 			Unique().
 			Required().
-			Annotations(entproto.Field(11)),
+			Annotations(entproto.Field(10)),
 	}
 }
 

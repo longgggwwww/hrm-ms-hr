@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
@@ -18,6 +19,7 @@ type LeaveApprovalCreate struct {
 	config
 	mutation *LeaveApprovalMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetComment sets the "comment" field.
@@ -141,6 +143,7 @@ func (lac *LeaveApprovalCreate) createSpec() (*LeaveApproval, *sqlgraph.CreateSp
 		_node = &LeaveApproval{config: lac.config}
 		_spec = sqlgraph.NewCreateSpec(leaveapproval.Table, sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = lac.conflict
 	if value, ok := lac.mutation.Comment(); ok {
 		_spec.SetField(leaveapproval.FieldComment, field.TypeString, value)
 		_node.Comment = &value
@@ -156,11 +159,225 @@ func (lac *LeaveApprovalCreate) createSpec() (*LeaveApproval, *sqlgraph.CreateSp
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.LeaveApproval.Create().
+//		SetComment(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LeaveApprovalUpsert) {
+//			SetComment(v+v).
+//		}).
+//		Exec(ctx)
+func (lac *LeaveApprovalCreate) OnConflict(opts ...sql.ConflictOption) *LeaveApprovalUpsertOne {
+	lac.conflict = opts
+	return &LeaveApprovalUpsertOne{
+		create: lac,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.LeaveApproval.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (lac *LeaveApprovalCreate) OnConflictColumns(columns ...string) *LeaveApprovalUpsertOne {
+	lac.conflict = append(lac.conflict, sql.ConflictColumns(columns...))
+	return &LeaveApprovalUpsertOne{
+		create: lac,
+	}
+}
+
+type (
+	// LeaveApprovalUpsertOne is the builder for "upsert"-ing
+	//  one LeaveApproval node.
+	LeaveApprovalUpsertOne struct {
+		create *LeaveApprovalCreate
+	}
+
+	// LeaveApprovalUpsert is the "OnConflict" setter.
+	LeaveApprovalUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetComment sets the "comment" field.
+func (u *LeaveApprovalUpsert) SetComment(v string) *LeaveApprovalUpsert {
+	u.Set(leaveapproval.FieldComment, v)
+	return u
+}
+
+// UpdateComment sets the "comment" field to the value that was provided on create.
+func (u *LeaveApprovalUpsert) UpdateComment() *LeaveApprovalUpsert {
+	u.SetExcluded(leaveapproval.FieldComment)
+	return u
+}
+
+// ClearComment clears the value of the "comment" field.
+func (u *LeaveApprovalUpsert) ClearComment() *LeaveApprovalUpsert {
+	u.SetNull(leaveapproval.FieldComment)
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *LeaveApprovalUpsert) SetCreatedAt(v time.Time) *LeaveApprovalUpsert {
+	u.Set(leaveapproval.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *LeaveApprovalUpsert) UpdateCreatedAt() *LeaveApprovalUpsert {
+	u.SetExcluded(leaveapproval.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *LeaveApprovalUpsert) SetUpdatedAt(v time.Time) *LeaveApprovalUpsert {
+	u.Set(leaveapproval.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *LeaveApprovalUpsert) UpdateUpdatedAt() *LeaveApprovalUpsert {
+	u.SetExcluded(leaveapproval.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.LeaveApproval.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *LeaveApprovalUpsertOne) UpdateNewValues() *LeaveApprovalUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.LeaveApproval.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *LeaveApprovalUpsertOne) Ignore() *LeaveApprovalUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LeaveApprovalUpsertOne) DoNothing() *LeaveApprovalUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LeaveApprovalCreate.OnConflict
+// documentation for more info.
+func (u *LeaveApprovalUpsertOne) Update(set func(*LeaveApprovalUpsert)) *LeaveApprovalUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LeaveApprovalUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetComment sets the "comment" field.
+func (u *LeaveApprovalUpsertOne) SetComment(v string) *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetComment(v)
+	})
+}
+
+// UpdateComment sets the "comment" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertOne) UpdateComment() *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateComment()
+	})
+}
+
+// ClearComment clears the value of the "comment" field.
+func (u *LeaveApprovalUpsertOne) ClearComment() *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.ClearComment()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *LeaveApprovalUpsertOne) SetCreatedAt(v time.Time) *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertOne) UpdateCreatedAt() *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *LeaveApprovalUpsertOne) SetUpdatedAt(v time.Time) *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertOne) UpdateUpdatedAt() *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *LeaveApprovalUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LeaveApprovalCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LeaveApprovalUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *LeaveApprovalUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *LeaveApprovalUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // LeaveApprovalCreateBulk is the builder for creating many LeaveApproval entities in bulk.
 type LeaveApprovalCreateBulk struct {
 	config
 	err      error
 	builders []*LeaveApprovalCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the LeaveApproval entities in the database.
@@ -190,6 +407,7 @@ func (lacb *LeaveApprovalCreateBulk) Save(ctx context.Context) ([]*LeaveApproval
 					_, err = mutators[i+1].Mutate(root, lacb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = lacb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, lacb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -240,6 +458,159 @@ func (lacb *LeaveApprovalCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (lacb *LeaveApprovalCreateBulk) ExecX(ctx context.Context) {
 	if err := lacb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.LeaveApproval.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.LeaveApprovalUpsert) {
+//			SetComment(v+v).
+//		}).
+//		Exec(ctx)
+func (lacb *LeaveApprovalCreateBulk) OnConflict(opts ...sql.ConflictOption) *LeaveApprovalUpsertBulk {
+	lacb.conflict = opts
+	return &LeaveApprovalUpsertBulk{
+		create: lacb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.LeaveApproval.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (lacb *LeaveApprovalCreateBulk) OnConflictColumns(columns ...string) *LeaveApprovalUpsertBulk {
+	lacb.conflict = append(lacb.conflict, sql.ConflictColumns(columns...))
+	return &LeaveApprovalUpsertBulk{
+		create: lacb,
+	}
+}
+
+// LeaveApprovalUpsertBulk is the builder for "upsert"-ing
+// a bulk of LeaveApproval nodes.
+type LeaveApprovalUpsertBulk struct {
+	create *LeaveApprovalCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.LeaveApproval.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *LeaveApprovalUpsertBulk) UpdateNewValues() *LeaveApprovalUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.LeaveApproval.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *LeaveApprovalUpsertBulk) Ignore() *LeaveApprovalUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *LeaveApprovalUpsertBulk) DoNothing() *LeaveApprovalUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the LeaveApprovalCreateBulk.OnConflict
+// documentation for more info.
+func (u *LeaveApprovalUpsertBulk) Update(set func(*LeaveApprovalUpsert)) *LeaveApprovalUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&LeaveApprovalUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetComment sets the "comment" field.
+func (u *LeaveApprovalUpsertBulk) SetComment(v string) *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetComment(v)
+	})
+}
+
+// UpdateComment sets the "comment" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertBulk) UpdateComment() *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateComment()
+	})
+}
+
+// ClearComment clears the value of the "comment" field.
+func (u *LeaveApprovalUpsertBulk) ClearComment() *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.ClearComment()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *LeaveApprovalUpsertBulk) SetCreatedAt(v time.Time) *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertBulk) UpdateCreatedAt() *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *LeaveApprovalUpsertBulk) SetUpdatedAt(v time.Time) *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertBulk) UpdateUpdatedAt() *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *LeaveApprovalUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the LeaveApprovalCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for LeaveApprovalCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *LeaveApprovalUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

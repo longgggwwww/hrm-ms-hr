@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	pb "github.com/huynhthanhthao/hrm_user_service/generated"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 )
 
 type EmployeeHandler struct {
@@ -34,18 +35,18 @@ func (h *EmployeeHandler) GetEmployees(c *gin.Context) {
 
 // GetEmployeeByID trả về thông tin nhân viên theo ID
 func (h *EmployeeHandler) GetEmployeeByID(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
 		return
 	}
 
-	employee, err := h.Client.Employee.Get(c.Request.Context(), id)
+	employeeObj, err := h.Client.Employee.Get(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
 		return
 	}
-	c.JSON(http.StatusOK, employee)
+	c.JSON(http.StatusOK, employeeObj)
 }
 
 // UpdateEmployee cập nhật thông tin nhân viên (chưa implement)
@@ -55,12 +56,12 @@ func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 
 // DeleteEmployee xóa nhân viên theo ID
 func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
 		return
 	}
-	err = h.Client.Employee.DeleteOneID(id).Exec(c.Request.Context())
+	_, err = h.Client.Employee.Delete().Where(employee.ID(id)).Exec(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
 		return

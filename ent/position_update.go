@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
@@ -60,30 +59,36 @@ func (pu *PositionUpdate) SetNillableCode(s *string) *PositionUpdate {
 }
 
 // SetDepartmentID sets the "department_id" field.
-func (pu *PositionUpdate) SetDepartmentID(u uuid.UUID) *PositionUpdate {
-	pu.mutation.SetDepartmentID(u)
+func (pu *PositionUpdate) SetDepartmentID(i int) *PositionUpdate {
+	pu.mutation.SetDepartmentID(i)
 	return pu
 }
 
 // SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
-func (pu *PositionUpdate) SetNillableDepartmentID(u *uuid.UUID) *PositionUpdate {
-	if u != nil {
-		pu.SetDepartmentID(*u)
+func (pu *PositionUpdate) SetNillableDepartmentID(i *int) *PositionUpdate {
+	if i != nil {
+		pu.SetDepartmentID(*i)
 	}
 	return pu
 }
 
 // SetParentID sets the "parent_id" field.
-func (pu *PositionUpdate) SetParentID(u uuid.UUID) *PositionUpdate {
-	pu.mutation.SetParentID(u)
+func (pu *PositionUpdate) SetParentID(i int) *PositionUpdate {
+	pu.mutation.SetParentID(i)
 	return pu
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (pu *PositionUpdate) SetNillableParentID(u *uuid.UUID) *PositionUpdate {
-	if u != nil {
-		pu.SetParentID(*u)
+func (pu *PositionUpdate) SetNillableParentID(i *int) *PositionUpdate {
+	if i != nil {
+		pu.SetParentID(*i)
 	}
+	return pu
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (pu *PositionUpdate) ClearParentID() *PositionUpdate {
+	pu.mutation.ClearParentID()
 	return pu
 }
 
@@ -94,14 +99,14 @@ func (pu *PositionUpdate) SetUpdatedAt(t time.Time) *PositionUpdate {
 }
 
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
-func (pu *PositionUpdate) AddEmployeeIDs(ids ...uuid.UUID) *PositionUpdate {
+func (pu *PositionUpdate) AddEmployeeIDs(ids ...int) *PositionUpdate {
 	pu.mutation.AddEmployeeIDs(ids...)
 	return pu
 }
 
 // AddEmployees adds the "employees" edges to the Employee entity.
 func (pu *PositionUpdate) AddEmployees(e ...*Employee) *PositionUpdate {
-	ids := make([]uuid.UUID, len(e))
+	ids := make([]int, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -111,6 +116,26 @@ func (pu *PositionUpdate) AddEmployees(e ...*Employee) *PositionUpdate {
 // SetDepartment sets the "department" edge to the Department entity.
 func (pu *PositionUpdate) SetDepartment(d *Department) *PositionUpdate {
 	return pu.SetDepartmentID(d.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Position entity by IDs.
+func (pu *PositionUpdate) AddChildIDs(ids ...int) *PositionUpdate {
+	pu.mutation.AddChildIDs(ids...)
+	return pu
+}
+
+// AddChildren adds the "children" edges to the Position entity.
+func (pu *PositionUpdate) AddChildren(p ...*Position) *PositionUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddChildIDs(ids...)
+}
+
+// SetParent sets the "parent" edge to the Position entity.
+func (pu *PositionUpdate) SetParent(p *Position) *PositionUpdate {
+	return pu.SetParentID(p.ID)
 }
 
 // Mutation returns the PositionMutation object of the builder.
@@ -125,14 +150,14 @@ func (pu *PositionUpdate) ClearEmployees() *PositionUpdate {
 }
 
 // RemoveEmployeeIDs removes the "employees" edge to Employee entities by IDs.
-func (pu *PositionUpdate) RemoveEmployeeIDs(ids ...uuid.UUID) *PositionUpdate {
+func (pu *PositionUpdate) RemoveEmployeeIDs(ids ...int) *PositionUpdate {
 	pu.mutation.RemoveEmployeeIDs(ids...)
 	return pu
 }
 
 // RemoveEmployees removes "employees" edges to Employee entities.
 func (pu *PositionUpdate) RemoveEmployees(e ...*Employee) *PositionUpdate {
-	ids := make([]uuid.UUID, len(e))
+	ids := make([]int, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -142,6 +167,33 @@ func (pu *PositionUpdate) RemoveEmployees(e ...*Employee) *PositionUpdate {
 // ClearDepartment clears the "department" edge to the Department entity.
 func (pu *PositionUpdate) ClearDepartment() *PositionUpdate {
 	pu.mutation.ClearDepartment()
+	return pu
+}
+
+// ClearChildren clears all "children" edges to the Position entity.
+func (pu *PositionUpdate) ClearChildren() *PositionUpdate {
+	pu.mutation.ClearChildren()
+	return pu
+}
+
+// RemoveChildIDs removes the "children" edge to Position entities by IDs.
+func (pu *PositionUpdate) RemoveChildIDs(ids ...int) *PositionUpdate {
+	pu.mutation.RemoveChildIDs(ids...)
+	return pu
+}
+
+// RemoveChildren removes "children" edges to Position entities.
+func (pu *PositionUpdate) RemoveChildren(p ...*Position) *PositionUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemoveChildIDs(ids...)
+}
+
+// ClearParent clears the "parent" edge to the Position entity.
+func (pu *PositionUpdate) ClearParent() *PositionUpdate {
+	pu.mutation.ClearParent()
 	return pu
 }
 
@@ -198,7 +250,7 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := pu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(position.Table, position.Columns, sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(position.Table, position.Columns, sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt))
 	if ps := pu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -212,9 +264,6 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Code(); ok {
 		_spec.SetField(position.FieldCode, field.TypeString, value)
 	}
-	if value, ok := pu.mutation.ParentID(); ok {
-		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
-	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(position.FieldUpdatedAt, field.TypeTime, value)
 	}
@@ -226,7 +275,7 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{position.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -239,7 +288,7 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{position.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -255,7 +304,7 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{position.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -271,7 +320,7 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -284,7 +333,81 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.ChildrenTable,
+			Columns: []string{position.ChildrenColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !pu.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.ChildrenTable,
+			Columns: []string{position.ChildrenColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.ChildrenTable,
+			Columns: []string{position.ChildrenColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.ParentTable,
+			Columns: []string{position.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.ParentTable,
+			Columns: []string{position.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -341,30 +464,36 @@ func (puo *PositionUpdateOne) SetNillableCode(s *string) *PositionUpdateOne {
 }
 
 // SetDepartmentID sets the "department_id" field.
-func (puo *PositionUpdateOne) SetDepartmentID(u uuid.UUID) *PositionUpdateOne {
-	puo.mutation.SetDepartmentID(u)
+func (puo *PositionUpdateOne) SetDepartmentID(i int) *PositionUpdateOne {
+	puo.mutation.SetDepartmentID(i)
 	return puo
 }
 
 // SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
-func (puo *PositionUpdateOne) SetNillableDepartmentID(u *uuid.UUID) *PositionUpdateOne {
-	if u != nil {
-		puo.SetDepartmentID(*u)
+func (puo *PositionUpdateOne) SetNillableDepartmentID(i *int) *PositionUpdateOne {
+	if i != nil {
+		puo.SetDepartmentID(*i)
 	}
 	return puo
 }
 
 // SetParentID sets the "parent_id" field.
-func (puo *PositionUpdateOne) SetParentID(u uuid.UUID) *PositionUpdateOne {
-	puo.mutation.SetParentID(u)
+func (puo *PositionUpdateOne) SetParentID(i int) *PositionUpdateOne {
+	puo.mutation.SetParentID(i)
 	return puo
 }
 
 // SetNillableParentID sets the "parent_id" field if the given value is not nil.
-func (puo *PositionUpdateOne) SetNillableParentID(u *uuid.UUID) *PositionUpdateOne {
-	if u != nil {
-		puo.SetParentID(*u)
+func (puo *PositionUpdateOne) SetNillableParentID(i *int) *PositionUpdateOne {
+	if i != nil {
+		puo.SetParentID(*i)
 	}
+	return puo
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (puo *PositionUpdateOne) ClearParentID() *PositionUpdateOne {
+	puo.mutation.ClearParentID()
 	return puo
 }
 
@@ -375,14 +504,14 @@ func (puo *PositionUpdateOne) SetUpdatedAt(t time.Time) *PositionUpdateOne {
 }
 
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
-func (puo *PositionUpdateOne) AddEmployeeIDs(ids ...uuid.UUID) *PositionUpdateOne {
+func (puo *PositionUpdateOne) AddEmployeeIDs(ids ...int) *PositionUpdateOne {
 	puo.mutation.AddEmployeeIDs(ids...)
 	return puo
 }
 
 // AddEmployees adds the "employees" edges to the Employee entity.
 func (puo *PositionUpdateOne) AddEmployees(e ...*Employee) *PositionUpdateOne {
-	ids := make([]uuid.UUID, len(e))
+	ids := make([]int, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -392,6 +521,26 @@ func (puo *PositionUpdateOne) AddEmployees(e ...*Employee) *PositionUpdateOne {
 // SetDepartment sets the "department" edge to the Department entity.
 func (puo *PositionUpdateOne) SetDepartment(d *Department) *PositionUpdateOne {
 	return puo.SetDepartmentID(d.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Position entity by IDs.
+func (puo *PositionUpdateOne) AddChildIDs(ids ...int) *PositionUpdateOne {
+	puo.mutation.AddChildIDs(ids...)
+	return puo
+}
+
+// AddChildren adds the "children" edges to the Position entity.
+func (puo *PositionUpdateOne) AddChildren(p ...*Position) *PositionUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddChildIDs(ids...)
+}
+
+// SetParent sets the "parent" edge to the Position entity.
+func (puo *PositionUpdateOne) SetParent(p *Position) *PositionUpdateOne {
+	return puo.SetParentID(p.ID)
 }
 
 // Mutation returns the PositionMutation object of the builder.
@@ -406,14 +555,14 @@ func (puo *PositionUpdateOne) ClearEmployees() *PositionUpdateOne {
 }
 
 // RemoveEmployeeIDs removes the "employees" edge to Employee entities by IDs.
-func (puo *PositionUpdateOne) RemoveEmployeeIDs(ids ...uuid.UUID) *PositionUpdateOne {
+func (puo *PositionUpdateOne) RemoveEmployeeIDs(ids ...int) *PositionUpdateOne {
 	puo.mutation.RemoveEmployeeIDs(ids...)
 	return puo
 }
 
 // RemoveEmployees removes "employees" edges to Employee entities.
 func (puo *PositionUpdateOne) RemoveEmployees(e ...*Employee) *PositionUpdateOne {
-	ids := make([]uuid.UUID, len(e))
+	ids := make([]int, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -423,6 +572,33 @@ func (puo *PositionUpdateOne) RemoveEmployees(e ...*Employee) *PositionUpdateOne
 // ClearDepartment clears the "department" edge to the Department entity.
 func (puo *PositionUpdateOne) ClearDepartment() *PositionUpdateOne {
 	puo.mutation.ClearDepartment()
+	return puo
+}
+
+// ClearChildren clears all "children" edges to the Position entity.
+func (puo *PositionUpdateOne) ClearChildren() *PositionUpdateOne {
+	puo.mutation.ClearChildren()
+	return puo
+}
+
+// RemoveChildIDs removes the "children" edge to Position entities by IDs.
+func (puo *PositionUpdateOne) RemoveChildIDs(ids ...int) *PositionUpdateOne {
+	puo.mutation.RemoveChildIDs(ids...)
+	return puo
+}
+
+// RemoveChildren removes "children" edges to Position entities.
+func (puo *PositionUpdateOne) RemoveChildren(p ...*Position) *PositionUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemoveChildIDs(ids...)
+}
+
+// ClearParent clears the "parent" edge to the Position entity.
+func (puo *PositionUpdateOne) ClearParent() *PositionUpdateOne {
+	puo.mutation.ClearParent()
 	return puo
 }
 
@@ -492,7 +668,7 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 	if err := puo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(position.Table, position.Columns, sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(position.Table, position.Columns, sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt))
 	id, ok := puo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Position.id" for update`)}
@@ -523,9 +699,6 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 	if value, ok := puo.mutation.Code(); ok {
 		_spec.SetField(position.FieldCode, field.TypeString, value)
 	}
-	if value, ok := puo.mutation.ParentID(); ok {
-		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
-	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(position.FieldUpdatedAt, field.TypeTime, value)
 	}
@@ -537,7 +710,7 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 			Columns: []string{position.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -550,7 +723,7 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 			Columns: []string{position.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -566,7 +739,7 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 			Columns: []string{position.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -582,7 +755,7 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -595,7 +768,81 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.ChildrenTable,
+			Columns: []string{position.ChildrenColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !puo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.ChildrenTable,
+			Columns: []string{position.ChildrenColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.ChildrenTable,
+			Columns: []string{position.ChildrenColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ParentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.ParentTable,
+			Columns: []string{position.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.ParentTable,
+			Columns: []string{position.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

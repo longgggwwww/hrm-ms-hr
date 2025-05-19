@@ -15,14 +15,12 @@ import (
 )
 
 func registerGRPCServices(server *grpc.Server, cli *ent.Client) {
-	entpb.RegisterBranchServiceServer(server, entpb.NewBranchService(cli))
-	entpb.RegisterCompanyServiceServer(server, entpb.NewCompanyService(cli))
-	entpb.RegisterEmployeeServiceServer(server, entpb.NewEmployeeService(cli))
-	entpb.RegisterPositionServiceServer(server, entpb.NewPositionService(cli))
+	entpb.RegisterOrganizationServiceServer(server, entpb.NewOrganizationService(cli))
 	entpb.RegisterDepartmentServiceServer(server, entpb.NewDepartmentService(cli))
+	entpb.RegisterPositionServiceServer(server, entpb.NewPositionService(cli))
+	entpb.RegisterEmployeeServiceServer(server, entpb.NewEmployeeService(cli))
 	entpb.RegisterProjectServiceServer(server, entpb.NewProjectService(cli))
 	entpb.RegisterTaskServiceServer(server, entpb.NewTaskService(cli))
-	entpb.RegisterExtServiceServer(server, entpb.NewExtService(cli))
 }
 
 func startGRPCServer(cli *ent.Client) {
@@ -48,8 +46,9 @@ func startHTTPServer(cli *ent.Client) {
 		register func(*gin.Engine)
 	}{
 		{handlers.NewEmployeeHandler(cli, nil).RegisterRoutes},
-		{handlers.NewBranchHandler(cli, nil).RegisterRoutes},
-		{handlers.NewCompanyHandler(cli, nil).RegisterRoutes},
+		{handlers.NewOrgHandler(cli, nil).RegisterRoutes},
+		{handlers.NewDepartmentHandler(cli, nil).RegisterRoutes},
+		{handlers.NewPositionHandler(cli, nil).RegisterRoutes},
 	}
 	for _, h := range handlersList {
 		h.register(r)

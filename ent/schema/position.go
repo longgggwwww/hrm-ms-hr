@@ -8,7 +8,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"entgo.io/ent/schema/index"
 )
 
 // Position holds the schema definition for the Position entity.
@@ -19,18 +19,15 @@ type Position struct {
 // Fields of the Position.
 func (Position) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Annotations(entproto.Field(1)),
 		field.String("name").
 			NotEmpty().
 			Annotations(entproto.Field(2)),
 		field.String("code").
-			Unique().
 			Annotations(entproto.Field(3)),
-		field.UUID("department_id", uuid.UUID{}).
+		field.Int("department_id").
 			Annotations(entproto.Field(4)),
-		field.UUID("parent_id", uuid.UUID{}).
+		field.Int("parent_id").
+			Optional().
 			Annotations(entproto.Field(5)),
 		field.Time("created_at").
 			Immutable().
@@ -54,11 +51,17 @@ func (Position) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Annotations(entproto.Field(9)),
-		// edge.To("children", Position.Type).
-		// 	From("parent").
-		// 	Unique().
-		// 	Field("parent_id").
-		// 	Annotations(entproto.Field(8)),
+
+		// edge đến con
+		edge.To("children", Position.Type).
+			Annotations(entproto.Field(10)), // QUAN TRỌNG: để entproto generate RPC field
+
+		// edge đến cha
+		edge.From("parent", Position.Type).
+			Ref("children").
+			Unique().
+			Field("parent_id").
+			Annotations(entproto.Field(11)),
 	}
 }
 
@@ -66,5 +69,11 @@ func (Position) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entproto.Message(),
 		entproto.Service(),
+	}
+}
+
+func (Position) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("department_id", "code").Unique(),
 	}
 }

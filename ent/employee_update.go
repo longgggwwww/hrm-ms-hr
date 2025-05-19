@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
@@ -59,29 +58,29 @@ func (eu *EmployeeUpdate) SetNillableCode(s *string) *EmployeeUpdate {
 }
 
 // SetStatus sets the "status" field.
-func (eu *EmployeeUpdate) SetStatus(b bool) *EmployeeUpdate {
-	eu.mutation.SetStatus(b)
+func (eu *EmployeeUpdate) SetStatus(e employee.Status) *EmployeeUpdate {
+	eu.mutation.SetStatus(e)
 	return eu
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (eu *EmployeeUpdate) SetNillableStatus(b *bool) *EmployeeUpdate {
-	if b != nil {
-		eu.SetStatus(*b)
+func (eu *EmployeeUpdate) SetNillableStatus(e *employee.Status) *EmployeeUpdate {
+	if e != nil {
+		eu.SetStatus(*e)
 	}
 	return eu
 }
 
 // SetPositionID sets the "position_id" field.
-func (eu *EmployeeUpdate) SetPositionID(u uuid.UUID) *EmployeeUpdate {
-	eu.mutation.SetPositionID(u)
+func (eu *EmployeeUpdate) SetPositionID(i int) *EmployeeUpdate {
+	eu.mutation.SetPositionID(i)
 	return eu
 }
 
 // SetNillablePositionID sets the "position_id" field if the given value is not nil.
-func (eu *EmployeeUpdate) SetNillablePositionID(u *uuid.UUID) *EmployeeUpdate {
-	if u != nil {
-		eu.SetPositionID(*u)
+func (eu *EmployeeUpdate) SetNillablePositionID(i *int) *EmployeeUpdate {
+	if i != nil {
+		eu.SetPositionID(*i)
 	}
 	return eu
 }
@@ -100,17 +99,24 @@ func (eu *EmployeeUpdate) SetNillableJoiningAt(t *time.Time) *EmployeeUpdate {
 	return eu
 }
 
-// SetBranchID sets the "branch_id" field.
-func (eu *EmployeeUpdate) SetBranchID(u uuid.UUID) *EmployeeUpdate {
-	eu.mutation.SetBranchID(u)
+// SetOrgID sets the "org_id" field.
+func (eu *EmployeeUpdate) SetOrgID(i int) *EmployeeUpdate {
+	eu.mutation.ResetOrgID()
+	eu.mutation.SetOrgID(i)
 	return eu
 }
 
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (eu *EmployeeUpdate) SetNillableBranchID(u *uuid.UUID) *EmployeeUpdate {
-	if u != nil {
-		eu.SetBranchID(*u)
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (eu *EmployeeUpdate) SetNillableOrgID(i *int) *EmployeeUpdate {
+	if i != nil {
+		eu.SetOrgID(*i)
 	}
+	return eu
+}
+
+// AddOrgID adds i to the "org_id" field.
+func (eu *EmployeeUpdate) AddOrgID(i int) *EmployeeUpdate {
+	eu.mutation.AddOrgID(i)
 	return eu
 }
 
@@ -131,20 +137,6 @@ func (eu *EmployeeUpdate) SetNillableCreatedAt(t *time.Time) *EmployeeUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (eu *EmployeeUpdate) SetUpdatedAt(t time.Time) *EmployeeUpdate {
 	eu.mutation.SetUpdatedAt(t)
-	return eu
-}
-
-// SetDepartmentID sets the "department_id" field.
-func (eu *EmployeeUpdate) SetDepartmentID(u uuid.UUID) *EmployeeUpdate {
-	eu.mutation.SetDepartmentID(u)
-	return eu
-}
-
-// SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
-func (eu *EmployeeUpdate) SetNillableDepartmentID(u *uuid.UUID) *EmployeeUpdate {
-	if u != nil {
-		eu.SetDepartmentID(*u)
-	}
 	return eu
 }
 
@@ -202,6 +194,16 @@ func (eu *EmployeeUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (eu *EmployeeUpdate) check() error {
+	if v, ok := eu.mutation.Code(); ok {
+		if err := employee.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Employee.code": %w`, err)}
+		}
+	}
+	if v, ok := eu.mutation.Status(); ok {
+		if err := employee.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Employee.status": %w`, err)}
+		}
+	}
 	if eu.mutation.PositionCleared() && len(eu.mutation.PositionIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Employee.position"`)
 	}
@@ -212,7 +214,7 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := eu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
 	if ps := eu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -227,22 +229,22 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(employee.FieldCode, field.TypeString, value)
 	}
 	if value, ok := eu.mutation.Status(); ok {
-		_spec.SetField(employee.FieldStatus, field.TypeBool, value)
+		_spec.SetField(employee.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := eu.mutation.JoiningAt(); ok {
 		_spec.SetField(employee.FieldJoiningAt, field.TypeTime, value)
 	}
-	if value, ok := eu.mutation.BranchID(); ok {
-		_spec.SetField(employee.FieldBranchID, field.TypeUUID, value)
+	if value, ok := eu.mutation.OrgID(); ok {
+		_spec.SetField(employee.FieldOrgID, field.TypeInt, value)
+	}
+	if value, ok := eu.mutation.AddedOrgID(); ok {
+		_spec.AddField(employee.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := eu.mutation.CreatedAt(); ok {
 		_spec.SetField(employee.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := eu.mutation.UpdatedAt(); ok {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := eu.mutation.DepartmentID(); ok {
-		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
 	}
 	if eu.mutation.PositionCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -252,7 +254,7 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{employee.PositionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -265,7 +267,7 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{employee.PositionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -322,29 +324,29 @@ func (euo *EmployeeUpdateOne) SetNillableCode(s *string) *EmployeeUpdateOne {
 }
 
 // SetStatus sets the "status" field.
-func (euo *EmployeeUpdateOne) SetStatus(b bool) *EmployeeUpdateOne {
-	euo.mutation.SetStatus(b)
+func (euo *EmployeeUpdateOne) SetStatus(e employee.Status) *EmployeeUpdateOne {
+	euo.mutation.SetStatus(e)
 	return euo
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (euo *EmployeeUpdateOne) SetNillableStatus(b *bool) *EmployeeUpdateOne {
-	if b != nil {
-		euo.SetStatus(*b)
+func (euo *EmployeeUpdateOne) SetNillableStatus(e *employee.Status) *EmployeeUpdateOne {
+	if e != nil {
+		euo.SetStatus(*e)
 	}
 	return euo
 }
 
 // SetPositionID sets the "position_id" field.
-func (euo *EmployeeUpdateOne) SetPositionID(u uuid.UUID) *EmployeeUpdateOne {
-	euo.mutation.SetPositionID(u)
+func (euo *EmployeeUpdateOne) SetPositionID(i int) *EmployeeUpdateOne {
+	euo.mutation.SetPositionID(i)
 	return euo
 }
 
 // SetNillablePositionID sets the "position_id" field if the given value is not nil.
-func (euo *EmployeeUpdateOne) SetNillablePositionID(u *uuid.UUID) *EmployeeUpdateOne {
-	if u != nil {
-		euo.SetPositionID(*u)
+func (euo *EmployeeUpdateOne) SetNillablePositionID(i *int) *EmployeeUpdateOne {
+	if i != nil {
+		euo.SetPositionID(*i)
 	}
 	return euo
 }
@@ -363,17 +365,24 @@ func (euo *EmployeeUpdateOne) SetNillableJoiningAt(t *time.Time) *EmployeeUpdate
 	return euo
 }
 
-// SetBranchID sets the "branch_id" field.
-func (euo *EmployeeUpdateOne) SetBranchID(u uuid.UUID) *EmployeeUpdateOne {
-	euo.mutation.SetBranchID(u)
+// SetOrgID sets the "org_id" field.
+func (euo *EmployeeUpdateOne) SetOrgID(i int) *EmployeeUpdateOne {
+	euo.mutation.ResetOrgID()
+	euo.mutation.SetOrgID(i)
 	return euo
 }
 
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (euo *EmployeeUpdateOne) SetNillableBranchID(u *uuid.UUID) *EmployeeUpdateOne {
-	if u != nil {
-		euo.SetBranchID(*u)
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (euo *EmployeeUpdateOne) SetNillableOrgID(i *int) *EmployeeUpdateOne {
+	if i != nil {
+		euo.SetOrgID(*i)
 	}
+	return euo
+}
+
+// AddOrgID adds i to the "org_id" field.
+func (euo *EmployeeUpdateOne) AddOrgID(i int) *EmployeeUpdateOne {
+	euo.mutation.AddOrgID(i)
 	return euo
 }
 
@@ -394,20 +403,6 @@ func (euo *EmployeeUpdateOne) SetNillableCreatedAt(t *time.Time) *EmployeeUpdate
 // SetUpdatedAt sets the "updated_at" field.
 func (euo *EmployeeUpdateOne) SetUpdatedAt(t time.Time) *EmployeeUpdateOne {
 	euo.mutation.SetUpdatedAt(t)
-	return euo
-}
-
-// SetDepartmentID sets the "department_id" field.
-func (euo *EmployeeUpdateOne) SetDepartmentID(u uuid.UUID) *EmployeeUpdateOne {
-	euo.mutation.SetDepartmentID(u)
-	return euo
-}
-
-// SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
-func (euo *EmployeeUpdateOne) SetNillableDepartmentID(u *uuid.UUID) *EmployeeUpdateOne {
-	if u != nil {
-		euo.SetDepartmentID(*u)
-	}
 	return euo
 }
 
@@ -478,6 +473,16 @@ func (euo *EmployeeUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (euo *EmployeeUpdateOne) check() error {
+	if v, ok := euo.mutation.Code(); ok {
+		if err := employee.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Employee.code": %w`, err)}
+		}
+	}
+	if v, ok := euo.mutation.Status(); ok {
+		if err := employee.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Employee.status": %w`, err)}
+		}
+	}
 	if euo.mutation.PositionCleared() && len(euo.mutation.PositionIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Employee.position"`)
 	}
@@ -488,7 +493,7 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 	if err := euo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
 	id, ok := euo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Employee.id" for update`)}
@@ -520,22 +525,22 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 		_spec.SetField(employee.FieldCode, field.TypeString, value)
 	}
 	if value, ok := euo.mutation.Status(); ok {
-		_spec.SetField(employee.FieldStatus, field.TypeBool, value)
+		_spec.SetField(employee.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := euo.mutation.JoiningAt(); ok {
 		_spec.SetField(employee.FieldJoiningAt, field.TypeTime, value)
 	}
-	if value, ok := euo.mutation.BranchID(); ok {
-		_spec.SetField(employee.FieldBranchID, field.TypeUUID, value)
+	if value, ok := euo.mutation.OrgID(); ok {
+		_spec.SetField(employee.FieldOrgID, field.TypeInt, value)
+	}
+	if value, ok := euo.mutation.AddedOrgID(); ok {
+		_spec.AddField(employee.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := euo.mutation.CreatedAt(); ok {
 		_spec.SetField(employee.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := euo.mutation.UpdatedAt(); ok {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := euo.mutation.DepartmentID(); ok {
-		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
 	}
 	if euo.mutation.PositionCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -545,7 +550,7 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			Columns: []string{employee.PositionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -558,7 +563,7 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			Columns: []string{employee.PositionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

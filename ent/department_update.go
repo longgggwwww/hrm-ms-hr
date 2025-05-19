@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
@@ -58,17 +57,24 @@ func (du *DepartmentUpdate) SetNillableCode(s *string) *DepartmentUpdate {
 	return du
 }
 
-// SetBranchID sets the "branch_id" field.
-func (du *DepartmentUpdate) SetBranchID(u uuid.UUID) *DepartmentUpdate {
-	du.mutation.SetBranchID(u)
+// SetOrgID sets the "org_id" field.
+func (du *DepartmentUpdate) SetOrgID(i int) *DepartmentUpdate {
+	du.mutation.ResetOrgID()
+	du.mutation.SetOrgID(i)
 	return du
 }
 
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (du *DepartmentUpdate) SetNillableBranchID(u *uuid.UUID) *DepartmentUpdate {
-	if u != nil {
-		du.SetBranchID(*u)
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (du *DepartmentUpdate) SetNillableOrgID(i *int) *DepartmentUpdate {
+	if i != nil {
+		du.SetOrgID(*i)
 	}
+	return du
+}
+
+// AddOrgID adds i to the "org_id" field.
+func (du *DepartmentUpdate) AddOrgID(i int) *DepartmentUpdate {
+	du.mutation.AddOrgID(i)
 	return du
 }
 
@@ -101,14 +107,14 @@ func (du *DepartmentUpdate) SetNillableUpdatedAt(t *time.Time) *DepartmentUpdate
 }
 
 // AddPositionIDs adds the "positions" edge to the Position entity by IDs.
-func (du *DepartmentUpdate) AddPositionIDs(ids ...uuid.UUID) *DepartmentUpdate {
+func (du *DepartmentUpdate) AddPositionIDs(ids ...int) *DepartmentUpdate {
 	du.mutation.AddPositionIDs(ids...)
 	return du
 }
 
 // AddPositions adds the "positions" edges to the Position entity.
 func (du *DepartmentUpdate) AddPositions(p ...*Position) *DepartmentUpdate {
-	ids := make([]uuid.UUID, len(p))
+	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -127,14 +133,14 @@ func (du *DepartmentUpdate) ClearPositions() *DepartmentUpdate {
 }
 
 // RemovePositionIDs removes the "positions" edge to Position entities by IDs.
-func (du *DepartmentUpdate) RemovePositionIDs(ids ...uuid.UUID) *DepartmentUpdate {
+func (du *DepartmentUpdate) RemovePositionIDs(ids ...int) *DepartmentUpdate {
 	du.mutation.RemovePositionIDs(ids...)
 	return du
 }
 
 // RemovePositions removes "positions" edges to Position entities.
 func (du *DepartmentUpdate) RemovePositions(p ...*Position) *DepartmentUpdate {
-	ids := make([]uuid.UUID, len(p))
+	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -168,8 +174,26 @@ func (du *DepartmentUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (du *DepartmentUpdate) check() error {
+	if v, ok := du.mutation.Name(); ok {
+		if err := department.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Department.name": %w`, err)}
+		}
+	}
+	if v, ok := du.mutation.Code(); ok {
+		if err := department.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Department.code": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(department.Table, department.Columns, sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID))
+	if err := du.check(); err != nil {
+		return n, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(department.Table, department.Columns, sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt))
 	if ps := du.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -183,8 +207,11 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := du.mutation.Code(); ok {
 		_spec.SetField(department.FieldCode, field.TypeString, value)
 	}
-	if value, ok := du.mutation.BranchID(); ok {
-		_spec.SetField(department.FieldBranchID, field.TypeUUID, value)
+	if value, ok := du.mutation.OrgID(); ok {
+		_spec.SetField(department.FieldOrgID, field.TypeInt, value)
+	}
+	if value, ok := du.mutation.AddedOrgID(); ok {
+		_spec.AddField(department.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := du.mutation.CreatedAt(); ok {
 		_spec.SetField(department.FieldCreatedAt, field.TypeTime, value)
@@ -200,7 +227,7 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{department.PositionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -213,7 +240,7 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{department.PositionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -229,7 +256,7 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{department.PositionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -285,17 +312,24 @@ func (duo *DepartmentUpdateOne) SetNillableCode(s *string) *DepartmentUpdateOne 
 	return duo
 }
 
-// SetBranchID sets the "branch_id" field.
-func (duo *DepartmentUpdateOne) SetBranchID(u uuid.UUID) *DepartmentUpdateOne {
-	duo.mutation.SetBranchID(u)
+// SetOrgID sets the "org_id" field.
+func (duo *DepartmentUpdateOne) SetOrgID(i int) *DepartmentUpdateOne {
+	duo.mutation.ResetOrgID()
+	duo.mutation.SetOrgID(i)
 	return duo
 }
 
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (duo *DepartmentUpdateOne) SetNillableBranchID(u *uuid.UUID) *DepartmentUpdateOne {
-	if u != nil {
-		duo.SetBranchID(*u)
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (duo *DepartmentUpdateOne) SetNillableOrgID(i *int) *DepartmentUpdateOne {
+	if i != nil {
+		duo.SetOrgID(*i)
 	}
+	return duo
+}
+
+// AddOrgID adds i to the "org_id" field.
+func (duo *DepartmentUpdateOne) AddOrgID(i int) *DepartmentUpdateOne {
+	duo.mutation.AddOrgID(i)
 	return duo
 }
 
@@ -328,14 +362,14 @@ func (duo *DepartmentUpdateOne) SetNillableUpdatedAt(t *time.Time) *DepartmentUp
 }
 
 // AddPositionIDs adds the "positions" edge to the Position entity by IDs.
-func (duo *DepartmentUpdateOne) AddPositionIDs(ids ...uuid.UUID) *DepartmentUpdateOne {
+func (duo *DepartmentUpdateOne) AddPositionIDs(ids ...int) *DepartmentUpdateOne {
 	duo.mutation.AddPositionIDs(ids...)
 	return duo
 }
 
 // AddPositions adds the "positions" edges to the Position entity.
 func (duo *DepartmentUpdateOne) AddPositions(p ...*Position) *DepartmentUpdateOne {
-	ids := make([]uuid.UUID, len(p))
+	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -354,14 +388,14 @@ func (duo *DepartmentUpdateOne) ClearPositions() *DepartmentUpdateOne {
 }
 
 // RemovePositionIDs removes the "positions" edge to Position entities by IDs.
-func (duo *DepartmentUpdateOne) RemovePositionIDs(ids ...uuid.UUID) *DepartmentUpdateOne {
+func (duo *DepartmentUpdateOne) RemovePositionIDs(ids ...int) *DepartmentUpdateOne {
 	duo.mutation.RemovePositionIDs(ids...)
 	return duo
 }
 
 // RemovePositions removes "positions" edges to Position entities.
 func (duo *DepartmentUpdateOne) RemovePositions(p ...*Position) *DepartmentUpdateOne {
-	ids := make([]uuid.UUID, len(p))
+	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
@@ -408,8 +442,26 @@ func (duo *DepartmentUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (duo *DepartmentUpdateOne) check() error {
+	if v, ok := duo.mutation.Name(); ok {
+		if err := department.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Department.name": %w`, err)}
+		}
+	}
+	if v, ok := duo.mutation.Code(); ok {
+		if err := department.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Department.code": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department, err error) {
-	_spec := sqlgraph.NewUpdateSpec(department.Table, department.Columns, sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID))
+	if err := duo.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(department.Table, department.Columns, sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt))
 	id, ok := duo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Department.id" for update`)}
@@ -440,8 +492,11 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 	if value, ok := duo.mutation.Code(); ok {
 		_spec.SetField(department.FieldCode, field.TypeString, value)
 	}
-	if value, ok := duo.mutation.BranchID(); ok {
-		_spec.SetField(department.FieldBranchID, field.TypeUUID, value)
+	if value, ok := duo.mutation.OrgID(); ok {
+		_spec.SetField(department.FieldOrgID, field.TypeInt, value)
+	}
+	if value, ok := duo.mutation.AddedOrgID(); ok {
+		_spec.AddField(department.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := duo.mutation.CreatedAt(); ok {
 		_spec.SetField(department.FieldCreatedAt, field.TypeTime, value)
@@ -457,7 +512,7 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 			Columns: []string{department.PositionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -470,7 +525,7 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 			Columns: []string{department.PositionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -486,7 +541,7 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 			Columns: []string{department.PositionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

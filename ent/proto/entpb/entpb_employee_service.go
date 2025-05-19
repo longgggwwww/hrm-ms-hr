@@ -8,7 +8,6 @@ import (
 	runtime "entgo.io/contrib/entproto/runtime"
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
-	uuid "github.com/google/uuid"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
@@ -16,6 +15,9 @@ import (
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	regexp "regexp"
+	strconv "strconv"
+	strings "strings"
 )
 
 // EmployeeService implements EmployeeServiceServer
@@ -31,46 +33,53 @@ func NewEmployeeService(client *ent.Client) *EmployeeService {
 	}
 }
 
+var protoIdentNormalizeRegexpEmployee_Status = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
+
+func protoIdentNormalizeEmployee_Status(e string) string {
+	return protoIdentNormalizeRegexpEmployee_Status.ReplaceAllString(e, "_")
+}
+
+func toProtoEmployee_Status(e employee.Status) Employee_Status {
+	if v, ok := Employee_Status_value[strings.ToUpper("STATUS_"+protoIdentNormalizeEmployee_Status(string(e)))]; ok {
+		return Employee_Status(v)
+	}
+	return Employee_Status(0)
+}
+
+func toEntEmployee_Status(e Employee_Status) employee.Status {
+	if v, ok := Employee_Status_name[int32(e)]; ok {
+		entVal := map[string]string{
+			"STATUS_ACTIVE":   "active",
+			"STATUS_INACTIVE": "inactive",
+		}[v]
+		return employee.Status(entVal)
+	}
+	return ""
+}
+
 // toProtoEmployee transforms the ent type to the pb type
 func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v := &Employee{}
-	branch_id, err := e.BranchID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-	v.BranchId = branch_id
 	code := e.Code
 	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	department_id, err := e.DepartmentID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-	v.DepartmentId = department_id
-	id, err := e.ID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	id := int64(e.ID)
 	v.Id = id
 	joining_at := timestamppb.New(e.JoiningAt)
 	v.JoiningAt = joining_at
-	position, err := e.PositionID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	org_id := int64(e.OrgID)
+	v.OrgId = org_id
+	position := int64(e.PositionID)
 	v.PositionId = position
-	status := e.Status
+	status := toProtoEmployee_Status(e.Status)
 	v.Status = status
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
 	user_id := e.UserID
 	v.UserId = user_id
 	if edg := e.Edges.Position; edg != nil {
-		id, err := edg.ID.MarshalBinary()
-		if err != nil {
-			return nil, err
-		}
+		id := int64(edg.ID)
 		v.Position = &Position{
 			Id: id,
 		}
@@ -122,10 +131,7 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 		err error
 		get *ent.Employee
 	)
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	switch req.GetView() {
 	case GetEmployeeRequest_VIEW_UNSPECIFIED, GetEmployeeRequest_BASIC:
 		get, err = svc.client.Employee.Get(ctx, id)
@@ -153,43 +159,26 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 // Update implements EmployeeServiceServer.Update
 func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeRequest) (*Employee, error) {
 	employee := req.GetEmployee()
-	var employeeID uuid.UUID
-	if err := (&employeeID).UnmarshalBinary(employee.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	employeeID := int(employee.GetId())
 	m := svc.client.Employee.UpdateOneID(employeeID)
-	var employeeBranchID uuid.UUID
-	if err := (&employeeBranchID).UnmarshalBinary(employee.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(employeeBranchID)
 	employeeCode := employee.GetCode()
 	m.SetCode(employeeCode)
 	employeeCreatedAt := runtime.ExtractTime(employee.GetCreatedAt())
 	m.SetCreatedAt(employeeCreatedAt)
-	var employeeDepartmentID uuid.UUID
-	if err := (&employeeDepartmentID).UnmarshalBinary(employee.GetDepartmentId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetDepartmentID(employeeDepartmentID)
 	employeeJoiningAt := runtime.ExtractTime(employee.GetJoiningAt())
 	m.SetJoiningAt(employeeJoiningAt)
-	var employeePositionID uuid.UUID
-	if err := (&employeePositionID).UnmarshalBinary(employee.GetPositionId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	employeeOrgID := int(employee.GetOrgId())
+	m.SetOrgID(employeeOrgID)
+	employeePositionID := int(employee.GetPositionId())
 	m.SetPositionID(employeePositionID)
-	employeeStatus := employee.GetStatus()
+	employeeStatus := toEntEmployee_Status(employee.GetStatus())
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
 	employeeUserID := employee.GetUserId()
 	m.SetUserID(employeeUserID)
 	if employee.GetPosition() != nil {
-		var employeePosition uuid.UUID
-		if err := (&employeePosition).UnmarshalBinary(employee.GetPosition().GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
 	}
 
@@ -214,10 +203,7 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 // Delete implements EmployeeServiceServer.Delete
 func (svc *EmployeeService) Delete(ctx context.Context, req *DeleteEmployeeRequest) (*emptypb.Empty, error) {
 	var err error
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	err = svc.client.Employee.DeleteOneID(id).Exec(ctx)
 	switch {
 	case err == nil:
@@ -252,10 +238,11 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
-		pageToken, err := uuid.ParseBytes(bytes)
+		token, err := strconv.ParseInt(string(bytes), 10, 32)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
+		pageToken := int(token)
 		listQuery = listQuery.
 			Where(employee.IDLTE(pageToken))
 	}
@@ -328,38 +315,24 @@ func (svc *EmployeeService) BatchCreate(ctx context.Context, req *BatchCreateEmp
 
 func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCreate, error) {
 	m := svc.client.Employee.Create()
-	var employeeBranchID uuid.UUID
-	if err := (&employeeBranchID).UnmarshalBinary(employee.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(employeeBranchID)
 	employeeCode := employee.GetCode()
 	m.SetCode(employeeCode)
 	employeeCreatedAt := runtime.ExtractTime(employee.GetCreatedAt())
 	m.SetCreatedAt(employeeCreatedAt)
-	var employeeDepartmentID uuid.UUID
-	if err := (&employeeDepartmentID).UnmarshalBinary(employee.GetDepartmentId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetDepartmentID(employeeDepartmentID)
 	employeeJoiningAt := runtime.ExtractTime(employee.GetJoiningAt())
 	m.SetJoiningAt(employeeJoiningAt)
-	var employeePositionID uuid.UUID
-	if err := (&employeePositionID).UnmarshalBinary(employee.GetPositionId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	employeeOrgID := int(employee.GetOrgId())
+	m.SetOrgID(employeeOrgID)
+	employeePositionID := int(employee.GetPositionId())
 	m.SetPositionID(employeePositionID)
-	employeeStatus := employee.GetStatus()
+	employeeStatus := toEntEmployee_Status(employee.GetStatus())
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
 	employeeUserID := employee.GetUserId()
 	m.SetUserID(employeeUserID)
 	if employee.GetPosition() != nil {
-		var employeePosition uuid.UUID
-		if err := (&employeePosition).UnmarshalBinary(employee.GetPosition().GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
 	}
 	return m, nil

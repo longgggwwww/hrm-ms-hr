@@ -16,8 +16,6 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/longgggwwww/hrm-ms-hr/ent/branch"
-	"github.com/longgggwwww/hrm-ms-hr/ent/company"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
@@ -33,10 +31,6 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// Branch is the client for interacting with the Branch builders.
-	Branch *BranchClient
-	// Company is the client for interacting with the Company builders.
-	Company *CompanyClient
 	// Department is the client for interacting with the Department builders.
 	Department *DepartmentClient
 	// Employee is the client for interacting with the Employee builders.
@@ -64,8 +58,6 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.Branch = NewBranchClient(c.config)
-	c.Company = NewCompanyClient(c.config)
 	c.Department = NewDepartmentClient(c.config)
 	c.Employee = NewEmployeeClient(c.config)
 	c.LeaveApproval = NewLeaveApprovalClient(c.config)
@@ -166,8 +158,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
-		Branch:        NewBranchClient(cfg),
-		Company:       NewCompanyClient(cfg),
 		Department:    NewDepartmentClient(cfg),
 		Employee:      NewEmployeeClient(cfg),
 		LeaveApproval: NewLeaveApprovalClient(cfg),
@@ -195,8 +185,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
-		Branch:        NewBranchClient(cfg),
-		Company:       NewCompanyClient(cfg),
 		Department:    NewDepartmentClient(cfg),
 		Employee:      NewEmployeeClient(cfg),
 		LeaveApproval: NewLeaveApprovalClient(cfg),
@@ -211,7 +199,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Branch.
+//		Department.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -234,8 +222,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Branch, c.Company, c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest,
-		c.Organization, c.Position, c.Project, c.Task,
+		c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest, c.Organization,
+		c.Position, c.Project, c.Task,
 	} {
 		n.Use(hooks...)
 	}
@@ -245,8 +233,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Branch, c.Company, c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest,
-		c.Organization, c.Position, c.Project, c.Task,
+		c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest, c.Organization,
+		c.Position, c.Project, c.Task,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -255,10 +243,6 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *BranchMutation:
-		return c.Branch.mutate(ctx, m)
-	case *CompanyMutation:
-		return c.Company.mutate(ctx, m)
 	case *DepartmentMutation:
 		return c.Department.mutate(ctx, m)
 	case *EmployeeMutation:
@@ -277,304 +261,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Task.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
-	}
-}
-
-// BranchClient is a client for the Branch schema.
-type BranchClient struct {
-	config
-}
-
-// NewBranchClient returns a client for the Branch from the given config.
-func NewBranchClient(c config) *BranchClient {
-	return &BranchClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `branch.Hooks(f(g(h())))`.
-func (c *BranchClient) Use(hooks ...Hook) {
-	c.hooks.Branch = append(c.hooks.Branch, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `branch.Intercept(f(g(h())))`.
-func (c *BranchClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Branch = append(c.inters.Branch, interceptors...)
-}
-
-// Create returns a builder for creating a Branch entity.
-func (c *BranchClient) Create() *BranchCreate {
-	mutation := newBranchMutation(c.config, OpCreate)
-	return &BranchCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Branch entities.
-func (c *BranchClient) CreateBulk(builders ...*BranchCreate) *BranchCreateBulk {
-	return &BranchCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *BranchClient) MapCreateBulk(slice any, setFunc func(*BranchCreate, int)) *BranchCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &BranchCreateBulk{err: fmt.Errorf("calling to BranchClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*BranchCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &BranchCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Branch.
-func (c *BranchClient) Update() *BranchUpdate {
-	mutation := newBranchMutation(c.config, OpUpdate)
-	return &BranchUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *BranchClient) UpdateOne(b *Branch) *BranchUpdateOne {
-	mutation := newBranchMutation(c.config, OpUpdateOne, withBranch(b))
-	return &BranchUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *BranchClient) UpdateOneID(id uuid.UUID) *BranchUpdateOne {
-	mutation := newBranchMutation(c.config, OpUpdateOne, withBranchID(id))
-	return &BranchUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Branch.
-func (c *BranchClient) Delete() *BranchDelete {
-	mutation := newBranchMutation(c.config, OpDelete)
-	return &BranchDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *BranchClient) DeleteOne(b *Branch) *BranchDeleteOne {
-	return c.DeleteOneID(b.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *BranchClient) DeleteOneID(id uuid.UUID) *BranchDeleteOne {
-	builder := c.Delete().Where(branch.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &BranchDeleteOne{builder}
-}
-
-// Query returns a query builder for Branch.
-func (c *BranchClient) Query() *BranchQuery {
-	return &BranchQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeBranch},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Branch entity by its id.
-func (c *BranchClient) Get(ctx context.Context, id uuid.UUID) (*Branch, error) {
-	return c.Query().Where(branch.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *BranchClient) GetX(ctx context.Context, id uuid.UUID) *Branch {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryCompany queries the company edge of a Branch.
-func (c *BranchClient) QueryCompany(b *Branch) *CompanyQuery {
-	query := (&CompanyClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := b.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(branch.Table, branch.FieldID, id),
-			sqlgraph.To(company.Table, company.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, branch.CompanyTable, branch.CompanyColumn),
-		)
-		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *BranchClient) Hooks() []Hook {
-	return c.hooks.Branch
-}
-
-// Interceptors returns the client interceptors.
-func (c *BranchClient) Interceptors() []Interceptor {
-	return c.inters.Branch
-}
-
-func (c *BranchClient) mutate(ctx context.Context, m *BranchMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&BranchCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&BranchUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&BranchUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&BranchDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Branch mutation op: %q", m.Op())
-	}
-}
-
-// CompanyClient is a client for the Company schema.
-type CompanyClient struct {
-	config
-}
-
-// NewCompanyClient returns a client for the Company from the given config.
-func NewCompanyClient(c config) *CompanyClient {
-	return &CompanyClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `company.Hooks(f(g(h())))`.
-func (c *CompanyClient) Use(hooks ...Hook) {
-	c.hooks.Company = append(c.hooks.Company, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `company.Intercept(f(g(h())))`.
-func (c *CompanyClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Company = append(c.inters.Company, interceptors...)
-}
-
-// Create returns a builder for creating a Company entity.
-func (c *CompanyClient) Create() *CompanyCreate {
-	mutation := newCompanyMutation(c.config, OpCreate)
-	return &CompanyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Company entities.
-func (c *CompanyClient) CreateBulk(builders ...*CompanyCreate) *CompanyCreateBulk {
-	return &CompanyCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *CompanyClient) MapCreateBulk(slice any, setFunc func(*CompanyCreate, int)) *CompanyCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &CompanyCreateBulk{err: fmt.Errorf("calling to CompanyClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*CompanyCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &CompanyCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Company.
-func (c *CompanyClient) Update() *CompanyUpdate {
-	mutation := newCompanyMutation(c.config, OpUpdate)
-	return &CompanyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *CompanyClient) UpdateOne(co *Company) *CompanyUpdateOne {
-	mutation := newCompanyMutation(c.config, OpUpdateOne, withCompany(co))
-	return &CompanyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *CompanyClient) UpdateOneID(id uuid.UUID) *CompanyUpdateOne {
-	mutation := newCompanyMutation(c.config, OpUpdateOne, withCompanyID(id))
-	return &CompanyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Company.
-func (c *CompanyClient) Delete() *CompanyDelete {
-	mutation := newCompanyMutation(c.config, OpDelete)
-	return &CompanyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *CompanyClient) DeleteOne(co *Company) *CompanyDeleteOne {
-	return c.DeleteOneID(co.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CompanyClient) DeleteOneID(id uuid.UUID) *CompanyDeleteOne {
-	builder := c.Delete().Where(company.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &CompanyDeleteOne{builder}
-}
-
-// Query returns a query builder for Company.
-func (c *CompanyClient) Query() *CompanyQuery {
-	return &CompanyQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeCompany},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Company entity by its id.
-func (c *CompanyClient) Get(ctx context.Context, id uuid.UUID) (*Company, error) {
-	return c.Query().Where(company.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *CompanyClient) GetX(ctx context.Context, id uuid.UUID) *Company {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryBranches queries the branches edge of a Company.
-func (c *CompanyClient) QueryBranches(co *Company) *BranchQuery {
-	query := (&BranchClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := co.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(company.Table, company.FieldID, id),
-			sqlgraph.To(branch.Table, branch.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, company.BranchesTable, company.BranchesColumn),
-		)
-		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *CompanyClient) Hooks() []Hook {
-	return c.hooks.Company
-}
-
-// Interceptors returns the client interceptors.
-func (c *CompanyClient) Interceptors() []Interceptor {
-	return c.inters.Company
-}
-
-func (c *CompanyClient) mutate(ctx context.Context, m *CompanyMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&CompanyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&CompanyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&CompanyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&CompanyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Company mutation op: %q", m.Op())
 	}
 }
 
@@ -639,7 +325,7 @@ func (c *DepartmentClient) UpdateOne(d *Department) *DepartmentUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DepartmentClient) UpdateOneID(id uuid.UUID) *DepartmentUpdateOne {
+func (c *DepartmentClient) UpdateOneID(id int) *DepartmentUpdateOne {
 	mutation := newDepartmentMutation(c.config, OpUpdateOne, withDepartmentID(id))
 	return &DepartmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -656,7 +342,7 @@ func (c *DepartmentClient) DeleteOne(d *Department) *DepartmentDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *DepartmentClient) DeleteOneID(id uuid.UUID) *DepartmentDeleteOne {
+func (c *DepartmentClient) DeleteOneID(id int) *DepartmentDeleteOne {
 	builder := c.Delete().Where(department.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -673,12 +359,12 @@ func (c *DepartmentClient) Query() *DepartmentQuery {
 }
 
 // Get returns a Department entity by its id.
-func (c *DepartmentClient) Get(ctx context.Context, id uuid.UUID) (*Department, error) {
+func (c *DepartmentClient) Get(ctx context.Context, id int) (*Department, error) {
 	return c.Query().Where(department.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DepartmentClient) GetX(ctx context.Context, id uuid.UUID) *Department {
+func (c *DepartmentClient) GetX(ctx context.Context, id int) *Department {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -788,7 +474,7 @@ func (c *EmployeeClient) UpdateOne(e *Employee) *EmployeeUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *EmployeeClient) UpdateOneID(id uuid.UUID) *EmployeeUpdateOne {
+func (c *EmployeeClient) UpdateOneID(id int) *EmployeeUpdateOne {
 	mutation := newEmployeeMutation(c.config, OpUpdateOne, withEmployeeID(id))
 	return &EmployeeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -805,7 +491,7 @@ func (c *EmployeeClient) DeleteOne(e *Employee) *EmployeeDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *EmployeeClient) DeleteOneID(id uuid.UUID) *EmployeeDeleteOne {
+func (c *EmployeeClient) DeleteOneID(id int) *EmployeeDeleteOne {
 	builder := c.Delete().Where(employee.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -822,12 +508,12 @@ func (c *EmployeeClient) Query() *EmployeeQuery {
 }
 
 // Get returns a Employee entity by its id.
-func (c *EmployeeClient) Get(ctx context.Context, id uuid.UUID) (*Employee, error) {
+func (c *EmployeeClient) Get(ctx context.Context, id int) (*Employee, error) {
 	return c.Query().Where(employee.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *EmployeeClient) GetX(ctx context.Context, id uuid.UUID) *Employee {
+func (c *EmployeeClient) GetX(ctx context.Context, id int) *Employee {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1266,22 +952,6 @@ func (c *OrganizationClient) GetX(ctx context.Context, id int) *Organization {
 	return obj
 }
 
-// QueryChildren queries the children edge of a Organization.
-func (c *OrganizationClient) QueryChildren(o *Organization) *OrganizationQuery {
-	query := (&OrganizationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := o.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organization.Table, organization.FieldID, id),
-			sqlgraph.To(organization.Table, organization.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, organization.ChildrenTable, organization.ChildrenColumn),
-		)
-		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryParent queries the parent edge of a Organization.
 func (c *OrganizationClient) QueryParent(o *Organization) *OrganizationQuery {
 	query := (&OrganizationClient{config: c.config}).Query()
@@ -1291,6 +961,22 @@ func (c *OrganizationClient) QueryParent(o *Organization) *OrganizationQuery {
 			sqlgraph.From(organization.Table, organization.FieldID, id),
 			sqlgraph.To(organization.Table, organization.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, organization.ParentTable, organization.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChildren queries the children edge of a Organization.
+func (c *OrganizationClient) QueryChildren(o *Organization) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := o.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.ChildrenTable, organization.ChildrenColumn),
 		)
 		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
 		return fromV, nil
@@ -1384,7 +1070,7 @@ func (c *PositionClient) UpdateOne(po *Position) *PositionUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *PositionClient) UpdateOneID(id uuid.UUID) *PositionUpdateOne {
+func (c *PositionClient) UpdateOneID(id int) *PositionUpdateOne {
 	mutation := newPositionMutation(c.config, OpUpdateOne, withPositionID(id))
 	return &PositionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1401,7 +1087,7 @@ func (c *PositionClient) DeleteOne(po *Position) *PositionDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *PositionClient) DeleteOneID(id uuid.UUID) *PositionDeleteOne {
+func (c *PositionClient) DeleteOneID(id int) *PositionDeleteOne {
 	builder := c.Delete().Where(position.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1418,12 +1104,12 @@ func (c *PositionClient) Query() *PositionQuery {
 }
 
 // Get returns a Position entity by its id.
-func (c *PositionClient) Get(ctx context.Context, id uuid.UUID) (*Position, error) {
+func (c *PositionClient) Get(ctx context.Context, id int) (*Position, error) {
 	return c.Query().Where(position.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *PositionClient) GetX(ctx context.Context, id uuid.UUID) *Position {
+func (c *PositionClient) GetX(ctx context.Context, id int) *Position {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1456,6 +1142,38 @@ func (c *PositionClient) QueryDepartment(po *Position) *DepartmentQuery {
 			sqlgraph.From(position.Table, position.FieldID, id),
 			sqlgraph.To(department.Table, department.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, position.DepartmentTable, position.DepartmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(po.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChildren queries the children edge of a Position.
+func (c *PositionClient) QueryChildren(po *Position) *PositionQuery {
+	query := (&PositionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := po.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(position.Table, position.FieldID, id),
+			sqlgraph.To(position.Table, position.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, position.ChildrenTable, position.ChildrenColumn),
+		)
+		fromV = sqlgraph.Neighbors(po.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a Position.
+func (c *PositionClient) QueryParent(po *Position) *PositionQuery {
+	query := (&PositionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := po.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(position.Table, position.FieldID, id),
+			sqlgraph.To(position.Table, position.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, position.ParentTable, position.ParentColumn),
 		)
 		fromV = sqlgraph.Neighbors(po.driver.Dialect(), step)
 		return fromV, nil
@@ -1789,11 +1507,11 @@ func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Branch, Company, Department, Employee, LeaveApproval, LeaveRequest,
-		Organization, Position, Project, Task []ent.Hook
+		Department, Employee, LeaveApproval, LeaveRequest, Organization, Position,
+		Project, Task []ent.Hook
 	}
 	inters struct {
-		Branch, Company, Department, Employee, LeaveApproval, LeaveRequest,
-		Organization, Position, Project, Task []ent.Interceptor
+		Department, Employee, LeaveApproval, LeaveRequest, Organization, Position,
+		Project, Task []ent.Interceptor
 	}
 )

@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
@@ -20,6 +20,7 @@ type EmployeeCreate struct {
 	config
 	mutation *EmployeeMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetUserID sets the "user_id" field.
@@ -35,14 +36,22 @@ func (ec *EmployeeCreate) SetCode(s string) *EmployeeCreate {
 }
 
 // SetStatus sets the "status" field.
-func (ec *EmployeeCreate) SetStatus(b bool) *EmployeeCreate {
-	ec.mutation.SetStatus(b)
+func (ec *EmployeeCreate) SetStatus(e employee.Status) *EmployeeCreate {
+	ec.mutation.SetStatus(e)
+	return ec
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (ec *EmployeeCreate) SetNillableStatus(e *employee.Status) *EmployeeCreate {
+	if e != nil {
+		ec.SetStatus(*e)
+	}
 	return ec
 }
 
 // SetPositionID sets the "position_id" field.
-func (ec *EmployeeCreate) SetPositionID(u uuid.UUID) *EmployeeCreate {
-	ec.mutation.SetPositionID(u)
+func (ec *EmployeeCreate) SetPositionID(i int) *EmployeeCreate {
+	ec.mutation.SetPositionID(i)
 	return ec
 }
 
@@ -52,9 +61,9 @@ func (ec *EmployeeCreate) SetJoiningAt(t time.Time) *EmployeeCreate {
 	return ec
 }
 
-// SetBranchID sets the "branch_id" field.
-func (ec *EmployeeCreate) SetBranchID(u uuid.UUID) *EmployeeCreate {
-	ec.mutation.SetBranchID(u)
+// SetOrgID sets the "org_id" field.
+func (ec *EmployeeCreate) SetOrgID(i int) *EmployeeCreate {
+	ec.mutation.SetOrgID(i)
 	return ec
 }
 
@@ -82,26 +91,6 @@ func (ec *EmployeeCreate) SetUpdatedAt(t time.Time) *EmployeeCreate {
 func (ec *EmployeeCreate) SetNillableUpdatedAt(t *time.Time) *EmployeeCreate {
 	if t != nil {
 		ec.SetUpdatedAt(*t)
-	}
-	return ec
-}
-
-// SetDepartmentID sets the "department_id" field.
-func (ec *EmployeeCreate) SetDepartmentID(u uuid.UUID) *EmployeeCreate {
-	ec.mutation.SetDepartmentID(u)
-	return ec
-}
-
-// SetID sets the "id" field.
-func (ec *EmployeeCreate) SetID(u uuid.UUID) *EmployeeCreate {
-	ec.mutation.SetID(u)
-	return ec
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (ec *EmployeeCreate) SetNillableID(u *uuid.UUID) *EmployeeCreate {
-	if u != nil {
-		ec.SetID(*u)
 	}
 	return ec
 }
@@ -146,6 +135,10 @@ func (ec *EmployeeCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ec *EmployeeCreate) defaults() {
+	if _, ok := ec.mutation.Status(); !ok {
+		v := employee.DefaultStatus
+		ec.mutation.SetStatus(v)
+	}
 	if _, ok := ec.mutation.CreatedAt(); !ok {
 		v := employee.DefaultCreatedAt()
 		ec.mutation.SetCreatedAt(v)
@@ -153,10 +146,6 @@ func (ec *EmployeeCreate) defaults() {
 	if _, ok := ec.mutation.UpdatedAt(); !ok {
 		v := employee.DefaultUpdatedAt()
 		ec.mutation.SetUpdatedAt(v)
-	}
-	if _, ok := ec.mutation.ID(); !ok {
-		v := employee.DefaultID()
-		ec.mutation.SetID(v)
 	}
 }
 
@@ -168,8 +157,18 @@ func (ec *EmployeeCreate) check() error {
 	if _, ok := ec.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Employee.code"`)}
 	}
+	if v, ok := ec.mutation.Code(); ok {
+		if err := employee.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Employee.code": %w`, err)}
+		}
+	}
 	if _, ok := ec.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Employee.status"`)}
+	}
+	if v, ok := ec.mutation.Status(); ok {
+		if err := employee.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Employee.status": %w`, err)}
+		}
 	}
 	if _, ok := ec.mutation.PositionID(); !ok {
 		return &ValidationError{Name: "position_id", err: errors.New(`ent: missing required field "Employee.position_id"`)}
@@ -177,17 +176,14 @@ func (ec *EmployeeCreate) check() error {
 	if _, ok := ec.mutation.JoiningAt(); !ok {
 		return &ValidationError{Name: "joining_at", err: errors.New(`ent: missing required field "Employee.joining_at"`)}
 	}
-	if _, ok := ec.mutation.BranchID(); !ok {
-		return &ValidationError{Name: "branch_id", err: errors.New(`ent: missing required field "Employee.branch_id"`)}
+	if _, ok := ec.mutation.OrgID(); !ok {
+		return &ValidationError{Name: "org_id", err: errors.New(`ent: missing required field "Employee.org_id"`)}
 	}
 	if _, ok := ec.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Employee.created_at"`)}
 	}
 	if _, ok := ec.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Employee.updated_at"`)}
-	}
-	if _, ok := ec.mutation.DepartmentID(); !ok {
-		return &ValidationError{Name: "department_id", err: errors.New(`ent: missing required field "Employee.department_id"`)}
 	}
 	if len(ec.mutation.PositionIDs()) == 0 {
 		return &ValidationError{Name: "position", err: errors.New(`ent: missing required edge "Employee.position"`)}
@@ -206,13 +202,8 @@ func (ec *EmployeeCreate) sqlSave(ctx context.Context) (*Employee, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
-	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	ec.mutation.id = &_node.ID
 	ec.mutation.done = true
 	return _node, nil
@@ -221,12 +212,9 @@ func (ec *EmployeeCreate) sqlSave(ctx context.Context) (*Employee, error) {
 func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Employee{config: ec.config}
-		_spec = sqlgraph.NewCreateSpec(employee.Table, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
+		_spec = sqlgraph.NewCreateSpec(employee.Table, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
 	)
-	if id, ok := ec.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = &id
-	}
+	_spec.OnConflict = ec.conflict
 	if value, ok := ec.mutation.UserID(); ok {
 		_spec.SetField(employee.FieldUserID, field.TypeString, value)
 		_node.UserID = value
@@ -236,16 +224,16 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 		_node.Code = value
 	}
 	if value, ok := ec.mutation.Status(); ok {
-		_spec.SetField(employee.FieldStatus, field.TypeBool, value)
+		_spec.SetField(employee.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
 	if value, ok := ec.mutation.JoiningAt(); ok {
 		_spec.SetField(employee.FieldJoiningAt, field.TypeTime, value)
 		_node.JoiningAt = value
 	}
-	if value, ok := ec.mutation.BranchID(); ok {
-		_spec.SetField(employee.FieldBranchID, field.TypeUUID, value)
-		_node.BranchID = value
+	if value, ok := ec.mutation.OrgID(); ok {
+		_spec.SetField(employee.FieldOrgID, field.TypeInt, value)
+		_node.OrgID = value
 	}
 	if value, ok := ec.mutation.CreatedAt(); ok {
 		_spec.SetField(employee.FieldCreatedAt, field.TypeTime, value)
@@ -255,10 +243,6 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := ec.mutation.DepartmentID(); ok {
-		_spec.SetField(employee.FieldDepartmentID, field.TypeUUID, value)
-		_node.DepartmentID = value
-	}
 	if nodes := ec.mutation.PositionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -267,7 +251,7 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Columns: []string{employee.PositionColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -279,11 +263,355 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Employee.Create().
+//		SetUserID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EmployeeUpsert) {
+//			SetUserID(v+v).
+//		}).
+//		Exec(ctx)
+func (ec *EmployeeCreate) OnConflict(opts ...sql.ConflictOption) *EmployeeUpsertOne {
+	ec.conflict = opts
+	return &EmployeeUpsertOne{
+		create: ec,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Employee.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ec *EmployeeCreate) OnConflictColumns(columns ...string) *EmployeeUpsertOne {
+	ec.conflict = append(ec.conflict, sql.ConflictColumns(columns...))
+	return &EmployeeUpsertOne{
+		create: ec,
+	}
+}
+
+type (
+	// EmployeeUpsertOne is the builder for "upsert"-ing
+	//  one Employee node.
+	EmployeeUpsertOne struct {
+		create *EmployeeCreate
+	}
+
+	// EmployeeUpsert is the "OnConflict" setter.
+	EmployeeUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetUserID sets the "user_id" field.
+func (u *EmployeeUpsert) SetUserID(v string) *EmployeeUpsert {
+	u.Set(employee.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateUserID() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldUserID)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *EmployeeUpsert) SetCode(v string) *EmployeeUpsert {
+	u.Set(employee.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateCode() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldCode)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *EmployeeUpsert) SetStatus(v employee.Status) *EmployeeUpsert {
+	u.Set(employee.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateStatus() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldStatus)
+	return u
+}
+
+// SetPositionID sets the "position_id" field.
+func (u *EmployeeUpsert) SetPositionID(v int) *EmployeeUpsert {
+	u.Set(employee.FieldPositionID, v)
+	return u
+}
+
+// UpdatePositionID sets the "position_id" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdatePositionID() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldPositionID)
+	return u
+}
+
+// SetJoiningAt sets the "joining_at" field.
+func (u *EmployeeUpsert) SetJoiningAt(v time.Time) *EmployeeUpsert {
+	u.Set(employee.FieldJoiningAt, v)
+	return u
+}
+
+// UpdateJoiningAt sets the "joining_at" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateJoiningAt() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldJoiningAt)
+	return u
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *EmployeeUpsert) SetOrgID(v int) *EmployeeUpsert {
+	u.Set(employee.FieldOrgID, v)
+	return u
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateOrgID() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldOrgID)
+	return u
+}
+
+// AddOrgID adds v to the "org_id" field.
+func (u *EmployeeUpsert) AddOrgID(v int) *EmployeeUpsert {
+	u.Add(employee.FieldOrgID, v)
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *EmployeeUpsert) SetCreatedAt(v time.Time) *EmployeeUpsert {
+	u.Set(employee.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateCreatedAt() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *EmployeeUpsert) SetUpdatedAt(v time.Time) *EmployeeUpsert {
+	u.Set(employee.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateUpdatedAt() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Employee.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *EmployeeUpsertOne) UpdateNewValues() *EmployeeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Employee.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *EmployeeUpsertOne) Ignore() *EmployeeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EmployeeUpsertOne) DoNothing() *EmployeeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EmployeeCreate.OnConflict
+// documentation for more info.
+func (u *EmployeeUpsertOne) Update(set func(*EmployeeUpsert)) *EmployeeUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EmployeeUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *EmployeeUpsertOne) SetUserID(v string) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateUserID() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *EmployeeUpsertOne) SetCode(v string) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateCode() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *EmployeeUpsertOne) SetStatus(v employee.Status) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateStatus() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetPositionID sets the "position_id" field.
+func (u *EmployeeUpsertOne) SetPositionID(v int) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetPositionID(v)
+	})
+}
+
+// UpdatePositionID sets the "position_id" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdatePositionID() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdatePositionID()
+	})
+}
+
+// SetJoiningAt sets the "joining_at" field.
+func (u *EmployeeUpsertOne) SetJoiningAt(v time.Time) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetJoiningAt(v)
+	})
+}
+
+// UpdateJoiningAt sets the "joining_at" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateJoiningAt() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateJoiningAt()
+	})
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *EmployeeUpsertOne) SetOrgID(v int) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetOrgID(v)
+	})
+}
+
+// AddOrgID adds v to the "org_id" field.
+func (u *EmployeeUpsertOne) AddOrgID(v int) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.AddOrgID(v)
+	})
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateOrgID() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateOrgID()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *EmployeeUpsertOne) SetCreatedAt(v time.Time) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateCreatedAt() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *EmployeeUpsertOne) SetUpdatedAt(v time.Time) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateUpdatedAt() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *EmployeeUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EmployeeCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EmployeeUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *EmployeeUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *EmployeeUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // EmployeeCreateBulk is the builder for creating many Employee entities in bulk.
 type EmployeeCreateBulk struct {
 	config
 	err      error
 	builders []*EmployeeCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Employee entities in the database.
@@ -313,6 +641,7 @@ func (ecb *EmployeeCreateBulk) Save(ctx context.Context) ([]*Employee, error) {
 					_, err = mutators[i+1].Mutate(root, ecb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ecb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ecb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -324,6 +653,10 @@ func (ecb *EmployeeCreateBulk) Save(ctx context.Context) ([]*Employee, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -359,6 +692,229 @@ func (ecb *EmployeeCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ecb *EmployeeCreateBulk) ExecX(ctx context.Context) {
 	if err := ecb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Employee.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EmployeeUpsert) {
+//			SetUserID(v+v).
+//		}).
+//		Exec(ctx)
+func (ecb *EmployeeCreateBulk) OnConflict(opts ...sql.ConflictOption) *EmployeeUpsertBulk {
+	ecb.conflict = opts
+	return &EmployeeUpsertBulk{
+		create: ecb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Employee.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ecb *EmployeeCreateBulk) OnConflictColumns(columns ...string) *EmployeeUpsertBulk {
+	ecb.conflict = append(ecb.conflict, sql.ConflictColumns(columns...))
+	return &EmployeeUpsertBulk{
+		create: ecb,
+	}
+}
+
+// EmployeeUpsertBulk is the builder for "upsert"-ing
+// a bulk of Employee nodes.
+type EmployeeUpsertBulk struct {
+	create *EmployeeCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Employee.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *EmployeeUpsertBulk) UpdateNewValues() *EmployeeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Employee.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *EmployeeUpsertBulk) Ignore() *EmployeeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EmployeeUpsertBulk) DoNothing() *EmployeeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EmployeeCreateBulk.OnConflict
+// documentation for more info.
+func (u *EmployeeUpsertBulk) Update(set func(*EmployeeUpsert)) *EmployeeUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EmployeeUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *EmployeeUpsertBulk) SetUserID(v string) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateUserID() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateUserID()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *EmployeeUpsertBulk) SetCode(v string) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateCode() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *EmployeeUpsertBulk) SetStatus(v employee.Status) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateStatus() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetPositionID sets the "position_id" field.
+func (u *EmployeeUpsertBulk) SetPositionID(v int) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetPositionID(v)
+	})
+}
+
+// UpdatePositionID sets the "position_id" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdatePositionID() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdatePositionID()
+	})
+}
+
+// SetJoiningAt sets the "joining_at" field.
+func (u *EmployeeUpsertBulk) SetJoiningAt(v time.Time) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetJoiningAt(v)
+	})
+}
+
+// UpdateJoiningAt sets the "joining_at" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateJoiningAt() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateJoiningAt()
+	})
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *EmployeeUpsertBulk) SetOrgID(v int) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetOrgID(v)
+	})
+}
+
+// AddOrgID adds v to the "org_id" field.
+func (u *EmployeeUpsertBulk) AddOrgID(v int) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.AddOrgID(v)
+	})
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateOrgID() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateOrgID()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *EmployeeUpsertBulk) SetCreatedAt(v time.Time) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateCreatedAt() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *EmployeeUpsertBulk) SetUpdatedAt(v time.Time) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateUpdatedAt() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *EmployeeUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the EmployeeCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EmployeeCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EmployeeUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
