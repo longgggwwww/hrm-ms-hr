@@ -9,30 +9,6 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 )
 
-// The BranchFunc type is an adapter to allow the use of ordinary
-// function as Branch mutator.
-type BranchFunc func(context.Context, *ent.BranchMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f BranchFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.BranchMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BranchMutation", m)
-}
-
-// The CompanyFunc type is an adapter to allow the use of ordinary
-// function as Company mutator.
-type CompanyFunc func(context.Context, *ent.CompanyMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f CompanyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.CompanyMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CompanyMutation", m)
-}
-
 // The DepartmentFunc type is an adapter to allow the use of ordinary
 // function as Department mutator.
 type DepartmentFunc func(context.Context, *ent.DepartmentMutation) (ent.Value, error)

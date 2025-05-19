@@ -7,52 +7,51 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uuid.UUID) predicate.Employee {
+func ID(id int) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uuid.UUID) predicate.Employee {
+func IDEQ(id int) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uuid.UUID) predicate.Employee {
+func IDNEQ(id int) predicate.Employee {
 	return predicate.Employee(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uuid.UUID) predicate.Employee {
+func IDIn(ids ...int) predicate.Employee {
 	return predicate.Employee(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uuid.UUID) predicate.Employee {
+func IDNotIn(ids ...int) predicate.Employee {
 	return predicate.Employee(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uuid.UUID) predicate.Employee {
+func IDGT(id int) predicate.Employee {
 	return predicate.Employee(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uuid.UUID) predicate.Employee {
+func IDGTE(id int) predicate.Employee {
 	return predicate.Employee(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uuid.UUID) predicate.Employee {
+func IDLT(id int) predicate.Employee {
 	return predicate.Employee(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uuid.UUID) predicate.Employee {
+func IDLTE(id int) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldID, id))
 }
 
@@ -66,13 +65,8 @@ func Code(v string) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldCode, v))
 }
 
-// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
-func Status(v bool) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldStatus, v))
-}
-
 // PositionID applies equality check predicate on the "position_id" field. It's identical to PositionIDEQ.
-func PositionID(v uuid.UUID) predicate.Employee {
+func PositionID(v int) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldPositionID, v))
 }
 
@@ -81,9 +75,9 @@ func JoiningAt(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldJoiningAt, v))
 }
 
-// BranchID applies equality check predicate on the "branch_id" field. It's identical to BranchIDEQ.
-func BranchID(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldBranchID, v))
+// OrgID applies equality check predicate on the "org_id" field. It's identical to OrgIDEQ.
+func OrgID(v int) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldOrgID, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -94,11 +88,6 @@ func CreatedAt(v time.Time) predicate.Employee {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// DepartmentID applies equality check predicate on the "department_id" field. It's identical to DepartmentIDEQ.
-func DepartmentID(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldDepartmentID, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -232,32 +221,42 @@ func CodeContainsFold(v string) predicate.Employee {
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v bool) predicate.Employee {
+func StatusEQ(v Status) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldStatus, v))
 }
 
 // StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v bool) predicate.Employee {
+func StatusNEQ(v Status) predicate.Employee {
 	return predicate.Employee(sql.FieldNEQ(FieldStatus, v))
 }
 
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.Employee {
+	return predicate.Employee(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.Employee {
+	return predicate.Employee(sql.FieldNotIn(FieldStatus, vs...))
+}
+
 // PositionIDEQ applies the EQ predicate on the "position_id" field.
-func PositionIDEQ(v uuid.UUID) predicate.Employee {
+func PositionIDEQ(v int) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldPositionID, v))
 }
 
 // PositionIDNEQ applies the NEQ predicate on the "position_id" field.
-func PositionIDNEQ(v uuid.UUID) predicate.Employee {
+func PositionIDNEQ(v int) predicate.Employee {
 	return predicate.Employee(sql.FieldNEQ(FieldPositionID, v))
 }
 
 // PositionIDIn applies the In predicate on the "position_id" field.
-func PositionIDIn(vs ...uuid.UUID) predicate.Employee {
+func PositionIDIn(vs ...int) predicate.Employee {
 	return predicate.Employee(sql.FieldIn(FieldPositionID, vs...))
 }
 
 // PositionIDNotIn applies the NotIn predicate on the "position_id" field.
-func PositionIDNotIn(vs ...uuid.UUID) predicate.Employee {
+func PositionIDNotIn(vs ...int) predicate.Employee {
 	return predicate.Employee(sql.FieldNotIn(FieldPositionID, vs...))
 }
 
@@ -301,44 +300,44 @@ func JoiningAtLTE(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldJoiningAt, v))
 }
 
-// BranchIDEQ applies the EQ predicate on the "branch_id" field.
-func BranchIDEQ(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldBranchID, v))
+// OrgIDEQ applies the EQ predicate on the "org_id" field.
+func OrgIDEQ(v int) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldOrgID, v))
 }
 
-// BranchIDNEQ applies the NEQ predicate on the "branch_id" field.
-func BranchIDNEQ(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldNEQ(FieldBranchID, v))
+// OrgIDNEQ applies the NEQ predicate on the "org_id" field.
+func OrgIDNEQ(v int) predicate.Employee {
+	return predicate.Employee(sql.FieldNEQ(FieldOrgID, v))
 }
 
-// BranchIDIn applies the In predicate on the "branch_id" field.
-func BranchIDIn(vs ...uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldIn(FieldBranchID, vs...))
+// OrgIDIn applies the In predicate on the "org_id" field.
+func OrgIDIn(vs ...int) predicate.Employee {
+	return predicate.Employee(sql.FieldIn(FieldOrgID, vs...))
 }
 
-// BranchIDNotIn applies the NotIn predicate on the "branch_id" field.
-func BranchIDNotIn(vs ...uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldNotIn(FieldBranchID, vs...))
+// OrgIDNotIn applies the NotIn predicate on the "org_id" field.
+func OrgIDNotIn(vs ...int) predicate.Employee {
+	return predicate.Employee(sql.FieldNotIn(FieldOrgID, vs...))
 }
 
-// BranchIDGT applies the GT predicate on the "branch_id" field.
-func BranchIDGT(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldGT(FieldBranchID, v))
+// OrgIDGT applies the GT predicate on the "org_id" field.
+func OrgIDGT(v int) predicate.Employee {
+	return predicate.Employee(sql.FieldGT(FieldOrgID, v))
 }
 
-// BranchIDGTE applies the GTE predicate on the "branch_id" field.
-func BranchIDGTE(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldGTE(FieldBranchID, v))
+// OrgIDGTE applies the GTE predicate on the "org_id" field.
+func OrgIDGTE(v int) predicate.Employee {
+	return predicate.Employee(sql.FieldGTE(FieldOrgID, v))
 }
 
-// BranchIDLT applies the LT predicate on the "branch_id" field.
-func BranchIDLT(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldLT(FieldBranchID, v))
+// OrgIDLT applies the LT predicate on the "org_id" field.
+func OrgIDLT(v int) predicate.Employee {
+	return predicate.Employee(sql.FieldLT(FieldOrgID, v))
 }
 
-// BranchIDLTE applies the LTE predicate on the "branch_id" field.
-func BranchIDLTE(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldLTE(FieldBranchID, v))
+// OrgIDLTE applies the LTE predicate on the "org_id" field.
+func OrgIDLTE(v int) predicate.Employee {
+	return predicate.Employee(sql.FieldLTE(FieldOrgID, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -419,46 +418,6 @@ func UpdatedAtLT(v time.Time) predicate.Employee {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldUpdatedAt, v))
-}
-
-// DepartmentIDEQ applies the EQ predicate on the "department_id" field.
-func DepartmentIDEQ(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldDepartmentID, v))
-}
-
-// DepartmentIDNEQ applies the NEQ predicate on the "department_id" field.
-func DepartmentIDNEQ(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldNEQ(FieldDepartmentID, v))
-}
-
-// DepartmentIDIn applies the In predicate on the "department_id" field.
-func DepartmentIDIn(vs ...uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldIn(FieldDepartmentID, vs...))
-}
-
-// DepartmentIDNotIn applies the NotIn predicate on the "department_id" field.
-func DepartmentIDNotIn(vs ...uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldNotIn(FieldDepartmentID, vs...))
-}
-
-// DepartmentIDGT applies the GT predicate on the "department_id" field.
-func DepartmentIDGT(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldGT(FieldDepartmentID, v))
-}
-
-// DepartmentIDGTE applies the GTE predicate on the "department_id" field.
-func DepartmentIDGTE(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldGTE(FieldDepartmentID, v))
-}
-
-// DepartmentIDLT applies the LT predicate on the "department_id" field.
-func DepartmentIDLT(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldLT(FieldDepartmentID, v))
-}
-
-// DepartmentIDLTE applies the LTE predicate on the "department_id" field.
-func DepartmentIDLTE(v uuid.UUID) predicate.Employee {
-	return predicate.Employee(sql.FieldLTE(FieldDepartmentID, v))
 }
 
 // HasPosition applies the HasEdge predicate on the "position" edge.

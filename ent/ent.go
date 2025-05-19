@@ -12,8 +12,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/longgggwwww/hrm-ms-hr/ent/branch"
-	"github.com/longgggwwww/hrm-ms-hr/ent/company"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
@@ -82,8 +80,6 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			branch.Table:        branch.ValidColumn,
-			company.Table:       company.ValidColumn,
 			department.Table:    department.ValidColumn,
 			employee.Table:      employee.ValidColumn,
 			leaveapproval.Table: leaveapproval.ValidColumn,

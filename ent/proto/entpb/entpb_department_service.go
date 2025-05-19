@@ -8,7 +8,6 @@ import (
 	runtime "entgo.io/contrib/entproto/runtime"
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
-	uuid "github.com/google/uuid"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
@@ -16,6 +15,7 @@ import (
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	strconv "strconv"
 )
 
 // DepartmentService implements DepartmentServiceServer
@@ -34,29 +34,20 @@ func NewDepartmentService(client *ent.Client) *DepartmentService {
 // toProtoDepartment transforms the ent type to the pb type
 func toProtoDepartment(e *ent.Department) (*Department, error) {
 	v := &Department{}
-	branch_id, err := e.BranchID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-	v.BranchId = branch_id
 	code := e.Code
 	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	id, err := e.ID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	id := int64(e.ID)
 	v.Id = id
 	name := e.Name
 	v.Name = name
+	org_id := int64(e.OrgID)
+	v.OrgId = org_id
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
 	for _, edg := range e.Edges.Positions {
-		id, err := edg.ID.MarshalBinary()
-		if err != nil {
-			return nil, err
-		}
+		id := int64(edg.ID)
 		v.Positions = append(v.Positions, &Position{
 			Id: id,
 		})
@@ -108,10 +99,7 @@ func (svc *DepartmentService) Get(ctx context.Context, req *GetDepartmentRequest
 		err error
 		get *ent.Department
 	)
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	switch req.GetView() {
 	case GetDepartmentRequest_VIEW_UNSPECIFIED, GetDepartmentRequest_BASIC:
 		get, err = svc.client.Department.Get(ctx, id)
@@ -139,29 +127,20 @@ func (svc *DepartmentService) Get(ctx context.Context, req *GetDepartmentRequest
 // Update implements DepartmentServiceServer.Update
 func (svc *DepartmentService) Update(ctx context.Context, req *UpdateDepartmentRequest) (*Department, error) {
 	department := req.GetDepartment()
-	var departmentID uuid.UUID
-	if err := (&departmentID).UnmarshalBinary(department.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	departmentID := int(department.GetId())
 	m := svc.client.Department.UpdateOneID(departmentID)
-	var departmentBranchID uuid.UUID
-	if err := (&departmentBranchID).UnmarshalBinary(department.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(departmentBranchID)
 	departmentCode := department.GetCode()
 	m.SetCode(departmentCode)
 	departmentCreatedAt := runtime.ExtractTime(department.GetCreatedAt())
 	m.SetCreatedAt(departmentCreatedAt)
 	departmentName := department.GetName()
 	m.SetName(departmentName)
+	departmentOrgID := int(department.GetOrgId())
+	m.SetOrgID(departmentOrgID)
 	departmentUpdatedAt := runtime.ExtractTime(department.GetUpdatedAt())
 	m.SetUpdatedAt(departmentUpdatedAt)
 	for _, item := range department.GetPositions() {
-		var positions uuid.UUID
-		if err := (&positions).UnmarshalBinary(item.GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
 	}
 
@@ -186,10 +165,7 @@ func (svc *DepartmentService) Update(ctx context.Context, req *UpdateDepartmentR
 // Delete implements DepartmentServiceServer.Delete
 func (svc *DepartmentService) Delete(ctx context.Context, req *DeleteDepartmentRequest) (*emptypb.Empty, error) {
 	var err error
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	err = svc.client.Department.DeleteOneID(id).Exec(ctx)
 	switch {
 	case err == nil:
@@ -224,10 +200,11 @@ func (svc *DepartmentService) List(ctx context.Context, req *ListDepartmentReque
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
-		pageToken, err := uuid.ParseBytes(bytes)
+		token, err := strconv.ParseInt(string(bytes), 10, 32)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
+		pageToken := int(token)
 		listQuery = listQuery.
 			Where(department.IDLTE(pageToken))
 	}
@@ -300,24 +277,18 @@ func (svc *DepartmentService) BatchCreate(ctx context.Context, req *BatchCreateD
 
 func (svc *DepartmentService) createBuilder(department *Department) (*ent.DepartmentCreate, error) {
 	m := svc.client.Department.Create()
-	var departmentBranchID uuid.UUID
-	if err := (&departmentBranchID).UnmarshalBinary(department.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(departmentBranchID)
 	departmentCode := department.GetCode()
 	m.SetCode(departmentCode)
 	departmentCreatedAt := runtime.ExtractTime(department.GetCreatedAt())
 	m.SetCreatedAt(departmentCreatedAt)
 	departmentName := department.GetName()
 	m.SetName(departmentName)
+	departmentOrgID := int(department.GetOrgId())
+	m.SetOrgID(departmentOrgID)
 	departmentUpdatedAt := runtime.ExtractTime(department.GetUpdatedAt())
 	m.SetUpdatedAt(departmentUpdatedAt)
 	for _, item := range department.GetPositions() {
-		var positions uuid.UUID
-		if err := (&positions).UnmarshalBinary(item.GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
 	}
 	return m, nil

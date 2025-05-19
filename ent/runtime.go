@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/longgggwwww/hrm-ms-hr/ent/branch"
-	"github.com/longgggwwww/hrm-ms-hr/ent/company"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
@@ -23,76 +21,40 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	branchFields := schema.Branch{}.Fields()
-	_ = branchFields
-	// branchDescCreatedAt is the schema descriptor for created_at field.
-	branchDescCreatedAt := branchFields[6].Descriptor()
-	// branch.DefaultCreatedAt holds the default value on creation for the created_at field.
-	branch.DefaultCreatedAt = branchDescCreatedAt.Default.(func() time.Time)
-	// branchDescUpdatedAt is the schema descriptor for updated_at field.
-	branchDescUpdatedAt := branchFields[7].Descriptor()
-	// branch.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	branch.DefaultUpdatedAt = branchDescUpdatedAt.Default.(func() time.Time)
-	// branch.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	branch.UpdateDefaultUpdatedAt = branchDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// branchDescID is the schema descriptor for id field.
-	branchDescID := branchFields[0].Descriptor()
-	// branch.DefaultID holds the default value on creation for the id field.
-	branch.DefaultID = branchDescID.Default.(func() uuid.UUID)
-	companyFields := schema.Company{}.Fields()
-	_ = companyFields
-	// companyDescName is the schema descriptor for name field.
-	companyDescName := companyFields[1].Descriptor()
-	// company.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	company.NameValidator = companyDescName.Validators[0].(func(string) error)
-	// companyDescCode is the schema descriptor for code field.
-	companyDescCode := companyFields[2].Descriptor()
-	// company.CodeValidator is a validator for the "code" field. It is called by the builders before save.
-	company.CodeValidator = companyDescCode.Validators[0].(func(string) error)
-	// companyDescCreatedAt is the schema descriptor for created_at field.
-	companyDescCreatedAt := companyFields[4].Descriptor()
-	// company.DefaultCreatedAt holds the default value on creation for the created_at field.
-	company.DefaultCreatedAt = companyDescCreatedAt.Default.(func() time.Time)
-	// companyDescUpdatedAt is the schema descriptor for updated_at field.
-	companyDescUpdatedAt := companyFields[5].Descriptor()
-	// company.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	company.DefaultUpdatedAt = companyDescUpdatedAt.Default.(func() time.Time)
-	// company.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	company.UpdateDefaultUpdatedAt = companyDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// companyDescID is the schema descriptor for id field.
-	companyDescID := companyFields[0].Descriptor()
-	// company.DefaultID holds the default value on creation for the id field.
-	company.DefaultID = companyDescID.Default.(func() uuid.UUID)
 	departmentFields := schema.Department{}.Fields()
 	_ = departmentFields
+	// departmentDescName is the schema descriptor for name field.
+	departmentDescName := departmentFields[0].Descriptor()
+	// department.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	department.NameValidator = departmentDescName.Validators[0].(func(string) error)
+	// departmentDescCode is the schema descriptor for code field.
+	departmentDescCode := departmentFields[1].Descriptor()
+	// department.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	department.CodeValidator = departmentDescCode.Validators[0].(func(string) error)
 	// departmentDescCreatedAt is the schema descriptor for created_at field.
-	departmentDescCreatedAt := departmentFields[4].Descriptor()
+	departmentDescCreatedAt := departmentFields[3].Descriptor()
 	// department.DefaultCreatedAt holds the default value on creation for the created_at field.
 	department.DefaultCreatedAt = departmentDescCreatedAt.Default.(func() time.Time)
 	// departmentDescUpdatedAt is the schema descriptor for updated_at field.
-	departmentDescUpdatedAt := departmentFields[5].Descriptor()
+	departmentDescUpdatedAt := departmentFields[4].Descriptor()
 	// department.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	department.DefaultUpdatedAt = departmentDescUpdatedAt.Default.(func() time.Time)
-	// departmentDescID is the schema descriptor for id field.
-	departmentDescID := departmentFields[0].Descriptor()
-	// department.DefaultID holds the default value on creation for the id field.
-	department.DefaultID = departmentDescID.Default.(func() uuid.UUID)
 	employeeFields := schema.Employee{}.Fields()
 	_ = employeeFields
+	// employeeDescCode is the schema descriptor for code field.
+	employeeDescCode := employeeFields[1].Descriptor()
+	// employee.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	employee.CodeValidator = employeeDescCode.Validators[0].(func(string) error)
 	// employeeDescCreatedAt is the schema descriptor for created_at field.
-	employeeDescCreatedAt := employeeFields[7].Descriptor()
+	employeeDescCreatedAt := employeeFields[6].Descriptor()
 	// employee.DefaultCreatedAt holds the default value on creation for the created_at field.
 	employee.DefaultCreatedAt = employeeDescCreatedAt.Default.(func() time.Time)
 	// employeeDescUpdatedAt is the schema descriptor for updated_at field.
-	employeeDescUpdatedAt := employeeFields[8].Descriptor()
+	employeeDescUpdatedAt := employeeFields[7].Descriptor()
 	// employee.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	employee.DefaultUpdatedAt = employeeDescUpdatedAt.Default.(func() time.Time)
 	// employee.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	employee.UpdateDefaultUpdatedAt = employeeDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// employeeDescID is the schema descriptor for id field.
-	employeeDescID := employeeFields[0].Descriptor()
-	// employee.DefaultID holds the default value on creation for the id field.
-	employee.DefaultID = employeeDescID.Default.(func() uuid.UUID)
 	leaveapprovalFields := schema.LeaveApproval{}.Fields()
 	_ = leaveapprovalFields
 	// leaveapprovalDescCreatedAt is the schema descriptor for created_at field.
@@ -119,6 +81,14 @@ func init() {
 	leaverequest.UpdateDefaultUpdatedAt = leaverequestDescUpdatedAt.UpdateDefault.(func() time.Time)
 	organizationFields := schema.Organization{}.Fields()
 	_ = organizationFields
+	// organizationDescName is the schema descriptor for name field.
+	organizationDescName := organizationFields[0].Descriptor()
+	// organization.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	organization.NameValidator = organizationDescName.Validators[0].(func(string) error)
+	// organizationDescCode is the schema descriptor for code field.
+	organizationDescCode := organizationFields[1].Descriptor()
+	// organization.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	organization.CodeValidator = organizationDescCode.Validators[0].(func(string) error)
 	// organizationDescCreatedAt is the schema descriptor for created_at field.
 	organizationDescCreatedAt := organizationFields[7].Descriptor()
 	// organization.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -132,23 +102,19 @@ func init() {
 	positionFields := schema.Position{}.Fields()
 	_ = positionFields
 	// positionDescName is the schema descriptor for name field.
-	positionDescName := positionFields[1].Descriptor()
+	positionDescName := positionFields[0].Descriptor()
 	// position.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	position.NameValidator = positionDescName.Validators[0].(func(string) error)
 	// positionDescCreatedAt is the schema descriptor for created_at field.
-	positionDescCreatedAt := positionFields[5].Descriptor()
+	positionDescCreatedAt := positionFields[4].Descriptor()
 	// position.DefaultCreatedAt holds the default value on creation for the created_at field.
 	position.DefaultCreatedAt = positionDescCreatedAt.Default.(func() time.Time)
 	// positionDescUpdatedAt is the schema descriptor for updated_at field.
-	positionDescUpdatedAt := positionFields[6].Descriptor()
+	positionDescUpdatedAt := positionFields[5].Descriptor()
 	// position.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	position.DefaultUpdatedAt = positionDescUpdatedAt.Default.(func() time.Time)
 	// position.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	position.UpdateDefaultUpdatedAt = positionDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// positionDescID is the schema descriptor for id field.
-	positionDescID := positionFields[0].Descriptor()
-	// position.DefaultID holds the default value on creation for the id field.
-	position.DefaultID = positionDescID.Default.(func() uuid.UUID)
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
 	// projectDescCreatedAt is the schema descriptor for created_at field.

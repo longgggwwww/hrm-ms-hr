@@ -48,9 +48,9 @@ func toProtoOrganization(e *ent.Organization) (*Organization, error) {
 	}
 	id := int64(e.ID)
 	v.Id = id
-	if e.Logo != nil {
-		logo := wrapperspb.String(*e.Logo)
-		v.Logo = logo
+	if e.LogoURL != nil {
+		logo_url := wrapperspb.String(*e.LogoURL)
+		v.LogoUrl = logo_url
 	}
 	name := e.Name
 	v.Name = name
@@ -172,9 +172,9 @@ func (svc *OrganizationService) Update(ctx context.Context, req *UpdateOrganizat
 		organizationEmail := organization.GetEmail().GetValue()
 		m.SetEmail(organizationEmail)
 	}
-	if organization.GetLogo() != nil {
-		organizationLogo := organization.GetLogo().GetValue()
-		m.SetLogo(organizationLogo)
+	if organization.GetLogoUrl() != nil {
+		organizationLogoURL := organization.GetLogoUrl().GetValue()
+		m.SetLogoURL(organizationLogoURL)
 	}
 	organizationName := organization.GetName()
 	m.SetName(organizationName)
@@ -349,9 +349,9 @@ func (svc *OrganizationService) createBuilder(organization *Organization) (*ent.
 		organizationEmail := organization.GetEmail().GetValue()
 		m.SetEmail(organizationEmail)
 	}
-	if organization.GetLogo() != nil {
-		organizationLogo := organization.GetLogo().GetValue()
-		m.SetLogo(organizationLogo)
+	if organization.GetLogoUrl() != nil {
+		organizationLogoURL := organization.GetLogoUrl().GetValue()
+		m.SetLogoURL(organizationLogoURL)
 	}
 	organizationName := organization.GetName()
 	m.SetName(organizationName)

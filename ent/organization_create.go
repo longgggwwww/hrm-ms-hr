@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
@@ -18,6 +19,7 @@ type OrganizationCreate struct {
 	config
 	mutation *OrganizationMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -32,16 +34,16 @@ func (oc *OrganizationCreate) SetCode(s string) *OrganizationCreate {
 	return oc
 }
 
-// SetLogo sets the "logo" field.
-func (oc *OrganizationCreate) SetLogo(s string) *OrganizationCreate {
-	oc.mutation.SetLogo(s)
+// SetLogoURL sets the "logo_url" field.
+func (oc *OrganizationCreate) SetLogoURL(s string) *OrganizationCreate {
+	oc.mutation.SetLogoURL(s)
 	return oc
 }
 
-// SetNillableLogo sets the "logo" field if the given value is not nil.
-func (oc *OrganizationCreate) SetNillableLogo(s *string) *OrganizationCreate {
+// SetNillableLogoURL sets the "logo_url" field if the given value is not nil.
+func (oc *OrganizationCreate) SetNillableLogoURL(s *string) *OrganizationCreate {
 	if s != nil {
-		oc.SetLogo(*s)
+		oc.SetLogoURL(*s)
 	}
 	return oc
 }
@@ -144,6 +146,11 @@ func (oc *OrganizationCreate) SetNillableParentID(i *int) *OrganizationCreate {
 	return oc
 }
 
+// SetParent sets the "parent" edge to the Organization entity.
+func (oc *OrganizationCreate) SetParent(o *Organization) *OrganizationCreate {
+	return oc.SetParentID(o.ID)
+}
+
 // AddChildIDs adds the "children" edge to the Organization entity by IDs.
 func (oc *OrganizationCreate) AddChildIDs(ids ...int) *OrganizationCreate {
 	oc.mutation.AddChildIDs(ids...)
@@ -157,11 +164,6 @@ func (oc *OrganizationCreate) AddChildren(o ...*Organization) *OrganizationCreat
 		ids[i] = o[i].ID
 	}
 	return oc.AddChildIDs(ids...)
-}
-
-// SetParent sets the "parent" edge to the Organization entity.
-func (oc *OrganizationCreate) SetParent(o *Organization) *OrganizationCreate {
-	return oc.SetParentID(o.ID)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -214,8 +216,18 @@ func (oc *OrganizationCreate) check() error {
 	if _, ok := oc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Organization.name"`)}
 	}
+	if v, ok := oc.mutation.Name(); ok {
+		if err := organization.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Organization.name": %w`, err)}
+		}
+	}
 	if _, ok := oc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Organization.code"`)}
+	}
+	if v, ok := oc.mutation.Code(); ok {
+		if err := organization.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Organization.code": %w`, err)}
+		}
 	}
 	if _, ok := oc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Organization.created_at"`)}
@@ -249,6 +261,7 @@ func (oc *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_node = &Organization{config: oc.config}
 		_spec = sqlgraph.NewCreateSpec(organization.Table, sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = oc.conflict
 	if value, ok := oc.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -257,9 +270,9 @@ func (oc *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_spec.SetField(organization.FieldCode, field.TypeString, value)
 		_node.Code = value
 	}
-	if value, ok := oc.mutation.Logo(); ok {
-		_spec.SetField(organization.FieldLogo, field.TypeString, value)
-		_node.Logo = &value
+	if value, ok := oc.mutation.LogoURL(); ok {
+		_spec.SetField(organization.FieldLogoURL, field.TypeString, value)
+		_node.LogoURL = &value
 	}
 	if value, ok := oc.mutation.Address(); ok {
 		_spec.SetField(organization.FieldAddress, field.TypeString, value)
@@ -285,22 +298,6 @@ func (oc *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_spec.SetField(organization.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := oc.mutation.ChildrenIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   organization.ChildrenTable,
-			Columns: []string{organization.ChildrenColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := oc.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -318,7 +315,483 @@ func (oc *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_node.ParentID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := oc.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ChildrenTable,
+			Columns: []string{organization.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Organization.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.OrganizationUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (oc *OrganizationCreate) OnConflict(opts ...sql.ConflictOption) *OrganizationUpsertOne {
+	oc.conflict = opts
+	return &OrganizationUpsertOne{
+		create: oc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Organization.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (oc *OrganizationCreate) OnConflictColumns(columns ...string) *OrganizationUpsertOne {
+	oc.conflict = append(oc.conflict, sql.ConflictColumns(columns...))
+	return &OrganizationUpsertOne{
+		create: oc,
+	}
+}
+
+type (
+	// OrganizationUpsertOne is the builder for "upsert"-ing
+	//  one Organization node.
+	OrganizationUpsertOne struct {
+		create *OrganizationCreate
+	}
+
+	// OrganizationUpsert is the "OnConflict" setter.
+	OrganizationUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *OrganizationUpsert) SetName(v string) *OrganizationUpsert {
+	u.Set(organization.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateName() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldName)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *OrganizationUpsert) SetCode(v string) *OrganizationUpsert {
+	u.Set(organization.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateCode() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldCode)
+	return u
+}
+
+// SetLogoURL sets the "logo_url" field.
+func (u *OrganizationUpsert) SetLogoURL(v string) *OrganizationUpsert {
+	u.Set(organization.FieldLogoURL, v)
+	return u
+}
+
+// UpdateLogoURL sets the "logo_url" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateLogoURL() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldLogoURL)
+	return u
+}
+
+// ClearLogoURL clears the value of the "logo_url" field.
+func (u *OrganizationUpsert) ClearLogoURL() *OrganizationUpsert {
+	u.SetNull(organization.FieldLogoURL)
+	return u
+}
+
+// SetAddress sets the "address" field.
+func (u *OrganizationUpsert) SetAddress(v string) *OrganizationUpsert {
+	u.Set(organization.FieldAddress, v)
+	return u
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateAddress() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldAddress)
+	return u
+}
+
+// ClearAddress clears the value of the "address" field.
+func (u *OrganizationUpsert) ClearAddress() *OrganizationUpsert {
+	u.SetNull(organization.FieldAddress)
+	return u
+}
+
+// SetPhone sets the "phone" field.
+func (u *OrganizationUpsert) SetPhone(v string) *OrganizationUpsert {
+	u.Set(organization.FieldPhone, v)
+	return u
+}
+
+// UpdatePhone sets the "phone" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdatePhone() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldPhone)
+	return u
+}
+
+// ClearPhone clears the value of the "phone" field.
+func (u *OrganizationUpsert) ClearPhone() *OrganizationUpsert {
+	u.SetNull(organization.FieldPhone)
+	return u
+}
+
+// SetEmail sets the "email" field.
+func (u *OrganizationUpsert) SetEmail(v string) *OrganizationUpsert {
+	u.Set(organization.FieldEmail, v)
+	return u
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateEmail() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldEmail)
+	return u
+}
+
+// ClearEmail clears the value of the "email" field.
+func (u *OrganizationUpsert) ClearEmail() *OrganizationUpsert {
+	u.SetNull(organization.FieldEmail)
+	return u
+}
+
+// SetWebsite sets the "website" field.
+func (u *OrganizationUpsert) SetWebsite(v string) *OrganizationUpsert {
+	u.Set(organization.FieldWebsite, v)
+	return u
+}
+
+// UpdateWebsite sets the "website" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateWebsite() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldWebsite)
+	return u
+}
+
+// ClearWebsite clears the value of the "website" field.
+func (u *OrganizationUpsert) ClearWebsite() *OrganizationUpsert {
+	u.SetNull(organization.FieldWebsite)
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *OrganizationUpsert) SetCreatedAt(v time.Time) *OrganizationUpsert {
+	u.Set(organization.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateCreatedAt() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *OrganizationUpsert) SetUpdatedAt(v time.Time) *OrganizationUpsert {
+	u.Set(organization.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateUpdatedAt() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldUpdatedAt)
+	return u
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *OrganizationUpsert) SetParentID(v int) *OrganizationUpsert {
+	u.Set(organization.FieldParentID, v)
+	return u
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateParentID() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldParentID)
+	return u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *OrganizationUpsert) ClearParentID() *OrganizationUpsert {
+	u.SetNull(organization.FieldParentID)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Organization.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *OrganizationUpsertOne) UpdateNewValues() *OrganizationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Organization.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *OrganizationUpsertOne) Ignore() *OrganizationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *OrganizationUpsertOne) DoNothing() *OrganizationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the OrganizationCreate.OnConflict
+// documentation for more info.
+func (u *OrganizationUpsertOne) Update(set func(*OrganizationUpsert)) *OrganizationUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&OrganizationUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *OrganizationUpsertOne) SetName(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateName() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *OrganizationUpsertOne) SetCode(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateCode() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetLogoURL sets the "logo_url" field.
+func (u *OrganizationUpsertOne) SetLogoURL(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetLogoURL(v)
+	})
+}
+
+// UpdateLogoURL sets the "logo_url" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateLogoURL() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateLogoURL()
+	})
+}
+
+// ClearLogoURL clears the value of the "logo_url" field.
+func (u *OrganizationUpsertOne) ClearLogoURL() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearLogoURL()
+	})
+}
+
+// SetAddress sets the "address" field.
+func (u *OrganizationUpsertOne) SetAddress(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateAddress() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// ClearAddress clears the value of the "address" field.
+func (u *OrganizationUpsertOne) ClearAddress() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearAddress()
+	})
+}
+
+// SetPhone sets the "phone" field.
+func (u *OrganizationUpsertOne) SetPhone(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetPhone(v)
+	})
+}
+
+// UpdatePhone sets the "phone" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdatePhone() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdatePhone()
+	})
+}
+
+// ClearPhone clears the value of the "phone" field.
+func (u *OrganizationUpsertOne) ClearPhone() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearPhone()
+	})
+}
+
+// SetEmail sets the "email" field.
+func (u *OrganizationUpsertOne) SetEmail(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateEmail() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateEmail()
+	})
+}
+
+// ClearEmail clears the value of the "email" field.
+func (u *OrganizationUpsertOne) ClearEmail() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearEmail()
+	})
+}
+
+// SetWebsite sets the "website" field.
+func (u *OrganizationUpsertOne) SetWebsite(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetWebsite(v)
+	})
+}
+
+// UpdateWebsite sets the "website" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateWebsite() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateWebsite()
+	})
+}
+
+// ClearWebsite clears the value of the "website" field.
+func (u *OrganizationUpsertOne) ClearWebsite() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearWebsite()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *OrganizationUpsertOne) SetCreatedAt(v time.Time) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateCreatedAt() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *OrganizationUpsertOne) SetUpdatedAt(v time.Time) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateUpdatedAt() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *OrganizationUpsertOne) SetParentID(v int) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateParentID() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *OrganizationUpsertOne) ClearParentID() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// Exec executes the query.
+func (u *OrganizationUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for OrganizationCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *OrganizationUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *OrganizationUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *OrganizationUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
 }
 
 // OrganizationCreateBulk is the builder for creating many Organization entities in bulk.
@@ -326,6 +799,7 @@ type OrganizationCreateBulk struct {
 	config
 	err      error
 	builders []*OrganizationCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Organization entities in the database.
@@ -355,6 +829,7 @@ func (ocb *OrganizationCreateBulk) Save(ctx context.Context) ([]*Organization, e
 					_, err = mutators[i+1].Mutate(root, ocb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ocb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ocb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -405,6 +880,292 @@ func (ocb *OrganizationCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ocb *OrganizationCreateBulk) ExecX(ctx context.Context) {
 	if err := ocb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Organization.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.OrganizationUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (ocb *OrganizationCreateBulk) OnConflict(opts ...sql.ConflictOption) *OrganizationUpsertBulk {
+	ocb.conflict = opts
+	return &OrganizationUpsertBulk{
+		create: ocb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Organization.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ocb *OrganizationCreateBulk) OnConflictColumns(columns ...string) *OrganizationUpsertBulk {
+	ocb.conflict = append(ocb.conflict, sql.ConflictColumns(columns...))
+	return &OrganizationUpsertBulk{
+		create: ocb,
+	}
+}
+
+// OrganizationUpsertBulk is the builder for "upsert"-ing
+// a bulk of Organization nodes.
+type OrganizationUpsertBulk struct {
+	create *OrganizationCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Organization.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *OrganizationUpsertBulk) UpdateNewValues() *OrganizationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Organization.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *OrganizationUpsertBulk) Ignore() *OrganizationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *OrganizationUpsertBulk) DoNothing() *OrganizationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the OrganizationCreateBulk.OnConflict
+// documentation for more info.
+func (u *OrganizationUpsertBulk) Update(set func(*OrganizationUpsert)) *OrganizationUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&OrganizationUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *OrganizationUpsertBulk) SetName(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateName() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *OrganizationUpsertBulk) SetCode(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateCode() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetLogoURL sets the "logo_url" field.
+func (u *OrganizationUpsertBulk) SetLogoURL(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetLogoURL(v)
+	})
+}
+
+// UpdateLogoURL sets the "logo_url" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateLogoURL() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateLogoURL()
+	})
+}
+
+// ClearLogoURL clears the value of the "logo_url" field.
+func (u *OrganizationUpsertBulk) ClearLogoURL() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearLogoURL()
+	})
+}
+
+// SetAddress sets the "address" field.
+func (u *OrganizationUpsertBulk) SetAddress(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateAddress() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// ClearAddress clears the value of the "address" field.
+func (u *OrganizationUpsertBulk) ClearAddress() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearAddress()
+	})
+}
+
+// SetPhone sets the "phone" field.
+func (u *OrganizationUpsertBulk) SetPhone(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetPhone(v)
+	})
+}
+
+// UpdatePhone sets the "phone" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdatePhone() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdatePhone()
+	})
+}
+
+// ClearPhone clears the value of the "phone" field.
+func (u *OrganizationUpsertBulk) ClearPhone() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearPhone()
+	})
+}
+
+// SetEmail sets the "email" field.
+func (u *OrganizationUpsertBulk) SetEmail(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateEmail() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateEmail()
+	})
+}
+
+// ClearEmail clears the value of the "email" field.
+func (u *OrganizationUpsertBulk) ClearEmail() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearEmail()
+	})
+}
+
+// SetWebsite sets the "website" field.
+func (u *OrganizationUpsertBulk) SetWebsite(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetWebsite(v)
+	})
+}
+
+// UpdateWebsite sets the "website" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateWebsite() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateWebsite()
+	})
+}
+
+// ClearWebsite clears the value of the "website" field.
+func (u *OrganizationUpsertBulk) ClearWebsite() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearWebsite()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *OrganizationUpsertBulk) SetCreatedAt(v time.Time) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateCreatedAt() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *OrganizationUpsertBulk) SetUpdatedAt(v time.Time) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateUpdatedAt() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *OrganizationUpsertBulk) SetParentID(v int) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateParentID() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *OrganizationUpsertBulk) ClearParentID() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// Exec executes the query.
+func (u *OrganizationUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the OrganizationCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for OrganizationCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *OrganizationUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

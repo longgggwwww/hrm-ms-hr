@@ -8,7 +8,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"entgo.io/ent/schema/index"
 )
 
 // Department holds the schema definition for the Department entity.
@@ -19,15 +19,13 @@ type Department struct {
 // Fields of the Department.
 func (Department) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Annotations(entproto.Field(1)),
 		field.String("name").
+			NotEmpty().
 			Annotations(entproto.Field(2)),
 		field.String("code").
-			Unique().
+			NotEmpty().
 			Annotations(entproto.Field(3)),
-		field.UUID("branch_id", uuid.UUID{}).
+		field.Int("org_id").
 			Annotations(entproto.Field(4)),
 		field.Time("created_at").
 			Default(time.Now).
@@ -50,5 +48,11 @@ func (Department) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entproto.Message(),
 		entproto.Service(),
+	}
+}
+
+func (Department) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("org_id", "code").Unique(),
 	}
 }

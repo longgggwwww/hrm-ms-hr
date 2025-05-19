@@ -7,52 +7,51 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uuid.UUID) predicate.Department {
+func ID(id int) predicate.Department {
 	return predicate.Department(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uuid.UUID) predicate.Department {
+func IDEQ(id int) predicate.Department {
 	return predicate.Department(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uuid.UUID) predicate.Department {
+func IDNEQ(id int) predicate.Department {
 	return predicate.Department(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uuid.UUID) predicate.Department {
+func IDIn(ids ...int) predicate.Department {
 	return predicate.Department(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uuid.UUID) predicate.Department {
+func IDNotIn(ids ...int) predicate.Department {
 	return predicate.Department(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uuid.UUID) predicate.Department {
+func IDGT(id int) predicate.Department {
 	return predicate.Department(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uuid.UUID) predicate.Department {
+func IDGTE(id int) predicate.Department {
 	return predicate.Department(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uuid.UUID) predicate.Department {
+func IDLT(id int) predicate.Department {
 	return predicate.Department(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uuid.UUID) predicate.Department {
+func IDLTE(id int) predicate.Department {
 	return predicate.Department(sql.FieldLTE(FieldID, id))
 }
 
@@ -66,9 +65,9 @@ func Code(v string) predicate.Department {
 	return predicate.Department(sql.FieldEQ(FieldCode, v))
 }
 
-// BranchID applies equality check predicate on the "branch_id" field. It's identical to BranchIDEQ.
-func BranchID(v uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldEQ(FieldBranchID, v))
+// OrgID applies equality check predicate on the "org_id" field. It's identical to OrgIDEQ.
+func OrgID(v int) predicate.Department {
+	return predicate.Department(sql.FieldEQ(FieldOrgID, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -211,44 +210,44 @@ func CodeContainsFold(v string) predicate.Department {
 	return predicate.Department(sql.FieldContainsFold(FieldCode, v))
 }
 
-// BranchIDEQ applies the EQ predicate on the "branch_id" field.
-func BranchIDEQ(v uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldEQ(FieldBranchID, v))
+// OrgIDEQ applies the EQ predicate on the "org_id" field.
+func OrgIDEQ(v int) predicate.Department {
+	return predicate.Department(sql.FieldEQ(FieldOrgID, v))
 }
 
-// BranchIDNEQ applies the NEQ predicate on the "branch_id" field.
-func BranchIDNEQ(v uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldNEQ(FieldBranchID, v))
+// OrgIDNEQ applies the NEQ predicate on the "org_id" field.
+func OrgIDNEQ(v int) predicate.Department {
+	return predicate.Department(sql.FieldNEQ(FieldOrgID, v))
 }
 
-// BranchIDIn applies the In predicate on the "branch_id" field.
-func BranchIDIn(vs ...uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldIn(FieldBranchID, vs...))
+// OrgIDIn applies the In predicate on the "org_id" field.
+func OrgIDIn(vs ...int) predicate.Department {
+	return predicate.Department(sql.FieldIn(FieldOrgID, vs...))
 }
 
-// BranchIDNotIn applies the NotIn predicate on the "branch_id" field.
-func BranchIDNotIn(vs ...uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldNotIn(FieldBranchID, vs...))
+// OrgIDNotIn applies the NotIn predicate on the "org_id" field.
+func OrgIDNotIn(vs ...int) predicate.Department {
+	return predicate.Department(sql.FieldNotIn(FieldOrgID, vs...))
 }
 
-// BranchIDGT applies the GT predicate on the "branch_id" field.
-func BranchIDGT(v uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldGT(FieldBranchID, v))
+// OrgIDGT applies the GT predicate on the "org_id" field.
+func OrgIDGT(v int) predicate.Department {
+	return predicate.Department(sql.FieldGT(FieldOrgID, v))
 }
 
-// BranchIDGTE applies the GTE predicate on the "branch_id" field.
-func BranchIDGTE(v uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldGTE(FieldBranchID, v))
+// OrgIDGTE applies the GTE predicate on the "org_id" field.
+func OrgIDGTE(v int) predicate.Department {
+	return predicate.Department(sql.FieldGTE(FieldOrgID, v))
 }
 
-// BranchIDLT applies the LT predicate on the "branch_id" field.
-func BranchIDLT(v uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldLT(FieldBranchID, v))
+// OrgIDLT applies the LT predicate on the "org_id" field.
+func OrgIDLT(v int) predicate.Department {
+	return predicate.Department(sql.FieldLT(FieldOrgID, v))
 }
 
-// BranchIDLTE applies the LTE predicate on the "branch_id" field.
-func BranchIDLTE(v uuid.UUID) predicate.Department {
-	return predicate.Department(sql.FieldLTE(FieldBranchID, v))
+// OrgIDLTE applies the LTE predicate on the "org_id" field.
+func OrgIDLTE(v int) predicate.Department {
+	return predicate.Department(sql.FieldLTE(FieldOrgID, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

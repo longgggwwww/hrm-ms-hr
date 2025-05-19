@@ -56,23 +56,23 @@ func (ou *OrganizationUpdate) SetNillableCode(s *string) *OrganizationUpdate {
 	return ou
 }
 
-// SetLogo sets the "logo" field.
-func (ou *OrganizationUpdate) SetLogo(s string) *OrganizationUpdate {
-	ou.mutation.SetLogo(s)
+// SetLogoURL sets the "logo_url" field.
+func (ou *OrganizationUpdate) SetLogoURL(s string) *OrganizationUpdate {
+	ou.mutation.SetLogoURL(s)
 	return ou
 }
 
-// SetNillableLogo sets the "logo" field if the given value is not nil.
-func (ou *OrganizationUpdate) SetNillableLogo(s *string) *OrganizationUpdate {
+// SetNillableLogoURL sets the "logo_url" field if the given value is not nil.
+func (ou *OrganizationUpdate) SetNillableLogoURL(s *string) *OrganizationUpdate {
 	if s != nil {
-		ou.SetLogo(*s)
+		ou.SetLogoURL(*s)
 	}
 	return ou
 }
 
-// ClearLogo clears the value of the "logo" field.
-func (ou *OrganizationUpdate) ClearLogo() *OrganizationUpdate {
-	ou.mutation.ClearLogo()
+// ClearLogoURL clears the value of the "logo_url" field.
+func (ou *OrganizationUpdate) ClearLogoURL() *OrganizationUpdate {
+	ou.mutation.ClearLogoURL()
 	return ou
 }
 
@@ -196,6 +196,11 @@ func (ou *OrganizationUpdate) ClearParentID() *OrganizationUpdate {
 	return ou
 }
 
+// SetParent sets the "parent" edge to the Organization entity.
+func (ou *OrganizationUpdate) SetParent(o *Organization) *OrganizationUpdate {
+	return ou.SetParentID(o.ID)
+}
+
 // AddChildIDs adds the "children" edge to the Organization entity by IDs.
 func (ou *OrganizationUpdate) AddChildIDs(ids ...int) *OrganizationUpdate {
 	ou.mutation.AddChildIDs(ids...)
@@ -211,14 +216,15 @@ func (ou *OrganizationUpdate) AddChildren(o ...*Organization) *OrganizationUpdat
 	return ou.AddChildIDs(ids...)
 }
 
-// SetParent sets the "parent" edge to the Organization entity.
-func (ou *OrganizationUpdate) SetParent(o *Organization) *OrganizationUpdate {
-	return ou.SetParentID(o.ID)
-}
-
 // Mutation returns the OrganizationMutation object of the builder.
 func (ou *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return ou.mutation
+}
+
+// ClearParent clears the "parent" edge to the Organization entity.
+func (ou *OrganizationUpdate) ClearParent() *OrganizationUpdate {
+	ou.mutation.ClearParent()
+	return ou
 }
 
 // ClearChildren clears all "children" edges to the Organization entity.
@@ -240,12 +246,6 @@ func (ou *OrganizationUpdate) RemoveChildren(o ...*Organization) *OrganizationUp
 		ids[i] = o[i].ID
 	}
 	return ou.RemoveChildIDs(ids...)
-}
-
-// ClearParent clears the "parent" edge to the Organization entity.
-func (ou *OrganizationUpdate) ClearParent() *OrganizationUpdate {
-	ou.mutation.ClearParent()
-	return ou
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -284,7 +284,25 @@ func (ou *OrganizationUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ou *OrganizationUpdate) check() error {
+	if v, ok := ou.mutation.Name(); ok {
+		if err := organization.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Organization.name": %w`, err)}
+		}
+	}
+	if v, ok := ou.mutation.Code(); ok {
+		if err := organization.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Organization.code": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := ou.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(organization.Table, organization.Columns, sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt))
 	if ps := ou.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -299,11 +317,11 @@ func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.Code(); ok {
 		_spec.SetField(organization.FieldCode, field.TypeString, value)
 	}
-	if value, ok := ou.mutation.Logo(); ok {
-		_spec.SetField(organization.FieldLogo, field.TypeString, value)
+	if value, ok := ou.mutation.LogoURL(); ok {
+		_spec.SetField(organization.FieldLogoURL, field.TypeString, value)
 	}
-	if ou.mutation.LogoCleared() {
-		_spec.ClearField(organization.FieldLogo, field.TypeString)
+	if ou.mutation.LogoURLCleared() {
+		_spec.ClearField(organization.FieldLogoURL, field.TypeString)
 	}
 	if value, ok := ou.mutation.Address(); ok {
 		_spec.SetField(organization.FieldAddress, field.TypeString, value)
@@ -335,51 +353,6 @@ func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.UpdatedAt(); ok {
 		_spec.SetField(organization.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if ou.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   organization.ChildrenTable,
-			Columns: []string{organization.ChildrenColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ou.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !ou.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   organization.ChildrenTable,
-			Columns: []string{organization.ChildrenColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ou.mutation.ChildrenIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   organization.ChildrenTable,
-			Columns: []string{organization.ChildrenColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if ou.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -399,6 +372,51 @@ func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Inverse: true,
 			Table:   organization.ParentTable,
 			Columns: []string{organization.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ou.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ChildrenTable,
+			Columns: []string{organization.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !ou.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ChildrenTable,
+			Columns: []string{organization.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ChildrenTable,
+			Columns: []string{organization.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
@@ -457,23 +475,23 @@ func (ouo *OrganizationUpdateOne) SetNillableCode(s *string) *OrganizationUpdate
 	return ouo
 }
 
-// SetLogo sets the "logo" field.
-func (ouo *OrganizationUpdateOne) SetLogo(s string) *OrganizationUpdateOne {
-	ouo.mutation.SetLogo(s)
+// SetLogoURL sets the "logo_url" field.
+func (ouo *OrganizationUpdateOne) SetLogoURL(s string) *OrganizationUpdateOne {
+	ouo.mutation.SetLogoURL(s)
 	return ouo
 }
 
-// SetNillableLogo sets the "logo" field if the given value is not nil.
-func (ouo *OrganizationUpdateOne) SetNillableLogo(s *string) *OrganizationUpdateOne {
+// SetNillableLogoURL sets the "logo_url" field if the given value is not nil.
+func (ouo *OrganizationUpdateOne) SetNillableLogoURL(s *string) *OrganizationUpdateOne {
 	if s != nil {
-		ouo.SetLogo(*s)
+		ouo.SetLogoURL(*s)
 	}
 	return ouo
 }
 
-// ClearLogo clears the value of the "logo" field.
-func (ouo *OrganizationUpdateOne) ClearLogo() *OrganizationUpdateOne {
-	ouo.mutation.ClearLogo()
+// ClearLogoURL clears the value of the "logo_url" field.
+func (ouo *OrganizationUpdateOne) ClearLogoURL() *OrganizationUpdateOne {
+	ouo.mutation.ClearLogoURL()
 	return ouo
 }
 
@@ -597,6 +615,11 @@ func (ouo *OrganizationUpdateOne) ClearParentID() *OrganizationUpdateOne {
 	return ouo
 }
 
+// SetParent sets the "parent" edge to the Organization entity.
+func (ouo *OrganizationUpdateOne) SetParent(o *Organization) *OrganizationUpdateOne {
+	return ouo.SetParentID(o.ID)
+}
+
 // AddChildIDs adds the "children" edge to the Organization entity by IDs.
 func (ouo *OrganizationUpdateOne) AddChildIDs(ids ...int) *OrganizationUpdateOne {
 	ouo.mutation.AddChildIDs(ids...)
@@ -612,14 +635,15 @@ func (ouo *OrganizationUpdateOne) AddChildren(o ...*Organization) *OrganizationU
 	return ouo.AddChildIDs(ids...)
 }
 
-// SetParent sets the "parent" edge to the Organization entity.
-func (ouo *OrganizationUpdateOne) SetParent(o *Organization) *OrganizationUpdateOne {
-	return ouo.SetParentID(o.ID)
-}
-
 // Mutation returns the OrganizationMutation object of the builder.
 func (ouo *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return ouo.mutation
+}
+
+// ClearParent clears the "parent" edge to the Organization entity.
+func (ouo *OrganizationUpdateOne) ClearParent() *OrganizationUpdateOne {
+	ouo.mutation.ClearParent()
+	return ouo
 }
 
 // ClearChildren clears all "children" edges to the Organization entity.
@@ -641,12 +665,6 @@ func (ouo *OrganizationUpdateOne) RemoveChildren(o ...*Organization) *Organizati
 		ids[i] = o[i].ID
 	}
 	return ouo.RemoveChildIDs(ids...)
-}
-
-// ClearParent clears the "parent" edge to the Organization entity.
-func (ouo *OrganizationUpdateOne) ClearParent() *OrganizationUpdateOne {
-	ouo.mutation.ClearParent()
-	return ouo
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
@@ -698,7 +716,25 @@ func (ouo *OrganizationUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ouo *OrganizationUpdateOne) check() error {
+	if v, ok := ouo.mutation.Name(); ok {
+		if err := organization.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Organization.name": %w`, err)}
+		}
+	}
+	if v, ok := ouo.mutation.Code(); ok {
+		if err := organization.CodeValidator(v); err != nil {
+			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Organization.code": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organization, err error) {
+	if err := ouo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(organization.Table, organization.Columns, sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt))
 	id, ok := ouo.mutation.ID()
 	if !ok {
@@ -730,11 +766,11 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 	if value, ok := ouo.mutation.Code(); ok {
 		_spec.SetField(organization.FieldCode, field.TypeString, value)
 	}
-	if value, ok := ouo.mutation.Logo(); ok {
-		_spec.SetField(organization.FieldLogo, field.TypeString, value)
+	if value, ok := ouo.mutation.LogoURL(); ok {
+		_spec.SetField(organization.FieldLogoURL, field.TypeString, value)
 	}
-	if ouo.mutation.LogoCleared() {
-		_spec.ClearField(organization.FieldLogo, field.TypeString)
+	if ouo.mutation.LogoURLCleared() {
+		_spec.ClearField(organization.FieldLogoURL, field.TypeString)
 	}
 	if value, ok := ouo.mutation.Address(); ok {
 		_spec.SetField(organization.FieldAddress, field.TypeString, value)
@@ -766,51 +802,6 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 	if value, ok := ouo.mutation.UpdatedAt(); ok {
 		_spec.SetField(organization.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if ouo.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   organization.ChildrenTable,
-			Columns: []string{organization.ChildrenColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ouo.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !ouo.mutation.ChildrenCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   organization.ChildrenTable,
-			Columns: []string{organization.ChildrenColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ouo.mutation.ChildrenIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   organization.ChildrenTable,
-			Columns: []string{organization.ChildrenColumn},
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if ouo.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -830,6 +821,51 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 			Inverse: true,
 			Table:   organization.ParentTable,
 			Columns: []string{organization.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ouo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ChildrenTable,
+			Columns: []string{organization.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.RemovedChildrenIDs(); len(nodes) > 0 && !ouo.mutation.ChildrenCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ChildrenTable,
+			Columns: []string{organization.ChildrenColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ChildrenTable,
+			Columns: []string{organization.ChildrenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),

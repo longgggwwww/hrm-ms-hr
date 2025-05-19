@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
@@ -28,6 +27,8 @@ type PositionQuery struct {
 	predicates     []predicate.Position
 	withEmployees  *EmployeeQuery
 	withDepartment *DepartmentQuery
+	withChildren   *PositionQuery
+	withParent     *PositionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -108,6 +109,50 @@ func (pq *PositionQuery) QueryDepartment() *DepartmentQuery {
 	return query
 }
 
+// QueryChildren chains the current query on the "children" edge.
+func (pq *PositionQuery) QueryChildren() *PositionQuery {
+	query := (&PositionClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(position.Table, position.FieldID, selector),
+			sqlgraph.To(position.Table, position.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, position.ChildrenTable, position.ChildrenColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryParent chains the current query on the "parent" edge.
+func (pq *PositionQuery) QueryParent() *PositionQuery {
+	query := (&PositionClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(position.Table, position.FieldID, selector),
+			sqlgraph.To(position.Table, position.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, position.ParentTable, position.ParentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Position entity from the query.
 // Returns a *NotFoundError when no Position was found.
 func (pq *PositionQuery) First(ctx context.Context) (*Position, error) {
@@ -132,8 +177,8 @@ func (pq *PositionQuery) FirstX(ctx context.Context) *Position {
 
 // FirstID returns the first Position ID from the query.
 // Returns a *NotFoundError when no Position ID was found.
-func (pq *PositionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (pq *PositionQuery) FirstID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = pq.Limit(1).IDs(setContextOp(ctx, pq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -145,7 +190,7 @@ func (pq *PositionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pq *PositionQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (pq *PositionQuery) FirstIDX(ctx context.Context) int {
 	id, err := pq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -183,8 +228,8 @@ func (pq *PositionQuery) OnlyX(ctx context.Context) *Position {
 // OnlyID is like Only, but returns the only Position ID in the query.
 // Returns a *NotSingularError when more than one Position ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pq *PositionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (pq *PositionQuery) OnlyID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = pq.Limit(2).IDs(setContextOp(ctx, pq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -200,7 +245,7 @@ func (pq *PositionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pq *PositionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (pq *PositionQuery) OnlyIDX(ctx context.Context) int {
 	id, err := pq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -228,7 +273,7 @@ func (pq *PositionQuery) AllX(ctx context.Context) []*Position {
 }
 
 // IDs executes the query and returns a list of Position IDs.
-func (pq *PositionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+func (pq *PositionQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if pq.ctx.Unique == nil && pq.path != nil {
 		pq.Unique(true)
 	}
@@ -240,7 +285,7 @@ func (pq *PositionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pq *PositionQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (pq *PositionQuery) IDsX(ctx context.Context) []int {
 	ids, err := pq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -302,6 +347,8 @@ func (pq *PositionQuery) Clone() *PositionQuery {
 		predicates:     append([]predicate.Position{}, pq.predicates...),
 		withEmployees:  pq.withEmployees.Clone(),
 		withDepartment: pq.withDepartment.Clone(),
+		withChildren:   pq.withChildren.Clone(),
+		withParent:     pq.withParent.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -327,6 +374,28 @@ func (pq *PositionQuery) WithDepartment(opts ...func(*DepartmentQuery)) *Positio
 		opt(query)
 	}
 	pq.withDepartment = query
+	return pq
+}
+
+// WithChildren tells the query-builder to eager-load the nodes that are connected to
+// the "children" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PositionQuery) WithChildren(opts ...func(*PositionQuery)) *PositionQuery {
+	query := (&PositionClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withChildren = query
+	return pq
+}
+
+// WithParent tells the query-builder to eager-load the nodes that are connected to
+// the "parent" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PositionQuery) WithParent(opts ...func(*PositionQuery)) *PositionQuery {
+	query := (&PositionClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withParent = query
 	return pq
 }
 
@@ -408,9 +477,11 @@ func (pq *PositionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pos
 	var (
 		nodes       = []*Position{}
 		_spec       = pq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			pq.withEmployees != nil,
 			pq.withDepartment != nil,
+			pq.withChildren != nil,
+			pq.withParent != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -444,12 +515,25 @@ func (pq *PositionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pos
 			return nil, err
 		}
 	}
+	if query := pq.withChildren; query != nil {
+		if err := pq.loadChildren(ctx, query, nodes,
+			func(n *Position) { n.Edges.Children = []*Position{} },
+			func(n *Position, e *Position) { n.Edges.Children = append(n.Edges.Children, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withParent; query != nil {
+		if err := pq.loadParent(ctx, query, nodes, nil,
+			func(n *Position, e *Position) { n.Edges.Parent = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (pq *PositionQuery) loadEmployees(ctx context.Context, query *EmployeeQuery, nodes []*Position, init func(*Position), assign func(*Position, *Employee)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Position)
+	nodeids := make(map[int]*Position)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -478,8 +562,8 @@ func (pq *PositionQuery) loadEmployees(ctx context.Context, query *EmployeeQuery
 	return nil
 }
 func (pq *PositionQuery) loadDepartment(ctx context.Context, query *DepartmentQuery, nodes []*Position, init func(*Position), assign func(*Position, *Department)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Position)
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Position)
 	for i := range nodes {
 		fk := nodes[i].DepartmentID
 		if _, ok := nodeids[fk]; !ok {
@@ -506,6 +590,65 @@ func (pq *PositionQuery) loadDepartment(ctx context.Context, query *DepartmentQu
 	}
 	return nil
 }
+func (pq *PositionQuery) loadChildren(ctx context.Context, query *PositionQuery, nodes []*Position, init func(*Position), assign func(*Position, *Position)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Position)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(position.FieldParentID)
+	}
+	query.Where(predicate.Position(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(position.ChildrenColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ParentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "parent_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (pq *PositionQuery) loadParent(ctx context.Context, query *PositionQuery, nodes []*Position, init func(*Position), assign func(*Position, *Position)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Position)
+	for i := range nodes {
+		fk := nodes[i].ParentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(position.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "parent_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (pq *PositionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := pq.querySpec()
@@ -517,7 +660,7 @@ func (pq *PositionQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (pq *PositionQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(position.Table, position.Columns, sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewQuerySpec(position.Table, position.Columns, sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt))
 	_spec.From = pq.sql
 	if unique := pq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -534,6 +677,9 @@ func (pq *PositionQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if pq.withDepartment != nil {
 			_spec.Node.AddColumnOnce(position.FieldDepartmentID)
+		}
+		if pq.withParent != nil {
+			_spec.Node.AddColumnOnce(position.FieldParentID)
 		}
 	}
 	if ps := pq.predicates; len(ps) > 0 {

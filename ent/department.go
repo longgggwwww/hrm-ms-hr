@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 )
 
@@ -17,13 +16,13 @@ import (
 type Department struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
-	// BranchID holds the value of the "branch_id" field.
-	BranchID uuid.UUID `json:"branch_id,omitempty"`
+	// OrgID holds the value of the "org_id" field.
+	OrgID int `json:"org_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -57,12 +56,12 @@ func (*Department) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case department.FieldID, department.FieldOrgID:
+			values[i] = new(sql.NullInt64)
 		case department.FieldName, department.FieldCode:
 			values[i] = new(sql.NullString)
 		case department.FieldCreatedAt, department.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case department.FieldID, department.FieldBranchID:
-			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -79,11 +78,11 @@ func (d *Department) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case department.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				d.ID = *value
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
 			}
+			d.ID = int(value.Int64)
 		case department.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -96,11 +95,11 @@ func (d *Department) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				d.Code = value.String
 			}
-		case department.FieldBranchID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field branch_id", values[i])
-			} else if value != nil {
-				d.BranchID = *value
+		case department.FieldOrgID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field org_id", values[i])
+			} else if value.Valid {
+				d.OrgID = int(value.Int64)
 			}
 		case department.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -161,8 +160,8 @@ func (d *Department) String() string {
 	builder.WriteString("code=")
 	builder.WriteString(d.Code)
 	builder.WriteString(", ")
-	builder.WriteString("branch_id=")
-	builder.WriteString(fmt.Sprintf("%v", d.BranchID))
+	builder.WriteString("org_id=")
+	builder.WriteString(fmt.Sprintf("%v", d.OrgID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(d.CreatedAt.Format(time.ANSIC))

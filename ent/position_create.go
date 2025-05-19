@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
@@ -21,6 +21,7 @@ type PositionCreate struct {
 	config
 	mutation *PositionMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -36,14 +37,22 @@ func (pc *PositionCreate) SetCode(s string) *PositionCreate {
 }
 
 // SetDepartmentID sets the "department_id" field.
-func (pc *PositionCreate) SetDepartmentID(u uuid.UUID) *PositionCreate {
-	pc.mutation.SetDepartmentID(u)
+func (pc *PositionCreate) SetDepartmentID(i int) *PositionCreate {
+	pc.mutation.SetDepartmentID(i)
 	return pc
 }
 
 // SetParentID sets the "parent_id" field.
-func (pc *PositionCreate) SetParentID(u uuid.UUID) *PositionCreate {
-	pc.mutation.SetParentID(u)
+func (pc *PositionCreate) SetParentID(i int) *PositionCreate {
+	pc.mutation.SetParentID(i)
+	return pc
+}
+
+// SetNillableParentID sets the "parent_id" field if the given value is not nil.
+func (pc *PositionCreate) SetNillableParentID(i *int) *PositionCreate {
+	if i != nil {
+		pc.SetParentID(*i)
+	}
 	return pc
 }
 
@@ -75,29 +84,15 @@ func (pc *PositionCreate) SetNillableUpdatedAt(t *time.Time) *PositionCreate {
 	return pc
 }
 
-// SetID sets the "id" field.
-func (pc *PositionCreate) SetID(u uuid.UUID) *PositionCreate {
-	pc.mutation.SetID(u)
-	return pc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (pc *PositionCreate) SetNillableID(u *uuid.UUID) *PositionCreate {
-	if u != nil {
-		pc.SetID(*u)
-	}
-	return pc
-}
-
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
-func (pc *PositionCreate) AddEmployeeIDs(ids ...uuid.UUID) *PositionCreate {
+func (pc *PositionCreate) AddEmployeeIDs(ids ...int) *PositionCreate {
 	pc.mutation.AddEmployeeIDs(ids...)
 	return pc
 }
 
 // AddEmployees adds the "employees" edges to the Employee entity.
 func (pc *PositionCreate) AddEmployees(e ...*Employee) *PositionCreate {
-	ids := make([]uuid.UUID, len(e))
+	ids := make([]int, len(e))
 	for i := range e {
 		ids[i] = e[i].ID
 	}
@@ -107,6 +102,26 @@ func (pc *PositionCreate) AddEmployees(e ...*Employee) *PositionCreate {
 // SetDepartment sets the "department" edge to the Department entity.
 func (pc *PositionCreate) SetDepartment(d *Department) *PositionCreate {
 	return pc.SetDepartmentID(d.ID)
+}
+
+// AddChildIDs adds the "children" edge to the Position entity by IDs.
+func (pc *PositionCreate) AddChildIDs(ids ...int) *PositionCreate {
+	pc.mutation.AddChildIDs(ids...)
+	return pc
+}
+
+// AddChildren adds the "children" edges to the Position entity.
+func (pc *PositionCreate) AddChildren(p ...*Position) *PositionCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddChildIDs(ids...)
+}
+
+// SetParent sets the "parent" edge to the Position entity.
+func (pc *PositionCreate) SetParent(p *Position) *PositionCreate {
+	return pc.SetParentID(p.ID)
 }
 
 // Mutation returns the PositionMutation object of the builder.
@@ -152,10 +167,6 @@ func (pc *PositionCreate) defaults() {
 		v := position.DefaultUpdatedAt()
 		pc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := pc.mutation.ID(); !ok {
-		v := position.DefaultID()
-		pc.mutation.SetID(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -173,9 +184,6 @@ func (pc *PositionCreate) check() error {
 	}
 	if _, ok := pc.mutation.DepartmentID(); !ok {
 		return &ValidationError{Name: "department_id", err: errors.New(`ent: missing required field "Position.department_id"`)}
-	}
-	if _, ok := pc.mutation.ParentID(); !ok {
-		return &ValidationError{Name: "parent_id", err: errors.New(`ent: missing required field "Position.parent_id"`)}
 	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Position.created_at"`)}
@@ -200,13 +208,8 @@ func (pc *PositionCreate) sqlSave(ctx context.Context) (*Position, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
-	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	pc.mutation.id = &_node.ID
 	pc.mutation.done = true
 	return _node, nil
@@ -215,12 +218,9 @@ func (pc *PositionCreate) sqlSave(ctx context.Context) (*Position, error) {
 func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Position{config: pc.config}
-		_spec = sqlgraph.NewCreateSpec(position.Table, sqlgraph.NewFieldSpec(position.FieldID, field.TypeUUID))
+		_spec = sqlgraph.NewCreateSpec(position.Table, sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt))
 	)
-	if id, ok := pc.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = &id
-	}
+	_spec.OnConflict = pc.conflict
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(position.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -228,10 +228,6 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Code(); ok {
 		_spec.SetField(position.FieldCode, field.TypeString, value)
 		_node.Code = value
-	}
-	if value, ok := pc.mutation.ParentID(); ok {
-		_spec.SetField(position.FieldParentID, field.TypeUUID, value)
-		_node.ParentID = value
 	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(position.FieldCreatedAt, field.TypeTime, value)
@@ -249,7 +245,7 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 			Columns: []string{position.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -265,7 +261,7 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -274,7 +270,310 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 		_node.DepartmentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := pc.mutation.ChildrenIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   position.ChildrenTable,
+			Columns: []string{position.ChildrenColumn},
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   position.ParentTable,
+			Columns: []string{position.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ParentID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Position.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PositionUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (pc *PositionCreate) OnConflict(opts ...sql.ConflictOption) *PositionUpsertOne {
+	pc.conflict = opts
+	return &PositionUpsertOne{
+		create: pc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (pc *PositionCreate) OnConflictColumns(columns ...string) *PositionUpsertOne {
+	pc.conflict = append(pc.conflict, sql.ConflictColumns(columns...))
+	return &PositionUpsertOne{
+		create: pc,
+	}
+}
+
+type (
+	// PositionUpsertOne is the builder for "upsert"-ing
+	//  one Position node.
+	PositionUpsertOne struct {
+		create *PositionCreate
+	}
+
+	// PositionUpsert is the "OnConflict" setter.
+	PositionUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *PositionUpsert) SetName(v string) *PositionUpsert {
+	u.Set(position.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateName() *PositionUpsert {
+	u.SetExcluded(position.FieldName)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *PositionUpsert) SetCode(v string) *PositionUpsert {
+	u.Set(position.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateCode() *PositionUpsert {
+	u.SetExcluded(position.FieldCode)
+	return u
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *PositionUpsert) SetDepartmentID(v int) *PositionUpsert {
+	u.Set(position.FieldDepartmentID, v)
+	return u
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateDepartmentID() *PositionUpsert {
+	u.SetExcluded(position.FieldDepartmentID)
+	return u
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *PositionUpsert) SetParentID(v int) *PositionUpsert {
+	u.Set(position.FieldParentID, v)
+	return u
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateParentID() *PositionUpsert {
+	u.SetExcluded(position.FieldParentID)
+	return u
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *PositionUpsert) ClearParentID() *PositionUpsert {
+	u.SetNull(position.FieldParentID)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PositionUpsert) SetUpdatedAt(v time.Time) *PositionUpsert {
+	u.Set(position.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PositionUpsert) UpdateUpdatedAt() *PositionUpsert {
+	u.SetExcluded(position.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *PositionUpsertOne) UpdateNewValues() *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(position.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *PositionUpsertOne) Ignore() *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PositionUpsertOne) DoNothing() *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PositionCreate.OnConflict
+// documentation for more info.
+func (u *PositionUpsertOne) Update(set func(*PositionUpsert)) *PositionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PositionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *PositionUpsertOne) SetName(v string) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateName() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *PositionUpsertOne) SetCode(v string) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateCode() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *PositionUpsertOne) SetDepartmentID(v int) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetDepartmentID(v)
+	})
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateDepartmentID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateDepartmentID()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *PositionUpsertOne) SetParentID(v int) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateParentID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *PositionUpsertOne) ClearParentID() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PositionUpsertOne) SetUpdatedAt(v time.Time) *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PositionUpsertOne) UpdateUpdatedAt() *PositionUpsertOne {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *PositionUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PositionCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PositionUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *PositionUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *PositionUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
 }
 
 // PositionCreateBulk is the builder for creating many Position entities in bulk.
@@ -282,6 +581,7 @@ type PositionCreateBulk struct {
 	config
 	err      error
 	builders []*PositionCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Position entities in the database.
@@ -311,6 +611,7 @@ func (pcb *PositionCreateBulk) Save(ctx context.Context) ([]*Position, error) {
 					_, err = mutators[i+1].Mutate(root, pcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = pcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, pcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -322,6 +623,10 @@ func (pcb *PositionCreateBulk) Save(ctx context.Context) ([]*Position, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -357,6 +662,194 @@ func (pcb *PositionCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (pcb *PositionCreateBulk) ExecX(ctx context.Context) {
 	if err := pcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Position.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PositionUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (pcb *PositionCreateBulk) OnConflict(opts ...sql.ConflictOption) *PositionUpsertBulk {
+	pcb.conflict = opts
+	return &PositionUpsertBulk{
+		create: pcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (pcb *PositionCreateBulk) OnConflictColumns(columns ...string) *PositionUpsertBulk {
+	pcb.conflict = append(pcb.conflict, sql.ConflictColumns(columns...))
+	return &PositionUpsertBulk{
+		create: pcb,
+	}
+}
+
+// PositionUpsertBulk is the builder for "upsert"-ing
+// a bulk of Position nodes.
+type PositionUpsertBulk struct {
+	create *PositionCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *PositionUpsertBulk) UpdateNewValues() *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(position.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Position.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *PositionUpsertBulk) Ignore() *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PositionUpsertBulk) DoNothing() *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PositionCreateBulk.OnConflict
+// documentation for more info.
+func (u *PositionUpsertBulk) Update(set func(*PositionUpsert)) *PositionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PositionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *PositionUpsertBulk) SetName(v string) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateName() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *PositionUpsertBulk) SetCode(v string) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateCode() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateCode()
+	})
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *PositionUpsertBulk) SetDepartmentID(v int) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetDepartmentID(v)
+	})
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateDepartmentID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateDepartmentID()
+	})
+}
+
+// SetParentID sets the "parent_id" field.
+func (u *PositionUpsertBulk) SetParentID(v int) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetParentID(v)
+	})
+}
+
+// UpdateParentID sets the "parent_id" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateParentID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateParentID()
+	})
+}
+
+// ClearParentID clears the value of the "parent_id" field.
+func (u *PositionUpsertBulk) ClearParentID() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.ClearParentID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *PositionUpsertBulk) SetUpdatedAt(v time.Time) *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *PositionUpsertBulk) UpdateUpdatedAt() *PositionUpsertBulk {
+	return u.Update(func(s *PositionUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *PositionUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the PositionCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for PositionCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PositionUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

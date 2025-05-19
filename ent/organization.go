@@ -21,8 +21,8 @@ type Organization struct {
 	Name string `json:"name,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
-	// Logo holds the value of the "logo" field.
-	Logo *string `json:"logo,omitempty"`
+	// LogoURL holds the value of the "logo_url" field.
+	LogoURL *string `json:"logo_url,omitempty"`
 	// Address holds the value of the "address" field.
 	Address *string `json:"address,omitempty"`
 	// Phone holds the value of the "phone" field.
@@ -45,22 +45,13 @@ type Organization struct {
 
 // OrganizationEdges holds the relations/edges for other nodes in the graph.
 type OrganizationEdges struct {
-	// Children holds the value of the children edge.
-	Children []*Organization `json:"children,omitempty"`
 	// Parent holds the value of the parent edge.
 	Parent *Organization `json:"parent,omitempty"`
+	// Children holds the value of the children edge.
+	Children []*Organization `json:"children,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
-}
-
-// ChildrenOrErr returns the Children value or an error if the edge
-// was not loaded in eager-loading.
-func (e OrganizationEdges) ChildrenOrErr() ([]*Organization, error) {
-	if e.loadedTypes[0] {
-		return e.Children, nil
-	}
-	return nil, &NotLoadedError{edge: "children"}
 }
 
 // ParentOrErr returns the Parent value or an error if the edge
@@ -68,10 +59,19 @@ func (e OrganizationEdges) ChildrenOrErr() ([]*Organization, error) {
 func (e OrganizationEdges) ParentOrErr() (*Organization, error) {
 	if e.Parent != nil {
 		return e.Parent, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[0] {
 		return nil, &NotFoundError{label: organization.Label}
 	}
 	return nil, &NotLoadedError{edge: "parent"}
+}
+
+// ChildrenOrErr returns the Children value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) ChildrenOrErr() ([]*Organization, error) {
+	if e.loadedTypes[1] {
+		return e.Children, nil
+	}
+	return nil, &NotLoadedError{edge: "children"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -81,7 +81,7 @@ func (*Organization) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case organization.FieldID, organization.FieldParentID:
 			values[i] = new(sql.NullInt64)
-		case organization.FieldName, organization.FieldCode, organization.FieldLogo, organization.FieldAddress, organization.FieldPhone, organization.FieldEmail, organization.FieldWebsite:
+		case organization.FieldName, organization.FieldCode, organization.FieldLogoURL, organization.FieldAddress, organization.FieldPhone, organization.FieldEmail, organization.FieldWebsite:
 			values[i] = new(sql.NullString)
 		case organization.FieldCreatedAt, organization.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -118,12 +118,12 @@ func (o *Organization) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				o.Code = value.String
 			}
-		case organization.FieldLogo:
+		case organization.FieldLogoURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field logo", values[i])
+				return fmt.Errorf("unexpected type %T for field logo_url", values[i])
 			} else if value.Valid {
-				o.Logo = new(string)
-				*o.Logo = value.String
+				o.LogoURL = new(string)
+				*o.LogoURL = value.String
 			}
 		case organization.FieldAddress:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -185,14 +185,14 @@ func (o *Organization) Value(name string) (ent.Value, error) {
 	return o.selectValues.Get(name)
 }
 
-// QueryChildren queries the "children" edge of the Organization entity.
-func (o *Organization) QueryChildren() *OrganizationQuery {
-	return NewOrganizationClient(o.config).QueryChildren(o)
-}
-
 // QueryParent queries the "parent" edge of the Organization entity.
 func (o *Organization) QueryParent() *OrganizationQuery {
 	return NewOrganizationClient(o.config).QueryParent(o)
+}
+
+// QueryChildren queries the "children" edge of the Organization entity.
+func (o *Organization) QueryChildren() *OrganizationQuery {
+	return NewOrganizationClient(o.config).QueryChildren(o)
 }
 
 // Update returns a builder for updating this Organization.
@@ -224,8 +224,8 @@ func (o *Organization) String() string {
 	builder.WriteString("code=")
 	builder.WriteString(o.Code)
 	builder.WriteString(", ")
-	if v := o.Logo; v != nil {
-		builder.WriteString("logo=")
+	if v := o.LogoURL; v != nil {
+		builder.WriteString("logo_url=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

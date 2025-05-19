@@ -8,52 +8,12 @@ import (
 )
 
 var (
-	// BranchesColumns holds the columns for the "branches" table.
-	BranchesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "address", Type: field.TypeString, Nullable: true},
-		{Name: "contact_info", Type: field.TypeString, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "company_id", Type: field.TypeUUID},
-	}
-	// BranchesTable holds the schema information for the "branches" table.
-	BranchesTable = &schema.Table{
-		Name:       "branches",
-		Columns:    BranchesColumns,
-		PrimaryKey: []*schema.Column{BranchesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "branches_companies_branches",
-				Columns:    []*schema.Column{BranchesColumns[7]},
-				RefColumns: []*schema.Column{CompaniesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
-	// CompaniesColumns holds the columns for the "companies" table.
-	CompaniesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "address", Type: field.TypeString, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// CompaniesTable holds the schema information for the "companies" table.
-	CompaniesTable = &schema.Table{
-		Name:       "companies",
-		Columns:    CompaniesColumns,
-		PrimaryKey: []*schema.Column{CompaniesColumns[0]},
-	}
 	// DepartmentsColumns holds the columns for the "departments" table.
 	DepartmentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "branch_id", Type: field.TypeUUID},
+		{Name: "code", Type: field.TypeString},
+		{Name: "org_id", Type: field.TypeInt},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
@@ -62,19 +22,25 @@ var (
 		Name:       "departments",
 		Columns:    DepartmentsColumns,
 		PrimaryKey: []*schema.Column{DepartmentsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "department_org_id_code",
+				Unique:  true,
+				Columns: []*schema.Column{DepartmentsColumns[3], DepartmentsColumns[2]},
+			},
+		},
 	}
 	// EmployeesColumns holds the columns for the "employees" table.
 	EmployeesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "user_id", Type: field.TypeString, Unique: true},
 		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "status", Type: field.TypeBool},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}, Default: "active"},
 		{Name: "joining_at", Type: field.TypeTime},
-		{Name: "branch_id", Type: field.TypeUUID},
+		{Name: "org_id", Type: field.TypeInt},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "department_id", Type: field.TypeUUID},
-		{Name: "position_id", Type: field.TypeUUID},
+		{Name: "position_id", Type: field.TypeInt},
 	}
 	// EmployeesTable holds the schema information for the "employees" table.
 	EmployeesTable = &schema.Table{
@@ -84,7 +50,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "employees_positions_employees",
-				Columns:    []*schema.Column{EmployeesColumns[9]},
+				Columns:    []*schema.Column{EmployeesColumns[8]},
 				RefColumns: []*schema.Column{PositionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -134,8 +100,8 @@ var (
 	OrganizationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString},
-		{Name: "logo", Type: field.TypeString, Nullable: true},
+		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "logo_url", Type: field.TypeString, Nullable: true},
 		{Name: "address", Type: field.TypeString, Nullable: true},
 		{Name: "phone", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString, Nullable: true},
@@ -160,13 +126,13 @@ var (
 	}
 	// PositionsColumns holds the columns for the "positions" table.
 	PositionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "parent_id", Type: field.TypeUUID},
+		{Name: "code", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "department_id", Type: field.TypeUUID},
+		{Name: "department_id", Type: field.TypeInt},
+		{Name: "parent_id", Type: field.TypeInt, Nullable: true},
 	}
 	// PositionsTable holds the schema information for the "positions" table.
 	PositionsTable = &schema.Table{
@@ -176,9 +142,22 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "positions_departments_positions",
-				Columns:    []*schema.Column{PositionsColumns[6]},
+				Columns:    []*schema.Column{PositionsColumns[5]},
 				RefColumns: []*schema.Column{DepartmentsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "positions_positions_children",
+				Columns:    []*schema.Column{PositionsColumns[6]},
+				RefColumns: []*schema.Column{PositionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "position_department_id_code",
+				Unique:  true,
+				Columns: []*schema.Column{PositionsColumns[5], PositionsColumns[2]},
 			},
 		},
 	}
@@ -234,8 +213,6 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		BranchesTable,
-		CompaniesTable,
 		DepartmentsTable,
 		EmployeesTable,
 		LeaveApprovalsTable,
@@ -248,10 +225,10 @@ var (
 )
 
 func init() {
-	BranchesTable.ForeignKeys[0].RefTable = CompaniesTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
 	LeaveRequestsTable.ForeignKeys[0].RefTable = LeaveApprovalsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	PositionsTable.ForeignKeys[0].RefTable = DepartmentsTable
+	PositionsTable.ForeignKeys[1].RefTable = PositionsTable
 	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
 }
