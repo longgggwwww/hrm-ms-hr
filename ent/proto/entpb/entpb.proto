@@ -311,6 +311,248 @@ message BatchCreateEmployeesResponse {
   repeated Employee employees = 1;
 }
 
+message LeaveApproval {
+  int64 id = 1;
+
+  google.protobuf.StringValue comment = 2;
+
+  google.protobuf.Timestamp created_at = 3;
+
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+message CreateLeaveApprovalRequest {
+  LeaveApproval leave_approval = 1;
+}
+
+message GetLeaveApprovalRequest {
+  int64 id = 1;
+
+  View view = 2;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message UpdateLeaveApprovalRequest {
+  LeaveApproval leave_approval = 1;
+}
+
+message DeleteLeaveApprovalRequest {
+  int64 id = 1;
+}
+
+message ListLeaveApprovalRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+
+  View view = 3;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message ListLeaveApprovalResponse {
+  repeated LeaveApproval leave_approval_list = 1;
+
+  string next_page_token = 2;
+}
+
+message BatchCreateLeaveApprovalsRequest {
+  repeated CreateLeaveApprovalRequest requests = 1;
+}
+
+message BatchCreateLeaveApprovalsResponse {
+  repeated LeaveApproval leave_approvals = 1;
+}
+
+message LeaveRequest {
+  int64 id = 1;
+
+  double total_days = 2;
+
+  google.protobuf.Timestamp start_at = 3;
+
+  google.protobuf.Timestamp end_at = 4;
+
+  google.protobuf.StringValue reason = 5;
+
+  Type type = 6;
+
+  Status status = 7;
+
+  google.protobuf.Timestamp created_at = 8;
+
+  google.protobuf.Timestamp updated_at = 9;
+
+  LeaveApproval leaveapprove = 10;
+
+  enum Type {
+    TYPE_ANNUAL = 0;
+
+    TYPE_UNPAID = 1;
+  }
+
+  enum Status {
+    STATUS_PENDING = 0;
+
+    STATUS_REJECTED = 1;
+
+    STATUS_APPROVED = 2;
+  }
+}
+
+message CreateLeaveRequestRequest {
+  LeaveRequest leave_request = 1;
+}
+
+message GetLeaveRequestRequest {
+  int64 id = 1;
+
+  View view = 2;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message UpdateLeaveRequestRequest {
+  LeaveRequest leave_request = 1;
+}
+
+message DeleteLeaveRequestRequest {
+  int64 id = 1;
+}
+
+message ListLeaveRequestRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+
+  View view = 3;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message ListLeaveRequestResponse {
+  repeated LeaveRequest leave_request_list = 1;
+
+  string next_page_token = 2;
+}
+
+message BatchCreateLeaveRequestsRequest {
+  repeated CreateLeaveRequestRequest requests = 1;
+}
+
+message BatchCreateLeaveRequestsResponse {
+  repeated LeaveRequest leave_requests = 1;
+}
+
+message Organization {
+  int64 id = 1;
+
+  string name = 2;
+
+  string code = 3;
+
+  google.protobuf.StringValue logo = 4;
+
+  google.protobuf.StringValue address = 5;
+
+  google.protobuf.StringValue phone = 6;
+
+  google.protobuf.StringValue email = 7;
+
+  google.protobuf.StringValue website = 8;
+
+  google.protobuf.Timestamp created_at = 9;
+
+  google.protobuf.Timestamp updated_at = 10;
+
+  google.protobuf.Int64Value parent_id = 11;
+
+  repeated Organization children = 13;
+
+  Organization parent = 12;
+}
+
+message CreateOrganizationRequest {
+  Organization organization = 1;
+}
+
+message GetOrganizationRequest {
+  int64 id = 1;
+
+  View view = 2;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message UpdateOrganizationRequest {
+  Organization organization = 1;
+}
+
+message DeleteOrganizationRequest {
+  int64 id = 1;
+}
+
+message ListOrganizationRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+
+  View view = 3;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message ListOrganizationResponse {
+  repeated Organization organization_list = 1;
+
+  string next_page_token = 2;
+}
+
+message BatchCreateOrganizationsRequest {
+  repeated CreateOrganizationRequest requests = 1;
+}
+
+message BatchCreateOrganizationsResponse {
+  repeated Organization organizations = 1;
+}
+
 message Position {
   bytes id = 1;
 
@@ -617,6 +859,48 @@ service EmployeeService {
   rpc List ( ListEmployeeRequest ) returns ( ListEmployeeResponse );
 
   rpc BatchCreate ( BatchCreateEmployeesRequest ) returns ( BatchCreateEmployeesResponse );
+}
+
+service LeaveApprovalService {
+  rpc Create ( CreateLeaveApprovalRequest ) returns ( LeaveApproval );
+
+  rpc Get ( GetLeaveApprovalRequest ) returns ( LeaveApproval );
+
+  rpc Update ( UpdateLeaveApprovalRequest ) returns ( LeaveApproval );
+
+  rpc Delete ( DeleteLeaveApprovalRequest ) returns ( google.protobuf.Empty );
+
+  rpc List ( ListLeaveApprovalRequest ) returns ( ListLeaveApprovalResponse );
+
+  rpc BatchCreate ( BatchCreateLeaveApprovalsRequest ) returns ( BatchCreateLeaveApprovalsResponse );
+}
+
+service LeaveRequestService {
+  rpc Create ( CreateLeaveRequestRequest ) returns ( LeaveRequest );
+
+  rpc Get ( GetLeaveRequestRequest ) returns ( LeaveRequest );
+
+  rpc Update ( UpdateLeaveRequestRequest ) returns ( LeaveRequest );
+
+  rpc Delete ( DeleteLeaveRequestRequest ) returns ( google.protobuf.Empty );
+
+  rpc List ( ListLeaveRequestRequest ) returns ( ListLeaveRequestResponse );
+
+  rpc BatchCreate ( BatchCreateLeaveRequestsRequest ) returns ( BatchCreateLeaveRequestsResponse );
+}
+
+service OrganizationService {
+  rpc Create ( CreateOrganizationRequest ) returns ( Organization );
+
+  rpc Get ( GetOrganizationRequest ) returns ( Organization );
+
+  rpc Update ( UpdateOrganizationRequest ) returns ( Organization );
+
+  rpc Delete ( DeleteOrganizationRequest ) returns ( google.protobuf.Empty );
+
+  rpc List ( ListOrganizationRequest ) returns ( ListOrganizationResponse );
+
+  rpc BatchCreate ( BatchCreateOrganizationsRequest ) returns ( BatchCreateOrganizationsResponse );
 }
 
 service PositionService {

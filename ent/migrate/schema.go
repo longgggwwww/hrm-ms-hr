@@ -90,6 +90,74 @@ var (
 			},
 		},
 	}
+	// LeaveApprovalsColumns holds the columns for the "leave_approvals" table.
+	LeaveApprovalsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "comment", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// LeaveApprovalsTable holds the schema information for the "leave_approvals" table.
+	LeaveApprovalsTable = &schema.Table{
+		Name:       "leave_approvals",
+		Columns:    LeaveApprovalsColumns,
+		PrimaryKey: []*schema.Column{LeaveApprovalsColumns[0]},
+	}
+	// LeaveRequestsColumns holds the columns for the "leave_requests" table.
+	LeaveRequestsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "total_days", Type: field.TypeFloat64},
+		{Name: "start_at", Type: field.TypeTime},
+		{Name: "end_at", Type: field.TypeTime},
+		{Name: "reason", Type: field.TypeString, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"annual", "unpaid"}, Default: "annual"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "rejected", "approved"}, Default: "pending"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "leave_request_leaveapprove", Type: field.TypeInt, Nullable: true},
+	}
+	// LeaveRequestsTable holds the schema information for the "leave_requests" table.
+	LeaveRequestsTable = &schema.Table{
+		Name:       "leave_requests",
+		Columns:    LeaveRequestsColumns,
+		PrimaryKey: []*schema.Column{LeaveRequestsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "leave_requests_leave_approvals_leaveapprove",
+				Columns:    []*schema.Column{LeaveRequestsColumns[9]},
+				RefColumns: []*schema.Column{LeaveApprovalsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// OrganizationsColumns holds the columns for the "organizations" table.
+	OrganizationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString},
+		{Name: "logo", Type: field.TypeString, Nullable: true},
+		{Name: "address", Type: field.TypeString, Nullable: true},
+		{Name: "phone", Type: field.TypeString, Nullable: true},
+		{Name: "email", Type: field.TypeString, Nullable: true},
+		{Name: "website", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "parent_id", Type: field.TypeInt, Nullable: true},
+	}
+	// OrganizationsTable holds the schema information for the "organizations" table.
+	OrganizationsTable = &schema.Table{
+		Name:       "organizations",
+		Columns:    OrganizationsColumns,
+		PrimaryKey: []*schema.Column{OrganizationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "organizations_organizations_children",
+				Columns:    []*schema.Column{OrganizationsColumns[10]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// PositionsColumns holds the columns for the "positions" table.
 	PositionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -170,6 +238,9 @@ var (
 		CompaniesTable,
 		DepartmentsTable,
 		EmployeesTable,
+		LeaveApprovalsTable,
+		LeaveRequestsTable,
+		OrganizationsTable,
 		PositionsTable,
 		ProjectsTable,
 		TasksTable,
@@ -179,6 +250,8 @@ var (
 func init() {
 	BranchesTable.ForeignKeys[0].RefTable = CompaniesTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
+	LeaveRequestsTable.ForeignKeys[0].RefTable = LeaveApprovalsTable
+	OrganizationsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	PositionsTable.ForeignKeys[0].RefTable = DepartmentsTable
 	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
 }

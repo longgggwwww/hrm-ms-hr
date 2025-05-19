@@ -10,6 +10,9 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/company"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/schema"
@@ -90,6 +93,42 @@ func init() {
 	employeeDescID := employeeFields[0].Descriptor()
 	// employee.DefaultID holds the default value on creation for the id field.
 	employee.DefaultID = employeeDescID.Default.(func() uuid.UUID)
+	leaveapprovalFields := schema.LeaveApproval{}.Fields()
+	_ = leaveapprovalFields
+	// leaveapprovalDescCreatedAt is the schema descriptor for created_at field.
+	leaveapprovalDescCreatedAt := leaveapprovalFields[1].Descriptor()
+	// leaveapproval.DefaultCreatedAt holds the default value on creation for the created_at field.
+	leaveapproval.DefaultCreatedAt = leaveapprovalDescCreatedAt.Default.(func() time.Time)
+	// leaveapprovalDescUpdatedAt is the schema descriptor for updated_at field.
+	leaveapprovalDescUpdatedAt := leaveapprovalFields[2].Descriptor()
+	// leaveapproval.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	leaveapproval.DefaultUpdatedAt = leaveapprovalDescUpdatedAt.Default.(func() time.Time)
+	// leaveapproval.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	leaveapproval.UpdateDefaultUpdatedAt = leaveapprovalDescUpdatedAt.UpdateDefault.(func() time.Time)
+	leaverequestFields := schema.LeaveRequest{}.Fields()
+	_ = leaverequestFields
+	// leaverequestDescCreatedAt is the schema descriptor for created_at field.
+	leaverequestDescCreatedAt := leaverequestFields[6].Descriptor()
+	// leaverequest.DefaultCreatedAt holds the default value on creation for the created_at field.
+	leaverequest.DefaultCreatedAt = leaverequestDescCreatedAt.Default.(func() time.Time)
+	// leaverequestDescUpdatedAt is the schema descriptor for updated_at field.
+	leaverequestDescUpdatedAt := leaverequestFields[7].Descriptor()
+	// leaverequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	leaverequest.DefaultUpdatedAt = leaverequestDescUpdatedAt.Default.(func() time.Time)
+	// leaverequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	leaverequest.UpdateDefaultUpdatedAt = leaverequestDescUpdatedAt.UpdateDefault.(func() time.Time)
+	organizationFields := schema.Organization{}.Fields()
+	_ = organizationFields
+	// organizationDescCreatedAt is the schema descriptor for created_at field.
+	organizationDescCreatedAt := organizationFields[7].Descriptor()
+	// organization.DefaultCreatedAt holds the default value on creation for the created_at field.
+	organization.DefaultCreatedAt = organizationDescCreatedAt.Default.(func() time.Time)
+	// organizationDescUpdatedAt is the schema descriptor for updated_at field.
+	organizationDescUpdatedAt := organizationFields[8].Descriptor()
+	// organization.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	organization.DefaultUpdatedAt = organizationDescUpdatedAt.Default.(func() time.Time)
+	// organization.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	organization.UpdateDefaultUpdatedAt = organizationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	positionFields := schema.Position{}.Fields()
 	_ = positionFields
 	// positionDescName is the schema descriptor for name field.

@@ -20,6 +20,9 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/company"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -38,6 +41,12 @@ type Client struct {
 	Department *DepartmentClient
 	// Employee is the client for interacting with the Employee builders.
 	Employee *EmployeeClient
+	// LeaveApproval is the client for interacting with the LeaveApproval builders.
+	LeaveApproval *LeaveApprovalClient
+	// LeaveRequest is the client for interacting with the LeaveRequest builders.
+	LeaveRequest *LeaveRequestClient
+	// Organization is the client for interacting with the Organization builders.
+	Organization *OrganizationClient
 	// Position is the client for interacting with the Position builders.
 	Position *PositionClient
 	// Project is the client for interacting with the Project builders.
@@ -59,6 +68,9 @@ func (c *Client) init() {
 	c.Company = NewCompanyClient(c.config)
 	c.Department = NewDepartmentClient(c.config)
 	c.Employee = NewEmployeeClient(c.config)
+	c.LeaveApproval = NewLeaveApprovalClient(c.config)
+	c.LeaveRequest = NewLeaveRequestClient(c.config)
+	c.Organization = NewOrganizationClient(c.config)
 	c.Position = NewPositionClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.Task = NewTaskClient(c.config)
@@ -152,15 +164,18 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Branch:     NewBranchClient(cfg),
-		Company:    NewCompanyClient(cfg),
-		Department: NewDepartmentClient(cfg),
-		Employee:   NewEmployeeClient(cfg),
-		Position:   NewPositionClient(cfg),
-		Project:    NewProjectClient(cfg),
-		Task:       NewTaskClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		Branch:        NewBranchClient(cfg),
+		Company:       NewCompanyClient(cfg),
+		Department:    NewDepartmentClient(cfg),
+		Employee:      NewEmployeeClient(cfg),
+		LeaveApproval: NewLeaveApprovalClient(cfg),
+		LeaveRequest:  NewLeaveRequestClient(cfg),
+		Organization:  NewOrganizationClient(cfg),
+		Position:      NewPositionClient(cfg),
+		Project:       NewProjectClient(cfg),
+		Task:          NewTaskClient(cfg),
 	}, nil
 }
 
@@ -178,15 +193,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Branch:     NewBranchClient(cfg),
-		Company:    NewCompanyClient(cfg),
-		Department: NewDepartmentClient(cfg),
-		Employee:   NewEmployeeClient(cfg),
-		Position:   NewPositionClient(cfg),
-		Project:    NewProjectClient(cfg),
-		Task:       NewTaskClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		Branch:        NewBranchClient(cfg),
+		Company:       NewCompanyClient(cfg),
+		Department:    NewDepartmentClient(cfg),
+		Employee:      NewEmployeeClient(cfg),
+		LeaveApproval: NewLeaveApprovalClient(cfg),
+		LeaveRequest:  NewLeaveRequestClient(cfg),
+		Organization:  NewOrganizationClient(cfg),
+		Position:      NewPositionClient(cfg),
+		Project:       NewProjectClient(cfg),
+		Task:          NewTaskClient(cfg),
 	}, nil
 }
 
@@ -216,7 +234,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Branch, c.Company, c.Department, c.Employee, c.Position, c.Project, c.Task,
+		c.Branch, c.Company, c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest,
+		c.Organization, c.Position, c.Project, c.Task,
 	} {
 		n.Use(hooks...)
 	}
@@ -226,7 +245,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Branch, c.Company, c.Department, c.Employee, c.Position, c.Project, c.Task,
+		c.Branch, c.Company, c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest,
+		c.Organization, c.Position, c.Project, c.Task,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -243,6 +263,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Department.mutate(ctx, m)
 	case *EmployeeMutation:
 		return c.Employee.mutate(ctx, m)
+	case *LeaveApprovalMutation:
+		return c.LeaveApproval.mutate(ctx, m)
+	case *LeaveRequestMutation:
+		return c.LeaveRequest.mutate(ctx, m)
+	case *OrganizationMutation:
+		return c.Organization.mutate(ctx, m)
 	case *PositionMutation:
 		return c.Position.mutate(ctx, m)
 	case *ProjectMutation:
@@ -850,6 +876,453 @@ func (c *EmployeeClient) mutate(ctx context.Context, m *EmployeeMutation) (Value
 	}
 }
 
+// LeaveApprovalClient is a client for the LeaveApproval schema.
+type LeaveApprovalClient struct {
+	config
+}
+
+// NewLeaveApprovalClient returns a client for the LeaveApproval from the given config.
+func NewLeaveApprovalClient(c config) *LeaveApprovalClient {
+	return &LeaveApprovalClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `leaveapproval.Hooks(f(g(h())))`.
+func (c *LeaveApprovalClient) Use(hooks ...Hook) {
+	c.hooks.LeaveApproval = append(c.hooks.LeaveApproval, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `leaveapproval.Intercept(f(g(h())))`.
+func (c *LeaveApprovalClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LeaveApproval = append(c.inters.LeaveApproval, interceptors...)
+}
+
+// Create returns a builder for creating a LeaveApproval entity.
+func (c *LeaveApprovalClient) Create() *LeaveApprovalCreate {
+	mutation := newLeaveApprovalMutation(c.config, OpCreate)
+	return &LeaveApprovalCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LeaveApproval entities.
+func (c *LeaveApprovalClient) CreateBulk(builders ...*LeaveApprovalCreate) *LeaveApprovalCreateBulk {
+	return &LeaveApprovalCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LeaveApprovalClient) MapCreateBulk(slice any, setFunc func(*LeaveApprovalCreate, int)) *LeaveApprovalCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LeaveApprovalCreateBulk{err: fmt.Errorf("calling to LeaveApprovalClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LeaveApprovalCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LeaveApprovalCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LeaveApproval.
+func (c *LeaveApprovalClient) Update() *LeaveApprovalUpdate {
+	mutation := newLeaveApprovalMutation(c.config, OpUpdate)
+	return &LeaveApprovalUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LeaveApprovalClient) UpdateOne(la *LeaveApproval) *LeaveApprovalUpdateOne {
+	mutation := newLeaveApprovalMutation(c.config, OpUpdateOne, withLeaveApproval(la))
+	return &LeaveApprovalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LeaveApprovalClient) UpdateOneID(id int) *LeaveApprovalUpdateOne {
+	mutation := newLeaveApprovalMutation(c.config, OpUpdateOne, withLeaveApprovalID(id))
+	return &LeaveApprovalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LeaveApproval.
+func (c *LeaveApprovalClient) Delete() *LeaveApprovalDelete {
+	mutation := newLeaveApprovalMutation(c.config, OpDelete)
+	return &LeaveApprovalDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LeaveApprovalClient) DeleteOne(la *LeaveApproval) *LeaveApprovalDeleteOne {
+	return c.DeleteOneID(la.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LeaveApprovalClient) DeleteOneID(id int) *LeaveApprovalDeleteOne {
+	builder := c.Delete().Where(leaveapproval.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LeaveApprovalDeleteOne{builder}
+}
+
+// Query returns a query builder for LeaveApproval.
+func (c *LeaveApprovalClient) Query() *LeaveApprovalQuery {
+	return &LeaveApprovalQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLeaveApproval},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LeaveApproval entity by its id.
+func (c *LeaveApprovalClient) Get(ctx context.Context, id int) (*LeaveApproval, error) {
+	return c.Query().Where(leaveapproval.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LeaveApprovalClient) GetX(ctx context.Context, id int) *LeaveApproval {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LeaveApprovalClient) Hooks() []Hook {
+	return c.hooks.LeaveApproval
+}
+
+// Interceptors returns the client interceptors.
+func (c *LeaveApprovalClient) Interceptors() []Interceptor {
+	return c.inters.LeaveApproval
+}
+
+func (c *LeaveApprovalClient) mutate(ctx context.Context, m *LeaveApprovalMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LeaveApprovalCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LeaveApprovalUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LeaveApprovalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LeaveApprovalDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LeaveApproval mutation op: %q", m.Op())
+	}
+}
+
+// LeaveRequestClient is a client for the LeaveRequest schema.
+type LeaveRequestClient struct {
+	config
+}
+
+// NewLeaveRequestClient returns a client for the LeaveRequest from the given config.
+func NewLeaveRequestClient(c config) *LeaveRequestClient {
+	return &LeaveRequestClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `leaverequest.Hooks(f(g(h())))`.
+func (c *LeaveRequestClient) Use(hooks ...Hook) {
+	c.hooks.LeaveRequest = append(c.hooks.LeaveRequest, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `leaverequest.Intercept(f(g(h())))`.
+func (c *LeaveRequestClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LeaveRequest = append(c.inters.LeaveRequest, interceptors...)
+}
+
+// Create returns a builder for creating a LeaveRequest entity.
+func (c *LeaveRequestClient) Create() *LeaveRequestCreate {
+	mutation := newLeaveRequestMutation(c.config, OpCreate)
+	return &LeaveRequestCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LeaveRequest entities.
+func (c *LeaveRequestClient) CreateBulk(builders ...*LeaveRequestCreate) *LeaveRequestCreateBulk {
+	return &LeaveRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LeaveRequestClient) MapCreateBulk(slice any, setFunc func(*LeaveRequestCreate, int)) *LeaveRequestCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LeaveRequestCreateBulk{err: fmt.Errorf("calling to LeaveRequestClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LeaveRequestCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LeaveRequestCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LeaveRequest.
+func (c *LeaveRequestClient) Update() *LeaveRequestUpdate {
+	mutation := newLeaveRequestMutation(c.config, OpUpdate)
+	return &LeaveRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LeaveRequestClient) UpdateOne(lr *LeaveRequest) *LeaveRequestUpdateOne {
+	mutation := newLeaveRequestMutation(c.config, OpUpdateOne, withLeaveRequest(lr))
+	return &LeaveRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LeaveRequestClient) UpdateOneID(id int) *LeaveRequestUpdateOne {
+	mutation := newLeaveRequestMutation(c.config, OpUpdateOne, withLeaveRequestID(id))
+	return &LeaveRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LeaveRequest.
+func (c *LeaveRequestClient) Delete() *LeaveRequestDelete {
+	mutation := newLeaveRequestMutation(c.config, OpDelete)
+	return &LeaveRequestDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LeaveRequestClient) DeleteOne(lr *LeaveRequest) *LeaveRequestDeleteOne {
+	return c.DeleteOneID(lr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LeaveRequestClient) DeleteOneID(id int) *LeaveRequestDeleteOne {
+	builder := c.Delete().Where(leaverequest.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LeaveRequestDeleteOne{builder}
+}
+
+// Query returns a query builder for LeaveRequest.
+func (c *LeaveRequestClient) Query() *LeaveRequestQuery {
+	return &LeaveRequestQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLeaveRequest},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LeaveRequest entity by its id.
+func (c *LeaveRequestClient) Get(ctx context.Context, id int) (*LeaveRequest, error) {
+	return c.Query().Where(leaverequest.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LeaveRequestClient) GetX(ctx context.Context, id int) *LeaveRequest {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLeaveapprove queries the leaveapprove edge of a LeaveRequest.
+func (c *LeaveRequestClient) QueryLeaveapprove(lr *LeaveRequest) *LeaveApprovalQuery {
+	query := (&LeaveApprovalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaverequest.Table, leaverequest.FieldID, id),
+			sqlgraph.To(leaveapproval.Table, leaveapproval.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, leaverequest.LeaveapproveTable, leaverequest.LeaveapproveColumn),
+		)
+		fromV = sqlgraph.Neighbors(lr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LeaveRequestClient) Hooks() []Hook {
+	return c.hooks.LeaveRequest
+}
+
+// Interceptors returns the client interceptors.
+func (c *LeaveRequestClient) Interceptors() []Interceptor {
+	return c.inters.LeaveRequest
+}
+
+func (c *LeaveRequestClient) mutate(ctx context.Context, m *LeaveRequestMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LeaveRequestCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LeaveRequestUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LeaveRequestUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LeaveRequestDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LeaveRequest mutation op: %q", m.Op())
+	}
+}
+
+// OrganizationClient is a client for the Organization schema.
+type OrganizationClient struct {
+	config
+}
+
+// NewOrganizationClient returns a client for the Organization from the given config.
+func NewOrganizationClient(c config) *OrganizationClient {
+	return &OrganizationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `organization.Hooks(f(g(h())))`.
+func (c *OrganizationClient) Use(hooks ...Hook) {
+	c.hooks.Organization = append(c.hooks.Organization, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `organization.Intercept(f(g(h())))`.
+func (c *OrganizationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Organization = append(c.inters.Organization, interceptors...)
+}
+
+// Create returns a builder for creating a Organization entity.
+func (c *OrganizationClient) Create() *OrganizationCreate {
+	mutation := newOrganizationMutation(c.config, OpCreate)
+	return &OrganizationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Organization entities.
+func (c *OrganizationClient) CreateBulk(builders ...*OrganizationCreate) *OrganizationCreateBulk {
+	return &OrganizationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OrganizationClient) MapCreateBulk(slice any, setFunc func(*OrganizationCreate, int)) *OrganizationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OrganizationCreateBulk{err: fmt.Errorf("calling to OrganizationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OrganizationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OrganizationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Organization.
+func (c *OrganizationClient) Update() *OrganizationUpdate {
+	mutation := newOrganizationMutation(c.config, OpUpdate)
+	return &OrganizationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OrganizationClient) UpdateOne(o *Organization) *OrganizationUpdateOne {
+	mutation := newOrganizationMutation(c.config, OpUpdateOne, withOrganization(o))
+	return &OrganizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OrganizationClient) UpdateOneID(id int) *OrganizationUpdateOne {
+	mutation := newOrganizationMutation(c.config, OpUpdateOne, withOrganizationID(id))
+	return &OrganizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Organization.
+func (c *OrganizationClient) Delete() *OrganizationDelete {
+	mutation := newOrganizationMutation(c.config, OpDelete)
+	return &OrganizationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OrganizationClient) DeleteOne(o *Organization) *OrganizationDeleteOne {
+	return c.DeleteOneID(o.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OrganizationClient) DeleteOneID(id int) *OrganizationDeleteOne {
+	builder := c.Delete().Where(organization.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OrganizationDeleteOne{builder}
+}
+
+// Query returns a query builder for Organization.
+func (c *OrganizationClient) Query() *OrganizationQuery {
+	return &OrganizationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOrganization},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Organization entity by its id.
+func (c *OrganizationClient) Get(ctx context.Context, id int) (*Organization, error) {
+	return c.Query().Where(organization.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OrganizationClient) GetX(ctx context.Context, id int) *Organization {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryChildren queries the children edge of a Organization.
+func (c *OrganizationClient) QueryChildren(o *Organization) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := o.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.ChildrenTable, organization.ChildrenColumn),
+		)
+		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a Organization.
+func (c *OrganizationClient) QueryParent(o *Organization) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := o.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organization.ParentTable, organization.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *OrganizationClient) Hooks() []Hook {
+	return c.hooks.Organization
+}
+
+// Interceptors returns the client interceptors.
+func (c *OrganizationClient) Interceptors() []Interceptor {
+	return c.inters.Organization
+}
+
+func (c *OrganizationClient) mutate(ctx context.Context, m *OrganizationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OrganizationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OrganizationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OrganizationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OrganizationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Organization mutation op: %q", m.Op())
+	}
+}
+
 // PositionClient is a client for the Position schema.
 type PositionClient struct {
 	config
@@ -1316,9 +1789,11 @@ func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Branch, Company, Department, Employee, Position, Project, Task []ent.Hook
+		Branch, Company, Department, Employee, LeaveApproval, LeaveRequest,
+		Organization, Position, Project, Task []ent.Hook
 	}
 	inters struct {
-		Branch, Company, Department, Employee, Position, Project, Task []ent.Interceptor
+		Branch, Company, Department, Employee, LeaveApproval, LeaveRequest,
+		Organization, Position, Project, Task []ent.Interceptor
 	}
 )

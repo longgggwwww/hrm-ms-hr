@@ -20,6 +20,12 @@ type Tx struct {
 	Department *DepartmentClient
 	// Employee is the client for interacting with the Employee builders.
 	Employee *EmployeeClient
+	// LeaveApproval is the client for interacting with the LeaveApproval builders.
+	LeaveApproval *LeaveApprovalClient
+	// LeaveRequest is the client for interacting with the LeaveRequest builders.
+	LeaveRequest *LeaveRequestClient
+	// Organization is the client for interacting with the Organization builders.
+	Organization *OrganizationClient
 	// Position is the client for interacting with the Position builders.
 	Position *PositionClient
 	// Project is the client for interacting with the Project builders.
@@ -161,6 +167,9 @@ func (tx *Tx) init() {
 	tx.Company = NewCompanyClient(tx.config)
 	tx.Department = NewDepartmentClient(tx.config)
 	tx.Employee = NewEmployeeClient(tx.config)
+	tx.LeaveApproval = NewLeaveApprovalClient(tx.config)
+	tx.LeaveRequest = NewLeaveRequestClient(tx.config)
+	tx.Organization = NewOrganizationClient(tx.config)
 	tx.Position = NewPositionClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
