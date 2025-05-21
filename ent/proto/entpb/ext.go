@@ -11,7 +11,7 @@ import (
 // ExtService implements ExtServiceServer.
 type ExtService struct {
 	client *ent.Client
-	UnimplementedHRExtServiceServer
+	UnimplementedExtServiceServer
 }
 
 func (s *ExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeByUserIdRequest) (*Employee, error) {

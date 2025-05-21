@@ -118,8 +118,9 @@ const file_entpb_ext_proto_rawDesc = "" +
 	"\x1aGetEmployeeByUserIdRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"8\n" +
 	"\x1dDeleteEmployeeByUserIdRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId2\xb1\x01\n" +
-	"\fHRExtService\x12I\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId2\xaf\x01\n" +
+	"\n" +
+	"ExtService\x12I\n" +
 	"\x13GetEmployeeByUserId\x12!.entpb.GetEmployeeByUserIdRequest\x1a\x0f.entpb.Employee\x12V\n" +
 	"\x16DeleteEmployeeByUserId\x12$.entpb.DeleteEmployeeByUserIdRequest\x1a\x16.google.protobuf.EmptyB2Z0github.com/longgggwwww/hrm-ms-hr/ent/proto/entpbb\x06proto3"
 
@@ -143,10 +144,10 @@ var file_entpb_ext_proto_goTypes = []any{
 	(*emptypb.Empty)(nil),                 // 3: google.protobuf.Empty
 }
 var file_entpb_ext_proto_depIdxs = []int32{
-	0, // 0: entpb.HRExtService.GetEmployeeByUserId:input_type -> entpb.GetEmployeeByUserIdRequest
-	1, // 1: entpb.HRExtService.DeleteEmployeeByUserId:input_type -> entpb.DeleteEmployeeByUserIdRequest
-	2, // 2: entpb.HRExtService.GetEmployeeByUserId:output_type -> entpb.Employee
-	3, // 3: entpb.HRExtService.DeleteEmployeeByUserId:output_type -> google.protobuf.Empty
+	0, // 0: entpb.ExtService.GetEmployeeByUserId:input_type -> entpb.GetEmployeeByUserIdRequest
+	1, // 1: entpb.ExtService.DeleteEmployeeByUserId:input_type -> entpb.DeleteEmployeeByUserIdRequest
+	2, // 2: entpb.ExtService.GetEmployeeByUserId:output_type -> entpb.Employee
+	3, // 3: entpb.ExtService.DeleteEmployeeByUserId:output_type -> google.protobuf.Empty
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

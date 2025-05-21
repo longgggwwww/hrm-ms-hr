@@ -20,143 +20,143 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	HRExtService_GetEmployeeByUserId_FullMethodName    = "/entpb.HRExtService/GetEmployeeByUserId"
-	HRExtService_DeleteEmployeeByUserId_FullMethodName = "/entpb.HRExtService/DeleteEmployeeByUserId"
+	ExtService_GetEmployeeByUserId_FullMethodName    = "/entpb.ExtService/GetEmployeeByUserId"
+	ExtService_DeleteEmployeeByUserId_FullMethodName = "/entpb.ExtService/DeleteEmployeeByUserId"
 )
 
-// HRExtServiceClient is the client API for HRExtService service.
+// ExtServiceClient is the client API for ExtService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // Service definition
-type HRExtServiceClient interface {
+type ExtServiceClient interface {
 	GetEmployeeByUserId(ctx context.Context, in *GetEmployeeByUserIdRequest, opts ...grpc.CallOption) (*Employee, error)
 	DeleteEmployeeByUserId(ctx context.Context, in *DeleteEmployeeByUserIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
-type hRExtServiceClient struct {
+type extServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewHRExtServiceClient(cc grpc.ClientConnInterface) HRExtServiceClient {
-	return &hRExtServiceClient{cc}
+func NewExtServiceClient(cc grpc.ClientConnInterface) ExtServiceClient {
+	return &extServiceClient{cc}
 }
 
-func (c *hRExtServiceClient) GetEmployeeByUserId(ctx context.Context, in *GetEmployeeByUserIdRequest, opts ...grpc.CallOption) (*Employee, error) {
+func (c *extServiceClient) GetEmployeeByUserId(ctx context.Context, in *GetEmployeeByUserIdRequest, opts ...grpc.CallOption) (*Employee, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Employee)
-	err := c.cc.Invoke(ctx, HRExtService_GetEmployeeByUserId_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, ExtService_GetEmployeeByUserId_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *hRExtServiceClient) DeleteEmployeeByUserId(ctx context.Context, in *DeleteEmployeeByUserIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *extServiceClient) DeleteEmployeeByUserId(ctx context.Context, in *DeleteEmployeeByUserIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, HRExtService_DeleteEmployeeByUserId_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, ExtService_DeleteEmployeeByUserId_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// HRExtServiceServer is the server API for HRExtService service.
-// All implementations must embed UnimplementedHRExtServiceServer
+// ExtServiceServer is the server API for ExtService service.
+// All implementations must embed UnimplementedExtServiceServer
 // for forward compatibility.
 //
 // Service definition
-type HRExtServiceServer interface {
+type ExtServiceServer interface {
 	GetEmployeeByUserId(context.Context, *GetEmployeeByUserIdRequest) (*Employee, error)
 	DeleteEmployeeByUserId(context.Context, *DeleteEmployeeByUserIdRequest) (*emptypb.Empty, error)
-	mustEmbedUnimplementedHRExtServiceServer()
+	mustEmbedUnimplementedExtServiceServer()
 }
 
-// UnimplementedHRExtServiceServer must be embedded to have
+// UnimplementedExtServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedHRExtServiceServer struct{}
+type UnimplementedExtServiceServer struct{}
 
-func (UnimplementedHRExtServiceServer) GetEmployeeByUserId(context.Context, *GetEmployeeByUserIdRequest) (*Employee, error) {
+func (UnimplementedExtServiceServer) GetEmployeeByUserId(context.Context, *GetEmployeeByUserIdRequest) (*Employee, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEmployeeByUserId not implemented")
 }
-func (UnimplementedHRExtServiceServer) DeleteEmployeeByUserId(context.Context, *DeleteEmployeeByUserIdRequest) (*emptypb.Empty, error) {
+func (UnimplementedExtServiceServer) DeleteEmployeeByUserId(context.Context, *DeleteEmployeeByUserIdRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteEmployeeByUserId not implemented")
 }
-func (UnimplementedHRExtServiceServer) mustEmbedUnimplementedHRExtServiceServer() {}
-func (UnimplementedHRExtServiceServer) testEmbeddedByValue()                      {}
+func (UnimplementedExtServiceServer) mustEmbedUnimplementedExtServiceServer() {}
+func (UnimplementedExtServiceServer) testEmbeddedByValue()                    {}
 
-// UnsafeHRExtServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to HRExtServiceServer will
+// UnsafeExtServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ExtServiceServer will
 // result in compilation errors.
-type UnsafeHRExtServiceServer interface {
-	mustEmbedUnimplementedHRExtServiceServer()
+type UnsafeExtServiceServer interface {
+	mustEmbedUnimplementedExtServiceServer()
 }
 
-func RegisterHRExtServiceServer(s grpc.ServiceRegistrar, srv HRExtServiceServer) {
-	// If the following call pancis, it indicates UnimplementedHRExtServiceServer was
+func RegisterExtServiceServer(s grpc.ServiceRegistrar, srv ExtServiceServer) {
+	// If the following call pancis, it indicates UnimplementedExtServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&HRExtService_ServiceDesc, srv)
+	s.RegisterService(&ExtService_ServiceDesc, srv)
 }
 
-func _HRExtService_GetEmployeeByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ExtService_GetEmployeeByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetEmployeeByUserIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HRExtServiceServer).GetEmployeeByUserId(ctx, in)
+		return srv.(ExtServiceServer).GetEmployeeByUserId(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: HRExtService_GetEmployeeByUserId_FullMethodName,
+		FullMethod: ExtService_GetEmployeeByUserId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HRExtServiceServer).GetEmployeeByUserId(ctx, req.(*GetEmployeeByUserIdRequest))
+		return srv.(ExtServiceServer).GetEmployeeByUserId(ctx, req.(*GetEmployeeByUserIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _HRExtService_DeleteEmployeeByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ExtService_DeleteEmployeeByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteEmployeeByUserIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HRExtServiceServer).DeleteEmployeeByUserId(ctx, in)
+		return srv.(ExtServiceServer).DeleteEmployeeByUserId(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: HRExtService_DeleteEmployeeByUserId_FullMethodName,
+		FullMethod: ExtService_DeleteEmployeeByUserId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HRExtServiceServer).DeleteEmployeeByUserId(ctx, req.(*DeleteEmployeeByUserIdRequest))
+		return srv.(ExtServiceServer).DeleteEmployeeByUserId(ctx, req.(*DeleteEmployeeByUserIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// HRExtService_ServiceDesc is the grpc.ServiceDesc for HRExtService service.
+// ExtService_ServiceDesc is the grpc.ServiceDesc for ExtService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var HRExtService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "entpb.HRExtService",
-	HandlerType: (*HRExtServiceServer)(nil),
+var ExtService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "entpb.ExtService",
+	HandlerType: (*ExtServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetEmployeeByUserId",
-			Handler:    _HRExtService_GetEmployeeByUserId_Handler,
+			Handler:    _ExtService_GetEmployeeByUserId_Handler,
 		},
 		{
 			MethodName: "DeleteEmployeeByUserId",
-			Handler:    _HRExtService_DeleteEmployeeByUserId_Handler,
+			Handler:    _ExtService_DeleteEmployeeByUserId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

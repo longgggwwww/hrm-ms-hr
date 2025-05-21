@@ -17,7 +17,7 @@ message DeleteEmployeeByUserIdRequest {
 }
 
 // Service definition
-service HRExtService {
+service ExtService {
   rpc GetEmployeeByUserId (GetEmployeeByUserIdRequest) returns (Employee);
   
   rpc DeleteEmployeeByUserId (DeleteEmployeeByUserIdRequest) returns (google.protobuf.Empty);
