@@ -21,7 +21,7 @@ func registerGRPCServices(server *grpc.Server, cli *ent.Client) {
 	entpb.RegisterEmployeeServiceServer(server, entpb.NewEmployeeService(cli))
 	entpb.RegisterProjectServiceServer(server, entpb.NewProjectService(cli))
 	entpb.RegisterTaskServiceServer(server, entpb.NewTaskService(cli))
-	entpb.RegisterHRExtServiceServer(server, entpb.NewExtService(cli))
+	entpb.RegisterExtServiceServer(server, entpb.NewExtService(cli))
 }
 
 func startGRPCServer(cli *ent.Client) {
