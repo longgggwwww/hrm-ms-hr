@@ -25,6 +25,8 @@ message Department {
   google.protobuf.Timestamp updated_at = 6;
 
   repeated Position positions = 7;
+
+  Organization organization = 8;
 }
 
 message CreateDepartmentRequest {
@@ -351,6 +353,8 @@ message Organization {
   Organization parent = 12;
 
   repeated Organization children = 13;
+
+  repeated Department departments = 14;
 }
 
 message CreateOrganizationRequest {

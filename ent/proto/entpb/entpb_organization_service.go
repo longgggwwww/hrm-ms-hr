@@ -9,6 +9,7 @@ import (
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
 	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -71,6 +72,12 @@ func toProtoOrganization(e *ent.Organization) (*Organization, error) {
 	for _, edg := range e.Edges.Children {
 		id := int64(edg.ID)
 		v.Children = append(v.Children, &Organization{
+			Id: id,
+		})
+	}
+	for _, edg := range e.Edges.Departments {
+		id := int64(edg.ID)
+		v.Departments = append(v.Departments, &Department{
 			Id: id,
 		})
 	}
@@ -137,6 +144,9 @@ func (svc *OrganizationService) Get(ctx context.Context, req *GetOrganizationReq
 			WithChildren(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
 			}).
+			WithDepartments(func(query *ent.DepartmentQuery) {
+				query.Select(department.FieldID)
+			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
 			}).
@@ -195,6 +205,10 @@ func (svc *OrganizationService) Update(ctx context.Context, req *UpdateOrganizat
 	for _, item := range organization.GetChildren() {
 		children := int(item.GetId())
 		m.AddChildIDs(children)
+	}
+	for _, item := range organization.GetDepartments() {
+		departments := int(item.GetId())
+		m.AddDepartmentIDs(departments)
 	}
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())
@@ -272,6 +286,9 @@ func (svc *OrganizationService) List(ctx context.Context, req *ListOrganizationR
 		entList, err = listQuery.
 			WithChildren(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
+			}).
+			WithDepartments(func(query *ent.DepartmentQuery) {
+				query.Select(department.FieldID)
 			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
@@ -372,6 +389,10 @@ func (svc *OrganizationService) createBuilder(organization *Organization) (*ent.
 	for _, item := range organization.GetChildren() {
 		children := int(item.GetId())
 		m.AddChildIDs(children)
+	}
+	for _, item := range organization.GetDepartments() {
+		departments := int(item.GetId())
+		m.AddDepartmentIDs(departments)
 	}
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())

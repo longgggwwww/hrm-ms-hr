@@ -13,20 +13,28 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "code", Type: field.TypeString},
-		{Name: "org_id", Type: field.TypeInt},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "org_id", Type: field.TypeInt},
 	}
 	// DepartmentsTable holds the schema information for the "departments" table.
 	DepartmentsTable = &schema.Table{
 		Name:       "departments",
 		Columns:    DepartmentsColumns,
 		PrimaryKey: []*schema.Column{DepartmentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "departments_organizations_departments",
+				Columns:    []*schema.Column{DepartmentsColumns[5]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "department_org_id_code",
 				Unique:  true,
-				Columns: []*schema.Column{DepartmentsColumns[3], DepartmentsColumns[2]},
+				Columns: []*schema.Column{DepartmentsColumns[5], DepartmentsColumns[2]},
 			},
 		},
 	}
@@ -225,6 +233,7 @@ var (
 )
 
 func init() {
+	DepartmentsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
 	LeaveRequestsTable.ForeignKeys[0].RefTable = LeaveApprovalsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = OrganizationsTable

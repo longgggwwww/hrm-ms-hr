@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
@@ -216,6 +217,21 @@ func (ou *OrganizationUpdate) AddChildren(o ...*Organization) *OrganizationUpdat
 	return ou.AddChildIDs(ids...)
 }
 
+// AddDepartmentIDs adds the "departments" edge to the Department entity by IDs.
+func (ou *OrganizationUpdate) AddDepartmentIDs(ids ...int) *OrganizationUpdate {
+	ou.mutation.AddDepartmentIDs(ids...)
+	return ou
+}
+
+// AddDepartments adds the "departments" edges to the Department entity.
+func (ou *OrganizationUpdate) AddDepartments(d ...*Department) *OrganizationUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ou.AddDepartmentIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (ou *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return ou.mutation
@@ -246,6 +262,27 @@ func (ou *OrganizationUpdate) RemoveChildren(o ...*Organization) *OrganizationUp
 		ids[i] = o[i].ID
 	}
 	return ou.RemoveChildIDs(ids...)
+}
+
+// ClearDepartments clears all "departments" edges to the Department entity.
+func (ou *OrganizationUpdate) ClearDepartments() *OrganizationUpdate {
+	ou.mutation.ClearDepartments()
+	return ou
+}
+
+// RemoveDepartmentIDs removes the "departments" edge to Department entities by IDs.
+func (ou *OrganizationUpdate) RemoveDepartmentIDs(ids ...int) *OrganizationUpdate {
+	ou.mutation.RemoveDepartmentIDs(ids...)
+	return ou
+}
+
+// RemoveDepartments removes "departments" edges to Department entities.
+func (ou *OrganizationUpdate) RemoveDepartments(d ...*Department) *OrganizationUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ou.RemoveDepartmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -420,6 +457,51 @@ func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ou.mutation.DepartmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.DepartmentsTable,
+			Columns: []string{organization.DepartmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.RemovedDepartmentsIDs(); len(nodes) > 0 && !ou.mutation.DepartmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.DepartmentsTable,
+			Columns: []string{organization.DepartmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.DepartmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.DepartmentsTable,
+			Columns: []string{organization.DepartmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -635,6 +717,21 @@ func (ouo *OrganizationUpdateOne) AddChildren(o ...*Organization) *OrganizationU
 	return ouo.AddChildIDs(ids...)
 }
 
+// AddDepartmentIDs adds the "departments" edge to the Department entity by IDs.
+func (ouo *OrganizationUpdateOne) AddDepartmentIDs(ids ...int) *OrganizationUpdateOne {
+	ouo.mutation.AddDepartmentIDs(ids...)
+	return ouo
+}
+
+// AddDepartments adds the "departments" edges to the Department entity.
+func (ouo *OrganizationUpdateOne) AddDepartments(d ...*Department) *OrganizationUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ouo.AddDepartmentIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (ouo *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return ouo.mutation
@@ -665,6 +762,27 @@ func (ouo *OrganizationUpdateOne) RemoveChildren(o ...*Organization) *Organizati
 		ids[i] = o[i].ID
 	}
 	return ouo.RemoveChildIDs(ids...)
+}
+
+// ClearDepartments clears all "departments" edges to the Department entity.
+func (ouo *OrganizationUpdateOne) ClearDepartments() *OrganizationUpdateOne {
+	ouo.mutation.ClearDepartments()
+	return ouo
+}
+
+// RemoveDepartmentIDs removes the "departments" edge to Department entities by IDs.
+func (ouo *OrganizationUpdateOne) RemoveDepartmentIDs(ids ...int) *OrganizationUpdateOne {
+	ouo.mutation.RemoveDepartmentIDs(ids...)
+	return ouo
+}
+
+// RemoveDepartments removes "departments" edges to Department entities.
+func (ouo *OrganizationUpdateOne) RemoveDepartments(d ...*Department) *OrganizationUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ouo.RemoveDepartmentIDs(ids...)
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
@@ -869,6 +987,51 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ouo.mutation.DepartmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.DepartmentsTable,
+			Columns: []string{organization.DepartmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.RemovedDepartmentsIDs(); len(nodes) > 0 && !ouo.mutation.DepartmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.DepartmentsTable,
+			Columns: []string{organization.DepartmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.DepartmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.DepartmentsTable,
+			Columns: []string{organization.DepartmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

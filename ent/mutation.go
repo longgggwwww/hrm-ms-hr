@@ -45,22 +45,22 @@ const (
 // DepartmentMutation represents an operation that mutates the Department nodes in the graph.
 type DepartmentMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *int
-	name             *string
-	code             *string
-	org_id           *int
-	addorg_id        *int
-	created_at       *time.Time
-	updated_at       *time.Time
-	clearedFields    map[string]struct{}
-	positions        map[int]struct{}
-	removedpositions map[int]struct{}
-	clearedpositions bool
-	done             bool
-	oldValue         func(context.Context) (*Department, error)
-	predicates       []predicate.Department
+	op                  Op
+	typ                 string
+	id                  *int
+	name                *string
+	code                *string
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	positions           map[int]struct{}
+	removedpositions    map[int]struct{}
+	clearedpositions    bool
+	organization        *int
+	clearedorganization bool
+	done                bool
+	oldValue            func(context.Context) (*Department, error)
+	predicates          []predicate.Department
 }
 
 var _ ent.Mutation = (*DepartmentMutation)(nil)
@@ -235,13 +235,12 @@ func (m *DepartmentMutation) ResetCode() {
 
 // SetOrgID sets the "org_id" field.
 func (m *DepartmentMutation) SetOrgID(i int) {
-	m.org_id = &i
-	m.addorg_id = nil
+	m.organization = &i
 }
 
 // OrgID returns the value of the "org_id" field in the mutation.
 func (m *DepartmentMutation) OrgID() (r int, exists bool) {
-	v := m.org_id
+	v := m.organization
 	if v == nil {
 		return
 	}
@@ -265,28 +264,9 @@ func (m *DepartmentMutation) OldOrgID(ctx context.Context) (v int, err error) {
 	return oldValue.OrgID, nil
 }
 
-// AddOrgID adds i to the "org_id" field.
-func (m *DepartmentMutation) AddOrgID(i int) {
-	if m.addorg_id != nil {
-		*m.addorg_id += i
-	} else {
-		m.addorg_id = &i
-	}
-}
-
-// AddedOrgID returns the value that was added to the "org_id" field in this mutation.
-func (m *DepartmentMutation) AddedOrgID() (r int, exists bool) {
-	v := m.addorg_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetOrgID resets all changes to the "org_id" field.
 func (m *DepartmentMutation) ResetOrgID() {
-	m.org_id = nil
-	m.addorg_id = nil
+	m.organization = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -415,6 +395,46 @@ func (m *DepartmentMutation) ResetPositions() {
 	m.removedpositions = nil
 }
 
+// SetOrganizationID sets the "organization" edge to the Organization entity by id.
+func (m *DepartmentMutation) SetOrganizationID(id int) {
+	m.organization = &id
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (m *DepartmentMutation) ClearOrganization() {
+	m.clearedorganization = true
+	m.clearedFields[department.FieldOrgID] = struct{}{}
+}
+
+// OrganizationCleared reports if the "organization" edge to the Organization entity was cleared.
+func (m *DepartmentMutation) OrganizationCleared() bool {
+	return m.clearedorganization
+}
+
+// OrganizationID returns the "organization" edge ID in the mutation.
+func (m *DepartmentMutation) OrganizationID() (id int, exists bool) {
+	if m.organization != nil {
+		return *m.organization, true
+	}
+	return
+}
+
+// OrganizationIDs returns the "organization" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OrganizationID instead. It exists only for internal usage by the builders.
+func (m *DepartmentMutation) OrganizationIDs() (ids []int) {
+	if id := m.organization; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOrganization resets all changes to the "organization" edge.
+func (m *DepartmentMutation) ResetOrganization() {
+	m.organization = nil
+	m.clearedorganization = false
+}
+
 // Where appends a list predicates to the DepartmentMutation builder.
 func (m *DepartmentMutation) Where(ps ...predicate.Department) {
 	m.predicates = append(m.predicates, ps...)
@@ -456,7 +476,7 @@ func (m *DepartmentMutation) Fields() []string {
 	if m.code != nil {
 		fields = append(fields, department.FieldCode)
 	}
-	if m.org_id != nil {
+	if m.organization != nil {
 		fields = append(fields, department.FieldOrgID)
 	}
 	if m.created_at != nil {
@@ -554,9 +574,6 @@ func (m *DepartmentMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *DepartmentMutation) AddedFields() []string {
 	var fields []string
-	if m.addorg_id != nil {
-		fields = append(fields, department.FieldOrgID)
-	}
 	return fields
 }
 
@@ -565,8 +582,6 @@ func (m *DepartmentMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *DepartmentMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case department.FieldOrgID:
-		return m.AddedOrgID()
 	}
 	return nil, false
 }
@@ -576,13 +591,6 @@ func (m *DepartmentMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *DepartmentMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case department.FieldOrgID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddOrgID(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Department numeric field %s", name)
 }
@@ -631,9 +639,12 @@ func (m *DepartmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DepartmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.positions != nil {
 		edges = append(edges, department.EdgePositions)
+	}
+	if m.organization != nil {
+		edges = append(edges, department.EdgeOrganization)
 	}
 	return edges
 }
@@ -648,13 +659,17 @@ func (m *DepartmentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case department.EdgeOrganization:
+		if id := m.organization; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DepartmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedpositions != nil {
 		edges = append(edges, department.EdgePositions)
 	}
@@ -677,9 +692,12 @@ func (m *DepartmentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DepartmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedpositions {
 		edges = append(edges, department.EdgePositions)
+	}
+	if m.clearedorganization {
+		edges = append(edges, department.EdgeOrganization)
 	}
 	return edges
 }
@@ -690,6 +708,8 @@ func (m *DepartmentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case department.EdgePositions:
 		return m.clearedpositions
+	case department.EdgeOrganization:
+		return m.clearedorganization
 	}
 	return false
 }
@@ -698,6 +718,9 @@ func (m *DepartmentMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *DepartmentMutation) ClearEdge(name string) error {
 	switch name {
+	case department.EdgeOrganization:
+		m.ClearOrganization()
+		return nil
 	}
 	return fmt.Errorf("unknown Department unique edge %s", name)
 }
@@ -708,6 +731,9 @@ func (m *DepartmentMutation) ResetEdge(name string) error {
 	switch name {
 	case department.EdgePositions:
 		m.ResetPositions()
+		return nil
+	case department.EdgeOrganization:
+		m.ResetOrganization()
 		return nil
 	}
 	return fmt.Errorf("unknown Department edge %s", name)
@@ -2795,27 +2821,30 @@ func (m *LeaveRequestMutation) ResetEdge(name string) error {
 // OrganizationMutation represents an operation that mutates the Organization nodes in the graph.
 type OrganizationMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	name            *string
-	code            *string
-	logo_url        *string
-	address         *string
-	phone           *string
-	email           *string
-	website         *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	parent          *int
-	clearedparent   bool
-	children        map[int]struct{}
-	removedchildren map[int]struct{}
-	clearedchildren bool
-	done            bool
-	oldValue        func(context.Context) (*Organization, error)
-	predicates      []predicate.Organization
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	code               *string
+	logo_url           *string
+	address            *string
+	phone              *string
+	email              *string
+	website            *string
+	created_at         *time.Time
+	updated_at         *time.Time
+	clearedFields      map[string]struct{}
+	parent             *int
+	clearedparent      bool
+	children           map[int]struct{}
+	removedchildren    map[int]struct{}
+	clearedchildren    bool
+	departments        map[int]struct{}
+	removeddepartments map[int]struct{}
+	cleareddepartments bool
+	done               bool
+	oldValue           func(context.Context) (*Organization, error)
+	predicates         []predicate.Organization
 }
 
 var _ ent.Mutation = (*OrganizationMutation)(nil)
@@ -3435,6 +3464,60 @@ func (m *OrganizationMutation) ResetChildren() {
 	m.removedchildren = nil
 }
 
+// AddDepartmentIDs adds the "departments" edge to the Department entity by ids.
+func (m *OrganizationMutation) AddDepartmentIDs(ids ...int) {
+	if m.departments == nil {
+		m.departments = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.departments[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDepartments clears the "departments" edge to the Department entity.
+func (m *OrganizationMutation) ClearDepartments() {
+	m.cleareddepartments = true
+}
+
+// DepartmentsCleared reports if the "departments" edge to the Department entity was cleared.
+func (m *OrganizationMutation) DepartmentsCleared() bool {
+	return m.cleareddepartments
+}
+
+// RemoveDepartmentIDs removes the "departments" edge to the Department entity by IDs.
+func (m *OrganizationMutation) RemoveDepartmentIDs(ids ...int) {
+	if m.removeddepartments == nil {
+		m.removeddepartments = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.departments, ids[i])
+		m.removeddepartments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDepartments returns the removed IDs of the "departments" edge to the Department entity.
+func (m *OrganizationMutation) RemovedDepartmentsIDs() (ids []int) {
+	for id := range m.removeddepartments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DepartmentsIDs returns the "departments" edge IDs in the mutation.
+func (m *OrganizationMutation) DepartmentsIDs() (ids []int) {
+	for id := range m.departments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDepartments resets all changes to the "departments" edge.
+func (m *OrganizationMutation) ResetDepartments() {
+	m.departments = nil
+	m.cleareddepartments = false
+	m.removeddepartments = nil
+}
+
 // Where appends a list predicates to the OrganizationMutation builder.
 func (m *OrganizationMutation) Where(ps ...predicate.Organization) {
 	m.predicates = append(m.predicates, ps...)
@@ -3763,12 +3846,15 @@ func (m *OrganizationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OrganizationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.parent != nil {
 		edges = append(edges, organization.EdgeParent)
 	}
 	if m.children != nil {
 		edges = append(edges, organization.EdgeChildren)
+	}
+	if m.departments != nil {
+		edges = append(edges, organization.EdgeDepartments)
 	}
 	return edges
 }
@@ -3787,15 +3873,24 @@ func (m *OrganizationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case organization.EdgeDepartments:
+		ids := make([]ent.Value, 0, len(m.departments))
+		for id := range m.departments {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OrganizationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedchildren != nil {
 		edges = append(edges, organization.EdgeChildren)
+	}
+	if m.removeddepartments != nil {
+		edges = append(edges, organization.EdgeDepartments)
 	}
 	return edges
 }
@@ -3810,18 +3905,27 @@ func (m *OrganizationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case organization.EdgeDepartments:
+		ids := make([]ent.Value, 0, len(m.removeddepartments))
+		for id := range m.removeddepartments {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OrganizationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedparent {
 		edges = append(edges, organization.EdgeParent)
 	}
 	if m.clearedchildren {
 		edges = append(edges, organization.EdgeChildren)
+	}
+	if m.cleareddepartments {
+		edges = append(edges, organization.EdgeDepartments)
 	}
 	return edges
 }
@@ -3834,6 +3938,8 @@ func (m *OrganizationMutation) EdgeCleared(name string) bool {
 		return m.clearedparent
 	case organization.EdgeChildren:
 		return m.clearedchildren
+	case organization.EdgeDepartments:
+		return m.cleareddepartments
 	}
 	return false
 }
@@ -3858,6 +3964,9 @@ func (m *OrganizationMutation) ResetEdge(name string) error {
 		return nil
 	case organization.EdgeChildren:
 		m.ResetChildren()
+		return nil
+	case organization.EdgeDepartments:
+		m.ResetDepartments()
 		return nil
 	}
 	return fmt.Errorf("unknown Organization edge %s", name)

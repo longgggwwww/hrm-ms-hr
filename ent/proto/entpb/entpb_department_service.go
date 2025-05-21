@@ -10,6 +10,7 @@ import (
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
+	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -42,10 +43,16 @@ func toProtoDepartment(e *ent.Department) (*Department, error) {
 	v.Id = id
 	name := e.Name
 	v.Name = name
-	org_id := int64(e.OrgID)
-	v.OrgId = org_id
+	organization := int64(e.OrgID)
+	v.OrgId = organization
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
+	if edg := e.Edges.Organization; edg != nil {
+		id := int64(edg.ID)
+		v.Organization = &Organization{
+			Id: id,
+		}
+	}
 	for _, edg := range e.Edges.Positions {
 		id := int64(edg.ID)
 		v.Positions = append(v.Positions, &Position{
@@ -106,6 +113,9 @@ func (svc *DepartmentService) Get(ctx context.Context, req *GetDepartmentRequest
 	case GetDepartmentRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Department.Query().
 			Where(department.ID(id)).
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
+			}).
 			WithPositions(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
@@ -139,6 +149,10 @@ func (svc *DepartmentService) Update(ctx context.Context, req *UpdateDepartmentR
 	m.SetOrgID(departmentOrgID)
 	departmentUpdatedAt := runtime.ExtractTime(department.GetUpdatedAt())
 	m.SetUpdatedAt(departmentUpdatedAt)
+	if department.GetOrganization() != nil {
+		departmentOrganization := int(department.GetOrganization().GetId())
+		m.SetOrganizationID(departmentOrganization)
+	}
 	for _, item := range department.GetPositions() {
 		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
@@ -213,6 +227,9 @@ func (svc *DepartmentService) List(ctx context.Context, req *ListDepartmentReque
 		entList, err = listQuery.All(ctx)
 	case ListDepartmentRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
+			}).
 			WithPositions(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
@@ -287,6 +304,10 @@ func (svc *DepartmentService) createBuilder(department *Department) (*ent.Depart
 	m.SetOrgID(departmentOrgID)
 	departmentUpdatedAt := runtime.ExtractTime(department.GetUpdatedAt())
 	m.SetUpdatedAt(departmentUpdatedAt)
+	if department.GetOrganization() != nil {
+		departmentOrganization := int(department.GetOrganization().GetId())
+		m.SetOrganizationID(departmentOrganization)
+	}
 	for _, item := range department.GetPositions() {
 		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
