@@ -128,12 +128,86 @@ func (h *OrgHandler) CreateOrg(c *gin.Context) {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, org)
+	// Lấy lại org kèm parent (nếu có)
+	orgWithParent, err := h.Client.Organization.Query().
+		Where(organization.ID(org.ID)).
+		WithParent().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusCreated, org) // fallback nếu lỗi
+		return
+	}
+	c.JSON(http.StatusCreated, orgWithParent)
 }
 
-// UpdateOrg cập nhật thông tin tổ chức (chưa implement)
+// UpdateOrg cập nhật thông tin tổ chức
 func (h *OrgHandler) UpdateOrg(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org ID"})
+		return
+	}
+
+	var req struct {
+		Name     *string `json:"name"`
+		Code     *string `json:"code"`
+		Address  *string `json:"address"`
+		LogoUrl  *string `json:"logo_url"`
+		Phone    *string `json:"phone"`
+		Email    *string `json:"email"`
+		Website  *string `json:"website"`
+		ParentID *int    `json:"parent_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	orgUpdate := h.Client.Organization.UpdateOneID(id)
+	if req.Name != nil {
+		orgUpdate.SetName(*req.Name)
+	}
+	if req.Code != nil {
+		orgUpdate.SetCode(*req.Code)
+	}
+	if req.Address != nil {
+		orgUpdate.SetAddress(*req.Address)
+	}
+	if req.LogoUrl != nil {
+		orgUpdate.SetLogoURL(*req.LogoUrl)
+	}
+	if req.Phone != nil {
+		orgUpdate.SetPhone(*req.Phone)
+	}
+	if req.Email != nil {
+		orgUpdate.SetEmail(*req.Email)
+	}
+	if req.Website != nil {
+		orgUpdate.SetWebsite(*req.Website)
+	}
+	if req.ParentID != nil {
+		orgUpdate.SetParentID(*req.ParentID)
+	}
+
+	_, err = orgUpdate.Save(c.Request.Context())
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Org not found"})
+			return
+		}
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	// Lấy lại org kèm parent (nếu có)
+	orgWithParent, err := h.Client.Organization.Query().
+		Where(organization.ID(id)).
+		WithParent().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"id": id}) // fallback nếu lỗi
+		return
+	}
+	c.JSON(http.StatusOK, orgWithParent)
 }
 
 // DeleteOrg xóa tổ chức theo ID
@@ -151,6 +225,27 @@ func (h *OrgHandler) DeleteOrg(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+// DeleteOrgs xóa nhiều tổ chức theo danh sách ID
+func (h *OrgHandler) DeleteOrgs(c *gin.Context) {
+	var req struct {
+		IDs []int `json:"ids" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(req.IDs) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No IDs provided"})
+		return
+	}
+	_, err := h.Client.Organization.Delete().Where(organization.IDIn(req.IDs...)).Exec(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
 func (h *OrgHandler) RegisterRoutes(r *gin.Engine) {
 	orgs := r.Group("/orgs")
 	{
@@ -158,7 +253,8 @@ func (h *OrgHandler) RegisterRoutes(r *gin.Engine) {
 		orgs.GET("/:id", h.GetOrgByID)
 		orgs.GET("/from-token", h.GetOrgFromToken)
 		orgs.POST("/", h.CreateOrg)
-		orgs.PUT("/:id", h.UpdateOrg)
+		orgs.PATCH("/:id", h.UpdateOrg)
 		orgs.DELETE("/:id", h.DeleteOrg)
+		orgs.DELETE("/", h.DeleteOrgs) // Thêm endpoint xóa nhiều
 	}
 }

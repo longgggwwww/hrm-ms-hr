@@ -7,9 +7,11 @@ import (
 	pb "github.com/huynhthanhthao/hrm_user_service/generated"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
-// NewUserClient creates and returns a new UserServiceClient connected to the USER_SERVICE address.
+// Tạo một client gRPC cho user service
 func NewUserClient() (pb.UserServiceClient, error) {
 	url := os.Getenv("USER_SERVICE")
 	if url == "" {
@@ -18,7 +20,7 @@ func NewUserClient() (pb.UserServiceClient, error) {
 
 	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to user service: %w", err)
+		return nil, utils.WrapError("connect to user service", err)
 	}
 
 	return pb.NewUserServiceClient(conn), nil

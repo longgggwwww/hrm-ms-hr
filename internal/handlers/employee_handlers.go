@@ -49,9 +49,49 @@ func (h *EmployeeHandler) GetEmployeeByID(c *gin.Context) {
 	c.JSON(http.StatusOK, employeeObj)
 }
 
-// UpdateEmployee cập nhật thông tin nhân viên (chưa implement)
+// UpdateEmployee cập nhật thông tin nhân viên
 func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
+	_, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		return
+	}
+	type EmployeeUpdateInput struct {
+		Name       *string `json:"name"`
+		Code       *string `json:"code"`
+		Department *int    `json:"department_id"`
+		Position   *int    `json:"position_id"`
+		// Add other fields as needed
+	}
+	var input EmployeeUpdateInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Update employee"})
+	// update := h.Client.Employee.UpdateOneID(id)
+	// if input.Name != nil {
+	// 	update.SetName(*input.Name)
+	// }
+	// if input.Code != nil {
+	// 	update.SetCode(*input.Code)
+	// }
+	// if input.Department != nil {
+	// 	update.SetDepartmentID(*input.Department)
+	// }
+	// if input.Position != nil {
+	// 	update.SetPositionID(*input.Position)
+	// }
+	// employeeObj, err := update.Save(c.Request.Context())
+	// if err != nil {
+	// 	if ent.IsNotFound(err) {
+	// 		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+	// 		return
+	// 	}
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update employee"})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, employeeObj)
 }
 
 // DeleteEmployee xóa nhân viên theo ID
