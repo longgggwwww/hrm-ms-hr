@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
@@ -20,11 +21,12 @@ import (
 // DepartmentQuery is the builder for querying Department entities.
 type DepartmentQuery struct {
 	config
-	ctx           *QueryContext
-	order         []department.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.Department
-	withPositions *PositionQuery
+	ctx              *QueryContext
+	order            []department.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Department
+	withPositions    *PositionQuery
+	withOrganization *OrganizationQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +78,28 @@ func (dq *DepartmentQuery) QueryPositions() *PositionQuery {
 			sqlgraph.From(department.Table, department.FieldID, selector),
 			sqlgraph.To(position.Table, position.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, department.PositionsTable, department.PositionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOrganization chains the current query on the "organization" edge.
+func (dq *DepartmentQuery) QueryOrganization() *OrganizationQuery {
+	query := (&OrganizationClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, selector),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, department.OrganizationTable, department.OrganizationColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,12 +294,13 @@ func (dq *DepartmentQuery) Clone() *DepartmentQuery {
 		return nil
 	}
 	return &DepartmentQuery{
-		config:        dq.config,
-		ctx:           dq.ctx.Clone(),
-		order:         append([]department.OrderOption{}, dq.order...),
-		inters:        append([]Interceptor{}, dq.inters...),
-		predicates:    append([]predicate.Department{}, dq.predicates...),
-		withPositions: dq.withPositions.Clone(),
+		config:           dq.config,
+		ctx:              dq.ctx.Clone(),
+		order:            append([]department.OrderOption{}, dq.order...),
+		inters:           append([]Interceptor{}, dq.inters...),
+		predicates:       append([]predicate.Department{}, dq.predicates...),
+		withPositions:    dq.withPositions.Clone(),
+		withOrganization: dq.withOrganization.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -290,6 +315,17 @@ func (dq *DepartmentQuery) WithPositions(opts ...func(*PositionQuery)) *Departme
 		opt(query)
 	}
 	dq.withPositions = query
+	return dq
+}
+
+// WithOrganization tells the query-builder to eager-load the nodes that are connected to
+// the "organization" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DepartmentQuery) WithOrganization(opts ...func(*OrganizationQuery)) *DepartmentQuery {
+	query := (&OrganizationClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withOrganization = query
 	return dq
 }
 
@@ -371,8 +407,9 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 	var (
 		nodes       = []*Department{}
 		_spec       = dq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			dq.withPositions != nil,
+			dq.withOrganization != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -397,6 +434,12 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 		if err := dq.loadPositions(ctx, query, nodes,
 			func(n *Department) { n.Edges.Positions = []*Position{} },
 			func(n *Department, e *Position) { n.Edges.Positions = append(n.Edges.Positions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withOrganization; query != nil {
+		if err := dq.loadOrganization(ctx, query, nodes, nil,
+			func(n *Department, e *Organization) { n.Edges.Organization = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -433,6 +476,35 @@ func (dq *DepartmentQuery) loadPositions(ctx context.Context, query *PositionQue
 	}
 	return nil
 }
+func (dq *DepartmentQuery) loadOrganization(ctx context.Context, query *OrganizationQuery, nodes []*Department, init func(*Department), assign func(*Department, *Organization)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Department)
+	for i := range nodes {
+		fk := nodes[i].OrgID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(organization.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "org_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (dq *DepartmentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := dq.querySpec()
@@ -458,6 +530,9 @@ func (dq *DepartmentQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != department.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if dq.withOrganization != nil {
+			_spec.Node.AddColumnOnce(department.FieldOrgID)
 		}
 	}
 	if ps := dq.predicates; len(ps) > 0 {

@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	pb "github.com/huynhthanhthao/hrm_user_service/generated"
+	userPb "github.com/huynhthanhthao/hrm_user_service/generated"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
@@ -13,18 +13,28 @@ import (
 
 type EmployeeHandler struct {
 	Client     *ent.Client
-	UserClient *pb.UserServiceClient
+	UserClient userPb.UserServiceClient
 }
 
-func NewEmployeeHandler(client *ent.Client, userClient *pb.UserServiceClient) *EmployeeHandler {
+func NewEmployeeHandler(client *ent.Client, userClient userPb.UserServiceClient) *EmployeeHandler {
 	return &EmployeeHandler{
 		Client:     client,
 		UserClient: userClient,
 	}
 }
 
-// GetEmployees trả về danh sách tất cả nhân viên
-func (h *EmployeeHandler) GetEmployees(c *gin.Context) {
+func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
+	employees := r.Group("employees")
+	{
+		employees.POST("", h.Create)
+		employees.GET("", h.List)
+		employees.GET(":id", h.Get)
+		employees.PUT(":id", h.Update)
+		employees.DELETE(":id", h.Delete)
+	}
+}
+
+func (h *EmployeeHandler) List(c *gin.Context) {
 	employees, err := h.Client.Employee.Query().All(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch employees"})
@@ -33,8 +43,7 @@ func (h *EmployeeHandler) GetEmployees(c *gin.Context) {
 	c.JSON(http.StatusOK, employees)
 }
 
-// GetEmployeeByID trả về thông tin nhân viên theo ID
-func (h *EmployeeHandler) GetEmployeeByID(c *gin.Context) {
+func (h *EmployeeHandler) Get(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
@@ -49,8 +58,7 @@ func (h *EmployeeHandler) GetEmployeeByID(c *gin.Context) {
 	c.JSON(http.StatusOK, employeeObj)
 }
 
-// UpdateEmployee cập nhật thông tin nhân viên
-func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
+func (h *EmployeeHandler) Update(c *gin.Context) {
 	_, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
@@ -61,7 +69,6 @@ func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 		Code       *string `json:"code"`
 		Department *int    `json:"department_id"`
 		Position   *int    `json:"position_id"`
-		// Add other fields as needed
 	}
 	var input EmployeeUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -94,8 +101,7 @@ func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 	// c.JSON(http.StatusOK, employeeObj)
 }
 
-// DeleteEmployee xóa nhân viên theo ID
-func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
+func (h *EmployeeHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
@@ -109,12 +115,59 @@ func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
-	employees := r.Group("/employees")
-	{
-		employees.GET("/", h.GetEmployees)
-		employees.GET("/:id", h.GetEmployeeByID)
-		employees.PUT("/:id", h.UpdateEmployee)
-		employees.DELETE("/:id", h.DeleteEmployee)
+func (h *EmployeeHandler) Create(c *gin.Context) {
+	// type EmployeeCreateInput struct {
+	// 	UserID     string `json:"user_id" binding:"required"`
+	// 	Code       string `json:"code" binding:"required"`
+	// 	PositionID int    `json:"position_id" binding:"required"`
+	// 	OrgID      int    `json:"org_id" binding:"required"`
+	// 	JoiningAt  string `json:"joining_at" binding:"required"` // ISO8601 string
+	// }
+	// var input EmployeeCreateInput
+	// if err := c.ShouldBindJSON(&input); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// joiningAt, err := time.Parse(time.RFC3339, input.JoiningAt)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid joining_at format, must be RFC3339"})
+	// 	return
+	// }
+
+	if h.UserClient == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "UserClient is not initialized"})
+		return
 	}
+
+	res, err := h.UserClient.CreateUser(c.Request.Context(), &userPb.CreateUserRequest{
+		FirstName: "FirstName",
+		LastName:  "LastName",
+		Email:     "jdakdja@gmail.com",
+		Gender:    "male",
+		Phone:     "123456789",
+		Address:   "123 Main St",
+		WardCode:  "3123213",
+		RoleIds:   []string{"6c618337-b35b-48e1-8f98-dff55eb8eaf7"},
+		Account: &userPb.Account{
+			Username: "user01",
+			Password: "user01",
+		},
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		return
+	}
+
+	// employeeObj, err := h.Client.Employee.Create().
+	// 	SetUserID(input.UserID).
+	// 	SetCode(input.Code).
+	// 	SetPositionID(input.PositionID).
+	// 	SetOrgID(input.OrgID).
+	// 	SetJoiningAt(joiningAt).
+	// 	Save(c.Request.Context())
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create employee"})
+	// 	return
+	// }
+	c.JSON(http.StatusCreated, res)
 }

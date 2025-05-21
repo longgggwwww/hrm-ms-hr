@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
@@ -82,6 +83,17 @@ func (dc *DepartmentCreate) AddPositions(p ...*Position) *DepartmentCreate {
 		ids[i] = p[i].ID
 	}
 	return dc.AddPositionIDs(ids...)
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (dc *DepartmentCreate) SetOrganizationID(id int) *DepartmentCreate {
+	dc.mutation.SetOrganizationID(id)
+	return dc
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (dc *DepartmentCreate) SetOrganization(o *Organization) *DepartmentCreate {
+	return dc.SetOrganizationID(o.ID)
 }
 
 // Mutation returns the DepartmentMutation object of the builder.
@@ -156,6 +168,9 @@ func (dc *DepartmentCreate) check() error {
 	if _, ok := dc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Department.updated_at"`)}
 	}
+	if len(dc.mutation.OrganizationIDs()) == 0 {
+		return &ValidationError{Name: "organization", err: errors.New(`ent: missing required edge "Department.organization"`)}
+	}
 	return nil
 }
 
@@ -191,10 +206,6 @@ func (dc *DepartmentCreate) createSpec() (*Department, *sqlgraph.CreateSpec) {
 		_spec.SetField(department.FieldCode, field.TypeString, value)
 		_node.Code = value
 	}
-	if value, ok := dc.mutation.OrgID(); ok {
-		_spec.SetField(department.FieldOrgID, field.TypeInt, value)
-		_node.OrgID = value
-	}
 	if value, ok := dc.mutation.CreatedAt(); ok {
 		_spec.SetField(department.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -217,6 +228,23 @@ func (dc *DepartmentCreate) createSpec() (*Department, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   department.OrganizationTable,
+			Columns: []string{department.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OrgID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -304,12 +332,6 @@ func (u *DepartmentUpsert) SetOrgID(v int) *DepartmentUpsert {
 // UpdateOrgID sets the "org_id" field to the value that was provided on create.
 func (u *DepartmentUpsert) UpdateOrgID() *DepartmentUpsert {
 	u.SetExcluded(department.FieldOrgID)
-	return u
-}
-
-// AddOrgID adds v to the "org_id" field.
-func (u *DepartmentUpsert) AddOrgID(v int) *DepartmentUpsert {
-	u.Add(department.FieldOrgID, v)
 	return u
 }
 
@@ -409,13 +431,6 @@ func (u *DepartmentUpsertOne) UpdateCode() *DepartmentUpsertOne {
 func (u *DepartmentUpsertOne) SetOrgID(v int) *DepartmentUpsertOne {
 	return u.Update(func(s *DepartmentUpsert) {
 		s.SetOrgID(v)
-	})
-}
-
-// AddOrgID adds v to the "org_id" field.
-func (u *DepartmentUpsertOne) AddOrgID(v int) *DepartmentUpsertOne {
-	return u.Update(func(s *DepartmentUpsert) {
-		s.AddOrgID(v)
 	})
 }
 
@@ -690,13 +705,6 @@ func (u *DepartmentUpsertBulk) UpdateCode() *DepartmentUpsertBulk {
 func (u *DepartmentUpsertBulk) SetOrgID(v int) *DepartmentUpsertBulk {
 	return u.Update(func(s *DepartmentUpsert) {
 		s.SetOrgID(v)
-	})
-}
-
-// AddOrgID adds v to the "org_id" field.
-func (u *DepartmentUpsertBulk) AddOrgID(v int) *DepartmentUpsertBulk {
-	return u.Update(func(s *DepartmentUpsert) {
-		s.AddOrgID(v)
 	})
 }
 

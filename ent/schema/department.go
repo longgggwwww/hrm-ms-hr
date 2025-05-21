@@ -41,6 +41,18 @@ func (Department) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("positions", Position.Type).
 			Annotations(entproto.Field(7)),
+		edge.From("organization", Organization.Type).
+			Ref("departments").
+			Field("org_id").
+			Unique().
+			Required().
+			Annotations(entproto.Field(8)),
+	}
+}
+
+func (Department) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("org_id", "code").Unique(),
 	}
 }
 
@@ -48,11 +60,5 @@ func (Department) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entproto.Message(),
 		entproto.Service(),
-	}
-}
-
-func (Department) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("org_id", "code").Unique(),
 	}
 }

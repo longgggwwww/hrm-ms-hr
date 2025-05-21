@@ -388,6 +388,22 @@ func (c *DepartmentClient) QueryPositions(d *Department) *PositionQuery {
 	return query
 }
 
+// QueryOrganization queries the organization edge of a Department.
+func (c *DepartmentClient) QueryOrganization(d *Department) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, department.OrganizationTable, department.OrganizationColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DepartmentClient) Hooks() []Hook {
 	return c.hooks.Department
@@ -977,6 +993,22 @@ func (c *OrganizationClient) QueryChildren(o *Organization) *OrganizationQuery {
 			sqlgraph.From(organization.Table, organization.FieldID, id),
 			sqlgraph.To(organization.Table, organization.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, organization.ChildrenTable, organization.ChildrenColumn),
+		)
+		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDepartments queries the departments edge of a Organization.
+func (c *OrganizationClient) QueryDepartments(o *Organization) *DepartmentQuery {
+	query := (&DepartmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := o.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(department.Table, department.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.DepartmentsTable, organization.DepartmentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
 		return fromV, nil

@@ -5,51 +5,66 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	pb "github.com/huynhthanhthao/hrm_user_service/generated"
+	userpb "github.com/huynhthanhthao/hrm_user_service/generated"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 )
 
 type DepartmentHandler struct {
-	Client     *ent.Client
-	UserClient *pb.UserServiceClient
+	Client *ent.Client
+	UserPb *userpb.UserServiceClient
 }
 
-func NewDepartmentHandler(client *ent.Client, userClient *pb.UserServiceClient) *DepartmentHandler {
+func NewDeptHandler(client *ent.Client, userpb *userpb.UserServiceClient) *DepartmentHandler {
 	return &DepartmentHandler{
-		Client:     client,
-		UserClient: userClient,
+		Client: client,
+		UserPb: userpb,
 	}
 }
 
-// GetDepartments trả về danh sách tất cả phòng ban
-func (h *DepartmentHandler) GetDepartments(c *gin.Context) {
-	departments, err := h.Client.Department.Query().All(c.Request.Context())
+func (h *DepartmentHandler) RegisterRoutes(r *gin.Engine) {
+	depts := r.Group("/departments")
+	{
+		depts.POST("", h.Create)
+		depts.GET("", h.List)
+		depts.GET(":id", h.Get)
+		depts.PUT(":id", h.Update)
+		depts.DELETE(":id", h.Delete)
+	}
+}
+
+func (h *DepartmentHandler) List(c *gin.Context) {
+	depts, err := h.Client.Department.Query().
+		WithOrganization().
+		WithPositions().
+		All(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch departments"})
 		return
 	}
-	c.JSON(http.StatusOK, departments)
+	c.JSON(http.StatusOK, depts)
 }
 
-// GetDepartmentByID trả về thông tin phòng ban theo ID
-func (h *DepartmentHandler) GetDepartmentByID(c *gin.Context) {
+func (h *DepartmentHandler) Get(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid department ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	departmentObj, err := h.Client.Department.Get(c.Request.Context(), id)
+	dept, err := h.Client.Department.Query().
+		Where(department.ID(id)).
+		WithOrganization().
+		WithPositions().
+		Only(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Department not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, departmentObj)
+	c.JSON(http.StatusOK, dept)
 }
 
-// CreateDepartment tạo mới phòng ban
-func (h *DepartmentHandler) CreateDepartment(c *gin.Context) {
+func (h *DepartmentHandler) Create(c *gin.Context) {
 	type DepartmentInput struct {
 		Name  string `json:"name" binding:"required"`
 		Code  string `json:"code" binding:"required"`
@@ -72,8 +87,7 @@ func (h *DepartmentHandler) CreateDepartment(c *gin.Context) {
 	c.JSON(http.StatusCreated, departmentObj)
 }
 
-// UpdateDepartment cập nhật thông tin phòng ban
-func (h *DepartmentHandler) UpdateDepartment(c *gin.Context) {
+func (h *DepartmentHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid department ID"})
@@ -111,8 +125,7 @@ func (h *DepartmentHandler) UpdateDepartment(c *gin.Context) {
 	c.JSON(http.StatusOK, departmentObj)
 }
 
-// DeleteDepartment xóa phòng ban theo ID
-func (h *DepartmentHandler) DeleteDepartment(c *gin.Context) {
+func (h *DepartmentHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid department ID"})
@@ -124,15 +137,4 @@ func (h *DepartmentHandler) DeleteDepartment(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNoContent, nil)
-}
-
-func (h *DepartmentHandler) RegisterRoutes(r *gin.Engine) {
-	departments := r.Group("/departments")
-	{
-		departments.GET("", h.GetDepartments)
-		departments.GET(":id", h.GetDepartmentByID)
-		departments.POST("", h.CreateDepartment)
-		departments.PUT(":id", h.UpdateDepartment)
-		departments.DELETE(":id", h.DeleteDepartment)
-	}
 }

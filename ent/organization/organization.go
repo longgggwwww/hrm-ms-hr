@@ -38,6 +38,8 @@ const (
 	EdgeParent = "parent"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
 	EdgeChildren = "children"
+	// EdgeDepartments holds the string denoting the departments edge name in mutations.
+	EdgeDepartments = "departments"
 	// Table holds the table name of the organization in the database.
 	Table = "organizations"
 	// ParentTable is the table that holds the parent relation/edge.
@@ -48,6 +50,13 @@ const (
 	ChildrenTable = "organizations"
 	// ChildrenColumn is the table column denoting the children relation/edge.
 	ChildrenColumn = "parent_id"
+	// DepartmentsTable is the table that holds the departments relation/edge.
+	DepartmentsTable = "departments"
+	// DepartmentsInverseTable is the table name for the Department entity.
+	// It exists in this package in order to avoid circular dependency with the "department" package.
+	DepartmentsInverseTable = "departments"
+	// DepartmentsColumn is the table column denoting the departments relation/edge.
+	DepartmentsColumn = "org_id"
 )
 
 // Columns holds all SQL columns for organization fields.
@@ -166,6 +175,20 @@ func ByChildren(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newChildrenStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByDepartmentsCount orders the results by departments count.
+func ByDepartmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDepartmentsStep(), opts...)
+	}
+}
+
+// ByDepartments orders the results by departments terms.
+func ByDepartments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDepartmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newParentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -178,5 +201,12 @@ func newChildrenStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ChildrenTable, ChildrenColumn),
+	)
+}
+func newDepartmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DepartmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DepartmentsTable, DepartmentsColumn),
 	)
 }

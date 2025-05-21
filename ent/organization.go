@@ -49,9 +49,11 @@ type OrganizationEdges struct {
 	Parent *Organization `json:"parent,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*Organization `json:"children,omitempty"`
+	// Departments holds the value of the departments edge.
+	Departments []*Department `json:"departments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ParentOrErr returns the Parent value or an error if the edge
@@ -72,6 +74,15 @@ func (e OrganizationEdges) ChildrenOrErr() ([]*Organization, error) {
 		return e.Children, nil
 	}
 	return nil, &NotLoadedError{edge: "children"}
+}
+
+// DepartmentsOrErr returns the Departments value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) DepartmentsOrErr() ([]*Department, error) {
+	if e.loadedTypes[2] {
+		return e.Departments, nil
+	}
+	return nil, &NotLoadedError{edge: "departments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -193,6 +204,11 @@ func (o *Organization) QueryParent() *OrganizationQuery {
 // QueryChildren queries the "children" edge of the Organization entity.
 func (o *Organization) QueryChildren() *OrganizationQuery {
 	return NewOrganizationClient(o.config).QueryChildren(o)
+}
+
+// QueryDepartments queries the "departments" edge of the Organization entity.
+func (o *Organization) QueryDepartments() *DepartmentQuery {
+	return NewOrganizationClient(o.config).QueryDepartments(o)
 }
 
 // Update returns a builder for updating this Organization.

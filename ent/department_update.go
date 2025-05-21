@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
@@ -59,7 +60,6 @@ func (du *DepartmentUpdate) SetNillableCode(s *string) *DepartmentUpdate {
 
 // SetOrgID sets the "org_id" field.
 func (du *DepartmentUpdate) SetOrgID(i int) *DepartmentUpdate {
-	du.mutation.ResetOrgID()
 	du.mutation.SetOrgID(i)
 	return du
 }
@@ -69,12 +69,6 @@ func (du *DepartmentUpdate) SetNillableOrgID(i *int) *DepartmentUpdate {
 	if i != nil {
 		du.SetOrgID(*i)
 	}
-	return du
-}
-
-// AddOrgID adds i to the "org_id" field.
-func (du *DepartmentUpdate) AddOrgID(i int) *DepartmentUpdate {
-	du.mutation.AddOrgID(i)
 	return du
 }
 
@@ -121,6 +115,17 @@ func (du *DepartmentUpdate) AddPositions(p ...*Position) *DepartmentUpdate {
 	return du.AddPositionIDs(ids...)
 }
 
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (du *DepartmentUpdate) SetOrganizationID(id int) *DepartmentUpdate {
+	du.mutation.SetOrganizationID(id)
+	return du
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (du *DepartmentUpdate) SetOrganization(o *Organization) *DepartmentUpdate {
+	return du.SetOrganizationID(o.ID)
+}
+
 // Mutation returns the DepartmentMutation object of the builder.
 func (du *DepartmentUpdate) Mutation() *DepartmentMutation {
 	return du.mutation
@@ -145,6 +150,12 @@ func (du *DepartmentUpdate) RemovePositions(p ...*Position) *DepartmentUpdate {
 		ids[i] = p[i].ID
 	}
 	return du.RemovePositionIDs(ids...)
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (du *DepartmentUpdate) ClearOrganization() *DepartmentUpdate {
+	du.mutation.ClearOrganization()
+	return du
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -186,6 +197,9 @@ func (du *DepartmentUpdate) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Department.code": %w`, err)}
 		}
 	}
+	if du.mutation.OrganizationCleared() && len(du.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Department.organization"`)
+	}
 	return nil
 }
 
@@ -206,12 +220,6 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := du.mutation.Code(); ok {
 		_spec.SetField(department.FieldCode, field.TypeString, value)
-	}
-	if value, ok := du.mutation.OrgID(); ok {
-		_spec.SetField(department.FieldOrgID, field.TypeInt, value)
-	}
-	if value, ok := du.mutation.AddedOrgID(); ok {
-		_spec.AddField(department.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := du.mutation.CreatedAt(); ok {
 		_spec.SetField(department.FieldCreatedAt, field.TypeTime, value)
@@ -257,6 +265,35 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   department.OrganizationTable,
+			Columns: []string{department.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   department.OrganizationTable,
+			Columns: []string{department.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -314,7 +351,6 @@ func (duo *DepartmentUpdateOne) SetNillableCode(s *string) *DepartmentUpdateOne 
 
 // SetOrgID sets the "org_id" field.
 func (duo *DepartmentUpdateOne) SetOrgID(i int) *DepartmentUpdateOne {
-	duo.mutation.ResetOrgID()
 	duo.mutation.SetOrgID(i)
 	return duo
 }
@@ -324,12 +360,6 @@ func (duo *DepartmentUpdateOne) SetNillableOrgID(i *int) *DepartmentUpdateOne {
 	if i != nil {
 		duo.SetOrgID(*i)
 	}
-	return duo
-}
-
-// AddOrgID adds i to the "org_id" field.
-func (duo *DepartmentUpdateOne) AddOrgID(i int) *DepartmentUpdateOne {
-	duo.mutation.AddOrgID(i)
 	return duo
 }
 
@@ -376,6 +406,17 @@ func (duo *DepartmentUpdateOne) AddPositions(p ...*Position) *DepartmentUpdateOn
 	return duo.AddPositionIDs(ids...)
 }
 
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (duo *DepartmentUpdateOne) SetOrganizationID(id int) *DepartmentUpdateOne {
+	duo.mutation.SetOrganizationID(id)
+	return duo
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (duo *DepartmentUpdateOne) SetOrganization(o *Organization) *DepartmentUpdateOne {
+	return duo.SetOrganizationID(o.ID)
+}
+
 // Mutation returns the DepartmentMutation object of the builder.
 func (duo *DepartmentUpdateOne) Mutation() *DepartmentMutation {
 	return duo.mutation
@@ -400,6 +441,12 @@ func (duo *DepartmentUpdateOne) RemovePositions(p ...*Position) *DepartmentUpdat
 		ids[i] = p[i].ID
 	}
 	return duo.RemovePositionIDs(ids...)
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (duo *DepartmentUpdateOne) ClearOrganization() *DepartmentUpdateOne {
+	duo.mutation.ClearOrganization()
+	return duo
 }
 
 // Where appends a list predicates to the DepartmentUpdate builder.
@@ -454,6 +501,9 @@ func (duo *DepartmentUpdateOne) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Department.code": %w`, err)}
 		}
 	}
+	if duo.mutation.OrganizationCleared() && len(duo.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Department.organization"`)
+	}
 	return nil
 }
 
@@ -491,12 +541,6 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 	}
 	if value, ok := duo.mutation.Code(); ok {
 		_spec.SetField(department.FieldCode, field.TypeString, value)
-	}
-	if value, ok := duo.mutation.OrgID(); ok {
-		_spec.SetField(department.FieldOrgID, field.TypeInt, value)
-	}
-	if value, ok := duo.mutation.AddedOrgID(); ok {
-		_spec.AddField(department.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := duo.mutation.CreatedAt(); ok {
 		_spec.SetField(department.FieldCreatedAt, field.TypeTime, value)
@@ -542,6 +586,35 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   department.OrganizationTable,
+			Columns: []string{department.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   department.OrganizationTable,
+			Columns: []string{department.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
