@@ -8,13 +8,13 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
-// HRExtService implements ExtServiceServer.
-type HRExtService struct {
+// ExtService implements ExtServiceServer.
+type ExtService struct {
 	client *ent.Client
 	UnimplementedHRExtServiceServer
 }
 
-func (s *HRExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeByUserIdRequest) (*Employee, error) {
+func (s *ExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeByUserIdRequest) (*Employee, error) {
 	e, err := s.client.Employee.Query().Where(employee.UserID(req.UserId)).WithPosition().Only(ctx)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (s *HRExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployee
 	return toProtoEmployee(e)
 }
 
-func (s *HRExtService) DeleteEmployeeByUserId(ctx context.Context, req *DeleteEmployeeByUserIdRequest) (*emptypb.Empty, error) {
+func (s *ExtService) DeleteEmployeeByUserId(ctx context.Context, req *DeleteEmployeeByUserIdRequest) (*emptypb.Empty, error) {
 	_, err := s.client.Employee.Delete().Where(employee.UserID(req.UserId)).Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -30,9 +30,9 @@ func (s *HRExtService) DeleteEmployeeByUserId(ctx context.Context, req *DeleteEm
 	return &emptypb.Empty{}, nil
 }
 
-// NewHRExtService returns a new ExtService.
-func NewHRExtService(client *ent.Client) *HRExtService {
-	return &HRExtService{
+// NewExtService returns a new ExtService.
+func NewExtService(client *ent.Client) *ExtService {
+	return &ExtService{
 		client: client,
 	}
 }
