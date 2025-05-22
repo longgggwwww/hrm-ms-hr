@@ -40,8 +40,8 @@ type Position struct {
 type PositionEdges struct {
 	// Employees holds the value of the employees edge.
 	Employees []*Employee `json:"employees,omitempty"`
-	// Department holds the value of the department edge.
-	Department *Department `json:"department,omitempty"`
+	// Departments holds the value of the departments edge.
+	Departments *Department `json:"departments,omitempty"`
 	// Children holds the value of the children edge.
 	Children []*Position `json:"children,omitempty"`
 	// Parent holds the value of the parent edge.
@@ -60,15 +60,15 @@ func (e PositionEdges) EmployeesOrErr() ([]*Employee, error) {
 	return nil, &NotLoadedError{edge: "employees"}
 }
 
-// DepartmentOrErr returns the Department value or an error if the edge
+// DepartmentsOrErr returns the Departments value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e PositionEdges) DepartmentOrErr() (*Department, error) {
-	if e.Department != nil {
-		return e.Department, nil
+func (e PositionEdges) DepartmentsOrErr() (*Department, error) {
+	if e.Departments != nil {
+		return e.Departments, nil
 	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: department.Label}
 	}
-	return nil, &NotLoadedError{edge: "department"}
+	return nil, &NotLoadedError{edge: "departments"}
 }
 
 // ChildrenOrErr returns the Children value or an error if the edge
@@ -177,9 +177,9 @@ func (po *Position) QueryEmployees() *EmployeeQuery {
 	return NewPositionClient(po.config).QueryEmployees(po)
 }
 
-// QueryDepartment queries the "department" edge of the Position entity.
-func (po *Position) QueryDepartment() *DepartmentQuery {
-	return NewPositionClient(po.config).QueryDepartment(po)
+// QueryDepartments queries the "departments" edge of the Position entity.
+func (po *Position) QueryDepartments() *DepartmentQuery {
+	return NewPositionClient(po.config).QueryDepartments(po)
 }
 
 // QueryChildren queries the "children" edge of the Position entity.

@@ -43,6 +43,12 @@ func (eu *EmployeeUpdate) SetNillableUserID(s *string) *EmployeeUpdate {
 	return eu
 }
 
+// ClearUserID clears the value of the "user_id" field.
+func (eu *EmployeeUpdate) ClearUserID() *EmployeeUpdate {
+	eu.mutation.ClearUserID()
+	return eu
+}
+
 // SetCode sets the "code" field.
 func (eu *EmployeeUpdate) SetCode(s string) *EmployeeUpdate {
 	eu.mutation.SetCode(s)
@@ -225,6 +231,9 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := eu.mutation.UserID(); ok {
 		_spec.SetField(employee.FieldUserID, field.TypeString, value)
 	}
+	if eu.mutation.UserIDCleared() {
+		_spec.ClearField(employee.FieldUserID, field.TypeString)
+	}
 	if value, ok := eu.mutation.Code(); ok {
 		_spec.SetField(employee.FieldCode, field.TypeString, value)
 	}
@@ -306,6 +315,12 @@ func (euo *EmployeeUpdateOne) SetNillableUserID(s *string) *EmployeeUpdateOne {
 	if s != nil {
 		euo.SetUserID(*s)
 	}
+	return euo
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (euo *EmployeeUpdateOne) ClearUserID() *EmployeeUpdateOne {
+	euo.mutation.ClearUserID()
 	return euo
 }
 
@@ -520,6 +535,9 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 	}
 	if value, ok := euo.mutation.UserID(); ok {
 		_spec.SetField(employee.FieldUserID, field.TypeString, value)
+	}
+	if euo.mutation.UserIDCleared() {
+		_spec.ClearField(employee.FieldUserID, field.TypeString)
 	}
 	if value, ok := euo.mutation.Code(); ok {
 		_spec.SetField(employee.FieldCode, field.TypeString, value)

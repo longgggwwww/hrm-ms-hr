@@ -41,7 +41,7 @@ var (
 	// EmployeesColumns holds the columns for the "employees" table.
 	EmployeesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "user_id", Type: field.TypeString, Unique: true},
+		{Name: "user_id", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}, Default: "active"},
 		{Name: "joining_at", Type: field.TypeTime},

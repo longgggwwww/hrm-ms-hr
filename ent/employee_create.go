@@ -29,6 +29,14 @@ func (ec *EmployeeCreate) SetUserID(s string) *EmployeeCreate {
 	return ec
 }
 
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (ec *EmployeeCreate) SetNillableUserID(s *string) *EmployeeCreate {
+	if s != nil {
+		ec.SetUserID(*s)
+	}
+	return ec
+}
+
 // SetCode sets the "code" field.
 func (ec *EmployeeCreate) SetCode(s string) *EmployeeCreate {
 	ec.mutation.SetCode(s)
@@ -151,9 +159,6 @@ func (ec *EmployeeCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ec *EmployeeCreate) check() error {
-	if _, ok := ec.mutation.UserID(); !ok {
-		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Employee.user_id"`)}
-	}
 	if _, ok := ec.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Employee.code"`)}
 	}
@@ -324,6 +329,12 @@ func (u *EmployeeUpsert) UpdateUserID() *EmployeeUpsert {
 	return u
 }
 
+// ClearUserID clears the value of the "user_id" field.
+func (u *EmployeeUpsert) ClearUserID() *EmployeeUpsert {
+	u.SetNull(employee.FieldUserID)
+	return u
+}
+
 // SetCode sets the "code" field.
 func (u *EmployeeUpsert) SetCode(v string) *EmployeeUpsert {
 	u.Set(employee.FieldCode, v)
@@ -465,6 +476,13 @@ func (u *EmployeeUpsertOne) SetUserID(v string) *EmployeeUpsertOne {
 func (u *EmployeeUpsertOne) UpdateUserID() *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *EmployeeUpsertOne) ClearUserID() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.ClearUserID()
 	})
 }
 
@@ -788,6 +806,13 @@ func (u *EmployeeUpsertBulk) SetUserID(v string) *EmployeeUpsertBulk {
 func (u *EmployeeUpsertBulk) UpdateUserID() *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (u *EmployeeUpsertBulk) ClearUserID() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.ClearUserID()
 	})
 }
 

@@ -45,7 +45,7 @@ func (Position) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("employees", Employee.Type).
 			Annotations(entproto.Field(8)),
-		edge.From("department", Department.Type).
+		edge.From("departments", Department.Type).
 			Ref("positions").
 			Field("department_id").
 			Unique().
