@@ -88,7 +88,7 @@ message BatchCreateDepartmentsResponse {
 message Employee {
   int64 id = 1;
 
-  string user_id = 2;
+  google.protobuf.StringValue user_id = 2;
 
   string code = 3;
 
@@ -430,7 +430,7 @@ message Position {
 
   repeated Employee employees = 8;
 
-  Department department = 9;
+  Department departments = 9;
 
   repeated Position children = 10;
 

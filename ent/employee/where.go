@@ -145,6 +145,16 @@ func UserIDHasSuffix(v string) predicate.Employee {
 	return predicate.Employee(sql.FieldHasSuffix(FieldUserID, v))
 }
 
+// UserIDIsNil applies the IsNil predicate on the "user_id" field.
+func UserIDIsNil() predicate.Employee {
+	return predicate.Employee(sql.FieldIsNull(FieldUserID))
+}
+
+// UserIDNotNil applies the NotNil predicate on the "user_id" field.
+func UserIDNotNil() predicate.Employee {
+	return predicate.Employee(sql.FieldNotNull(FieldUserID))
+}
+
 // UserIDEqualFold applies the EqualFold predicate on the "user_id" field.
 func UserIDEqualFold(v string) predicate.Employee {
 	return predicate.Employee(sql.FieldEqualFold(FieldUserID, v))

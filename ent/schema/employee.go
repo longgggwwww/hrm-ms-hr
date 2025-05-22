@@ -20,6 +20,7 @@ func (Employee) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("user_id").
 			Unique().
+			Optional().
 			Annotations(entproto.Field(2)),
 		field.String("code").
 			NotEmpty().

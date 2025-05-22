@@ -15,6 +15,7 @@ import (
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	regexp "regexp"
 	strconv "strconv"
 	strings "strings"
@@ -76,7 +77,7 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v.Status = status
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
-	user_id := e.UserID
+	user_id := wrapperspb.String(e.UserID)
 	v.UserId = user_id
 	if edg := e.Edges.Position; edg != nil {
 		id := int64(edg.ID)
@@ -175,8 +176,10 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
-	employeeUserID := employee.GetUserId()
-	m.SetUserID(employeeUserID)
+	if employee.GetUserId() != nil {
+		employeeUserID := employee.GetUserId().GetValue()
+		m.SetUserID(employeeUserID)
+	}
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
@@ -329,8 +332,10 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	m.SetStatus(employeeStatus)
 	employeeUpdatedAt := runtime.ExtractTime(employee.GetUpdatedAt())
 	m.SetUpdatedAt(employeeUpdatedAt)
-	employeeUserID := employee.GetUserId()
-	m.SetUserID(employeeUserID)
+	if employee.GetUserId() != nil {
+		employeeUserID := employee.GetUserId().GetValue()
+		m.SetUserID(employeeUserID)
+	}
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
