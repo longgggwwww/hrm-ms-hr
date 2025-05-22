@@ -7,99 +7,38 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	pb "github.com/huynhthanhthao/hrm_user_service/generated"
+	userpb "github.com/huynhthanhthao/hrm_user_service/generated"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 )
 
 type OrgHandler struct {
-	Client     *ent.Client
-	UserClient *pb.UserServiceClient
+	Client      *ent.Client
+	UserService *userpb.UserServiceClient
 }
 
-func NewOrgHandler(client *ent.Client, userClient *pb.UserServiceClient) *OrgHandler {
+func NewOrgHandler(client *ent.Client, userService *userpb.UserServiceClient) *OrgHandler {
 	return &OrgHandler{
-		Client:     client,
-		UserClient: userClient,
+		Client:      client,
+		UserService: userService,
 	}
 }
 
-// GetOrgs trả về danh sách tất cả các tổ chức
-func (h *OrgHandler) GetOrgs(c *gin.Context) {
-	orgs, err := h.Client.Organization.Query().All(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch orgs"})
-		return
+func (h *OrgHandler) RegisterRoutes(r *gin.Engine) {
+	orgs := r.Group("/orgs")
+	{
+		orgs.POST("", h.Create)
+		orgs.GET("", h.List)
+		orgs.GET(":id", h.Get)
+		orgs.GET("from-token", h.GetOrgFromToken)
+		orgs.PATCH(":id", h.Update)
+		orgs.DELETE(":id", h.Delete)
+		orgs.DELETE("", h.DeleteBatch)
 	}
-	c.JSON(http.StatusOK, orgs)
 }
 
-// GetOrgByID trả về thông tin tổ chức theo ID
-func (h *OrgHandler) GetOrgByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org ID"})
-		return
-	}
-
-	org, err := h.Client.Organization.Get(c.Request.Context(), id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Org not found"})
-		return
-	}
-	c.JSON(http.StatusOK, org)
-}
-
-// GetOrgFromToken trả về thông tin tổ chức dựa vào org_id trong JWT
-func (h *OrgHandler) GetOrgFromToken(c *gin.Context) {
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-		return
-	}
-
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-		return
-	}
-	tokenString := parts[1]
-
-	token, _, err := jwt.NewParser().ParseUnverified(tokenString, jwt.MapClaims{})
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-		return
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
-		return
-	}
-
-	orgIDStr, ok := claims["org_id"].(string)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "org_id not found in token"})
-		return
-	}
-
-	orgID, err := strconv.Atoi(orgIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org_id in token"})
-		return
-	}
-
-	org, err := h.Client.Organization.Get(c.Request.Context(), orgID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Org not found"})
-		return
-	}
-	c.JSON(http.StatusOK, org)
-}
-
-// CreateOrg tạo mới một tổ chức
-func (h *OrgHandler) CreateOrg(c *gin.Context) {
+func (h *OrgHandler) Create(c *gin.Context) {
 	var req struct {
 		Name     string `json:"name" binding:"required"`
 		Code     string `json:"code" binding:"required"`
@@ -114,6 +53,7 @@ func (h *OrgHandler) CreateOrg(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	orgCreate := h.Client.Organization.Create().
 		SetName(req.Name).
 		SetCode(req.Code).
@@ -123,25 +63,59 @@ func (h *OrgHandler) CreateOrg(c *gin.Context) {
 		SetNillableEmail(&req.Email).
 		SetNillableWebsite(&req.Website).
 		SetNillableParentID(req.ParentID)
-	org, err := orgCreate.Save(c.Request.Context())
+	row, err := orgCreate.Save(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
-	// Lấy lại org kèm parent (nếu có)
-	orgWithParent, err := h.Client.Organization.Query().
-		Where(organization.ID(org.ID)).
+
+	org, err := h.Client.Organization.Query().
+		Where(organization.ID(row.ID)).
 		WithParent().
+		WithChildren().
+		WithDepartments().
 		Only(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusCreated, org) // fallback nếu lỗi
+		c.JSON(http.StatusCreated, row)
 		return
 	}
-	c.JSON(http.StatusCreated, orgWithParent)
+	c.JSON(http.StatusCreated, org)
 }
 
-// UpdateOrg cập nhật thông tin tổ chức
-func (h *OrgHandler) UpdateOrg(c *gin.Context) {
+func (h *OrgHandler) List(c *gin.Context) {
+	orgs, err := h.Client.Organization.Query().
+		WithParent().
+		WithChildren().
+		WithDepartments().
+		All(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch orgs"})
+		return
+	}
+	c.JSON(http.StatusOK, orgs)
+}
+
+func (h *OrgHandler) Get(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org ID"})
+		return
+	}
+
+	org, err := h.Client.Organization.Query().
+		Where(organization.ID(id)).
+		WithParent().
+		WithChildren().
+		WithDepartments().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Org not found"})
+		return
+	}
+	c.JSON(http.StatusOK, org)
+}
+
+func (h *OrgHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org ID"})
@@ -210,23 +184,23 @@ func (h *OrgHandler) UpdateOrg(c *gin.Context) {
 	c.JSON(http.StatusOK, orgWithParent)
 }
 
-// DeleteOrg xóa tổ chức theo ID
-func (h *OrgHandler) DeleteOrg(c *gin.Context) {
+func (h *OrgHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org ID"})
 		return
 	}
+
 	_, err = h.Client.Organization.Delete().Where(organization.ID(id)).Exec(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Org not found"})
 		return
 	}
+
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// DeleteOrgs xóa nhiều tổ chức theo danh sách ID
-func (h *OrgHandler) DeleteOrgs(c *gin.Context) {
+func (h *OrgHandler) DeleteBatch(c *gin.Context) {
 	var req struct {
 		IDs []int `json:"ids" binding:"required"`
 	}
@@ -234,27 +208,66 @@ func (h *OrgHandler) DeleteOrgs(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	if len(req.IDs) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No IDs provided"})
 		return
 	}
-	_, err := h.Client.Organization.Delete().Where(organization.IDIn(req.IDs...)).Exec(c.Request.Context())
+
+	_, err := h.Client.Organization.Delete().
+		Where(organization.IDIn(req.IDs...)).
+		Exec(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *OrgHandler) RegisterRoutes(r *gin.Engine) {
-	orgs := r.Group("/orgs")
-	{
-		orgs.GET("/", h.GetOrgs)
-		orgs.GET("/:id", h.GetOrgByID)
-		orgs.GET("/from-token", h.GetOrgFromToken)
-		orgs.POST("/", h.CreateOrg)
-		orgs.PATCH("/:id", h.UpdateOrg)
-		orgs.DELETE("/:id", h.DeleteOrg)
-		orgs.DELETE("/", h.DeleteOrgs) // Thêm endpoint xóa nhiều
+// GetOrgFromToken trả về thông tin tổ chức dựa vào org_id trong JWT
+func (h *OrgHandler) GetOrgFromToken(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+		return
 	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
+	tokenString := parts[1]
+
+	token, _, err := jwt.NewParser().ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+		return
+	}
+
+	orgIDStr, ok := claims["org_id"].(string)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "org_id not found in token"})
+		return
+	}
+
+	orgID, err := strconv.Atoi(orgIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org_id in token"})
+		return
+	}
+
+	org, err := h.Client.Organization.Get(c.Request.Context(), orgID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Org not found"})
+		return
+	}
+	c.JSON(http.StatusOK, org)
 }

@@ -3,12 +3,14 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	userPb "github.com/huynhthanhthao/hrm_user_service/generated"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
 type EmployeeHandler struct {
@@ -34,12 +36,131 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 	}
 }
 
+func (h *EmployeeHandler) Create(c *gin.Context) {
+	type EmployeeCreateInput struct {
+		Code       string   `json:"code" binding:"required"`
+		FirstName  string   `json:"first_name" binding:"required"`
+		LastName   string   `json:"last_name" binding:"required"`
+		Gender     string   `json:"gender" binding:"required,oneof=male female"`
+		Phone      string   `json:"phone" binding:"required"`
+		Email      string   `json:"email" binding:"omitempty"`
+		Address    string   `json:"address" binding:"omitempty"`
+		WardCode   int      `json:"ward_code" binding:"omitempty"`
+		AvatarURL  string   `json:"avatar_url" binding:"omitempty"`
+		PositionID int      `json:"position_id" binding:"required"`
+		JoiningAt  string   `json:"joining_at" binding:"required"` // ISO8601 string
+		Status     string   `json:"status" binding:"omitempty,oneof=active inactive"`
+		Username   string   `json:"username" binding:"required"`
+		Password   string   `json:"password" binding:"required"`
+		RoleIds    []string `json:"role_ids" binding:"omitempty"`
+		PermIds    []string `json:"perm_ids" binding:"omitempty"`
+	}
+	var input EmployeeCreateInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	positionObj, err := h.Client.Position.Query().
+		Where(position.ID(input.PositionID)).
+		WithDepartments().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid position_id"})
+		return
+	}
+
+	joiningAt, err := time.Parse(time.RFC3339, input.JoiningAt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid joining_at format, must be RFC3339"})
+		return
+	}
+
+	tx, err := h.Client.Tx(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	status := employee.Status(input.Status)
+	if status != employee.StatusActive && status != employee.StatusInactive {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value, must be 'active' or 'inactive'"})
+		return
+	}
+
+	employeeObj, err := tx.Employee.Create().
+		SetCode(input.Code).
+		SetPositionID(input.PositionID).
+		SetOrgID(positionObj.Edges.Departments.OrgID).
+		SetJoiningAt(joiningAt).
+		SetStatus(status).
+		Save(c.Request.Context())
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if h.UserClient == nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "UserClient is not initialized"})
+		return
+	}
+
+	respb, err := h.UserClient.CreateUser(c.Request.Context(), &userPb.CreateUserRequest{
+		FirstName: input.FirstName,
+		LastName:  input.LastName,
+		Email:     input.Email,
+		Gender:    input.Gender,
+		Phone:     input.Phone,
+		Address:   input.Address,
+		WardCode:  strconv.Itoa(input.WardCode),
+		RoleIds:   input.RoleIds,
+		PermIds:   input.PermIds,
+		Account: &userPb.Account{
+			Username: input.Username,
+			Password: input.Password,
+		},
+	})
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Gán userID cho employee vừa tạo
+	if respb != nil && respb.User != nil && respb.User.Id > 0 {
+		userIDStr := strconv.FormatInt(int64(respb.User.Id), 10)
+		_, err := tx.Employee.UpdateOneID(employeeObj.ID).SetUserID(userIDStr).Save(c.Request.Context())
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update employee with userID"})
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"employee": employeeObj, "user": respb})
+}
+
 func (h *EmployeeHandler) List(c *gin.Context) {
 	employees, err := h.Client.Employee.Query().All(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch employees"})
 		return
 	}
+
 	c.JSON(http.StatusOK, employees)
 }
 
@@ -113,61 +234,4 @@ func (h *EmployeeHandler) Delete(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNoContent, nil)
-}
-
-func (h *EmployeeHandler) Create(c *gin.Context) {
-	// type EmployeeCreateInput struct {
-	// 	UserID     string `json:"user_id" binding:"required"`
-	// 	Code       string `json:"code" binding:"required"`
-	// 	PositionID int    `json:"position_id" binding:"required"`
-	// 	OrgID      int    `json:"org_id" binding:"required"`
-	// 	JoiningAt  string `json:"joining_at" binding:"required"` // ISO8601 string
-	// }
-	// var input EmployeeCreateInput
-	// if err := c.ShouldBindJSON(&input); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// joiningAt, err := time.Parse(time.RFC3339, input.JoiningAt)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid joining_at format, must be RFC3339"})
-	// 	return
-	// }
-
-	if h.UserClient == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "UserClient is not initialized"})
-		return
-	}
-
-	res, err := h.UserClient.CreateUser(c.Request.Context(), &userPb.CreateUserRequest{
-		FirstName: "FirstName",
-		LastName:  "LastName",
-		Email:     "jdakdja@gmail.com",
-		Gender:    "male",
-		Phone:     "123456789",
-		Address:   "123 Main St",
-		WardCode:  "3123213",
-		RoleIds:   []string{"6c618337-b35b-48e1-8f98-dff55eb8eaf7"},
-		Account: &userPb.Account{
-			Username: "user01",
-			Password: "user01",
-		},
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
-		return
-	}
-
-	// employeeObj, err := h.Client.Employee.Create().
-	// 	SetUserID(input.UserID).
-	// 	SetCode(input.Code).
-	// 	SetPositionID(input.PositionID).
-	// 	SetOrgID(input.OrgID).
-	// 	SetJoiningAt(joiningAt).
-	// 	Save(c.Request.Context())
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create employee"})
-	// 	return
-	// }
-	c.JSON(http.StatusCreated, res)
 }
