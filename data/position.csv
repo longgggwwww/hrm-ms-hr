@@ -1,13 +1,13 @@
 code,name,level,department_code
-truong-phong,TRƯỞNG PHÒNG,1,ky-thuat
-pho-phong,PHÓ PHÒNG,2,ky-thuat
+truong-phong,Trưởng phòng,1,ky-thuat
+pho-phong,Phó phòng,2,ky-thuat
 nhan-vien,Nhân viên,3,ky-thuat
-truong-phong,TRƯỞNG PHÒNG,1,thiet-ke
-pho-phong,PHÓ PHÒNG,2,thiet-ke
+truong-phong,Trưởng phòng,1,thiet-ke
+pho-phong,Phó phòng,2,thiet-ke
 nhan-vien,Nhân viên,3,thiet-ke
-truong-phong,TRƯỞNG PHÒNG,1,ke-toan
-pho-phong,PHÓ PHÒNG,2,ke-toan
+truong-phong,Trưởng phòng,1,ke-toan
+pho-phong,Phó phòng,2,ke-toan
 nhan-vien,Nhân viên,3,ke-toan
-truong-phong,TRƯỞNG PHÒNG,1,nhan-su
-pho-phong,PHÓ PHÒNG,2,nhan-su
+truong-phong,Trưởng phòng,1,nhan-su
+pho-phong,Phó phòng,2,nhan-su
 nhan-vien,Nhân viên,3,nhan-su

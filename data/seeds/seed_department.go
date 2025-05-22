@@ -49,7 +49,9 @@ func SeedDepartments(ctx context.Context, client *ent.Client) error {
 		}
 
 		orgCode := record[orgCodeIdx]
-		org, err := client.Organization.Query().Where(organization.Code(orgCode)).Only(ctx)
+		org, err := client.Organization.Query().
+			Where(organization.Code(orgCode)).
+			Only(ctx)
 		if err != nil {
 			log.Printf("Failed to find organization for department %s: %v", record[codeIdx], err)
 			continue
