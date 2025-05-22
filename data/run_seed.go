@@ -14,7 +14,6 @@ import (
 func main() {
 	log.Println("Starting seeding process...")
 
-	// Initialize database client
 	client, err := initDBClient()
 	if err != nil {
 		log.Fatalf("Failed to initialize database client: %v", err)
@@ -29,11 +28,10 @@ func main() {
 	log.Println("Seeding process completed successfully.")
 }
 
-// initDBClient initializes and returns an Ent database client.
 func initDBClient() (*ent.Client, error) {
 	connStr := os.Getenv("DB_URL")
 	if connStr == "" {
-		return nil, errMissingEnv("DB_URL")
+		return nil, fmt.Errorf("environment variable DB_URL is not set")
 	}
 
 	client, err := ent.Open("postgres", connStr)
@@ -43,29 +41,20 @@ func initDBClient() (*ent.Client, error) {
 	return client, nil
 }
 
-// runSeeders executes all seed functions.
 func runSeeders(ctx context.Context, client *ent.Client) error {
-	if err := seeds.SeedOrganizations(ctx, client); err != nil {
-		return wrapError("Org", err)
+	seeders := []struct {
+		name string
+		fn   func(context.Context, *ent.Client) error
+	}{
+		{"Organization", seeds.SeedOrganizations},
+		{"Department", seeds.SeedDepartments},
+		{"Position", seeds.SeedPositions},
 	}
 
-	if err := seeds.SeedDepartments(ctx, client); err != nil {
-		return wrapError("Department", err)
+	for _, seeder := range seeders {
+		if err := seeder.fn(ctx, client); err != nil {
+			return fmt.Errorf("failed to seed %s: %w", seeder.name, err)
+		}
 	}
-
-	if err := seeds.SeedPositions(ctx, client); err != nil {
-		return wrapError("Position", err)
-	}
-
 	return nil
-}
-
-// errMissingEnv creates an error for missing environment variables.
-func errMissingEnv(varName string) error {
-	return fmt.Errorf("environment variable %s is not set", varName)
-}
-
-// wrapError wraps a seeding error with additional context.
-func wrapError(entity string, err error) error {
-	return fmt.Errorf("failed to seed %s: %w", entity, err)
 }
