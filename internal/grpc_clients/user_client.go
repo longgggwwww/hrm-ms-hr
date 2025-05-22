@@ -8,7 +8,6 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
-// Tạo một client gRPC cho user service
 func NewUserClient(url string) (pb.UserServiceClient, error) {
 	conn, err := grpc.NewClient(url, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

@@ -14,27 +14,27 @@ import (
 	"google.golang.org/grpc"
 )
 
-func registerGRPCServices(sv *grpc.Server, cli *ent.Client) {
-	entpb.RegisterOrganizationServiceServer(sv, entpb.NewOrganizationService(cli))
-	entpb.RegisterDepartmentServiceServer(sv, entpb.NewDepartmentService(cli))
-	entpb.RegisterPositionServiceServer(sv, entpb.NewPositionService(cli))
-	entpb.RegisterEmployeeServiceServer(sv, entpb.NewEmployeeService(cli))
-	entpb.RegisterProjectServiceServer(sv, entpb.NewProjectService(cli))
-	entpb.RegisterTaskServiceServer(sv, entpb.NewTaskService(cli))
-	entpb.RegisterExtServiceServer(sv, entpb.NewExtService(cli))
+func registerGRPCServices(srv *grpc.Server, cli *ent.Client) {
+	entpb.RegisterOrganizationServiceServer(srv, entpb.NewOrganizationService(cli))
+	entpb.RegisterDepartmentServiceServer(srv, entpb.NewDepartmentService(cli))
+	entpb.RegisterPositionServiceServer(srv, entpb.NewPositionService(cli))
+	entpb.RegisterEmployeeServiceServer(srv, entpb.NewEmployeeService(cli))
+	entpb.RegisterProjectServiceServer(srv, entpb.NewProjectService(cli))
+	entpb.RegisterTaskServiceServer(srv, entpb.NewTaskService(cli))
+	entpb.RegisterExtServiceServer(srv, entpb.NewExtService(cli))
 }
 
 func startGRPCServer(cli *ent.Client) {
-	serv := grpc.NewServer()
-	log.Println("Starting gRPC server on port 5000...")
-	registerGRPCServices(serv, cli)
+	srv := grpc.NewServer()
+	registerGRPCServices(srv, cli)
 
+	log.Println("Starting gRPC server on port 5000...")
 	lis, err := net.Listen("tcp", ":5000")
 	if err != nil {
 		log.Fatalf("failed listening: %s", err)
 	}
 
-	if err := serv.Serve(lis); err != nil {
+	if err := srv.Serve(lis); err != nil {
 		log.Fatalf("server ended: %s", err)
 	}
 }
@@ -48,7 +48,6 @@ func startHTTPServer(cli *ent.Client) {
 		log.Fatalf("failed to create user client: %v", err)
 	}
 
-	// Đăng ký các route cho HTTP server
 	handlersList := []struct {
 		register func(*gin.Engine)
 	}{
@@ -67,18 +66,17 @@ func startHTTPServer(cli *ent.Client) {
 }
 
 func main() {
-	// Initialize database client
 	connStr := os.Getenv("DB_URL")
 	if connStr == "" {
 		log.Fatal("DB_URL environment variable is not set")
 	}
+
 	cli, err := ent.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
 	defer cli.Close()
 
-	// Start HTTP and gRPC servers
 	go startHTTPServer(cli)
 	startGRPCServer(cli)
 }
