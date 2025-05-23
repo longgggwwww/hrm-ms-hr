@@ -60,6 +60,7 @@ func (Task) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Annotations(entproto.Field(13)),
+		edge.To("labels", Label.Type), // Thêm edge tới label
 	}
 }
 
