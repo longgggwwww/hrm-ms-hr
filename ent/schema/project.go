@@ -65,6 +65,7 @@ func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tasks", Task.Type).
 			Annotations(entproto.Field(13)),
+		edge.To("labels", Label.Type), // Thêm edge tới label
 	}
 }
 
