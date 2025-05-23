@@ -7,7 +7,7 @@ require (
 	entgo.io/ent v0.14.4
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
-	github.com/huynhthanhthao/hrm_user_service v0.0.0-20250521092638-e50e605678e5
+	github.com/huynhthanhthao/hrm_user_service v0.0.0-20250521151230-7721cd256819
 	github.com/lib/pq v1.10.9
 	google.golang.org/grpc v1.72.1
 	google.golang.org/protobuf v1.36.6

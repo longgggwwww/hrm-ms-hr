@@ -43,15 +43,12 @@ func startHTTPServer(cli *ent.Client) {
 	r := gin.Default()
 
 	log.Println("Connecting to user service at:", os.Getenv("USER_SERVICE"))
-	user, err := grpc_clients.NewUserClient(os.Getenv("USER_SERVICE"))
-	if err != nil {
-		log.Fatalf("failed to create user client: %v", err)
-	}
+	userServ := grpc_clients.NewUserClient(os.Getenv("USER_SERVICE"))
 
 	handlersList := []struct {
 		register func(*gin.Engine)
 	}{
-		{handlers.NewEmployeeHandler(cli, user).RegisterRoutes},
+		{handlers.NewEmployeeHandler(cli, userServ).RegisterRoutes},
 		{handlers.NewOrgHandler(cli, nil).RegisterRoutes},
 		{handlers.NewDeptHandler(cli, nil).RegisterRoutes},
 		{handlers.NewPositionHandler(cli, nil).RegisterRoutes},

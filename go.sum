@@ -80,6 +80,8 @@ github.com/huynhthanhthao/hrm_user_service v0.0.0-20250513132544-b564c04fa8b3 h1
 github.com/huynhthanhthao/hrm_user_service v0.0.0-20250513132544-b564c04fa8b3/go.mod h1:vsuhVClg0HtAwSOwdL8r2cKs1iW82LfVVASM/3izj+w=
 github.com/huynhthanhthao/hrm_user_service v0.0.0-20250521092638-e50e605678e5 h1:M88rUSZX+hxQYAdkXEGvTvxYq3ZUj/HtUw4Km/GKsJE=
 github.com/huynhthanhthao/hrm_user_service v0.0.0-20250521092638-e50e605678e5/go.mod h1:8GivneAg9+65jIHLBC+vvLt+BaYKZ17ZN0beKIbPX9U=
+github.com/huynhthanhthao/hrm_user_service v0.0.0-20250521151230-7721cd256819 h1:34HNbpyJ3o00EP+hJRpQ70ZS71JXTtq5ol9kQ8G8hd8=
+github.com/huynhthanhthao/hrm_user_service v0.0.0-20250521151230-7721cd256819/go.mod h1:8GivneAg9+65jIHLBC+vvLt+BaYKZ17ZN0beKIbPX9U=
 github.com/jhump/protoreflect v1.17.0 h1:qOEr613fac2lOuTgWN4tPAtLL7fUSbuJL5X5XumQh94=
 github.com/jhump/protoreflect v1.17.0/go.mod h1:h9+vUUL38jiBzck8ck+6G/aeMX8Z4QUY/NiJPwPNi+8=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=

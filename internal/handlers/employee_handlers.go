@@ -31,7 +31,7 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 		employees.POST("", h.Create)
 		employees.GET("", h.List)
 		employees.GET(":id", h.Get)
-		employees.PUT(":id", h.Update)
+		employees.PATCH(":id", h.Update)
 		employees.DELETE(":id", h.Delete)
 	}
 }
@@ -171,7 +171,12 @@ func (h *EmployeeHandler) Get(c *gin.Context) {
 		return
 	}
 
-	employeeObj, err := h.Client.Employee.Get(c.Request.Context(), id)
+	employeeObj, err := h.Client.Employee.Query().
+		Where(employee.ID(id)).
+		WithPosition(func(q *ent.PositionQuery) {
+			q.WithDepartments()
+		}).
+		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
 		return
@@ -180,46 +185,158 @@ func (h *EmployeeHandler) Get(c *gin.Context) {
 }
 
 func (h *EmployeeHandler) Update(c *gin.Context) {
-	_, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
 		return
 	}
 	type EmployeeUpdateInput struct {
-		Name       *string `json:"name"`
-		Code       *string `json:"code"`
-		Department *int    `json:"department_id"`
-		Position   *int    `json:"position_id"`
+		Code       *string   `json:"code"`
+		FirstName  *string   `json:"first_name"`
+		LastName   *string   `json:"last_name"`
+		Gender     *string   `json:"gender"`
+		Phone      *string   `json:"phone"`
+		Email      *string   `json:"email"`
+		Address    *string   `json:"address"`
+		WardCode   *int      `json:"ward_code"`
+		AvatarURL  *string   `json:"avatar_url"`
+		PositionID *int      `json:"position_id"`
+		JoiningAt  *string   `json:"joining_at"`
+		Status     *string   `json:"status"`
+		Username   *string   `json:"username"`
+		Password   *string   `json:"password"`
+		RoleIds    *[]string `json:"role_ids"`
+		PermIds    *[]string `json:"perm_ids"`
 	}
 	var input EmployeeUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Update employee"})
-	// update := h.Client.Employee.UpdateOneID(id)
-	// if input.Name != nil {
-	// 	update.SetName(*input.Name)
-	// }
-	// if input.Code != nil {
-	// 	update.SetCode(*input.Code)
-	// }
-	// if input.Department != nil {
-	// 	update.SetDepartmentID(*input.Department)
-	// }
-	// if input.Position != nil {
-	// 	update.SetPositionID(*input.Position)
-	// }
-	// employeeObj, err := update.Save(c.Request.Context())
-	// if err != nil {
-	// 	if ent.IsNotFound(err) {
-	// 		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
-	// 		return
-	// 	}
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update employee"})
-	// 	return
-	// }
-	// c.JSON(http.StatusOK, employeeObj)
+
+	tx, err := h.Client.Tx(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	employeeObj, err := tx.Employee.Get(c.Request.Context(), id)
+	if err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+		return
+	}
+
+	update := tx.Employee.UpdateOneID(id)
+	if input.Code != nil {
+		update.SetCode(*input.Code)
+	}
+	if input.PositionID != nil {
+		positionObj, err := h.Client.Position.Query().Where(position.ID(*input.PositionID)).WithDepartments().Only(c.Request.Context())
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid position_id"})
+			return
+		}
+		update.SetPositionID(*input.PositionID)
+		update.SetOrgID(positionObj.Edges.Departments.OrgID)
+	}
+	if input.JoiningAt != nil {
+		joiningAt, err := time.Parse(time.RFC3339, *input.JoiningAt)
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid joining_at format, must be RFC3339"})
+			return
+		}
+		update.SetJoiningAt(joiningAt)
+	}
+	if input.Status != nil {
+		status := employee.Status(*input.Status)
+		if status != employee.StatusActive && status != employee.StatusInactive {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value, must be 'active' or 'inactive'"})
+			return
+		}
+		update.SetStatus(status)
+	}
+	// update các trường user liên quan qua UserService
+	if h.UserClient != nil && (input.FirstName != nil || input.LastName != nil || input.Email != nil || input.Gender != nil || input.Phone != nil || input.Address != nil || input.WardCode != nil || input.Username != nil || input.Password != nil || input.RoleIds != nil || input.PermIds != nil) {
+		userID := employeeObj.UserID
+		if userID == "" {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Employee does not have a linked user"})
+			return
+		}
+		userIDInt, err := strconv.Atoi(userID)
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userID format"})
+			return
+		}
+		wardCodeStr := ""
+		if input.WardCode != nil {
+			wardCodeStr = strconv.Itoa(*input.WardCode)
+		}
+		_, err = h.UserClient.UpdateUserByID(c.Request.Context(), &userPb.UpdateUserRequest{
+			Id:        int32(userIDInt),
+			FirstName: derefStr(input.FirstName),
+			LastName:  derefStr(input.LastName),
+			Email:     derefStr(input.Email),
+			Gender:    derefStr(input.Gender),
+			Phone:     derefStr(input.Phone),
+			Address:   derefStr(input.Address),
+			WardCode:  wardCodeStr,
+			RoleIds:   derefStrSlice(input.RoleIds),
+			PermIds:   derefStrSlice(input.PermIds),
+			Account: &userPb.Account{
+				Username: derefStr(input.Username),
+				Password: derefStr(input.Password),
+				Status:   *input.Status,
+			},
+		})
+		if err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	employeeObj, err = update.Save(c.Request.Context())
+	if err != nil {
+		tx.Rollback()
+		if ent.IsNotFound(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update employee"})
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, employeeObj)
+}
+
+// Helper functions for pointer deref
+func derefStr(s *string) string {
+	if s != nil {
+		return *s
+	}
+	return ""
+}
+func derefStrSlice(s *[]string) []string {
+	if s != nil {
+		return *s
+	}
+	return []string{} // Trả về mảng rỗng thay vì nil
 }
 
 func (h *EmployeeHandler) Delete(c *gin.Context) {
