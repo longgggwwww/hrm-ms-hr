@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 )
 
@@ -17,9 +16,11 @@ import (
 type Project struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
+	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Code holds the value of the "code" field.
+	Code string `json:"code,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// StartAt holds the value of the "start_at" field.
@@ -27,19 +28,19 @@ type Project struct {
 	// EndAt holds the value of the "end_at" field.
 	EndAt time.Time `json:"end_at,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
-	CreatorID uuid.UUID `json:"creator_id,omitempty"`
+	CreatorID int `json:"creator_id,omitempty"`
 	// UpdaterID holds the value of the "updater_id" field.
-	UpdaterID uuid.NullUUID `json:"updater_id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// BranchID holds the value of the "branch_id" field.
-	BranchID uuid.NullUUID `json:"branch_id,omitempty"`
+	UpdaterID int `json:"updater_id,omitempty"`
+	// OrgID holds the value of the "org_id" field.
+	OrgID int `json:"org_id,omitempty"`
 	// Process holds the value of the "process" field.
 	Process int `json:"process,omitempty"`
 	// Status holds the value of the "status" field.
 	Status project.Status `json:"status,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectQuery when eager-loading is set.
 	Edges        ProjectEdges `json:"edges"`
@@ -69,16 +70,12 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case project.FieldProcess:
+		case project.FieldID, project.FieldCreatorID, project.FieldUpdaterID, project.FieldOrgID, project.FieldProcess:
 			values[i] = new(sql.NullInt64)
-		case project.FieldName, project.FieldDescription, project.FieldStatus:
+		case project.FieldName, project.FieldCode, project.FieldDescription, project.FieldStatus:
 			values[i] = new(sql.NullString)
 		case project.FieldStartAt, project.FieldEndAt, project.FieldCreatedAt, project.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case project.FieldUpdaterID, project.FieldBranchID:
-			values[i] = new(uuid.NullUUID)
-		case project.FieldID, project.FieldCreatorID:
-			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -95,16 +92,22 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case project.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				pr.ID = *value
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
 			}
+			pr.ID = int(value.Int64)
 		case project.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				pr.Name = value.String
+			}
+		case project.FieldCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field code", values[i])
+			} else if value.Valid {
+				pr.Code = value.String
 			}
 		case project.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -125,34 +128,22 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				pr.EndAt = value.Time
 			}
 		case project.FieldCreatorID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field creator_id", values[i])
-			} else if value != nil {
-				pr.CreatorID = *value
+			} else if value.Valid {
+				pr.CreatorID = int(value.Int64)
 			}
 		case project.FieldUpdaterID:
-			if value, ok := values[i].(*uuid.NullUUID); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field updater_id", values[i])
-			} else if value != nil {
-				pr.UpdaterID = *value
-			}
-		case project.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				pr.CreatedAt = value.Time
+				pr.UpdaterID = int(value.Int64)
 			}
-		case project.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+		case project.FieldOrgID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field org_id", values[i])
 			} else if value.Valid {
-				pr.UpdatedAt = value.Time
-			}
-		case project.FieldBranchID:
-			if value, ok := values[i].(*uuid.NullUUID); !ok {
-				return fmt.Errorf("unexpected type %T for field branch_id", values[i])
-			} else if value != nil {
-				pr.BranchID = *value
+				pr.OrgID = int(value.Int64)
 			}
 		case project.FieldProcess:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -165,6 +156,18 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				pr.Status = project.Status(value.String)
+			}
+		case project.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				pr.CreatedAt = value.Time
+			}
+		case project.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				pr.UpdatedAt = value.Time
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -210,6 +213,9 @@ func (pr *Project) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(pr.Name)
 	builder.WriteString(", ")
+	builder.WriteString("code=")
+	builder.WriteString(pr.Code)
+	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(pr.Description)
 	builder.WriteString(", ")
@@ -225,20 +231,20 @@ func (pr *Project) String() string {
 	builder.WriteString("updater_id=")
 	builder.WriteString(fmt.Sprintf("%v", pr.UpdaterID))
 	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("branch_id=")
-	builder.WriteString(fmt.Sprintf("%v", pr.BranchID))
+	builder.WriteString("org_id=")
+	builder.WriteString(fmt.Sprintf("%v", pr.OrgID))
 	builder.WriteString(", ")
 	builder.WriteString("process=")
 	builder.WriteString(fmt.Sprintf("%v", pr.Process))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", pr.Status))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

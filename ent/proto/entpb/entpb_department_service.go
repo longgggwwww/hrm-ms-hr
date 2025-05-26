@@ -141,8 +141,6 @@ func (svc *DepartmentService) Update(ctx context.Context, req *UpdateDepartmentR
 	m := svc.client.Department.UpdateOneID(departmentID)
 	departmentCode := department.GetCode()
 	m.SetCode(departmentCode)
-	departmentCreatedAt := runtime.ExtractTime(department.GetCreatedAt())
-	m.SetCreatedAt(departmentCreatedAt)
 	departmentName := department.GetName()
 	m.SetName(departmentName)
 	departmentOrgID := int(department.GetOrgId())

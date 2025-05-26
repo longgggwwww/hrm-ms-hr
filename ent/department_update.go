@@ -72,20 +72,6 @@ func (du *DepartmentUpdate) SetNillableOrgID(i *int) *DepartmentUpdate {
 	return du
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (du *DepartmentUpdate) SetCreatedAt(t time.Time) *DepartmentUpdate {
-	du.mutation.SetCreatedAt(t)
-	return du
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (du *DepartmentUpdate) SetNillableCreatedAt(t *time.Time) *DepartmentUpdate {
-	if t != nil {
-		du.SetCreatedAt(*t)
-	}
-	return du
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (du *DepartmentUpdate) SetUpdatedAt(t time.Time) *DepartmentUpdate {
 	du.mutation.SetUpdatedAt(t)
@@ -220,9 +206,6 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := du.mutation.Code(); ok {
 		_spec.SetField(department.FieldCode, field.TypeString, value)
-	}
-	if value, ok := du.mutation.CreatedAt(); ok {
-		_spec.SetField(department.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := du.mutation.UpdatedAt(); ok {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)
@@ -359,20 +342,6 @@ func (duo *DepartmentUpdateOne) SetOrgID(i int) *DepartmentUpdateOne {
 func (duo *DepartmentUpdateOne) SetNillableOrgID(i *int) *DepartmentUpdateOne {
 	if i != nil {
 		duo.SetOrgID(*i)
-	}
-	return duo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (duo *DepartmentUpdateOne) SetCreatedAt(t time.Time) *DepartmentUpdateOne {
-	duo.mutation.SetCreatedAt(t)
-	return duo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (duo *DepartmentUpdateOne) SetNillableCreatedAt(t *time.Time) *DepartmentUpdateOne {
-	if t != nil {
-		duo.SetCreatedAt(*t)
 	}
 	return duo
 }
@@ -541,9 +510,6 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 	}
 	if value, ok := duo.mutation.Code(); ok {
 		_spec.SetField(department.FieldCode, field.TypeString, value)
-	}
-	if value, ok := duo.mutation.CreatedAt(); ok {
-		_spec.SetField(department.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := duo.mutation.UpdatedAt(); ok {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)

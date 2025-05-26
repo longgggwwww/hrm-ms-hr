@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
@@ -25,9 +24,15 @@ type TaskCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetTitle sets the "title" field.
-func (tc *TaskCreate) SetTitle(s string) *TaskCreate {
-	tc.mutation.SetTitle(s)
+// SetName sets the "name" field.
+func (tc *TaskCreate) SetName(s string) *TaskCreate {
+	tc.mutation.SetName(s)
+	return tc
+}
+
+// SetCode sets the "code" field.
+func (tc *TaskCreate) SetCode(s string) *TaskCreate {
+	tc.mutation.SetCode(s)
 	return tc
 }
 
@@ -64,26 +69,20 @@ func (tc *TaskCreate) SetStartAt(t time.Time) *TaskCreate {
 }
 
 // SetProjectID sets the "project_id" field.
-func (tc *TaskCreate) SetProjectID(u uuid.UUID) *TaskCreate {
-	tc.mutation.SetProjectID(u)
-	return tc
-}
-
-// SetBranchID sets the "branch_id" field.
-func (tc *TaskCreate) SetBranchID(uu uuid.NullUUID) *TaskCreate {
-	tc.mutation.SetBranchID(uu)
+func (tc *TaskCreate) SetProjectID(i int) *TaskCreate {
+	tc.mutation.SetProjectID(i)
 	return tc
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (tc *TaskCreate) SetCreatorID(u uuid.UUID) *TaskCreate {
-	tc.mutation.SetCreatorID(u)
+func (tc *TaskCreate) SetCreatorID(i int) *TaskCreate {
+	tc.mutation.SetCreatorID(i)
 	return tc
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (tc *TaskCreate) SetUpdaterID(uu uuid.NullUUID) *TaskCreate {
-	tc.mutation.SetUpdaterID(uu)
+func (tc *TaskCreate) SetUpdaterID(i int) *TaskCreate {
+	tc.mutation.SetUpdaterID(i)
 	return tc
 }
 
@@ -115,16 +114,16 @@ func (tc *TaskCreate) SetNillableUpdatedAt(t *time.Time) *TaskCreate {
 	return tc
 }
 
-// SetID sets the "id" field.
-func (tc *TaskCreate) SetID(u uuid.UUID) *TaskCreate {
-	tc.mutation.SetID(u)
+// SetType sets the "type" field.
+func (tc *TaskCreate) SetType(t task.Type) *TaskCreate {
+	tc.mutation.SetType(t)
 	return tc
 }
 
-// SetNillableID sets the "id" field if the given value is not nil.
-func (tc *TaskCreate) SetNillableID(u *uuid.UUID) *TaskCreate {
-	if u != nil {
-		tc.SetID(*u)
+// SetNillableType sets the "type" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableType(t *task.Type) *TaskCreate {
+	if t != nil {
+		tc.SetType(*t)
 	}
 	return tc
 }
@@ -132,6 +131,21 @@ func (tc *TaskCreate) SetNillableID(u *uuid.UUID) *TaskCreate {
 // SetProject sets the "project" edge to the Project entity.
 func (tc *TaskCreate) SetProject(p *Project) *TaskCreate {
 	return tc.SetProjectID(p.ID)
+}
+
+// AddLabelIDs adds the "labels" edge to the Label entity by IDs.
+func (tc *TaskCreate) AddLabelIDs(ids ...int) *TaskCreate {
+	tc.mutation.AddLabelIDs(ids...)
+	return tc
+}
+
+// AddLabels adds the "labels" edges to the Label entity.
+func (tc *TaskCreate) AddLabels(l ...*Label) *TaskCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return tc.AddLabelIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -177,16 +191,19 @@ func (tc *TaskCreate) defaults() {
 		v := task.DefaultUpdatedAt()
 		tc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := tc.mutation.ID(); !ok {
-		v := task.DefaultID()
-		tc.mutation.SetID(v)
+	if _, ok := tc.mutation.GetType(); !ok {
+		v := task.DefaultType
+		tc.mutation.SetType(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TaskCreate) check() error {
-	if _, ok := tc.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Task.title"`)}
+	if _, ok := tc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Task.name"`)}
+	}
+	if _, ok := tc.mutation.Code(); !ok {
+		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Task.code"`)}
 	}
 	if _, ok := tc.mutation.Process(); !ok {
 		return &ValidationError{Name: "process", err: errors.New(`ent: missing required field "Task.process"`)}
@@ -200,9 +217,6 @@ func (tc *TaskCreate) check() error {
 	if _, ok := tc.mutation.ProjectID(); !ok {
 		return &ValidationError{Name: "project_id", err: errors.New(`ent: missing required field "Task.project_id"`)}
 	}
-	if _, ok := tc.mutation.BranchID(); !ok {
-		return &ValidationError{Name: "branch_id", err: errors.New(`ent: missing required field "Task.branch_id"`)}
-	}
 	if _, ok := tc.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator_id", err: errors.New(`ent: missing required field "Task.creator_id"`)}
 	}
@@ -214,6 +228,14 @@ func (tc *TaskCreate) check() error {
 	}
 	if _, ok := tc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Task.updated_at"`)}
+	}
+	if _, ok := tc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Task.type"`)}
+	}
+	if v, ok := tc.mutation.GetType(); ok {
+		if err := task.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
+		}
 	}
 	if len(tc.mutation.ProjectIDs()) == 0 {
 		return &ValidationError{Name: "project", err: errors.New(`ent: missing required edge "Task.project"`)}
@@ -232,13 +254,8 @@ func (tc *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
-	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	tc.mutation.id = &_node.ID
 	tc.mutation.done = true
 	return _node, nil
@@ -247,16 +264,16 @@ func (tc *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Task{config: tc.config}
-		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
+		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
 	)
 	_spec.OnConflict = tc.conflict
-	if id, ok := tc.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = &id
+	if value, ok := tc.mutation.Name(); ok {
+		_spec.SetField(task.FieldName, field.TypeString, value)
+		_node.Name = value
 	}
-	if value, ok := tc.mutation.Title(); ok {
-		_spec.SetField(task.FieldTitle, field.TypeString, value)
-		_node.Title = value
+	if value, ok := tc.mutation.Code(); ok {
+		_spec.SetField(task.FieldCode, field.TypeString, value)
+		_node.Code = value
 	}
 	if value, ok := tc.mutation.Description(); ok {
 		_spec.SetField(task.FieldDescription, field.TypeString, value)
@@ -274,16 +291,12 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldStartAt, field.TypeTime, value)
 		_node.StartAt = value
 	}
-	if value, ok := tc.mutation.BranchID(); ok {
-		_spec.SetField(task.FieldBranchID, field.TypeUUID, value)
-		_node.BranchID = value
-	}
 	if value, ok := tc.mutation.CreatorID(); ok {
-		_spec.SetField(task.FieldCreatorID, field.TypeUUID, value)
+		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)
 		_node.CreatorID = value
 	}
 	if value, ok := tc.mutation.UpdaterID(); ok {
-		_spec.SetField(task.FieldUpdaterID, field.TypeUUID, value)
+		_spec.SetField(task.FieldUpdaterID, field.TypeInt, value)
 		_node.UpdaterID = value
 	}
 	if value, ok := tc.mutation.CreatedAt(); ok {
@@ -294,6 +307,10 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := tc.mutation.GetType(); ok {
+		_spec.SetField(task.FieldType, field.TypeEnum, value)
+		_node.Type = value
+	}
 	if nodes := tc.mutation.ProjectIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -302,13 +319,29 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			Columns: []string{task.ProjectColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ProjectID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.LabelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.LabelsTable,
+			Columns: []string{task.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -318,7 +351,7 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Task.Create().
-//		SetTitle(v).
+//		SetName(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -327,7 +360,7 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TaskUpsert) {
-//			SetTitle(v+v).
+//			SetName(v+v).
 //		}).
 //		Exec(ctx)
 func (tc *TaskCreate) OnConflict(opts ...sql.ConflictOption) *TaskUpsertOne {
@@ -363,15 +396,27 @@ type (
 	}
 )
 
-// SetTitle sets the "title" field.
-func (u *TaskUpsert) SetTitle(v string) *TaskUpsert {
-	u.Set(task.FieldTitle, v)
+// SetName sets the "name" field.
+func (u *TaskUpsert) SetName(v string) *TaskUpsert {
+	u.Set(task.FieldName, v)
 	return u
 }
 
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *TaskUpsert) UpdateTitle() *TaskUpsert {
-	u.SetExcluded(task.FieldTitle)
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateName() *TaskUpsert {
+	u.SetExcluded(task.FieldName)
+	return u
+}
+
+// SetCode sets the "code" field.
+func (u *TaskUpsert) SetCode(v string) *TaskUpsert {
+	u.Set(task.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateCode() *TaskUpsert {
+	u.SetExcluded(task.FieldCode)
 	return u
 }
 
@@ -436,7 +481,7 @@ func (u *TaskUpsert) UpdateStartAt() *TaskUpsert {
 }
 
 // SetProjectID sets the "project_id" field.
-func (u *TaskUpsert) SetProjectID(v uuid.UUID) *TaskUpsert {
+func (u *TaskUpsert) SetProjectID(v int) *TaskUpsert {
 	u.Set(task.FieldProjectID, v)
 	return u
 }
@@ -447,20 +492,8 @@ func (u *TaskUpsert) UpdateProjectID() *TaskUpsert {
 	return u
 }
 
-// SetBranchID sets the "branch_id" field.
-func (u *TaskUpsert) SetBranchID(v uuid.NullUUID) *TaskUpsert {
-	u.Set(task.FieldBranchID, v)
-	return u
-}
-
-// UpdateBranchID sets the "branch_id" field to the value that was provided on create.
-func (u *TaskUpsert) UpdateBranchID() *TaskUpsert {
-	u.SetExcluded(task.FieldBranchID)
-	return u
-}
-
 // SetCreatorID sets the "creator_id" field.
-func (u *TaskUpsert) SetCreatorID(v uuid.UUID) *TaskUpsert {
+func (u *TaskUpsert) SetCreatorID(v int) *TaskUpsert {
 	u.Set(task.FieldCreatorID, v)
 	return u
 }
@@ -471,8 +504,14 @@ func (u *TaskUpsert) UpdateCreatorID() *TaskUpsert {
 	return u
 }
 
+// AddCreatorID adds v to the "creator_id" field.
+func (u *TaskUpsert) AddCreatorID(v int) *TaskUpsert {
+	u.Add(task.FieldCreatorID, v)
+	return u
+}
+
 // SetUpdaterID sets the "updater_id" field.
-func (u *TaskUpsert) SetUpdaterID(v uuid.NullUUID) *TaskUpsert {
+func (u *TaskUpsert) SetUpdaterID(v int) *TaskUpsert {
 	u.Set(task.FieldUpdaterID, v)
 	return u
 }
@@ -483,15 +522,9 @@ func (u *TaskUpsert) UpdateUpdaterID() *TaskUpsert {
 	return u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *TaskUpsert) SetCreatedAt(v time.Time) *TaskUpsert {
-	u.Set(task.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *TaskUpsert) UpdateCreatedAt() *TaskUpsert {
-	u.SetExcluded(task.FieldCreatedAt)
+// AddUpdaterID adds v to the "updater_id" field.
+func (u *TaskUpsert) AddUpdaterID(v int) *TaskUpsert {
+	u.Add(task.FieldUpdaterID, v)
 	return u
 }
 
@@ -507,22 +540,31 @@ func (u *TaskUpsert) UpdateUpdatedAt() *TaskUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// SetType sets the "type" field.
+func (u *TaskUpsert) SetType(v task.Type) *TaskUpsert {
+	u.Set(task.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateType() *TaskUpsert {
+	u.SetExcluded(task.FieldType)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
 //	client.Task.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
-//			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(task.FieldID)
-//			}),
 //		).
 //		Exec(ctx)
 func (u *TaskUpsertOne) UpdateNewValues() *TaskUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
-		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(task.FieldID)
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(task.FieldCreatedAt)
 		}
 	}))
 	return u
@@ -555,17 +597,31 @@ func (u *TaskUpsertOne) Update(set func(*TaskUpsert)) *TaskUpsertOne {
 	return u
 }
 
-// SetTitle sets the "title" field.
-func (u *TaskUpsertOne) SetTitle(v string) *TaskUpsertOne {
+// SetName sets the "name" field.
+func (u *TaskUpsertOne) SetName(v string) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
-		s.SetTitle(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *TaskUpsertOne) UpdateTitle() *TaskUpsertOne {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateName() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
-		s.UpdateTitle()
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *TaskUpsertOne) SetCode(v string) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateCode() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCode()
 	})
 }
 
@@ -640,7 +696,7 @@ func (u *TaskUpsertOne) UpdateStartAt() *TaskUpsertOne {
 }
 
 // SetProjectID sets the "project_id" field.
-func (u *TaskUpsertOne) SetProjectID(v uuid.UUID) *TaskUpsertOne {
+func (u *TaskUpsertOne) SetProjectID(v int) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetProjectID(v)
 	})
@@ -653,24 +709,17 @@ func (u *TaskUpsertOne) UpdateProjectID() *TaskUpsertOne {
 	})
 }
 
-// SetBranchID sets the "branch_id" field.
-func (u *TaskUpsertOne) SetBranchID(v uuid.NullUUID) *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetBranchID(v)
-	})
-}
-
-// UpdateBranchID sets the "branch_id" field to the value that was provided on create.
-func (u *TaskUpsertOne) UpdateBranchID() *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateBranchID()
-	})
-}
-
 // SetCreatorID sets the "creator_id" field.
-func (u *TaskUpsertOne) SetCreatorID(v uuid.UUID) *TaskUpsertOne {
+func (u *TaskUpsertOne) SetCreatorID(v int) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetCreatorID(v)
+	})
+}
+
+// AddCreatorID adds v to the "creator_id" field.
+func (u *TaskUpsertOne) AddCreatorID(v int) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddCreatorID(v)
 	})
 }
 
@@ -682,9 +731,16 @@ func (u *TaskUpsertOne) UpdateCreatorID() *TaskUpsertOne {
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (u *TaskUpsertOne) SetUpdaterID(v uuid.NullUUID) *TaskUpsertOne {
+func (u *TaskUpsertOne) SetUpdaterID(v int) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetUpdaterID(v)
+	})
+}
+
+// AddUpdaterID adds v to the "updater_id" field.
+func (u *TaskUpsertOne) AddUpdaterID(v int) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddUpdaterID(v)
 	})
 }
 
@@ -692,20 +748,6 @@ func (u *TaskUpsertOne) SetUpdaterID(v uuid.NullUUID) *TaskUpsertOne {
 func (u *TaskUpsertOne) UpdateUpdaterID() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateUpdaterID()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *TaskUpsertOne) SetCreatedAt(v time.Time) *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *TaskUpsertOne) UpdateCreatedAt() *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 
@@ -720,6 +762,20 @@ func (u *TaskUpsertOne) SetUpdatedAt(v time.Time) *TaskUpsertOne {
 func (u *TaskUpsertOne) UpdateUpdatedAt() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *TaskUpsertOne) SetType(v task.Type) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateType() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateType()
 	})
 }
 
@@ -739,12 +795,7 @@ func (u *TaskUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *TaskUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: TaskUpsertOne.ID is not supported by MySQL driver. Use TaskUpsertOne.Exec instead")
-	}
+func (u *TaskUpsertOne) ID(ctx context.Context) (id int, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -753,7 +804,7 @@ func (u *TaskUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *TaskUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *TaskUpsertOne) IDX(ctx context.Context) int {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -808,6 +859,10 @@ func (tcb *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -859,7 +914,7 @@ func (tcb *TaskCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TaskUpsert) {
-//			SetTitle(v+v).
+//			SetName(v+v).
 //		}).
 //		Exec(ctx)
 func (tcb *TaskCreateBulk) OnConflict(opts ...sql.ConflictOption) *TaskUpsertBulk {
@@ -894,17 +949,14 @@ type TaskUpsertBulk struct {
 //	client.Task.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
-//			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(task.FieldID)
-//			}),
 //		).
 //		Exec(ctx)
 func (u *TaskUpsertBulk) UpdateNewValues() *TaskUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
-			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(task.FieldID)
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(task.FieldCreatedAt)
 			}
 		}
 	}))
@@ -938,17 +990,31 @@ func (u *TaskUpsertBulk) Update(set func(*TaskUpsert)) *TaskUpsertBulk {
 	return u
 }
 
-// SetTitle sets the "title" field.
-func (u *TaskUpsertBulk) SetTitle(v string) *TaskUpsertBulk {
+// SetName sets the "name" field.
+func (u *TaskUpsertBulk) SetName(v string) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
-		s.SetTitle(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *TaskUpsertBulk) UpdateTitle() *TaskUpsertBulk {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateName() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
-		s.UpdateTitle()
+		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *TaskUpsertBulk) SetCode(v string) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateCode() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateCode()
 	})
 }
 
@@ -1023,7 +1089,7 @@ func (u *TaskUpsertBulk) UpdateStartAt() *TaskUpsertBulk {
 }
 
 // SetProjectID sets the "project_id" field.
-func (u *TaskUpsertBulk) SetProjectID(v uuid.UUID) *TaskUpsertBulk {
+func (u *TaskUpsertBulk) SetProjectID(v int) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetProjectID(v)
 	})
@@ -1036,24 +1102,17 @@ func (u *TaskUpsertBulk) UpdateProjectID() *TaskUpsertBulk {
 	})
 }
 
-// SetBranchID sets the "branch_id" field.
-func (u *TaskUpsertBulk) SetBranchID(v uuid.NullUUID) *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetBranchID(v)
-	})
-}
-
-// UpdateBranchID sets the "branch_id" field to the value that was provided on create.
-func (u *TaskUpsertBulk) UpdateBranchID() *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateBranchID()
-	})
-}
-
 // SetCreatorID sets the "creator_id" field.
-func (u *TaskUpsertBulk) SetCreatorID(v uuid.UUID) *TaskUpsertBulk {
+func (u *TaskUpsertBulk) SetCreatorID(v int) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetCreatorID(v)
+	})
+}
+
+// AddCreatorID adds v to the "creator_id" field.
+func (u *TaskUpsertBulk) AddCreatorID(v int) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddCreatorID(v)
 	})
 }
 
@@ -1065,9 +1124,16 @@ func (u *TaskUpsertBulk) UpdateCreatorID() *TaskUpsertBulk {
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (u *TaskUpsertBulk) SetUpdaterID(v uuid.NullUUID) *TaskUpsertBulk {
+func (u *TaskUpsertBulk) SetUpdaterID(v int) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetUpdaterID(v)
+	})
+}
+
+// AddUpdaterID adds v to the "updater_id" field.
+func (u *TaskUpsertBulk) AddUpdaterID(v int) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.AddUpdaterID(v)
 	})
 }
 
@@ -1075,20 +1141,6 @@ func (u *TaskUpsertBulk) SetUpdaterID(v uuid.NullUUID) *TaskUpsertBulk {
 func (u *TaskUpsertBulk) UpdateUpdaterID() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateUpdaterID()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *TaskUpsertBulk) SetCreatedAt(v time.Time) *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *TaskUpsertBulk) UpdateCreatedAt() *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 
@@ -1103,6 +1155,20 @@ func (u *TaskUpsertBulk) SetUpdatedAt(v time.Time) *TaskUpsertBulk {
 func (u *TaskUpsertBulk) UpdateUpdatedAt() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *TaskUpsertBulk) SetType(v task.Type) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateType() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateType()
 	})
 }
 

@@ -28,6 +28,7 @@ func (Department) Fields() []ent.Field {
 		field.Int("org_id").
 			Annotations(entproto.Field(4)),
 		field.Time("created_at").
+			Immutable().
 			Default(time.Now).
 			Annotations(entproto.Field(5)),
 		field.Time("updated_at").
@@ -36,7 +37,7 @@ func (Department) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Department.
+// Edges of the Department
 func (Department) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("positions", Position.Type).
@@ -52,7 +53,7 @@ func (Department) Edges() []ent.Edge {
 
 func (Department) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("org_id", "code").Unique(),
+		index.Fields("code", "org_id").Unique(),
 	}
 }
 

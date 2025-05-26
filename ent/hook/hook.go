@@ -33,6 +33,18 @@ func (f EmployeeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EmployeeMutation", m)
 }
 
+// The LabelFunc type is an adapter to allow the use of ordinary
+// function as Label mutator.
+type LabelFunc func(context.Context, *ent.LabelMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LabelFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LabelMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LabelMutation", m)
+}
+
 // The LeaveApprovalFunc type is an adapter to allow the use of ordinary
 // function as LeaveApproval mutator.
 type LeaveApprovalFunc func(context.Context, *ent.LeaveApprovalMutation) (ent.Value, error)

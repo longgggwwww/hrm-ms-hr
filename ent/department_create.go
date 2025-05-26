@@ -335,18 +335,6 @@ func (u *DepartmentUpsert) UpdateOrgID() *DepartmentUpsert {
 	return u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *DepartmentUpsert) SetCreatedAt(v time.Time) *DepartmentUpsert {
-	u.Set(department.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *DepartmentUpsert) UpdateCreatedAt() *DepartmentUpsert {
-	u.SetExcluded(department.FieldCreatedAt)
-	return u
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (u *DepartmentUpsert) SetUpdatedAt(v time.Time) *DepartmentUpsert {
 	u.Set(department.FieldUpdatedAt, v)
@@ -369,6 +357,11 @@ func (u *DepartmentUpsert) UpdateUpdatedAt() *DepartmentUpsert {
 //		Exec(ctx)
 func (u *DepartmentUpsertOne) UpdateNewValues() *DepartmentUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(department.FieldCreatedAt)
+		}
+	}))
 	return u
 }
 
@@ -438,20 +431,6 @@ func (u *DepartmentUpsertOne) SetOrgID(v int) *DepartmentUpsertOne {
 func (u *DepartmentUpsertOne) UpdateOrgID() *DepartmentUpsertOne {
 	return u.Update(func(s *DepartmentUpsert) {
 		s.UpdateOrgID()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *DepartmentUpsertOne) SetCreatedAt(v time.Time) *DepartmentUpsertOne {
-	return u.Update(func(s *DepartmentUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *DepartmentUpsertOne) UpdateCreatedAt() *DepartmentUpsertOne {
-	return u.Update(func(s *DepartmentUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 
@@ -643,6 +622,13 @@ type DepartmentUpsertBulk struct {
 //		Exec(ctx)
 func (u *DepartmentUpsertBulk) UpdateNewValues() *DepartmentUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(department.FieldCreatedAt)
+			}
+		}
+	}))
 	return u
 }
 
@@ -712,20 +698,6 @@ func (u *DepartmentUpsertBulk) SetOrgID(v int) *DepartmentUpsertBulk {
 func (u *DepartmentUpsertBulk) UpdateOrgID() *DepartmentUpsertBulk {
 	return u.Update(func(s *DepartmentUpsert) {
 		s.UpdateOrgID()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *DepartmentUpsertBulk) SetCreatedAt(v time.Time) *DepartmentUpsertBulk {
-	return u.Update(func(s *DepartmentUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *DepartmentUpsertBulk) UpdateCreatedAt() *DepartmentUpsertBulk {
-	return u.Update(func(s *DepartmentUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 

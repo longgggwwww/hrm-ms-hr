@@ -606,6 +606,298 @@ var EmployeeService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	LabelService_Create_FullMethodName      = "/entpb.LabelService/Create"
+	LabelService_Get_FullMethodName         = "/entpb.LabelService/Get"
+	LabelService_Update_FullMethodName      = "/entpb.LabelService/Update"
+	LabelService_Delete_FullMethodName      = "/entpb.LabelService/Delete"
+	LabelService_List_FullMethodName        = "/entpb.LabelService/List"
+	LabelService_BatchCreate_FullMethodName = "/entpb.LabelService/BatchCreate"
+)
+
+// LabelServiceClient is the client API for LabelService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type LabelServiceClient interface {
+	Create(ctx context.Context, in *CreateLabelRequest, opts ...grpc.CallOption) (*Label, error)
+	Get(ctx context.Context, in *GetLabelRequest, opts ...grpc.CallOption) (*Label, error)
+	Update(ctx context.Context, in *UpdateLabelRequest, opts ...grpc.CallOption) (*Label, error)
+	Delete(ctx context.Context, in *DeleteLabelRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	List(ctx context.Context, in *ListLabelRequest, opts ...grpc.CallOption) (*ListLabelResponse, error)
+	BatchCreate(ctx context.Context, in *BatchCreateLabelsRequest, opts ...grpc.CallOption) (*BatchCreateLabelsResponse, error)
+}
+
+type labelServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewLabelServiceClient(cc grpc.ClientConnInterface) LabelServiceClient {
+	return &labelServiceClient{cc}
+}
+
+func (c *labelServiceClient) Create(ctx context.Context, in *CreateLabelRequest, opts ...grpc.CallOption) (*Label, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Label)
+	err := c.cc.Invoke(ctx, LabelService_Create_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *labelServiceClient) Get(ctx context.Context, in *GetLabelRequest, opts ...grpc.CallOption) (*Label, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Label)
+	err := c.cc.Invoke(ctx, LabelService_Get_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *labelServiceClient) Update(ctx context.Context, in *UpdateLabelRequest, opts ...grpc.CallOption) (*Label, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Label)
+	err := c.cc.Invoke(ctx, LabelService_Update_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *labelServiceClient) Delete(ctx context.Context, in *DeleteLabelRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, LabelService_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *labelServiceClient) List(ctx context.Context, in *ListLabelRequest, opts ...grpc.CallOption) (*ListLabelResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListLabelResponse)
+	err := c.cc.Invoke(ctx, LabelService_List_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *labelServiceClient) BatchCreate(ctx context.Context, in *BatchCreateLabelsRequest, opts ...grpc.CallOption) (*BatchCreateLabelsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchCreateLabelsResponse)
+	err := c.cc.Invoke(ctx, LabelService_BatchCreate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// LabelServiceServer is the server API for LabelService service.
+// All implementations must embed UnimplementedLabelServiceServer
+// for forward compatibility.
+type LabelServiceServer interface {
+	Create(context.Context, *CreateLabelRequest) (*Label, error)
+	Get(context.Context, *GetLabelRequest) (*Label, error)
+	Update(context.Context, *UpdateLabelRequest) (*Label, error)
+	Delete(context.Context, *DeleteLabelRequest) (*emptypb.Empty, error)
+	List(context.Context, *ListLabelRequest) (*ListLabelResponse, error)
+	BatchCreate(context.Context, *BatchCreateLabelsRequest) (*BatchCreateLabelsResponse, error)
+	mustEmbedUnimplementedLabelServiceServer()
+}
+
+// UnimplementedLabelServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedLabelServiceServer struct{}
+
+func (UnimplementedLabelServiceServer) Create(context.Context, *CreateLabelRequest) (*Label, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedLabelServiceServer) Get(context.Context, *GetLabelRequest) (*Label, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedLabelServiceServer) Update(context.Context, *UpdateLabelRequest) (*Label, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedLabelServiceServer) Delete(context.Context, *DeleteLabelRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedLabelServiceServer) List(context.Context, *ListLabelRequest) (*ListLabelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedLabelServiceServer) BatchCreate(context.Context, *BatchCreateLabelsRequest) (*BatchCreateLabelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchCreate not implemented")
+}
+func (UnimplementedLabelServiceServer) mustEmbedUnimplementedLabelServiceServer() {}
+func (UnimplementedLabelServiceServer) testEmbeddedByValue()                      {}
+
+// UnsafeLabelServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to LabelServiceServer will
+// result in compilation errors.
+type UnsafeLabelServiceServer interface {
+	mustEmbedUnimplementedLabelServiceServer()
+}
+
+func RegisterLabelServiceServer(s grpc.ServiceRegistrar, srv LabelServiceServer) {
+	// If the following call pancis, it indicates UnimplementedLabelServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&LabelService_ServiceDesc, srv)
+}
+
+func _LabelService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateLabelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LabelServiceServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LabelService_Create_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LabelServiceServer).Create(ctx, req.(*CreateLabelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LabelService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLabelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LabelServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LabelService_Get_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LabelServiceServer).Get(ctx, req.(*GetLabelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LabelService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateLabelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LabelServiceServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LabelService_Update_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LabelServiceServer).Update(ctx, req.(*UpdateLabelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LabelService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteLabelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LabelServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LabelService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LabelServiceServer).Delete(ctx, req.(*DeleteLabelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LabelService_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListLabelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LabelServiceServer).List(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LabelService_List_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LabelServiceServer).List(ctx, req.(*ListLabelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LabelService_BatchCreate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchCreateLabelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LabelServiceServer).BatchCreate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LabelService_BatchCreate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LabelServiceServer).BatchCreate(ctx, req.(*BatchCreateLabelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// LabelService_ServiceDesc is the grpc.ServiceDesc for LabelService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var LabelService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "entpb.LabelService",
+	HandlerType: (*LabelServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _LabelService_Create_Handler,
+		},
+		{
+			MethodName: "Get",
+			Handler:    _LabelService_Get_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _LabelService_Update_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _LabelService_Delete_Handler,
+		},
+		{
+			MethodName: "List",
+			Handler:    _LabelService_List_Handler,
+		},
+		{
+			MethodName: "BatchCreate",
+			Handler:    _LabelService_BatchCreate_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "entpb/entpb.proto",
+}
+
+const (
 	LeaveApprovalService_Create_FullMethodName      = "/entpb.LeaveApprovalService/Create"
 	LeaveApprovalService_Get_FullMethodName         = "/entpb.LeaveApprovalService/Get"
 	LeaveApprovalService_Update_FullMethodName      = "/entpb.LeaveApprovalService/Update"
