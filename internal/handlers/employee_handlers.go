@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -37,6 +38,7 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 }
 
 func (h *EmployeeHandler) Create(c *gin.Context) {
+	log.Println("Creating new employee")
 	type EmployeeCreateInput struct {
 		Code       string   `json:"code" binding:"required"`
 		FirstName  string   `json:"first_name" binding:"required"`

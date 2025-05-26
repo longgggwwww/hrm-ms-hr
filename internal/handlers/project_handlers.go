@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
+	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type ProjectHandler struct {
@@ -38,14 +39,19 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		Description *string `json:"description"`
 		StartAt     string  `json:"start_at" binding:"required"`
 		EndAt       *string `json:"end_at"`
-		CreatorID   int     `json:"creator_id" binding:"required"`
-		UpdaterID   int     `json:"updater_id" binding:"required"`
 		OrgID       int     `json:"org_id" binding:"required"`
 		Process     *int    `json:"process"`
 		Status      *string `json:"status"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Extract user ID from JWT token
+	userID, err := utils.ExtractUserIDFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -90,8 +96,8 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		SetNillableDescription(req.Description).
 		SetStartAt(startAt).
 		SetNillableEndAt(endAtPtr).
-		SetCreatorID(req.CreatorID).
-		SetUpdaterID(req.UpdaterID).
+		SetCreatorID(userID).
+		SetUpdaterID(userID).
 		SetOrgID(req.OrgID).
 		SetNillableProcess(req.Process).
 		SetStatus(statusVal)
