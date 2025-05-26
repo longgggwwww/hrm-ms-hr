@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -40,6 +39,20 @@ func (pu *ProjectUpdate) SetName(s string) *ProjectUpdate {
 func (pu *ProjectUpdate) SetNillableName(s *string) *ProjectUpdate {
 	if s != nil {
 		pu.SetName(*s)
+	}
+	return pu
+}
+
+// SetCode sets the "code" field.
+func (pu *ProjectUpdate) SetCode(s string) *ProjectUpdate {
+	pu.mutation.SetCode(s)
+	return pu
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableCode(s *string) *ProjectUpdate {
+	if s != nil {
+		pu.SetCode(*s)
 	}
 	return pu
 }
@@ -99,64 +112,65 @@ func (pu *ProjectUpdate) ClearEndAt() *ProjectUpdate {
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (pu *ProjectUpdate) SetCreatorID(u uuid.UUID) *ProjectUpdate {
-	pu.mutation.SetCreatorID(u)
+func (pu *ProjectUpdate) SetCreatorID(i int) *ProjectUpdate {
+	pu.mutation.ResetCreatorID()
+	pu.mutation.SetCreatorID(i)
 	return pu
 }
 
 // SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableCreatorID(u *uuid.UUID) *ProjectUpdate {
-	if u != nil {
-		pu.SetCreatorID(*u)
+func (pu *ProjectUpdate) SetNillableCreatorID(i *int) *ProjectUpdate {
+	if i != nil {
+		pu.SetCreatorID(*i)
 	}
+	return pu
+}
+
+// AddCreatorID adds i to the "creator_id" field.
+func (pu *ProjectUpdate) AddCreatorID(i int) *ProjectUpdate {
+	pu.mutation.AddCreatorID(i)
 	return pu
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (pu *ProjectUpdate) SetUpdaterID(uu uuid.NullUUID) *ProjectUpdate {
-	pu.mutation.SetUpdaterID(uu)
+func (pu *ProjectUpdate) SetUpdaterID(i int) *ProjectUpdate {
+	pu.mutation.ResetUpdaterID()
+	pu.mutation.SetUpdaterID(i)
 	return pu
 }
 
 // SetNillableUpdaterID sets the "updater_id" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableUpdaterID(uu *uuid.NullUUID) *ProjectUpdate {
-	if uu != nil {
-		pu.SetUpdaterID(*uu)
+func (pu *ProjectUpdate) SetNillableUpdaterID(i *int) *ProjectUpdate {
+	if i != nil {
+		pu.SetUpdaterID(*i)
 	}
 	return pu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (pu *ProjectUpdate) SetCreatedAt(t time.Time) *ProjectUpdate {
-	pu.mutation.SetCreatedAt(t)
+// AddUpdaterID adds i to the "updater_id" field.
+func (pu *ProjectUpdate) AddUpdaterID(i int) *ProjectUpdate {
+	pu.mutation.AddUpdaterID(i)
 	return pu
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableCreatedAt(t *time.Time) *ProjectUpdate {
-	if t != nil {
-		pu.SetCreatedAt(*t)
+// SetOrgID sets the "org_id" field.
+func (pu *ProjectUpdate) SetOrgID(i int) *ProjectUpdate {
+	pu.mutation.ResetOrgID()
+	pu.mutation.SetOrgID(i)
+	return pu
+}
+
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableOrgID(i *int) *ProjectUpdate {
+	if i != nil {
+		pu.SetOrgID(*i)
 	}
 	return pu
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (pu *ProjectUpdate) SetUpdatedAt(t time.Time) *ProjectUpdate {
-	pu.mutation.SetUpdatedAt(t)
-	return pu
-}
-
-// SetBranchID sets the "branch_id" field.
-func (pu *ProjectUpdate) SetBranchID(uu uuid.NullUUID) *ProjectUpdate {
-	pu.mutation.SetBranchID(uu)
-	return pu
-}
-
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (pu *ProjectUpdate) SetNillableBranchID(uu *uuid.NullUUID) *ProjectUpdate {
-	if uu != nil {
-		pu.SetBranchID(*uu)
-	}
+// AddOrgID adds i to the "org_id" field.
+func (pu *ProjectUpdate) AddOrgID(i int) *ProjectUpdate {
+	pu.mutation.AddOrgID(i)
 	return pu
 }
 
@@ -181,6 +195,12 @@ func (pu *ProjectUpdate) AddProcess(i int) *ProjectUpdate {
 	return pu
 }
 
+// ClearProcess clears the value of the "process" field.
+func (pu *ProjectUpdate) ClearProcess() *ProjectUpdate {
+	pu.mutation.ClearProcess()
+	return pu
+}
+
 // SetStatus sets the "status" field.
 func (pu *ProjectUpdate) SetStatus(pr project.Status) *ProjectUpdate {
 	pu.mutation.SetStatus(pr)
@@ -195,15 +215,21 @@ func (pu *ProjectUpdate) SetNillableStatus(pr *project.Status) *ProjectUpdate {
 	return pu
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (pu *ProjectUpdate) SetUpdatedAt(t time.Time) *ProjectUpdate {
+	pu.mutation.SetUpdatedAt(t)
+	return pu
+}
+
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
-func (pu *ProjectUpdate) AddTaskIDs(ids ...uuid.UUID) *ProjectUpdate {
+func (pu *ProjectUpdate) AddTaskIDs(ids ...int) *ProjectUpdate {
 	pu.mutation.AddTaskIDs(ids...)
 	return pu
 }
 
 // AddTasks adds the "tasks" edges to the Task entity.
 func (pu *ProjectUpdate) AddTasks(t ...*Task) *ProjectUpdate {
-	ids := make([]uuid.UUID, len(t))
+	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -222,14 +248,14 @@ func (pu *ProjectUpdate) ClearTasks() *ProjectUpdate {
 }
 
 // RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
-func (pu *ProjectUpdate) RemoveTaskIDs(ids ...uuid.UUID) *ProjectUpdate {
+func (pu *ProjectUpdate) RemoveTaskIDs(ids ...int) *ProjectUpdate {
 	pu.mutation.RemoveTaskIDs(ids...)
 	return pu
 }
 
 // RemoveTasks removes "tasks" edges to Task entities.
 func (pu *ProjectUpdate) RemoveTasks(t ...*Task) *ProjectUpdate {
-	ids := make([]uuid.UUID, len(t))
+	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -286,7 +312,7 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := pu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(project.Table, project.Columns, sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(project.Table, project.Columns, sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt))
 	if ps := pu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -296,6 +322,9 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
+	}
+	if value, ok := pu.mutation.Code(); ok {
+		_spec.SetField(project.FieldCode, field.TypeString, value)
 	}
 	if value, ok := pu.mutation.Description(); ok {
 		_spec.SetField(project.FieldDescription, field.TypeString, value)
@@ -313,19 +342,22 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.ClearField(project.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := pu.mutation.CreatorID(); ok {
-		_spec.SetField(project.FieldCreatorID, field.TypeUUID, value)
+		_spec.SetField(project.FieldCreatorID, field.TypeInt, value)
+	}
+	if value, ok := pu.mutation.AddedCreatorID(); ok {
+		_spec.AddField(project.FieldCreatorID, field.TypeInt, value)
 	}
 	if value, ok := pu.mutation.UpdaterID(); ok {
-		_spec.SetField(project.FieldUpdaterID, field.TypeUUID, value)
+		_spec.SetField(project.FieldUpdaterID, field.TypeInt, value)
 	}
-	if value, ok := pu.mutation.CreatedAt(); ok {
-		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := pu.mutation.AddedUpdaterID(); ok {
+		_spec.AddField(project.FieldUpdaterID, field.TypeInt, value)
 	}
-	if value, ok := pu.mutation.UpdatedAt(); ok {
-		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
+	if value, ok := pu.mutation.OrgID(); ok {
+		_spec.SetField(project.FieldOrgID, field.TypeInt, value)
 	}
-	if value, ok := pu.mutation.BranchID(); ok {
-		_spec.SetField(project.FieldBranchID, field.TypeUUID, value)
+	if value, ok := pu.mutation.AddedOrgID(); ok {
+		_spec.AddField(project.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := pu.mutation.Process(); ok {
 		_spec.SetField(project.FieldProcess, field.TypeInt, value)
@@ -333,8 +365,14 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.AddedProcess(); ok {
 		_spec.AddField(project.FieldProcess, field.TypeInt, value)
 	}
+	if pu.mutation.ProcessCleared() {
+		_spec.ClearField(project.FieldProcess, field.TypeInt)
+	}
 	if value, ok := pu.mutation.Status(); ok {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := pu.mutation.UpdatedAt(); ok {
+		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if pu.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -344,7 +382,7 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{project.TasksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -357,7 +395,7 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{project.TasksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -373,7 +411,7 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{project.TasksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -411,6 +449,20 @@ func (puo *ProjectUpdateOne) SetName(s string) *ProjectUpdateOne {
 func (puo *ProjectUpdateOne) SetNillableName(s *string) *ProjectUpdateOne {
 	if s != nil {
 		puo.SetName(*s)
+	}
+	return puo
+}
+
+// SetCode sets the "code" field.
+func (puo *ProjectUpdateOne) SetCode(s string) *ProjectUpdateOne {
+	puo.mutation.SetCode(s)
+	return puo
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableCode(s *string) *ProjectUpdateOne {
+	if s != nil {
+		puo.SetCode(*s)
 	}
 	return puo
 }
@@ -470,64 +522,65 @@ func (puo *ProjectUpdateOne) ClearEndAt() *ProjectUpdateOne {
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (puo *ProjectUpdateOne) SetCreatorID(u uuid.UUID) *ProjectUpdateOne {
-	puo.mutation.SetCreatorID(u)
+func (puo *ProjectUpdateOne) SetCreatorID(i int) *ProjectUpdateOne {
+	puo.mutation.ResetCreatorID()
+	puo.mutation.SetCreatorID(i)
 	return puo
 }
 
 // SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableCreatorID(u *uuid.UUID) *ProjectUpdateOne {
-	if u != nil {
-		puo.SetCreatorID(*u)
+func (puo *ProjectUpdateOne) SetNillableCreatorID(i *int) *ProjectUpdateOne {
+	if i != nil {
+		puo.SetCreatorID(*i)
 	}
+	return puo
+}
+
+// AddCreatorID adds i to the "creator_id" field.
+func (puo *ProjectUpdateOne) AddCreatorID(i int) *ProjectUpdateOne {
+	puo.mutation.AddCreatorID(i)
 	return puo
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (puo *ProjectUpdateOne) SetUpdaterID(uu uuid.NullUUID) *ProjectUpdateOne {
-	puo.mutation.SetUpdaterID(uu)
+func (puo *ProjectUpdateOne) SetUpdaterID(i int) *ProjectUpdateOne {
+	puo.mutation.ResetUpdaterID()
+	puo.mutation.SetUpdaterID(i)
 	return puo
 }
 
 // SetNillableUpdaterID sets the "updater_id" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableUpdaterID(uu *uuid.NullUUID) *ProjectUpdateOne {
-	if uu != nil {
-		puo.SetUpdaterID(*uu)
+func (puo *ProjectUpdateOne) SetNillableUpdaterID(i *int) *ProjectUpdateOne {
+	if i != nil {
+		puo.SetUpdaterID(*i)
 	}
 	return puo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (puo *ProjectUpdateOne) SetCreatedAt(t time.Time) *ProjectUpdateOne {
-	puo.mutation.SetCreatedAt(t)
+// AddUpdaterID adds i to the "updater_id" field.
+func (puo *ProjectUpdateOne) AddUpdaterID(i int) *ProjectUpdateOne {
+	puo.mutation.AddUpdaterID(i)
 	return puo
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableCreatedAt(t *time.Time) *ProjectUpdateOne {
-	if t != nil {
-		puo.SetCreatedAt(*t)
+// SetOrgID sets the "org_id" field.
+func (puo *ProjectUpdateOne) SetOrgID(i int) *ProjectUpdateOne {
+	puo.mutation.ResetOrgID()
+	puo.mutation.SetOrgID(i)
+	return puo
+}
+
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableOrgID(i *int) *ProjectUpdateOne {
+	if i != nil {
+		puo.SetOrgID(*i)
 	}
 	return puo
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (puo *ProjectUpdateOne) SetUpdatedAt(t time.Time) *ProjectUpdateOne {
-	puo.mutation.SetUpdatedAt(t)
-	return puo
-}
-
-// SetBranchID sets the "branch_id" field.
-func (puo *ProjectUpdateOne) SetBranchID(uu uuid.NullUUID) *ProjectUpdateOne {
-	puo.mutation.SetBranchID(uu)
-	return puo
-}
-
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (puo *ProjectUpdateOne) SetNillableBranchID(uu *uuid.NullUUID) *ProjectUpdateOne {
-	if uu != nil {
-		puo.SetBranchID(*uu)
-	}
+// AddOrgID adds i to the "org_id" field.
+func (puo *ProjectUpdateOne) AddOrgID(i int) *ProjectUpdateOne {
+	puo.mutation.AddOrgID(i)
 	return puo
 }
 
@@ -552,6 +605,12 @@ func (puo *ProjectUpdateOne) AddProcess(i int) *ProjectUpdateOne {
 	return puo
 }
 
+// ClearProcess clears the value of the "process" field.
+func (puo *ProjectUpdateOne) ClearProcess() *ProjectUpdateOne {
+	puo.mutation.ClearProcess()
+	return puo
+}
+
 // SetStatus sets the "status" field.
 func (puo *ProjectUpdateOne) SetStatus(pr project.Status) *ProjectUpdateOne {
 	puo.mutation.SetStatus(pr)
@@ -566,15 +625,21 @@ func (puo *ProjectUpdateOne) SetNillableStatus(pr *project.Status) *ProjectUpdat
 	return puo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (puo *ProjectUpdateOne) SetUpdatedAt(t time.Time) *ProjectUpdateOne {
+	puo.mutation.SetUpdatedAt(t)
+	return puo
+}
+
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
-func (puo *ProjectUpdateOne) AddTaskIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+func (puo *ProjectUpdateOne) AddTaskIDs(ids ...int) *ProjectUpdateOne {
 	puo.mutation.AddTaskIDs(ids...)
 	return puo
 }
 
 // AddTasks adds the "tasks" edges to the Task entity.
 func (puo *ProjectUpdateOne) AddTasks(t ...*Task) *ProjectUpdateOne {
-	ids := make([]uuid.UUID, len(t))
+	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -593,14 +658,14 @@ func (puo *ProjectUpdateOne) ClearTasks() *ProjectUpdateOne {
 }
 
 // RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
-func (puo *ProjectUpdateOne) RemoveTaskIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+func (puo *ProjectUpdateOne) RemoveTaskIDs(ids ...int) *ProjectUpdateOne {
 	puo.mutation.RemoveTaskIDs(ids...)
 	return puo
 }
 
 // RemoveTasks removes "tasks" edges to Task entities.
 func (puo *ProjectUpdateOne) RemoveTasks(t ...*Task) *ProjectUpdateOne {
-	ids := make([]uuid.UUID, len(t))
+	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -670,7 +735,7 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if err := puo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(project.Table, project.Columns, sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(project.Table, project.Columns, sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt))
 	id, ok := puo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Project.id" for update`)}
@@ -698,6 +763,9 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
 	}
+	if value, ok := puo.mutation.Code(); ok {
+		_spec.SetField(project.FieldCode, field.TypeString, value)
+	}
 	if value, ok := puo.mutation.Description(); ok {
 		_spec.SetField(project.FieldDescription, field.TypeString, value)
 	}
@@ -714,19 +782,22 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 		_spec.ClearField(project.FieldEndAt, field.TypeTime)
 	}
 	if value, ok := puo.mutation.CreatorID(); ok {
-		_spec.SetField(project.FieldCreatorID, field.TypeUUID, value)
+		_spec.SetField(project.FieldCreatorID, field.TypeInt, value)
+	}
+	if value, ok := puo.mutation.AddedCreatorID(); ok {
+		_spec.AddField(project.FieldCreatorID, field.TypeInt, value)
 	}
 	if value, ok := puo.mutation.UpdaterID(); ok {
-		_spec.SetField(project.FieldUpdaterID, field.TypeUUID, value)
+		_spec.SetField(project.FieldUpdaterID, field.TypeInt, value)
 	}
-	if value, ok := puo.mutation.CreatedAt(); ok {
-		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := puo.mutation.AddedUpdaterID(); ok {
+		_spec.AddField(project.FieldUpdaterID, field.TypeInt, value)
 	}
-	if value, ok := puo.mutation.UpdatedAt(); ok {
-		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
+	if value, ok := puo.mutation.OrgID(); ok {
+		_spec.SetField(project.FieldOrgID, field.TypeInt, value)
 	}
-	if value, ok := puo.mutation.BranchID(); ok {
-		_spec.SetField(project.FieldBranchID, field.TypeUUID, value)
+	if value, ok := puo.mutation.AddedOrgID(); ok {
+		_spec.AddField(project.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := puo.mutation.Process(); ok {
 		_spec.SetField(project.FieldProcess, field.TypeInt, value)
@@ -734,8 +805,14 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if value, ok := puo.mutation.AddedProcess(); ok {
 		_spec.AddField(project.FieldProcess, field.TypeInt, value)
 	}
+	if puo.mutation.ProcessCleared() {
+		_spec.ClearField(project.FieldProcess, field.TypeInt)
+	}
 	if value, ok := puo.mutation.Status(); ok {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := puo.mutation.UpdatedAt(); ok {
+		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if puo.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -745,7 +822,7 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Columns: []string{project.TasksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -758,7 +835,7 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Columns: []string{project.TasksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -774,7 +851,7 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Columns: []string{project.TasksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

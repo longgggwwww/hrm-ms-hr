@@ -9,7 +9,6 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/migrate"
 
 	"entgo.io/ent"
@@ -18,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
@@ -35,6 +35,8 @@ type Client struct {
 	Department *DepartmentClient
 	// Employee is the client for interacting with the Employee builders.
 	Employee *EmployeeClient
+	// Label is the client for interacting with the Label builders.
+	Label *LabelClient
 	// LeaveApproval is the client for interacting with the LeaveApproval builders.
 	LeaveApproval *LeaveApprovalClient
 	// LeaveRequest is the client for interacting with the LeaveRequest builders.
@@ -60,6 +62,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Department = NewDepartmentClient(c.config)
 	c.Employee = NewEmployeeClient(c.config)
+	c.Label = NewLabelClient(c.config)
 	c.LeaveApproval = NewLeaveApprovalClient(c.config)
 	c.LeaveRequest = NewLeaveRequestClient(c.config)
 	c.Organization = NewOrganizationClient(c.config)
@@ -160,6 +163,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:        cfg,
 		Department:    NewDepartmentClient(cfg),
 		Employee:      NewEmployeeClient(cfg),
+		Label:         NewLabelClient(cfg),
 		LeaveApproval: NewLeaveApprovalClient(cfg),
 		LeaveRequest:  NewLeaveRequestClient(cfg),
 		Organization:  NewOrganizationClient(cfg),
@@ -187,6 +191,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:        cfg,
 		Department:    NewDepartmentClient(cfg),
 		Employee:      NewEmployeeClient(cfg),
+		Label:         NewLabelClient(cfg),
 		LeaveApproval: NewLeaveApprovalClient(cfg),
 		LeaveRequest:  NewLeaveRequestClient(cfg),
 		Organization:  NewOrganizationClient(cfg),
@@ -222,8 +227,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest, c.Organization,
-		c.Position, c.Project, c.Task,
+		c.Department, c.Employee, c.Label, c.LeaveApproval, c.LeaveRequest,
+		c.Organization, c.Position, c.Project, c.Task,
 	} {
 		n.Use(hooks...)
 	}
@@ -233,8 +238,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Department, c.Employee, c.LeaveApproval, c.LeaveRequest, c.Organization,
-		c.Position, c.Project, c.Task,
+		c.Department, c.Employee, c.Label, c.LeaveApproval, c.LeaveRequest,
+		c.Organization, c.Position, c.Project, c.Task,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -247,6 +252,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Department.mutate(ctx, m)
 	case *EmployeeMutation:
 		return c.Employee.mutate(ctx, m)
+	case *LabelMutation:
+		return c.Label.mutate(ctx, m)
 	case *LeaveApprovalMutation:
 		return c.LeaveApproval.mutate(ctx, m)
 	case *LeaveRequestMutation:
@@ -575,6 +582,155 @@ func (c *EmployeeClient) mutate(ctx context.Context, m *EmployeeMutation) (Value
 		return (&EmployeeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Employee mutation op: %q", m.Op())
+	}
+}
+
+// LabelClient is a client for the Label schema.
+type LabelClient struct {
+	config
+}
+
+// NewLabelClient returns a client for the Label from the given config.
+func NewLabelClient(c config) *LabelClient {
+	return &LabelClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `label.Hooks(f(g(h())))`.
+func (c *LabelClient) Use(hooks ...Hook) {
+	c.hooks.Label = append(c.hooks.Label, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `label.Intercept(f(g(h())))`.
+func (c *LabelClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Label = append(c.inters.Label, interceptors...)
+}
+
+// Create returns a builder for creating a Label entity.
+func (c *LabelClient) Create() *LabelCreate {
+	mutation := newLabelMutation(c.config, OpCreate)
+	return &LabelCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Label entities.
+func (c *LabelClient) CreateBulk(builders ...*LabelCreate) *LabelCreateBulk {
+	return &LabelCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *LabelClient) MapCreateBulk(slice any, setFunc func(*LabelCreate, int)) *LabelCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &LabelCreateBulk{err: fmt.Errorf("calling to LabelClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*LabelCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &LabelCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Label.
+func (c *LabelClient) Update() *LabelUpdate {
+	mutation := newLabelMutation(c.config, OpUpdate)
+	return &LabelUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LabelClient) UpdateOne(l *Label) *LabelUpdateOne {
+	mutation := newLabelMutation(c.config, OpUpdateOne, withLabel(l))
+	return &LabelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LabelClient) UpdateOneID(id int) *LabelUpdateOne {
+	mutation := newLabelMutation(c.config, OpUpdateOne, withLabelID(id))
+	return &LabelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Label.
+func (c *LabelClient) Delete() *LabelDelete {
+	mutation := newLabelMutation(c.config, OpDelete)
+	return &LabelDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LabelClient) DeleteOne(l *Label) *LabelDeleteOne {
+	return c.DeleteOneID(l.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LabelClient) DeleteOneID(id int) *LabelDeleteOne {
+	builder := c.Delete().Where(label.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LabelDeleteOne{builder}
+}
+
+// Query returns a query builder for Label.
+func (c *LabelClient) Query() *LabelQuery {
+	return &LabelQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLabel},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Label entity by its id.
+func (c *LabelClient) Get(ctx context.Context, id int) (*Label, error) {
+	return c.Query().Where(label.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LabelClient) GetX(ctx context.Context, id int) *Label {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTasks queries the tasks edge of a Label.
+func (c *LabelClient) QueryTasks(l *Label) *TaskQuery {
+	query := (&TaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := l.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(label.Table, label.FieldID, id),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, label.TasksTable, label.TasksColumn),
+		)
+		fromV = sqlgraph.Neighbors(l.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LabelClient) Hooks() []Hook {
+	return c.hooks.Label
+}
+
+// Interceptors returns the client interceptors.
+func (c *LabelClient) Interceptors() []Interceptor {
+	return c.inters.Label
+}
+
+func (c *LabelClient) mutate(ctx context.Context, m *LabelMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LabelCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LabelUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LabelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LabelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Label mutation op: %q", m.Op())
 	}
 }
 
@@ -1299,7 +1455,7 @@ func (c *ProjectClient) UpdateOne(pr *Project) *ProjectUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ProjectClient) UpdateOneID(id uuid.UUID) *ProjectUpdateOne {
+func (c *ProjectClient) UpdateOneID(id int) *ProjectUpdateOne {
 	mutation := newProjectMutation(c.config, OpUpdateOne, withProjectID(id))
 	return &ProjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1316,7 +1472,7 @@ func (c *ProjectClient) DeleteOne(pr *Project) *ProjectDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProjectClient) DeleteOneID(id uuid.UUID) *ProjectDeleteOne {
+func (c *ProjectClient) DeleteOneID(id int) *ProjectDeleteOne {
 	builder := c.Delete().Where(project.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1333,12 +1489,12 @@ func (c *ProjectClient) Query() *ProjectQuery {
 }
 
 // Get returns a Project entity by its id.
-func (c *ProjectClient) Get(ctx context.Context, id uuid.UUID) (*Project, error) {
+func (c *ProjectClient) Get(ctx context.Context, id int) (*Project, error) {
 	return c.Query().Where(project.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ProjectClient) GetX(ctx context.Context, id uuid.UUID) *Project {
+func (c *ProjectClient) GetX(ctx context.Context, id int) *Project {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1448,7 +1604,7 @@ func (c *TaskClient) UpdateOne(t *Task) *TaskUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TaskClient) UpdateOneID(id uuid.UUID) *TaskUpdateOne {
+func (c *TaskClient) UpdateOneID(id int) *TaskUpdateOne {
 	mutation := newTaskMutation(c.config, OpUpdateOne, withTaskID(id))
 	return &TaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1465,7 +1621,7 @@ func (c *TaskClient) DeleteOne(t *Task) *TaskDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TaskClient) DeleteOneID(id uuid.UUID) *TaskDeleteOne {
+func (c *TaskClient) DeleteOneID(id int) *TaskDeleteOne {
 	builder := c.Delete().Where(task.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1482,12 +1638,12 @@ func (c *TaskClient) Query() *TaskQuery {
 }
 
 // Get returns a Task entity by its id.
-func (c *TaskClient) Get(ctx context.Context, id uuid.UUID) (*Task, error) {
+func (c *TaskClient) Get(ctx context.Context, id int) (*Task, error) {
 	return c.Query().Where(task.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TaskClient) GetX(ctx context.Context, id uuid.UUID) *Task {
+func (c *TaskClient) GetX(ctx context.Context, id int) *Task {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1504,6 +1660,22 @@ func (c *TaskClient) QueryProject(t *Task) *ProjectQuery {
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, task.ProjectTable, task.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLabels queries the labels edge of a Task.
+func (c *TaskClient) QueryLabels(t *Task) *LabelQuery {
+	query := (&LabelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(label.Table, label.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, task.LabelsTable, task.LabelsColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -1539,11 +1711,11 @@ func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Department, Employee, LeaveApproval, LeaveRequest, Organization, Position,
-		Project, Task []ent.Hook
+		Department, Employee, Label, LeaveApproval, LeaveRequest, Organization,
+		Position, Project, Task []ent.Hook
 	}
 	inters struct {
-		Department, Employee, LeaveApproval, LeaveRequest, Organization, Position,
-		Project, Task []ent.Interceptor
+		Department, Employee, Label, LeaveApproval, LeaveRequest, Organization,
+		Position, Project, Task []ent.Interceptor
 	}
 )

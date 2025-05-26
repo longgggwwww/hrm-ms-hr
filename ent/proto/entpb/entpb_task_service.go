@@ -8,8 +8,8 @@ import (
 	runtime "entgo.io/contrib/entproto/runtime"
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
-	uuid "github.com/google/uuid"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	label "github.com/longgggwwww/hrm-ms-hr/ent/label"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
 	codes "google.golang.org/grpc/codes"
@@ -17,6 +17,9 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
+	regexp "regexp"
+	strconv "strconv"
+	strings "strings"
 )
 
 // TaskService implements TaskServiceServer
@@ -32,53 +35,69 @@ func NewTaskService(client *ent.Client) *TaskService {
 	}
 }
 
+var protoIdentNormalizeRegexpTask_Type = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
+
+func protoIdentNormalizeTask_Type(e string) string {
+	return protoIdentNormalizeRegexpTask_Type.ReplaceAllString(e, "_")
+}
+
+func toProtoTask_Type(e task.Type) Task_Type {
+	if v, ok := Task_Type_value[strings.ToUpper("TYPE_"+protoIdentNormalizeTask_Type(string(e)))]; ok {
+		return Task_Type(v)
+	}
+	return Task_Type(0)
+}
+
+func toEntTask_Type(e Task_Type) task.Type {
+	if v, ok := Task_Type_name[int32(e)]; ok {
+		entVal := map[string]string{
+			"TYPE_TASK":    "task",
+			"TYPE_FEATURE": "feature",
+			"TYPE_BUG":     "bug",
+			"TYPE_ANOTHER": "another",
+		}[v]
+		return task.Type(entVal)
+	}
+	return ""
+}
+
 // toProtoTask transforms the ent type to the pb type
 func toProtoTask(e *ent.Task) (*Task, error) {
 	v := &Task{}
-	branch_id, err := e.BranchID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-	v.BranchId = branch_id
+	code := e.Code
+	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	creator_id, err := e.CreatorID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	creator_id := int64(e.CreatorID)
 	v.CreatorId = creator_id
 	description := wrapperspb.String(e.Description)
 	v.Description = description
-	id, err := e.ID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	id := int64(e.ID)
 	v.Id = id
+	name := e.Name
+	v.Name = name
 	process := int64(e.Process)
 	v.Process = process
-	project, err := e.ProjectID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	project := int64(e.ProjectID)
 	v.ProjectId = project
 	start_at := timestamppb.New(e.StartAt)
 	v.StartAt = start_at
 	status := e.Status
 	v.Status = status
-	title := e.Title
-	v.Title = title
+	_type := toProtoTask_Type(e.Type)
+	v.Type = _type
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
-	updater_id, err := e.UpdaterID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	updater_id := int64(e.UpdaterID)
 	v.UpdaterId = updater_id
+	for _, edg := range e.Edges.Labels {
+		id := int64(edg.ID)
+		v.Labels = append(v.Labels, &Label{
+			Id: id,
+		})
+	}
 	if edg := e.Edges.Project; edg != nil {
-		id, err := edg.ID.MarshalBinary()
-		if err != nil {
-			return nil, err
-		}
+		id := int64(edg.ID)
 		v.Project = &Project{
 			Id: id,
 		}
@@ -130,16 +149,16 @@ func (svc *TaskService) Get(ctx context.Context, req *GetTaskRequest) (*Task, er
 		err error
 		get *ent.Task
 	)
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	switch req.GetView() {
 	case GetTaskRequest_VIEW_UNSPECIFIED, GetTaskRequest_BASIC:
 		get, err = svc.client.Task.Get(ctx, id)
 	case GetTaskRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Task.Query().
 			Where(task.ID(id)).
+			WithLabels(func(query *ent.LabelQuery) {
+				query.Select(label.FieldID)
+			}).
 			WithProject(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
@@ -161,52 +180,38 @@ func (svc *TaskService) Get(ctx context.Context, req *GetTaskRequest) (*Task, er
 // Update implements TaskServiceServer.Update
 func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Task, error) {
 	task := req.GetTask()
-	var taskID uuid.UUID
-	if err := (&taskID).UnmarshalBinary(task.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	taskID := int(task.GetId())
 	m := svc.client.Task.UpdateOneID(taskID)
-	var taskBranchID uuid.NullUUID
-	if err := (&taskBranchID).UnmarshalBinary(task.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(taskBranchID)
-	taskCreatedAt := runtime.ExtractTime(task.GetCreatedAt())
-	m.SetCreatedAt(taskCreatedAt)
-	var taskCreatorID uuid.UUID
-	if err := (&taskCreatorID).UnmarshalBinary(task.GetCreatorId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	taskCode := task.GetCode()
+	m.SetCode(taskCode)
+	taskCreatorID := int(task.GetCreatorId())
 	m.SetCreatorID(taskCreatorID)
 	if task.GetDescription() != nil {
 		taskDescription := task.GetDescription().GetValue()
 		m.SetDescription(taskDescription)
 	}
+	taskName := task.GetName()
+	m.SetName(taskName)
 	taskProcess := int(task.GetProcess())
 	m.SetProcess(taskProcess)
-	var taskProjectID uuid.UUID
-	if err := (&taskProjectID).UnmarshalBinary(task.GetProjectId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	taskProjectID := int(task.GetProjectId())
 	m.SetProjectID(taskProjectID)
 	taskStartAt := runtime.ExtractTime(task.GetStartAt())
 	m.SetStartAt(taskStartAt)
 	taskStatus := task.GetStatus()
 	m.SetStatus(taskStatus)
-	taskTitle := task.GetTitle()
-	m.SetTitle(taskTitle)
+	taskType := toEntTask_Type(task.GetType())
+	m.SetType(taskType)
 	taskUpdatedAt := runtime.ExtractTime(task.GetUpdatedAt())
 	m.SetUpdatedAt(taskUpdatedAt)
-	var taskUpdaterID uuid.NullUUID
-	if err := (&taskUpdaterID).UnmarshalBinary(task.GetUpdaterId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	taskUpdaterID := int(task.GetUpdaterId())
 	m.SetUpdaterID(taskUpdaterID)
+	for _, item := range task.GetLabels() {
+		labels := int(item.GetId())
+		m.AddLabelIDs(labels)
+	}
 	if task.GetProject() != nil {
-		var taskProject uuid.UUID
-		if err := (&taskProject).UnmarshalBinary(task.GetProject().GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		taskProject := int(task.GetProject().GetId())
 		m.SetProjectID(taskProject)
 	}
 
@@ -231,10 +236,7 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 // Delete implements TaskServiceServer.Delete
 func (svc *TaskService) Delete(ctx context.Context, req *DeleteTaskRequest) (*emptypb.Empty, error) {
 	var err error
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	err = svc.client.Task.DeleteOneID(id).Exec(ctx)
 	switch {
 	case err == nil:
@@ -269,10 +271,11 @@ func (svc *TaskService) List(ctx context.Context, req *ListTaskRequest) (*ListTa
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
-		pageToken, err := uuid.ParseBytes(bytes)
+		token, err := strconv.ParseInt(string(bytes), 10, 32)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
+		pageToken := int(token)
 		listQuery = listQuery.
 			Where(task.IDLTE(pageToken))
 	}
@@ -281,6 +284,9 @@ func (svc *TaskService) List(ctx context.Context, req *ListTaskRequest) (*ListTa
 		entList, err = listQuery.All(ctx)
 	case ListTaskRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithLabels(func(query *ent.LabelQuery) {
+				query.Select(label.FieldID)
+			}).
 			WithProject(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
@@ -345,47 +351,38 @@ func (svc *TaskService) BatchCreate(ctx context.Context, req *BatchCreateTasksRe
 
 func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 	m := svc.client.Task.Create()
-	var taskBranchID uuid.NullUUID
-	if err := (&taskBranchID).UnmarshalBinary(task.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(taskBranchID)
+	taskCode := task.GetCode()
+	m.SetCode(taskCode)
 	taskCreatedAt := runtime.ExtractTime(task.GetCreatedAt())
 	m.SetCreatedAt(taskCreatedAt)
-	var taskCreatorID uuid.UUID
-	if err := (&taskCreatorID).UnmarshalBinary(task.GetCreatorId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	taskCreatorID := int(task.GetCreatorId())
 	m.SetCreatorID(taskCreatorID)
 	if task.GetDescription() != nil {
 		taskDescription := task.GetDescription().GetValue()
 		m.SetDescription(taskDescription)
 	}
+	taskName := task.GetName()
+	m.SetName(taskName)
 	taskProcess := int(task.GetProcess())
 	m.SetProcess(taskProcess)
-	var taskProjectID uuid.UUID
-	if err := (&taskProjectID).UnmarshalBinary(task.GetProjectId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	taskProjectID := int(task.GetProjectId())
 	m.SetProjectID(taskProjectID)
 	taskStartAt := runtime.ExtractTime(task.GetStartAt())
 	m.SetStartAt(taskStartAt)
 	taskStatus := task.GetStatus()
 	m.SetStatus(taskStatus)
-	taskTitle := task.GetTitle()
-	m.SetTitle(taskTitle)
+	taskType := toEntTask_Type(task.GetType())
+	m.SetType(taskType)
 	taskUpdatedAt := runtime.ExtractTime(task.GetUpdatedAt())
 	m.SetUpdatedAt(taskUpdatedAt)
-	var taskUpdaterID uuid.NullUUID
-	if err := (&taskUpdaterID).UnmarshalBinary(task.GetUpdaterId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	taskUpdaterID := int(task.GetUpdaterId())
 	m.SetUpdaterID(taskUpdaterID)
+	for _, item := range task.GetLabels() {
+		labels := int(item.GetId())
+		m.AddLabelIDs(labels)
+	}
 	if task.GetProject() != nil {
-		var taskProject uuid.UUID
-		if err := (&taskProject).UnmarshalBinary(task.GetProject().GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		taskProject := int(task.GetProject().GetId())
 		m.SetProjectID(taskProject)
 	}
 	return m, nil

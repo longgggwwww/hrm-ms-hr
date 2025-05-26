@@ -164,8 +164,6 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	m := svc.client.Employee.UpdateOneID(employeeID)
 	employeeCode := employee.GetCode()
 	m.SetCode(employeeCode)
-	employeeCreatedAt := runtime.ExtractTime(employee.GetCreatedAt())
-	m.SetCreatedAt(employeeCreatedAt)
 	employeeJoiningAt := runtime.ExtractTime(employee.GetJoiningAt())
 	m.SetJoiningAt(employeeJoiningAt)
 	employeeOrgID := int(employee.GetOrgId())

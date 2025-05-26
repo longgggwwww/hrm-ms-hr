@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // Project holds the schema definition for the Project entity.
@@ -19,44 +18,45 @@ type Project struct {
 // Fields of the Project.
 func (Project) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Annotations(entproto.Field(1)),
 		field.String("name").
 			Annotations(entproto.Field(2)),
+		field.String("code").
+			Annotations(entproto.Field(3)),
 		field.String("description").
 			Optional().
-			Annotations(entproto.Field(3)),
-		field.Time("start_at").
 			Annotations(entproto.Field(4)),
+		field.Time("start_at").
+			Annotations(entproto.Field(5)),
 		field.Time("end_at").
 			Optional().
-			Annotations(entproto.Field(5)),
-		field.UUID("creator_id", uuid.UUID{}).
 			Annotations(entproto.Field(6)),
-		field.UUID("updater_id", uuid.NullUUID{}).
+		field.Int("creator_id").
 			Annotations(entproto.Field(7)),
-		field.Time("created_at").
-			Default(time.Now).
+		field.Int("updater_id").
 			Annotations(entproto.Field(8)),
-		field.Time("updated_at").
-			Default(time.Now).
-			UpdateDefault(time.Now).
+		field.Int("org_id").
 			Annotations(entproto.Field(9)),
-		field.UUID("branch_id", uuid.NullUUID{}).
-			Annotations(entproto.Field(10)),
 		field.Int("process").
-			Annotations(entproto.Field(11)),
+			Optional().
+			Annotations(entproto.Field(10)),
 		field.Enum("status").
 			Values("not_started", "in_progress", "completed").
 			Default("not_started").
 			Annotations(
-				entproto.Field(12),
+				entproto.Field(11),
 				entproto.Enum(map[string]int32{
 					"not_started": 0,
 					"in_progress": 1,
 					"completed":   2,
 				})),
+		field.Time("created_at").
+			Immutable().
+			Default(time.Now).
+			Annotations(entproto.Field(12)),
+		field.Time("updated_at").
+			Default(time.Now).
+			UpdateDefault(time.Now).
+			Annotations(entproto.Field(13)),
 	}
 }
 
@@ -64,8 +64,7 @@ func (Project) Fields() []ent.Field {
 func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tasks", Task.Type).
-			Annotations(entproto.Field(13)),
-		edge.To("labels", Label.Type), // Thêm edge tới label
+			Annotations(entproto.Field(14)),
 	}
 }
 

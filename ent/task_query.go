@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -25,6 +26,8 @@ type TaskQuery struct {
 	inters      []Interceptor
 	predicates  []predicate.Task
 	withProject *ProjectQuery
+	withLabels  *LabelQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -83,6 +86,28 @@ func (tq *TaskQuery) QueryProject() *ProjectQuery {
 	return query
 }
 
+// QueryLabels chains the current query on the "labels" edge.
+func (tq *TaskQuery) QueryLabels() *LabelQuery {
+	query := (&LabelClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(label.Table, label.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, task.LabelsTable, task.LabelsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Task entity from the query.
 // Returns a *NotFoundError when no Task was found.
 func (tq *TaskQuery) First(ctx context.Context) (*Task, error) {
@@ -107,8 +132,8 @@ func (tq *TaskQuery) FirstX(ctx context.Context) *Task {
 
 // FirstID returns the first Task ID from the query.
 // Returns a *NotFoundError when no Task ID was found.
-func (tq *TaskQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (tq *TaskQuery) FirstID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = tq.Limit(1).IDs(setContextOp(ctx, tq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -120,7 +145,7 @@ func (tq *TaskQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (tq *TaskQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (tq *TaskQuery) FirstIDX(ctx context.Context) int {
 	id, err := tq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -158,8 +183,8 @@ func (tq *TaskQuery) OnlyX(ctx context.Context) *Task {
 // OnlyID is like Only, but returns the only Task ID in the query.
 // Returns a *NotSingularError when more than one Task ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (tq *TaskQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (tq *TaskQuery) OnlyID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = tq.Limit(2).IDs(setContextOp(ctx, tq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -175,7 +200,7 @@ func (tq *TaskQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (tq *TaskQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (tq *TaskQuery) OnlyIDX(ctx context.Context) int {
 	id, err := tq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -203,7 +228,7 @@ func (tq *TaskQuery) AllX(ctx context.Context) []*Task {
 }
 
 // IDs executes the query and returns a list of Task IDs.
-func (tq *TaskQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+func (tq *TaskQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if tq.ctx.Unique == nil && tq.path != nil {
 		tq.Unique(true)
 	}
@@ -215,7 +240,7 @@ func (tq *TaskQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (tq *TaskQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (tq *TaskQuery) IDsX(ctx context.Context) []int {
 	ids, err := tq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -276,6 +301,7 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		inters:      append([]Interceptor{}, tq.inters...),
 		predicates:  append([]predicate.Task{}, tq.predicates...),
 		withProject: tq.withProject.Clone(),
+		withLabels:  tq.withLabels.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -293,18 +319,29 @@ func (tq *TaskQuery) WithProject(opts ...func(*ProjectQuery)) *TaskQuery {
 	return tq
 }
 
+// WithLabels tells the query-builder to eager-load the nodes that are connected to
+// the "labels" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithLabels(opts ...func(*LabelQuery)) *TaskQuery {
+	query := (&LabelClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withLabels = query
+	return tq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		Name string `json:"name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Task.Query().
-//		GroupBy(task.FieldTitle).
+//		GroupBy(task.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (tq *TaskQuery) GroupBy(field string, fields ...string) *TaskGroupBy {
@@ -322,11 +359,11 @@ func (tq *TaskQuery) GroupBy(field string, fields ...string) *TaskGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		Name string `json:"name,omitempty"`
 //	}
 //
 //	client.Task.Query().
-//		Select(task.FieldTitle).
+//		Select(task.FieldName).
 //		Scan(ctx, &v)
 func (tq *TaskQuery) Select(fields ...string) *TaskSelect {
 	tq.ctx.Fields = append(tq.ctx.Fields, fields...)
@@ -370,11 +407,16 @@ func (tq *TaskQuery) prepareQuery(ctx context.Context) error {
 func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, error) {
 	var (
 		nodes       = []*Task{}
+		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			tq.withProject != nil,
+			tq.withLabels != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, task.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Task).scanValues(nil, columns)
 	}
@@ -399,12 +441,19 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 			return nil, err
 		}
 	}
+	if query := tq.withLabels; query != nil {
+		if err := tq.loadLabels(ctx, query, nodes,
+			func(n *Task) { n.Edges.Labels = []*Label{} },
+			func(n *Task, e *Label) { n.Edges.Labels = append(n.Edges.Labels, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (tq *TaskQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes []*Task, init func(*Task), assign func(*Task, *Project)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Task)
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Task)
 	for i := range nodes {
 		fk := nodes[i].ProjectID
 		if _, ok := nodeids[fk]; !ok {
@@ -431,6 +480,37 @@ func (tq *TaskQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes
 	}
 	return nil
 }
+func (tq *TaskQuery) loadLabels(ctx context.Context, query *LabelQuery, nodes []*Task, init func(*Task), assign func(*Task, *Label)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Task)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Label(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(task.LabelsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.task_labels
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "task_labels" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "task_labels" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (tq *TaskQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := tq.querySpec()
@@ -442,7 +522,7 @@ func (tq *TaskQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (tq *TaskQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewQuerySpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
 	_spec.From = tq.sql
 	if unique := tq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

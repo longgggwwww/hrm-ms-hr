@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -30,16 +30,30 @@ func (tu *TaskUpdate) Where(ps ...predicate.Task) *TaskUpdate {
 	return tu
 }
 
-// SetTitle sets the "title" field.
-func (tu *TaskUpdate) SetTitle(s string) *TaskUpdate {
-	tu.mutation.SetTitle(s)
+// SetName sets the "name" field.
+func (tu *TaskUpdate) SetName(s string) *TaskUpdate {
+	tu.mutation.SetName(s)
 	return tu
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableTitle(s *string) *TaskUpdate {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableName(s *string) *TaskUpdate {
 	if s != nil {
-		tu.SetTitle(*s)
+		tu.SetName(*s)
+	}
+	return tu
+}
+
+// SetCode sets the "code" field.
+func (tu *TaskUpdate) SetCode(s string) *TaskUpdate {
+	tu.mutation.SetCode(s)
+	return tu
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableCode(s *string) *TaskUpdate {
+	if s != nil {
+		tu.SetCode(*s)
 	}
 	return tu
 }
@@ -114,72 +128,58 @@ func (tu *TaskUpdate) SetNillableStartAt(t *time.Time) *TaskUpdate {
 }
 
 // SetProjectID sets the "project_id" field.
-func (tu *TaskUpdate) SetProjectID(u uuid.UUID) *TaskUpdate {
-	tu.mutation.SetProjectID(u)
+func (tu *TaskUpdate) SetProjectID(i int) *TaskUpdate {
+	tu.mutation.SetProjectID(i)
 	return tu
 }
 
 // SetNillableProjectID sets the "project_id" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableProjectID(u *uuid.UUID) *TaskUpdate {
-	if u != nil {
-		tu.SetProjectID(*u)
-	}
-	return tu
-}
-
-// SetBranchID sets the "branch_id" field.
-func (tu *TaskUpdate) SetBranchID(uu uuid.NullUUID) *TaskUpdate {
-	tu.mutation.SetBranchID(uu)
-	return tu
-}
-
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableBranchID(uu *uuid.NullUUID) *TaskUpdate {
-	if uu != nil {
-		tu.SetBranchID(*uu)
+func (tu *TaskUpdate) SetNillableProjectID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetProjectID(*i)
 	}
 	return tu
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (tu *TaskUpdate) SetCreatorID(u uuid.UUID) *TaskUpdate {
-	tu.mutation.SetCreatorID(u)
+func (tu *TaskUpdate) SetCreatorID(i int) *TaskUpdate {
+	tu.mutation.ResetCreatorID()
+	tu.mutation.SetCreatorID(i)
 	return tu
 }
 
 // SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableCreatorID(u *uuid.UUID) *TaskUpdate {
-	if u != nil {
-		tu.SetCreatorID(*u)
+func (tu *TaskUpdate) SetNillableCreatorID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetCreatorID(*i)
 	}
+	return tu
+}
+
+// AddCreatorID adds i to the "creator_id" field.
+func (tu *TaskUpdate) AddCreatorID(i int) *TaskUpdate {
+	tu.mutation.AddCreatorID(i)
 	return tu
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (tu *TaskUpdate) SetUpdaterID(uu uuid.NullUUID) *TaskUpdate {
-	tu.mutation.SetUpdaterID(uu)
+func (tu *TaskUpdate) SetUpdaterID(i int) *TaskUpdate {
+	tu.mutation.ResetUpdaterID()
+	tu.mutation.SetUpdaterID(i)
 	return tu
 }
 
 // SetNillableUpdaterID sets the "updater_id" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableUpdaterID(uu *uuid.NullUUID) *TaskUpdate {
-	if uu != nil {
-		tu.SetUpdaterID(*uu)
+func (tu *TaskUpdate) SetNillableUpdaterID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetUpdaterID(*i)
 	}
 	return tu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tu *TaskUpdate) SetCreatedAt(t time.Time) *TaskUpdate {
-	tu.mutation.SetCreatedAt(t)
-	return tu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableCreatedAt(t *time.Time) *TaskUpdate {
-	if t != nil {
-		tu.SetCreatedAt(*t)
-	}
+// AddUpdaterID adds i to the "updater_id" field.
+func (tu *TaskUpdate) AddUpdaterID(i int) *TaskUpdate {
+	tu.mutation.AddUpdaterID(i)
 	return tu
 }
 
@@ -189,9 +189,38 @@ func (tu *TaskUpdate) SetUpdatedAt(t time.Time) *TaskUpdate {
 	return tu
 }
 
+// SetType sets the "type" field.
+func (tu *TaskUpdate) SetType(t task.Type) *TaskUpdate {
+	tu.mutation.SetType(t)
+	return tu
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableType(t *task.Type) *TaskUpdate {
+	if t != nil {
+		tu.SetType(*t)
+	}
+	return tu
+}
+
 // SetProject sets the "project" edge to the Project entity.
 func (tu *TaskUpdate) SetProject(p *Project) *TaskUpdate {
 	return tu.SetProjectID(p.ID)
+}
+
+// AddLabelIDs adds the "labels" edge to the Label entity by IDs.
+func (tu *TaskUpdate) AddLabelIDs(ids ...int) *TaskUpdate {
+	tu.mutation.AddLabelIDs(ids...)
+	return tu
+}
+
+// AddLabels adds the "labels" edges to the Label entity.
+func (tu *TaskUpdate) AddLabels(l ...*Label) *TaskUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return tu.AddLabelIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -203,6 +232,27 @@ func (tu *TaskUpdate) Mutation() *TaskMutation {
 func (tu *TaskUpdate) ClearProject() *TaskUpdate {
 	tu.mutation.ClearProject()
 	return tu
+}
+
+// ClearLabels clears all "labels" edges to the Label entity.
+func (tu *TaskUpdate) ClearLabels() *TaskUpdate {
+	tu.mutation.ClearLabels()
+	return tu
+}
+
+// RemoveLabelIDs removes the "labels" edge to Label entities by IDs.
+func (tu *TaskUpdate) RemoveLabelIDs(ids ...int) *TaskUpdate {
+	tu.mutation.RemoveLabelIDs(ids...)
+	return tu
+}
+
+// RemoveLabels removes "labels" edges to Label entities.
+func (tu *TaskUpdate) RemoveLabels(l ...*Label) *TaskUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return tu.RemoveLabelIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -243,6 +293,11 @@ func (tu *TaskUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tu *TaskUpdate) check() error {
+	if v, ok := tu.mutation.GetType(); ok {
+		if err := task.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
+		}
+	}
 	if tu.mutation.ProjectCleared() && len(tu.mutation.ProjectIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Task.project"`)
 	}
@@ -253,7 +308,7 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := tu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -261,8 +316,11 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := tu.mutation.Title(); ok {
-		_spec.SetField(task.FieldTitle, field.TypeString, value)
+	if value, ok := tu.mutation.Name(); ok {
+		_spec.SetField(task.FieldName, field.TypeString, value)
+	}
+	if value, ok := tu.mutation.Code(); ok {
+		_spec.SetField(task.FieldCode, field.TypeString, value)
 	}
 	if value, ok := tu.mutation.Description(); ok {
 		_spec.SetField(task.FieldDescription, field.TypeString, value)
@@ -282,20 +340,23 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.StartAt(); ok {
 		_spec.SetField(task.FieldStartAt, field.TypeTime, value)
 	}
-	if value, ok := tu.mutation.BranchID(); ok {
-		_spec.SetField(task.FieldBranchID, field.TypeUUID, value)
-	}
 	if value, ok := tu.mutation.CreatorID(); ok {
-		_spec.SetField(task.FieldCreatorID, field.TypeUUID, value)
+		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)
+	}
+	if value, ok := tu.mutation.AddedCreatorID(); ok {
+		_spec.AddField(task.FieldCreatorID, field.TypeInt, value)
 	}
 	if value, ok := tu.mutation.UpdaterID(); ok {
-		_spec.SetField(task.FieldUpdaterID, field.TypeUUID, value)
+		_spec.SetField(task.FieldUpdaterID, field.TypeInt, value)
 	}
-	if value, ok := tu.mutation.CreatedAt(); ok {
-		_spec.SetField(task.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := tu.mutation.AddedUpdaterID(); ok {
+		_spec.AddField(task.FieldUpdaterID, field.TypeInt, value)
 	}
 	if value, ok := tu.mutation.UpdatedAt(); ok {
 		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := tu.mutation.GetType(); ok {
+		_spec.SetField(task.FieldType, field.TypeEnum, value)
 	}
 	if tu.mutation.ProjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -305,7 +366,7 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{task.ProjectColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -318,7 +379,52 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{task.ProjectColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tu.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.LabelsTable,
+			Columns: []string{task.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedLabelsIDs(); len(nodes) > 0 && !tu.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.LabelsTable,
+			Columns: []string{task.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.LabelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.LabelsTable,
+			Columns: []string{task.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -346,16 +452,30 @@ type TaskUpdateOne struct {
 	mutation *TaskMutation
 }
 
-// SetTitle sets the "title" field.
-func (tuo *TaskUpdateOne) SetTitle(s string) *TaskUpdateOne {
-	tuo.mutation.SetTitle(s)
+// SetName sets the "name" field.
+func (tuo *TaskUpdateOne) SetName(s string) *TaskUpdateOne {
+	tuo.mutation.SetName(s)
 	return tuo
 }
 
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableTitle(s *string) *TaskUpdateOne {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableName(s *string) *TaskUpdateOne {
 	if s != nil {
-		tuo.SetTitle(*s)
+		tuo.SetName(*s)
+	}
+	return tuo
+}
+
+// SetCode sets the "code" field.
+func (tuo *TaskUpdateOne) SetCode(s string) *TaskUpdateOne {
+	tuo.mutation.SetCode(s)
+	return tuo
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableCode(s *string) *TaskUpdateOne {
+	if s != nil {
+		tuo.SetCode(*s)
 	}
 	return tuo
 }
@@ -430,72 +550,58 @@ func (tuo *TaskUpdateOne) SetNillableStartAt(t *time.Time) *TaskUpdateOne {
 }
 
 // SetProjectID sets the "project_id" field.
-func (tuo *TaskUpdateOne) SetProjectID(u uuid.UUID) *TaskUpdateOne {
-	tuo.mutation.SetProjectID(u)
+func (tuo *TaskUpdateOne) SetProjectID(i int) *TaskUpdateOne {
+	tuo.mutation.SetProjectID(i)
 	return tuo
 }
 
 // SetNillableProjectID sets the "project_id" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableProjectID(u *uuid.UUID) *TaskUpdateOne {
-	if u != nil {
-		tuo.SetProjectID(*u)
-	}
-	return tuo
-}
-
-// SetBranchID sets the "branch_id" field.
-func (tuo *TaskUpdateOne) SetBranchID(uu uuid.NullUUID) *TaskUpdateOne {
-	tuo.mutation.SetBranchID(uu)
-	return tuo
-}
-
-// SetNillableBranchID sets the "branch_id" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableBranchID(uu *uuid.NullUUID) *TaskUpdateOne {
-	if uu != nil {
-		tuo.SetBranchID(*uu)
+func (tuo *TaskUpdateOne) SetNillableProjectID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetProjectID(*i)
 	}
 	return tuo
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (tuo *TaskUpdateOne) SetCreatorID(u uuid.UUID) *TaskUpdateOne {
-	tuo.mutation.SetCreatorID(u)
+func (tuo *TaskUpdateOne) SetCreatorID(i int) *TaskUpdateOne {
+	tuo.mutation.ResetCreatorID()
+	tuo.mutation.SetCreatorID(i)
 	return tuo
 }
 
 // SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableCreatorID(u *uuid.UUID) *TaskUpdateOne {
-	if u != nil {
-		tuo.SetCreatorID(*u)
+func (tuo *TaskUpdateOne) SetNillableCreatorID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetCreatorID(*i)
 	}
+	return tuo
+}
+
+// AddCreatorID adds i to the "creator_id" field.
+func (tuo *TaskUpdateOne) AddCreatorID(i int) *TaskUpdateOne {
+	tuo.mutation.AddCreatorID(i)
 	return tuo
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (tuo *TaskUpdateOne) SetUpdaterID(uu uuid.NullUUID) *TaskUpdateOne {
-	tuo.mutation.SetUpdaterID(uu)
+func (tuo *TaskUpdateOne) SetUpdaterID(i int) *TaskUpdateOne {
+	tuo.mutation.ResetUpdaterID()
+	tuo.mutation.SetUpdaterID(i)
 	return tuo
 }
 
 // SetNillableUpdaterID sets the "updater_id" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableUpdaterID(uu *uuid.NullUUID) *TaskUpdateOne {
-	if uu != nil {
-		tuo.SetUpdaterID(*uu)
+func (tuo *TaskUpdateOne) SetNillableUpdaterID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetUpdaterID(*i)
 	}
 	return tuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tuo *TaskUpdateOne) SetCreatedAt(t time.Time) *TaskUpdateOne {
-	tuo.mutation.SetCreatedAt(t)
-	return tuo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableCreatedAt(t *time.Time) *TaskUpdateOne {
-	if t != nil {
-		tuo.SetCreatedAt(*t)
-	}
+// AddUpdaterID adds i to the "updater_id" field.
+func (tuo *TaskUpdateOne) AddUpdaterID(i int) *TaskUpdateOne {
+	tuo.mutation.AddUpdaterID(i)
 	return tuo
 }
 
@@ -505,9 +611,38 @@ func (tuo *TaskUpdateOne) SetUpdatedAt(t time.Time) *TaskUpdateOne {
 	return tuo
 }
 
+// SetType sets the "type" field.
+func (tuo *TaskUpdateOne) SetType(t task.Type) *TaskUpdateOne {
+	tuo.mutation.SetType(t)
+	return tuo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableType(t *task.Type) *TaskUpdateOne {
+	if t != nil {
+		tuo.SetType(*t)
+	}
+	return tuo
+}
+
 // SetProject sets the "project" edge to the Project entity.
 func (tuo *TaskUpdateOne) SetProject(p *Project) *TaskUpdateOne {
 	return tuo.SetProjectID(p.ID)
+}
+
+// AddLabelIDs adds the "labels" edge to the Label entity by IDs.
+func (tuo *TaskUpdateOne) AddLabelIDs(ids ...int) *TaskUpdateOne {
+	tuo.mutation.AddLabelIDs(ids...)
+	return tuo
+}
+
+// AddLabels adds the "labels" edges to the Label entity.
+func (tuo *TaskUpdateOne) AddLabels(l ...*Label) *TaskUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return tuo.AddLabelIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -519,6 +654,27 @@ func (tuo *TaskUpdateOne) Mutation() *TaskMutation {
 func (tuo *TaskUpdateOne) ClearProject() *TaskUpdateOne {
 	tuo.mutation.ClearProject()
 	return tuo
+}
+
+// ClearLabels clears all "labels" edges to the Label entity.
+func (tuo *TaskUpdateOne) ClearLabels() *TaskUpdateOne {
+	tuo.mutation.ClearLabels()
+	return tuo
+}
+
+// RemoveLabelIDs removes the "labels" edge to Label entities by IDs.
+func (tuo *TaskUpdateOne) RemoveLabelIDs(ids ...int) *TaskUpdateOne {
+	tuo.mutation.RemoveLabelIDs(ids...)
+	return tuo
+}
+
+// RemoveLabels removes "labels" edges to Label entities.
+func (tuo *TaskUpdateOne) RemoveLabels(l ...*Label) *TaskUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return tuo.RemoveLabelIDs(ids...)
 }
 
 // Where appends a list predicates to the TaskUpdate builder.
@@ -572,6 +728,11 @@ func (tuo *TaskUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tuo *TaskUpdateOne) check() error {
+	if v, ok := tuo.mutation.GetType(); ok {
+		if err := task.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
+		}
+	}
 	if tuo.mutation.ProjectCleared() && len(tuo.mutation.ProjectIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Task.project"`)
 	}
@@ -582,7 +743,7 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 	if err := tuo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
 	id, ok := tuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Task.id" for update`)}
@@ -607,8 +768,11 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			}
 		}
 	}
-	if value, ok := tuo.mutation.Title(); ok {
-		_spec.SetField(task.FieldTitle, field.TypeString, value)
+	if value, ok := tuo.mutation.Name(); ok {
+		_spec.SetField(task.FieldName, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.Code(); ok {
+		_spec.SetField(task.FieldCode, field.TypeString, value)
 	}
 	if value, ok := tuo.mutation.Description(); ok {
 		_spec.SetField(task.FieldDescription, field.TypeString, value)
@@ -628,20 +792,23 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 	if value, ok := tuo.mutation.StartAt(); ok {
 		_spec.SetField(task.FieldStartAt, field.TypeTime, value)
 	}
-	if value, ok := tuo.mutation.BranchID(); ok {
-		_spec.SetField(task.FieldBranchID, field.TypeUUID, value)
-	}
 	if value, ok := tuo.mutation.CreatorID(); ok {
-		_spec.SetField(task.FieldCreatorID, field.TypeUUID, value)
+		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)
+	}
+	if value, ok := tuo.mutation.AddedCreatorID(); ok {
+		_spec.AddField(task.FieldCreatorID, field.TypeInt, value)
 	}
 	if value, ok := tuo.mutation.UpdaterID(); ok {
-		_spec.SetField(task.FieldUpdaterID, field.TypeUUID, value)
+		_spec.SetField(task.FieldUpdaterID, field.TypeInt, value)
 	}
-	if value, ok := tuo.mutation.CreatedAt(); ok {
-		_spec.SetField(task.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := tuo.mutation.AddedUpdaterID(); ok {
+		_spec.AddField(task.FieldUpdaterID, field.TypeInt, value)
 	}
 	if value, ok := tuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(task.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := tuo.mutation.GetType(); ok {
+		_spec.SetField(task.FieldType, field.TypeEnum, value)
 	}
 	if tuo.mutation.ProjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -651,7 +818,7 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			Columns: []string{task.ProjectColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -664,7 +831,52 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			Columns: []string{task.ProjectColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.LabelsTable,
+			Columns: []string{task.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedLabelsIDs(); len(nodes) > 0 && !tuo.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.LabelsTable,
+			Columns: []string{task.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.LabelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.LabelsTable,
+			Columns: []string{task.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

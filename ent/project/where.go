@@ -7,58 +7,62 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uuid.UUID) predicate.Project {
+func ID(id int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uuid.UUID) predicate.Project {
+func IDEQ(id int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uuid.UUID) predicate.Project {
+func IDNEQ(id int) predicate.Project {
 	return predicate.Project(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uuid.UUID) predicate.Project {
+func IDIn(ids ...int) predicate.Project {
 	return predicate.Project(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uuid.UUID) predicate.Project {
+func IDNotIn(ids ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uuid.UUID) predicate.Project {
+func IDGT(id int) predicate.Project {
 	return predicate.Project(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uuid.UUID) predicate.Project {
+func IDGTE(id int) predicate.Project {
 	return predicate.Project(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uuid.UUID) predicate.Project {
+func IDLT(id int) predicate.Project {
 	return predicate.Project(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uuid.UUID) predicate.Project {
+func IDLTE(id int) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldID, id))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldName, v))
+}
+
+// Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
+func Code(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldCode, v))
 }
 
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
@@ -77,13 +81,23 @@ func EndAt(v time.Time) predicate.Project {
 }
 
 // CreatorID applies equality check predicate on the "creator_id" field. It's identical to CreatorIDEQ.
-func CreatorID(v uuid.UUID) predicate.Project {
+func CreatorID(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatorID, v))
 }
 
 // UpdaterID applies equality check predicate on the "updater_id" field. It's identical to UpdaterIDEQ.
-func UpdaterID(v uuid.NullUUID) predicate.Project {
+func UpdaterID(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldUpdaterID, v))
+}
+
+// OrgID applies equality check predicate on the "org_id" field. It's identical to OrgIDEQ.
+func OrgID(v int) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldOrgID, v))
+}
+
+// Process applies equality check predicate on the "process" field. It's identical to ProcessEQ.
+func Process(v int) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldProcess, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -94,16 +108,6 @@ func CreatedAt(v time.Time) predicate.Project {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// BranchID applies equality check predicate on the "branch_id" field. It's identical to BranchIDEQ.
-func BranchID(v uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldEQ(FieldBranchID, v))
-}
-
-// Process applies equality check predicate on the "process" field. It's identical to ProcessEQ.
-func Process(v int) predicate.Project {
-	return predicate.Project(sql.FieldEQ(FieldProcess, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -169,6 +173,71 @@ func NameEqualFold(v string) predicate.Project {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Project {
 	return predicate.Project(sql.FieldContainsFold(FieldName, v))
+}
+
+// CodeEQ applies the EQ predicate on the "code" field.
+func CodeEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldCode, v))
+}
+
+// CodeNEQ applies the NEQ predicate on the "code" field.
+func CodeNEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldCode, v))
+}
+
+// CodeIn applies the In predicate on the "code" field.
+func CodeIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldCode, vs...))
+}
+
+// CodeNotIn applies the NotIn predicate on the "code" field.
+func CodeNotIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldCode, vs...))
+}
+
+// CodeGT applies the GT predicate on the "code" field.
+func CodeGT(v string) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldCode, v))
+}
+
+// CodeGTE applies the GTE predicate on the "code" field.
+func CodeGTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldCode, v))
+}
+
+// CodeLT applies the LT predicate on the "code" field.
+func CodeLT(v string) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldCode, v))
+}
+
+// CodeLTE applies the LTE predicate on the "code" field.
+func CodeLTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldCode, v))
+}
+
+// CodeContains applies the Contains predicate on the "code" field.
+func CodeContains(v string) predicate.Project {
+	return predicate.Project(sql.FieldContains(FieldCode, v))
+}
+
+// CodeHasPrefix applies the HasPrefix predicate on the "code" field.
+func CodeHasPrefix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasPrefix(FieldCode, v))
+}
+
+// CodeHasSuffix applies the HasSuffix predicate on the "code" field.
+func CodeHasSuffix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasSuffix(FieldCode, v))
+}
+
+// CodeEqualFold applies the EqualFold predicate on the "code" field.
+func CodeEqualFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldEqualFold(FieldCode, v))
+}
+
+// CodeContainsFold applies the ContainsFold predicate on the "code" field.
+func CodeContainsFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldContainsFold(FieldCode, v))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.
@@ -337,83 +406,193 @@ func EndAtNotNil() predicate.Project {
 }
 
 // CreatorIDEQ applies the EQ predicate on the "creator_id" field.
-func CreatorIDEQ(v uuid.UUID) predicate.Project {
+func CreatorIDEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatorID, v))
 }
 
 // CreatorIDNEQ applies the NEQ predicate on the "creator_id" field.
-func CreatorIDNEQ(v uuid.UUID) predicate.Project {
+func CreatorIDNEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldNEQ(FieldCreatorID, v))
 }
 
 // CreatorIDIn applies the In predicate on the "creator_id" field.
-func CreatorIDIn(vs ...uuid.UUID) predicate.Project {
+func CreatorIDIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldIn(FieldCreatorID, vs...))
 }
 
 // CreatorIDNotIn applies the NotIn predicate on the "creator_id" field.
-func CreatorIDNotIn(vs ...uuid.UUID) predicate.Project {
+func CreatorIDNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldCreatorID, vs...))
 }
 
 // CreatorIDGT applies the GT predicate on the "creator_id" field.
-func CreatorIDGT(v uuid.UUID) predicate.Project {
+func CreatorIDGT(v int) predicate.Project {
 	return predicate.Project(sql.FieldGT(FieldCreatorID, v))
 }
 
 // CreatorIDGTE applies the GTE predicate on the "creator_id" field.
-func CreatorIDGTE(v uuid.UUID) predicate.Project {
+func CreatorIDGTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldGTE(FieldCreatorID, v))
 }
 
 // CreatorIDLT applies the LT predicate on the "creator_id" field.
-func CreatorIDLT(v uuid.UUID) predicate.Project {
+func CreatorIDLT(v int) predicate.Project {
 	return predicate.Project(sql.FieldLT(FieldCreatorID, v))
 }
 
 // CreatorIDLTE applies the LTE predicate on the "creator_id" field.
-func CreatorIDLTE(v uuid.UUID) predicate.Project {
+func CreatorIDLTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldCreatorID, v))
 }
 
 // UpdaterIDEQ applies the EQ predicate on the "updater_id" field.
-func UpdaterIDEQ(v uuid.NullUUID) predicate.Project {
+func UpdaterIDEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldUpdaterID, v))
 }
 
 // UpdaterIDNEQ applies the NEQ predicate on the "updater_id" field.
-func UpdaterIDNEQ(v uuid.NullUUID) predicate.Project {
+func UpdaterIDNEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldNEQ(FieldUpdaterID, v))
 }
 
 // UpdaterIDIn applies the In predicate on the "updater_id" field.
-func UpdaterIDIn(vs ...uuid.NullUUID) predicate.Project {
+func UpdaterIDIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldIn(FieldUpdaterID, vs...))
 }
 
 // UpdaterIDNotIn applies the NotIn predicate on the "updater_id" field.
-func UpdaterIDNotIn(vs ...uuid.NullUUID) predicate.Project {
+func UpdaterIDNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldUpdaterID, vs...))
 }
 
 // UpdaterIDGT applies the GT predicate on the "updater_id" field.
-func UpdaterIDGT(v uuid.NullUUID) predicate.Project {
+func UpdaterIDGT(v int) predicate.Project {
 	return predicate.Project(sql.FieldGT(FieldUpdaterID, v))
 }
 
 // UpdaterIDGTE applies the GTE predicate on the "updater_id" field.
-func UpdaterIDGTE(v uuid.NullUUID) predicate.Project {
+func UpdaterIDGTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldGTE(FieldUpdaterID, v))
 }
 
 // UpdaterIDLT applies the LT predicate on the "updater_id" field.
-func UpdaterIDLT(v uuid.NullUUID) predicate.Project {
+func UpdaterIDLT(v int) predicate.Project {
 	return predicate.Project(sql.FieldLT(FieldUpdaterID, v))
 }
 
 // UpdaterIDLTE applies the LTE predicate on the "updater_id" field.
-func UpdaterIDLTE(v uuid.NullUUID) predicate.Project {
+func UpdaterIDLTE(v int) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldUpdaterID, v))
+}
+
+// OrgIDEQ applies the EQ predicate on the "org_id" field.
+func OrgIDEQ(v int) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldOrgID, v))
+}
+
+// OrgIDNEQ applies the NEQ predicate on the "org_id" field.
+func OrgIDNEQ(v int) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldOrgID, v))
+}
+
+// OrgIDIn applies the In predicate on the "org_id" field.
+func OrgIDIn(vs ...int) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldOrgID, vs...))
+}
+
+// OrgIDNotIn applies the NotIn predicate on the "org_id" field.
+func OrgIDNotIn(vs ...int) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldOrgID, vs...))
+}
+
+// OrgIDGT applies the GT predicate on the "org_id" field.
+func OrgIDGT(v int) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldOrgID, v))
+}
+
+// OrgIDGTE applies the GTE predicate on the "org_id" field.
+func OrgIDGTE(v int) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldOrgID, v))
+}
+
+// OrgIDLT applies the LT predicate on the "org_id" field.
+func OrgIDLT(v int) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldOrgID, v))
+}
+
+// OrgIDLTE applies the LTE predicate on the "org_id" field.
+func OrgIDLTE(v int) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldOrgID, v))
+}
+
+// ProcessEQ applies the EQ predicate on the "process" field.
+func ProcessEQ(v int) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldProcess, v))
+}
+
+// ProcessNEQ applies the NEQ predicate on the "process" field.
+func ProcessNEQ(v int) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldProcess, v))
+}
+
+// ProcessIn applies the In predicate on the "process" field.
+func ProcessIn(vs ...int) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldProcess, vs...))
+}
+
+// ProcessNotIn applies the NotIn predicate on the "process" field.
+func ProcessNotIn(vs ...int) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldProcess, vs...))
+}
+
+// ProcessGT applies the GT predicate on the "process" field.
+func ProcessGT(v int) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldProcess, v))
+}
+
+// ProcessGTE applies the GTE predicate on the "process" field.
+func ProcessGTE(v int) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldProcess, v))
+}
+
+// ProcessLT applies the LT predicate on the "process" field.
+func ProcessLT(v int) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldProcess, v))
+}
+
+// ProcessLTE applies the LTE predicate on the "process" field.
+func ProcessLTE(v int) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldProcess, v))
+}
+
+// ProcessIsNil applies the IsNil predicate on the "process" field.
+func ProcessIsNil() predicate.Project {
+	return predicate.Project(sql.FieldIsNull(FieldProcess))
+}
+
+// ProcessNotNil applies the NotNil predicate on the "process" field.
+func ProcessNotNil() predicate.Project {
+	return predicate.Project(sql.FieldNotNull(FieldProcess))
+}
+
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v Status) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldStatus, v))
+}
+
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v Status) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldStatus, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -494,106 +673,6 @@ func UpdatedAtLT(v time.Time) predicate.Project {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldUpdatedAt, v))
-}
-
-// BranchIDEQ applies the EQ predicate on the "branch_id" field.
-func BranchIDEQ(v uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldEQ(FieldBranchID, v))
-}
-
-// BranchIDNEQ applies the NEQ predicate on the "branch_id" field.
-func BranchIDNEQ(v uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldNEQ(FieldBranchID, v))
-}
-
-// BranchIDIn applies the In predicate on the "branch_id" field.
-func BranchIDIn(vs ...uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldIn(FieldBranchID, vs...))
-}
-
-// BranchIDNotIn applies the NotIn predicate on the "branch_id" field.
-func BranchIDNotIn(vs ...uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldNotIn(FieldBranchID, vs...))
-}
-
-// BranchIDGT applies the GT predicate on the "branch_id" field.
-func BranchIDGT(v uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldGT(FieldBranchID, v))
-}
-
-// BranchIDGTE applies the GTE predicate on the "branch_id" field.
-func BranchIDGTE(v uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldGTE(FieldBranchID, v))
-}
-
-// BranchIDLT applies the LT predicate on the "branch_id" field.
-func BranchIDLT(v uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldLT(FieldBranchID, v))
-}
-
-// BranchIDLTE applies the LTE predicate on the "branch_id" field.
-func BranchIDLTE(v uuid.NullUUID) predicate.Project {
-	return predicate.Project(sql.FieldLTE(FieldBranchID, v))
-}
-
-// ProcessEQ applies the EQ predicate on the "process" field.
-func ProcessEQ(v int) predicate.Project {
-	return predicate.Project(sql.FieldEQ(FieldProcess, v))
-}
-
-// ProcessNEQ applies the NEQ predicate on the "process" field.
-func ProcessNEQ(v int) predicate.Project {
-	return predicate.Project(sql.FieldNEQ(FieldProcess, v))
-}
-
-// ProcessIn applies the In predicate on the "process" field.
-func ProcessIn(vs ...int) predicate.Project {
-	return predicate.Project(sql.FieldIn(FieldProcess, vs...))
-}
-
-// ProcessNotIn applies the NotIn predicate on the "process" field.
-func ProcessNotIn(vs ...int) predicate.Project {
-	return predicate.Project(sql.FieldNotIn(FieldProcess, vs...))
-}
-
-// ProcessGT applies the GT predicate on the "process" field.
-func ProcessGT(v int) predicate.Project {
-	return predicate.Project(sql.FieldGT(FieldProcess, v))
-}
-
-// ProcessGTE applies the GTE predicate on the "process" field.
-func ProcessGTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldGTE(FieldProcess, v))
-}
-
-// ProcessLT applies the LT predicate on the "process" field.
-func ProcessLT(v int) predicate.Project {
-	return predicate.Project(sql.FieldLT(FieldProcess, v))
-}
-
-// ProcessLTE applies the LTE predicate on the "process" field.
-func ProcessLTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldLTE(FieldProcess, v))
-}
-
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.Project {
-	return predicate.Project(sql.FieldEQ(FieldStatus, v))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.Project {
-	return predicate.Project(sql.FieldNEQ(FieldStatus, v))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.Project {
-	return predicate.Project(sql.FieldIn(FieldStatus, vs...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.Project {
-	return predicate.Project(sql.FieldNotIn(FieldStatus, vs...))
 }
 
 // HasTasks applies the HasEdge predicate on the "tasks" edge.

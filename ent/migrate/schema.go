@@ -32,9 +32,9 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "department_org_id_code",
+				Name:    "department_code_org_id",
 				Unique:  true,
-				Columns: []*schema.Column{DepartmentsColumns[5], DepartmentsColumns[2]},
+				Columns: []*schema.Column{DepartmentsColumns[2], DepartmentsColumns[5]},
 			},
 		},
 	}
@@ -61,6 +61,30 @@ var (
 				Columns:    []*schema.Column{EmployeesColumns[8]},
 				RefColumns: []*schema.Column{PositionsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// LabelsColumns holds the columns for the "labels" table.
+	LabelsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "color", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "task_labels", Type: field.TypeInt, Nullable: true},
+	}
+	// LabelsTable holds the schema information for the "labels" table.
+	LabelsTable = &schema.Table{
+		Name:       "labels",
+		Columns:    LabelsColumns,
+		PrimaryKey: []*schema.Column{LabelsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "labels_tasks_labels",
+				Columns:    []*schema.Column{LabelsColumns[6]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -171,18 +195,19 @@ var (
 	}
 	// ProjectsColumns holds the columns for the "projects" table.
 	ProjectsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "start_at", Type: field.TypeTime},
 		{Name: "end_at", Type: field.TypeTime, Nullable: true},
-		{Name: "creator_id", Type: field.TypeUUID},
-		{Name: "updater_id", Type: field.TypeUUID},
+		{Name: "creator_id", Type: field.TypeInt},
+		{Name: "updater_id", Type: field.TypeInt},
+		{Name: "org_id", Type: field.TypeInt},
+		{Name: "process", Type: field.TypeInt, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"not_started", "in_progress", "completed"}, Default: "not_started"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "branch_id", Type: field.TypeUUID},
-		{Name: "process", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"not_started", "in_progress", "completed"}, Default: "not_started"},
 	}
 	// ProjectsTable holds the schema information for the "projects" table.
 	ProjectsTable = &schema.Table{
@@ -192,18 +217,20 @@ var (
 	}
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "title", Type: field.TypeString},
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "process", Type: field.TypeInt},
 		{Name: "status", Type: field.TypeBool},
 		{Name: "start_at", Type: field.TypeTime},
-		{Name: "branch_id", Type: field.TypeUUID},
-		{Name: "creator_id", Type: field.TypeUUID},
-		{Name: "updater_id", Type: field.TypeUUID},
+		{Name: "creator_id", Type: field.TypeInt},
+		{Name: "updater_id", Type: field.TypeInt},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "project_id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"task", "feature", "bug", "another"}, Default: "task"},
+		{Name: "label_tasks", Type: field.TypeInt, Nullable: true},
+		{Name: "project_id", Type: field.TypeInt},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
 	TasksTable = &schema.Table{
@@ -212,8 +239,14 @@ var (
 		PrimaryKey: []*schema.Column{TasksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
+				Symbol:     "tasks_labels_tasks",
+				Columns:    []*schema.Column{TasksColumns[12]},
+				RefColumns: []*schema.Column{LabelsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "tasks_projects_tasks",
-				Columns:    []*schema.Column{TasksColumns[11]},
+				Columns:    []*schema.Column{TasksColumns[13]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -223,6 +256,7 @@ var (
 	Tables = []*schema.Table{
 		DepartmentsTable,
 		EmployeesTable,
+		LabelsTable,
 		LeaveApprovalsTable,
 		LeaveRequestsTable,
 		OrganizationsTable,
@@ -235,9 +269,11 @@ var (
 func init() {
 	DepartmentsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
+	LabelsTable.ForeignKeys[0].RefTable = TasksTable
 	LeaveRequestsTable.ForeignKeys[0].RefTable = LeaveApprovalsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	PositionsTable.ForeignKeys[0].RefTable = DepartmentsTable
 	PositionsTable.ForeignKeys[1].RefTable = PositionsTable
-	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
+	TasksTable.ForeignKeys[0].RefTable = LabelsTable
+	TasksTable.ForeignKeys[1].RefTable = ProjectsTable
 }

@@ -401,18 +401,6 @@ func (u *EmployeeUpsert) AddOrgID(v int) *EmployeeUpsert {
 	return u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *EmployeeUpsert) SetCreatedAt(v time.Time) *EmployeeUpsert {
-	u.Set(employee.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *EmployeeUpsert) UpdateCreatedAt() *EmployeeUpsert {
-	u.SetExcluded(employee.FieldCreatedAt)
-	return u
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (u *EmployeeUpsert) SetUpdatedAt(v time.Time) *EmployeeUpsert {
 	u.Set(employee.FieldUpdatedAt, v)
@@ -435,6 +423,11 @@ func (u *EmployeeUpsert) UpdateUpdatedAt() *EmployeeUpsert {
 //		Exec(ctx)
 func (u *EmployeeUpsertOne) UpdateNewValues() *EmployeeUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(employee.FieldCreatedAt)
+		}
+	}))
 	return u
 }
 
@@ -560,20 +553,6 @@ func (u *EmployeeUpsertOne) AddOrgID(v int) *EmployeeUpsertOne {
 func (u *EmployeeUpsertOne) UpdateOrgID() *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateOrgID()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *EmployeeUpsertOne) SetCreatedAt(v time.Time) *EmployeeUpsertOne {
-	return u.Update(func(s *EmployeeUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *EmployeeUpsertOne) UpdateCreatedAt() *EmployeeUpsertOne {
-	return u.Update(func(s *EmployeeUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 
@@ -765,6 +744,13 @@ type EmployeeUpsertBulk struct {
 //		Exec(ctx)
 func (u *EmployeeUpsertBulk) UpdateNewValues() *EmployeeUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(employee.FieldCreatedAt)
+			}
+		}
+	}))
 	return u
 }
 
@@ -890,20 +876,6 @@ func (u *EmployeeUpsertBulk) AddOrgID(v int) *EmployeeUpsertBulk {
 func (u *EmployeeUpsertBulk) UpdateOrgID() *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateOrgID()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *EmployeeUpsertBulk) SetCreatedAt(v time.Time) *EmployeeUpsertBulk {
-	return u.Update(func(s *EmployeeUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *EmployeeUpsertBulk) UpdateCreatedAt() *EmployeeUpsertBulk {
-	return u.Update(func(s *EmployeeUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 

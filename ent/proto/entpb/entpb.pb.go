@@ -268,6 +268,104 @@ func (ListEmployeeRequest_View) EnumDescriptor() ([]byte, []int) {
 	return file_entpb_entpb_proto_rawDescGZIP(), []int{14, 0}
 }
 
+type GetLabelRequest_View int32
+
+const (
+	GetLabelRequest_VIEW_UNSPECIFIED GetLabelRequest_View = 0
+	GetLabelRequest_BASIC            GetLabelRequest_View = 1
+	GetLabelRequest_WITH_EDGE_IDS    GetLabelRequest_View = 2
+)
+
+// Enum value maps for GetLabelRequest_View.
+var (
+	GetLabelRequest_View_name = map[int32]string{
+		0: "VIEW_UNSPECIFIED",
+		1: "BASIC",
+		2: "WITH_EDGE_IDS",
+	}
+	GetLabelRequest_View_value = map[string]int32{
+		"VIEW_UNSPECIFIED": 0,
+		"BASIC":            1,
+		"WITH_EDGE_IDS":    2,
+	}
+)
+
+func (x GetLabelRequest_View) Enum() *GetLabelRequest_View {
+	p := new(GetLabelRequest_View)
+	*p = x
+	return p
+}
+
+func (x GetLabelRequest_View) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (GetLabelRequest_View) Descriptor() protoreflect.EnumDescriptor {
+	return file_entpb_entpb_proto_enumTypes[5].Descriptor()
+}
+
+func (GetLabelRequest_View) Type() protoreflect.EnumType {
+	return &file_entpb_entpb_proto_enumTypes[5]
+}
+
+func (x GetLabelRequest_View) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use GetLabelRequest_View.Descriptor instead.
+func (GetLabelRequest_View) EnumDescriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{20, 0}
+}
+
+type ListLabelRequest_View int32
+
+const (
+	ListLabelRequest_VIEW_UNSPECIFIED ListLabelRequest_View = 0
+	ListLabelRequest_BASIC            ListLabelRequest_View = 1
+	ListLabelRequest_WITH_EDGE_IDS    ListLabelRequest_View = 2
+)
+
+// Enum value maps for ListLabelRequest_View.
+var (
+	ListLabelRequest_View_name = map[int32]string{
+		0: "VIEW_UNSPECIFIED",
+		1: "BASIC",
+		2: "WITH_EDGE_IDS",
+	}
+	ListLabelRequest_View_value = map[string]int32{
+		"VIEW_UNSPECIFIED": 0,
+		"BASIC":            1,
+		"WITH_EDGE_IDS":    2,
+	}
+)
+
+func (x ListLabelRequest_View) Enum() *ListLabelRequest_View {
+	p := new(ListLabelRequest_View)
+	*p = x
+	return p
+}
+
+func (x ListLabelRequest_View) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ListLabelRequest_View) Descriptor() protoreflect.EnumDescriptor {
+	return file_entpb_entpb_proto_enumTypes[6].Descriptor()
+}
+
+func (ListLabelRequest_View) Type() protoreflect.EnumType {
+	return &file_entpb_entpb_proto_enumTypes[6]
+}
+
+func (x ListLabelRequest_View) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ListLabelRequest_View.Descriptor instead.
+func (ListLabelRequest_View) EnumDescriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{23, 0}
+}
+
 type GetLeaveApprovalRequest_View int32
 
 const (
@@ -301,11 +399,11 @@ func (x GetLeaveApprovalRequest_View) String() string {
 }
 
 func (GetLeaveApprovalRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[5].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[7].Descriptor()
 }
 
 func (GetLeaveApprovalRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[5]
+	return &file_entpb_entpb_proto_enumTypes[7]
 }
 
 func (x GetLeaveApprovalRequest_View) Number() protoreflect.EnumNumber {
@@ -314,7 +412,7 @@ func (x GetLeaveApprovalRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetLeaveApprovalRequest_View.Descriptor instead.
 func (GetLeaveApprovalRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{20, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{29, 0}
 }
 
 type ListLeaveApprovalRequest_View int32
@@ -350,11 +448,11 @@ func (x ListLeaveApprovalRequest_View) String() string {
 }
 
 func (ListLeaveApprovalRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[6].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[8].Descriptor()
 }
 
 func (ListLeaveApprovalRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[6]
+	return &file_entpb_entpb_proto_enumTypes[8]
 }
 
 func (x ListLeaveApprovalRequest_View) Number() protoreflect.EnumNumber {
@@ -363,7 +461,7 @@ func (x ListLeaveApprovalRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListLeaveApprovalRequest_View.Descriptor instead.
 func (ListLeaveApprovalRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{23, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{32, 0}
 }
 
 type LeaveRequest_Type int32
@@ -396,11 +494,11 @@ func (x LeaveRequest_Type) String() string {
 }
 
 func (LeaveRequest_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[7].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[9].Descriptor()
 }
 
 func (LeaveRequest_Type) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[7]
+	return &file_entpb_entpb_proto_enumTypes[9]
 }
 
 func (x LeaveRequest_Type) Number() protoreflect.EnumNumber {
@@ -409,7 +507,7 @@ func (x LeaveRequest_Type) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use LeaveRequest_Type.Descriptor instead.
 func (LeaveRequest_Type) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{27, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{36, 0}
 }
 
 type LeaveRequest_Status int32
@@ -445,11 +543,11 @@ func (x LeaveRequest_Status) String() string {
 }
 
 func (LeaveRequest_Status) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[8].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[10].Descriptor()
 }
 
 func (LeaveRequest_Status) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[8]
+	return &file_entpb_entpb_proto_enumTypes[10]
 }
 
 func (x LeaveRequest_Status) Number() protoreflect.EnumNumber {
@@ -458,7 +556,7 @@ func (x LeaveRequest_Status) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use LeaveRequest_Status.Descriptor instead.
 func (LeaveRequest_Status) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{27, 1}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{36, 1}
 }
 
 type GetLeaveRequestRequest_View int32
@@ -494,11 +592,11 @@ func (x GetLeaveRequestRequest_View) String() string {
 }
 
 func (GetLeaveRequestRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[9].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[11].Descriptor()
 }
 
 func (GetLeaveRequestRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[9]
+	return &file_entpb_entpb_proto_enumTypes[11]
 }
 
 func (x GetLeaveRequestRequest_View) Number() protoreflect.EnumNumber {
@@ -507,7 +605,7 @@ func (x GetLeaveRequestRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetLeaveRequestRequest_View.Descriptor instead.
 func (GetLeaveRequestRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{29, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{38, 0}
 }
 
 type ListLeaveRequestRequest_View int32
@@ -543,11 +641,11 @@ func (x ListLeaveRequestRequest_View) String() string {
 }
 
 func (ListLeaveRequestRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[10].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[12].Descriptor()
 }
 
 func (ListLeaveRequestRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[10]
+	return &file_entpb_entpb_proto_enumTypes[12]
 }
 
 func (x ListLeaveRequestRequest_View) Number() protoreflect.EnumNumber {
@@ -556,7 +654,7 @@ func (x ListLeaveRequestRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListLeaveRequestRequest_View.Descriptor instead.
 func (ListLeaveRequestRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{32, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{41, 0}
 }
 
 type GetOrganizationRequest_View int32
@@ -592,11 +690,11 @@ func (x GetOrganizationRequest_View) String() string {
 }
 
 func (GetOrganizationRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[11].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[13].Descriptor()
 }
 
 func (GetOrganizationRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[11]
+	return &file_entpb_entpb_proto_enumTypes[13]
 }
 
 func (x GetOrganizationRequest_View) Number() protoreflect.EnumNumber {
@@ -605,7 +703,7 @@ func (x GetOrganizationRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetOrganizationRequest_View.Descriptor instead.
 func (GetOrganizationRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{38, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{47, 0}
 }
 
 type ListOrganizationRequest_View int32
@@ -641,11 +739,11 @@ func (x ListOrganizationRequest_View) String() string {
 }
 
 func (ListOrganizationRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[12].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[14].Descriptor()
 }
 
 func (ListOrganizationRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[12]
+	return &file_entpb_entpb_proto_enumTypes[14]
 }
 
 func (x ListOrganizationRequest_View) Number() protoreflect.EnumNumber {
@@ -654,7 +752,7 @@ func (x ListOrganizationRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListOrganizationRequest_View.Descriptor instead.
 func (ListOrganizationRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{41, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{50, 0}
 }
 
 type GetPositionRequest_View int32
@@ -690,11 +788,11 @@ func (x GetPositionRequest_View) String() string {
 }
 
 func (GetPositionRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[13].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[15].Descriptor()
 }
 
 func (GetPositionRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[13]
+	return &file_entpb_entpb_proto_enumTypes[15]
 }
 
 func (x GetPositionRequest_View) Number() protoreflect.EnumNumber {
@@ -703,7 +801,7 @@ func (x GetPositionRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetPositionRequest_View.Descriptor instead.
 func (GetPositionRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{47, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{56, 0}
 }
 
 type ListPositionRequest_View int32
@@ -739,11 +837,11 @@ func (x ListPositionRequest_View) String() string {
 }
 
 func (ListPositionRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[14].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[16].Descriptor()
 }
 
 func (ListPositionRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[14]
+	return &file_entpb_entpb_proto_enumTypes[16]
 }
 
 func (x ListPositionRequest_View) Number() protoreflect.EnumNumber {
@@ -752,7 +850,7 @@ func (x ListPositionRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListPositionRequest_View.Descriptor instead.
 func (ListPositionRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{50, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{59, 0}
 }
 
 type Project_Status int32
@@ -788,11 +886,11 @@ func (x Project_Status) String() string {
 }
 
 func (Project_Status) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[15].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[17].Descriptor()
 }
 
 func (Project_Status) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[15]
+	return &file_entpb_entpb_proto_enumTypes[17]
 }
 
 func (x Project_Status) Number() protoreflect.EnumNumber {
@@ -801,7 +899,7 @@ func (x Project_Status) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Project_Status.Descriptor instead.
 func (Project_Status) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{54, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{63, 0}
 }
 
 type GetProjectRequest_View int32
@@ -837,11 +935,11 @@ func (x GetProjectRequest_View) String() string {
 }
 
 func (GetProjectRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[16].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[18].Descriptor()
 }
 
 func (GetProjectRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[16]
+	return &file_entpb_entpb_proto_enumTypes[18]
 }
 
 func (x GetProjectRequest_View) Number() protoreflect.EnumNumber {
@@ -850,7 +948,7 @@ func (x GetProjectRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetProjectRequest_View.Descriptor instead.
 func (GetProjectRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{56, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{65, 0}
 }
 
 type ListProjectRequest_View int32
@@ -886,11 +984,11 @@ func (x ListProjectRequest_View) String() string {
 }
 
 func (ListProjectRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[17].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[19].Descriptor()
 }
 
 func (ListProjectRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[17]
+	return &file_entpb_entpb_proto_enumTypes[19]
 }
 
 func (x ListProjectRequest_View) Number() protoreflect.EnumNumber {
@@ -899,7 +997,59 @@ func (x ListProjectRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListProjectRequest_View.Descriptor instead.
 func (ListProjectRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{59, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{68, 0}
+}
+
+type Task_Type int32
+
+const (
+	Task_TYPE_TASK    Task_Type = 0
+	Task_TYPE_FEATURE Task_Type = 1
+	Task_TYPE_BUG     Task_Type = 2
+	Task_TYPE_ANOTHER Task_Type = 3
+)
+
+// Enum value maps for Task_Type.
+var (
+	Task_Type_name = map[int32]string{
+		0: "TYPE_TASK",
+		1: "TYPE_FEATURE",
+		2: "TYPE_BUG",
+		3: "TYPE_ANOTHER",
+	}
+	Task_Type_value = map[string]int32{
+		"TYPE_TASK":    0,
+		"TYPE_FEATURE": 1,
+		"TYPE_BUG":     2,
+		"TYPE_ANOTHER": 3,
+	}
+)
+
+func (x Task_Type) Enum() *Task_Type {
+	p := new(Task_Type)
+	*p = x
+	return p
+}
+
+func (x Task_Type) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Task_Type) Descriptor() protoreflect.EnumDescriptor {
+	return file_entpb_entpb_proto_enumTypes[20].Descriptor()
+}
+
+func (Task_Type) Type() protoreflect.EnumType {
+	return &file_entpb_entpb_proto_enumTypes[20]
+}
+
+func (x Task_Type) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Task_Type.Descriptor instead.
+func (Task_Type) EnumDescriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{72, 0}
 }
 
 type GetTaskRequest_View int32
@@ -935,11 +1085,11 @@ func (x GetTaskRequest_View) String() string {
 }
 
 func (GetTaskRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[18].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[21].Descriptor()
 }
 
 func (GetTaskRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[18]
+	return &file_entpb_entpb_proto_enumTypes[21]
 }
 
 func (x GetTaskRequest_View) Number() protoreflect.EnumNumber {
@@ -948,7 +1098,7 @@ func (x GetTaskRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GetTaskRequest_View.Descriptor instead.
 func (GetTaskRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{65, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{74, 0}
 }
 
 type ListTaskRequest_View int32
@@ -984,11 +1134,11 @@ func (x ListTaskRequest_View) String() string {
 }
 
 func (ListTaskRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[19].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[22].Descriptor()
 }
 
 func (ListTaskRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[19]
+	return &file_entpb_entpb_proto_enumTypes[22]
 }
 
 func (x ListTaskRequest_View) Number() protoreflect.EnumNumber {
@@ -997,7 +1147,7 @@ func (x ListTaskRequest_View) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ListTaskRequest_View.Descriptor instead.
 func (ListTaskRequest_View) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{68, 0}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{77, 0}
 }
 
 type Department struct {
@@ -1984,6 +2134,482 @@ func (x *BatchCreateEmployeesResponse) GetEmployees() []*Employee {
 	return nil
 }
 
+type Label struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Color         string                  `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
+	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Tasks         []*Task                 `protobuf:"bytes,7,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Label) Reset() {
+	*x = Label{}
+	mi := &file_entpb_entpb_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Label) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Label) ProtoMessage() {}
+
+func (x *Label) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Label.ProtoReflect.Descriptor instead.
+func (*Label) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *Label) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Label) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Label) GetDescription() *wrapperspb.StringValue {
+	if x != nil {
+		return x.Description
+	}
+	return nil
+}
+
+func (x *Label) GetColor() string {
+	if x != nil {
+		return x.Color
+	}
+	return ""
+}
+
+func (x *Label) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *Label) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *Label) GetTasks() []*Task {
+	if x != nil {
+		return x.Tasks
+	}
+	return nil
+}
+
+type CreateLabelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Label         *Label                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateLabelRequest) Reset() {
+	*x = CreateLabelRequest{}
+	mi := &file_entpb_entpb_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateLabelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateLabelRequest) ProtoMessage() {}
+
+func (x *CreateLabelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateLabelRequest.ProtoReflect.Descriptor instead.
+func (*CreateLabelRequest) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *CreateLabelRequest) GetLabel() *Label {
+	if x != nil {
+		return x.Label
+	}
+	return nil
+}
+
+type GetLabelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	View          GetLabelRequest_View   `protobuf:"varint,2,opt,name=view,proto3,enum=entpb.GetLabelRequest_View" json:"view,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetLabelRequest) Reset() {
+	*x = GetLabelRequest{}
+	mi := &file_entpb_entpb_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetLabelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetLabelRequest) ProtoMessage() {}
+
+func (x *GetLabelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetLabelRequest.ProtoReflect.Descriptor instead.
+func (*GetLabelRequest) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetLabelRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *GetLabelRequest) GetView() GetLabelRequest_View {
+	if x != nil {
+		return x.View
+	}
+	return GetLabelRequest_VIEW_UNSPECIFIED
+}
+
+type UpdateLabelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Label         *Label                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateLabelRequest) Reset() {
+	*x = UpdateLabelRequest{}
+	mi := &file_entpb_entpb_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateLabelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateLabelRequest) ProtoMessage() {}
+
+func (x *UpdateLabelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateLabelRequest.ProtoReflect.Descriptor instead.
+func (*UpdateLabelRequest) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *UpdateLabelRequest) GetLabel() *Label {
+	if x != nil {
+		return x.Label
+	}
+	return nil
+}
+
+type DeleteLabelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteLabelRequest) Reset() {
+	*x = DeleteLabelRequest{}
+	mi := &file_entpb_entpb_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteLabelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteLabelRequest) ProtoMessage() {}
+
+func (x *DeleteLabelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteLabelRequest.ProtoReflect.Descriptor instead.
+func (*DeleteLabelRequest) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *DeleteLabelRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type ListLabelRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	View          ListLabelRequest_View  `protobuf:"varint,3,opt,name=view,proto3,enum=entpb.ListLabelRequest_View" json:"view,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListLabelRequest) Reset() {
+	*x = ListLabelRequest{}
+	mi := &file_entpb_entpb_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListLabelRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListLabelRequest) ProtoMessage() {}
+
+func (x *ListLabelRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListLabelRequest.ProtoReflect.Descriptor instead.
+func (*ListLabelRequest) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ListLabelRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListLabelRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListLabelRequest) GetView() ListLabelRequest_View {
+	if x != nil {
+		return x.View
+	}
+	return ListLabelRequest_VIEW_UNSPECIFIED
+}
+
+type ListLabelResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LabelList     []*Label               `protobuf:"bytes,1,rep,name=label_list,json=labelList,proto3" json:"label_list,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListLabelResponse) Reset() {
+	*x = ListLabelResponse{}
+	mi := &file_entpb_entpb_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListLabelResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListLabelResponse) ProtoMessage() {}
+
+func (x *ListLabelResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListLabelResponse.ProtoReflect.Descriptor instead.
+func (*ListLabelResponse) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *ListLabelResponse) GetLabelList() []*Label {
+	if x != nil {
+		return x.LabelList
+	}
+	return nil
+}
+
+func (x *ListLabelResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type BatchCreateLabelsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Requests      []*CreateLabelRequest  `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchCreateLabelsRequest) Reset() {
+	*x = BatchCreateLabelsRequest{}
+	mi := &file_entpb_entpb_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchCreateLabelsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchCreateLabelsRequest) ProtoMessage() {}
+
+func (x *BatchCreateLabelsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchCreateLabelsRequest.ProtoReflect.Descriptor instead.
+func (*BatchCreateLabelsRequest) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *BatchCreateLabelsRequest) GetRequests() []*CreateLabelRequest {
+	if x != nil {
+		return x.Requests
+	}
+	return nil
+}
+
+type BatchCreateLabelsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Labels        []*Label               `protobuf:"bytes,1,rep,name=labels,proto3" json:"labels,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchCreateLabelsResponse) Reset() {
+	*x = BatchCreateLabelsResponse{}
+	mi := &file_entpb_entpb_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchCreateLabelsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchCreateLabelsResponse) ProtoMessage() {}
+
+func (x *BatchCreateLabelsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_entpb_entpb_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchCreateLabelsResponse.ProtoReflect.Descriptor instead.
+func (*BatchCreateLabelsResponse) Descriptor() ([]byte, []int) {
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *BatchCreateLabelsResponse) GetLabels() []*Label {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
 type LeaveApproval struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
 	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1996,7 +2622,7 @@ type LeaveApproval struct {
 
 func (x *LeaveApproval) Reset() {
 	*x = LeaveApproval{}
-	mi := &file_entpb_entpb_proto_msgTypes[18]
+	mi := &file_entpb_entpb_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2008,7 +2634,7 @@ func (x *LeaveApproval) String() string {
 func (*LeaveApproval) ProtoMessage() {}
 
 func (x *LeaveApproval) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[18]
+	mi := &file_entpb_entpb_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2021,7 +2647,7 @@ func (x *LeaveApproval) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveApproval.ProtoReflect.Descriptor instead.
 func (*LeaveApproval) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{18}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *LeaveApproval) GetId() int64 {
@@ -2061,7 +2687,7 @@ type CreateLeaveApprovalRequest struct {
 
 func (x *CreateLeaveApprovalRequest) Reset() {
 	*x = CreateLeaveApprovalRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[19]
+	mi := &file_entpb_entpb_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2073,7 +2699,7 @@ func (x *CreateLeaveApprovalRequest) String() string {
 func (*CreateLeaveApprovalRequest) ProtoMessage() {}
 
 func (x *CreateLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[19]
+	mi := &file_entpb_entpb_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2086,7 +2712,7 @@ func (x *CreateLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateLeaveApprovalRequest.ProtoReflect.Descriptor instead.
 func (*CreateLeaveApprovalRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{19}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *CreateLeaveApprovalRequest) GetLeaveApproval() *LeaveApproval {
@@ -2106,7 +2732,7 @@ type GetLeaveApprovalRequest struct {
 
 func (x *GetLeaveApprovalRequest) Reset() {
 	*x = GetLeaveApprovalRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[20]
+	mi := &file_entpb_entpb_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2118,7 +2744,7 @@ func (x *GetLeaveApprovalRequest) String() string {
 func (*GetLeaveApprovalRequest) ProtoMessage() {}
 
 func (x *GetLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[20]
+	mi := &file_entpb_entpb_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2131,7 +2757,7 @@ func (x *GetLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLeaveApprovalRequest.ProtoReflect.Descriptor instead.
 func (*GetLeaveApprovalRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{20}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *GetLeaveApprovalRequest) GetId() int64 {
@@ -2157,7 +2783,7 @@ type UpdateLeaveApprovalRequest struct {
 
 func (x *UpdateLeaveApprovalRequest) Reset() {
 	*x = UpdateLeaveApprovalRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[21]
+	mi := &file_entpb_entpb_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2169,7 +2795,7 @@ func (x *UpdateLeaveApprovalRequest) String() string {
 func (*UpdateLeaveApprovalRequest) ProtoMessage() {}
 
 func (x *UpdateLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[21]
+	mi := &file_entpb_entpb_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2182,7 +2808,7 @@ func (x *UpdateLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateLeaveApprovalRequest.ProtoReflect.Descriptor instead.
 func (*UpdateLeaveApprovalRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{21}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *UpdateLeaveApprovalRequest) GetLeaveApproval() *LeaveApproval {
@@ -2201,7 +2827,7 @@ type DeleteLeaveApprovalRequest struct {
 
 func (x *DeleteLeaveApprovalRequest) Reset() {
 	*x = DeleteLeaveApprovalRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[22]
+	mi := &file_entpb_entpb_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2213,7 +2839,7 @@ func (x *DeleteLeaveApprovalRequest) String() string {
 func (*DeleteLeaveApprovalRequest) ProtoMessage() {}
 
 func (x *DeleteLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[22]
+	mi := &file_entpb_entpb_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2226,7 +2852,7 @@ func (x *DeleteLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteLeaveApprovalRequest.ProtoReflect.Descriptor instead.
 func (*DeleteLeaveApprovalRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{22}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *DeleteLeaveApprovalRequest) GetId() int64 {
@@ -2247,7 +2873,7 @@ type ListLeaveApprovalRequest struct {
 
 func (x *ListLeaveApprovalRequest) Reset() {
 	*x = ListLeaveApprovalRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[23]
+	mi := &file_entpb_entpb_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2259,7 +2885,7 @@ func (x *ListLeaveApprovalRequest) String() string {
 func (*ListLeaveApprovalRequest) ProtoMessage() {}
 
 func (x *ListLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[23]
+	mi := &file_entpb_entpb_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2272,7 +2898,7 @@ func (x *ListLeaveApprovalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLeaveApprovalRequest.ProtoReflect.Descriptor instead.
 func (*ListLeaveApprovalRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{23}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *ListLeaveApprovalRequest) GetPageSize() int32 {
@@ -2306,7 +2932,7 @@ type ListLeaveApprovalResponse struct {
 
 func (x *ListLeaveApprovalResponse) Reset() {
 	*x = ListLeaveApprovalResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[24]
+	mi := &file_entpb_entpb_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2318,7 +2944,7 @@ func (x *ListLeaveApprovalResponse) String() string {
 func (*ListLeaveApprovalResponse) ProtoMessage() {}
 
 func (x *ListLeaveApprovalResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[24]
+	mi := &file_entpb_entpb_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2331,7 +2957,7 @@ func (x *ListLeaveApprovalResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLeaveApprovalResponse.ProtoReflect.Descriptor instead.
 func (*ListLeaveApprovalResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{24}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ListLeaveApprovalResponse) GetLeaveApprovalList() []*LeaveApproval {
@@ -2357,7 +2983,7 @@ type BatchCreateLeaveApprovalsRequest struct {
 
 func (x *BatchCreateLeaveApprovalsRequest) Reset() {
 	*x = BatchCreateLeaveApprovalsRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[25]
+	mi := &file_entpb_entpb_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2369,7 +2995,7 @@ func (x *BatchCreateLeaveApprovalsRequest) String() string {
 func (*BatchCreateLeaveApprovalsRequest) ProtoMessage() {}
 
 func (x *BatchCreateLeaveApprovalsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[25]
+	mi := &file_entpb_entpb_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2382,7 +3008,7 @@ func (x *BatchCreateLeaveApprovalsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateLeaveApprovalsRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateLeaveApprovalsRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{25}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *BatchCreateLeaveApprovalsRequest) GetRequests() []*CreateLeaveApprovalRequest {
@@ -2401,7 +3027,7 @@ type BatchCreateLeaveApprovalsResponse struct {
 
 func (x *BatchCreateLeaveApprovalsResponse) Reset() {
 	*x = BatchCreateLeaveApprovalsResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[26]
+	mi := &file_entpb_entpb_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2413,7 +3039,7 @@ func (x *BatchCreateLeaveApprovalsResponse) String() string {
 func (*BatchCreateLeaveApprovalsResponse) ProtoMessage() {}
 
 func (x *BatchCreateLeaveApprovalsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[26]
+	mi := &file_entpb_entpb_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2426,7 +3052,7 @@ func (x *BatchCreateLeaveApprovalsResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use BatchCreateLeaveApprovalsResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateLeaveApprovalsResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{26}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *BatchCreateLeaveApprovalsResponse) GetLeaveApprovals() []*LeaveApproval {
@@ -2454,7 +3080,7 @@ type LeaveRequest struct {
 
 func (x *LeaveRequest) Reset() {
 	*x = LeaveRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[27]
+	mi := &file_entpb_entpb_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2466,7 +3092,7 @@ func (x *LeaveRequest) String() string {
 func (*LeaveRequest) ProtoMessage() {}
 
 func (x *LeaveRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[27]
+	mi := &file_entpb_entpb_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2479,7 +3105,7 @@ func (x *LeaveRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRequest.ProtoReflect.Descriptor instead.
 func (*LeaveRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{27}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *LeaveRequest) GetId() int64 {
@@ -2561,7 +3187,7 @@ type CreateLeaveRequestRequest struct {
 
 func (x *CreateLeaveRequestRequest) Reset() {
 	*x = CreateLeaveRequestRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[28]
+	mi := &file_entpb_entpb_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2573,7 +3199,7 @@ func (x *CreateLeaveRequestRequest) String() string {
 func (*CreateLeaveRequestRequest) ProtoMessage() {}
 
 func (x *CreateLeaveRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[28]
+	mi := &file_entpb_entpb_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2586,7 +3212,7 @@ func (x *CreateLeaveRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateLeaveRequestRequest.ProtoReflect.Descriptor instead.
 func (*CreateLeaveRequestRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{28}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *CreateLeaveRequestRequest) GetLeaveRequest() *LeaveRequest {
@@ -2606,7 +3232,7 @@ type GetLeaveRequestRequest struct {
 
 func (x *GetLeaveRequestRequest) Reset() {
 	*x = GetLeaveRequestRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[29]
+	mi := &file_entpb_entpb_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2618,7 +3244,7 @@ func (x *GetLeaveRequestRequest) String() string {
 func (*GetLeaveRequestRequest) ProtoMessage() {}
 
 func (x *GetLeaveRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[29]
+	mi := &file_entpb_entpb_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2631,7 +3257,7 @@ func (x *GetLeaveRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLeaveRequestRequest.ProtoReflect.Descriptor instead.
 func (*GetLeaveRequestRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{29}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GetLeaveRequestRequest) GetId() int64 {
@@ -2657,7 +3283,7 @@ type UpdateLeaveRequestRequest struct {
 
 func (x *UpdateLeaveRequestRequest) Reset() {
 	*x = UpdateLeaveRequestRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[30]
+	mi := &file_entpb_entpb_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2669,7 +3295,7 @@ func (x *UpdateLeaveRequestRequest) String() string {
 func (*UpdateLeaveRequestRequest) ProtoMessage() {}
 
 func (x *UpdateLeaveRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[30]
+	mi := &file_entpb_entpb_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2682,7 +3308,7 @@ func (x *UpdateLeaveRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateLeaveRequestRequest.ProtoReflect.Descriptor instead.
 func (*UpdateLeaveRequestRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{30}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *UpdateLeaveRequestRequest) GetLeaveRequest() *LeaveRequest {
@@ -2701,7 +3327,7 @@ type DeleteLeaveRequestRequest struct {
 
 func (x *DeleteLeaveRequestRequest) Reset() {
 	*x = DeleteLeaveRequestRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[31]
+	mi := &file_entpb_entpb_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2713,7 +3339,7 @@ func (x *DeleteLeaveRequestRequest) String() string {
 func (*DeleteLeaveRequestRequest) ProtoMessage() {}
 
 func (x *DeleteLeaveRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[31]
+	mi := &file_entpb_entpb_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2726,7 +3352,7 @@ func (x *DeleteLeaveRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteLeaveRequestRequest.ProtoReflect.Descriptor instead.
 func (*DeleteLeaveRequestRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{31}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *DeleteLeaveRequestRequest) GetId() int64 {
@@ -2747,7 +3373,7 @@ type ListLeaveRequestRequest struct {
 
 func (x *ListLeaveRequestRequest) Reset() {
 	*x = ListLeaveRequestRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[32]
+	mi := &file_entpb_entpb_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2759,7 +3385,7 @@ func (x *ListLeaveRequestRequest) String() string {
 func (*ListLeaveRequestRequest) ProtoMessage() {}
 
 func (x *ListLeaveRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[32]
+	mi := &file_entpb_entpb_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2772,7 +3398,7 @@ func (x *ListLeaveRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLeaveRequestRequest.ProtoReflect.Descriptor instead.
 func (*ListLeaveRequestRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{32}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *ListLeaveRequestRequest) GetPageSize() int32 {
@@ -2806,7 +3432,7 @@ type ListLeaveRequestResponse struct {
 
 func (x *ListLeaveRequestResponse) Reset() {
 	*x = ListLeaveRequestResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[33]
+	mi := &file_entpb_entpb_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2818,7 +3444,7 @@ func (x *ListLeaveRequestResponse) String() string {
 func (*ListLeaveRequestResponse) ProtoMessage() {}
 
 func (x *ListLeaveRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[33]
+	mi := &file_entpb_entpb_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2831,7 +3457,7 @@ func (x *ListLeaveRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLeaveRequestResponse.ProtoReflect.Descriptor instead.
 func (*ListLeaveRequestResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{33}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *ListLeaveRequestResponse) GetLeaveRequestList() []*LeaveRequest {
@@ -2857,7 +3483,7 @@ type BatchCreateLeaveRequestsRequest struct {
 
 func (x *BatchCreateLeaveRequestsRequest) Reset() {
 	*x = BatchCreateLeaveRequestsRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[34]
+	mi := &file_entpb_entpb_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2869,7 +3495,7 @@ func (x *BatchCreateLeaveRequestsRequest) String() string {
 func (*BatchCreateLeaveRequestsRequest) ProtoMessage() {}
 
 func (x *BatchCreateLeaveRequestsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[34]
+	mi := &file_entpb_entpb_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2882,7 +3508,7 @@ func (x *BatchCreateLeaveRequestsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateLeaveRequestsRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateLeaveRequestsRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{34}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *BatchCreateLeaveRequestsRequest) GetRequests() []*CreateLeaveRequestRequest {
@@ -2901,7 +3527,7 @@ type BatchCreateLeaveRequestsResponse struct {
 
 func (x *BatchCreateLeaveRequestsResponse) Reset() {
 	*x = BatchCreateLeaveRequestsResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[35]
+	mi := &file_entpb_entpb_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2913,7 +3539,7 @@ func (x *BatchCreateLeaveRequestsResponse) String() string {
 func (*BatchCreateLeaveRequestsResponse) ProtoMessage() {}
 
 func (x *BatchCreateLeaveRequestsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[35]
+	mi := &file_entpb_entpb_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2926,7 +3552,7 @@ func (x *BatchCreateLeaveRequestsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateLeaveRequestsResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateLeaveRequestsResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{35}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *BatchCreateLeaveRequestsResponse) GetLeaveRequests() []*LeaveRequest {
@@ -2958,7 +3584,7 @@ type Organization struct {
 
 func (x *Organization) Reset() {
 	*x = Organization{}
-	mi := &file_entpb_entpb_proto_msgTypes[36]
+	mi := &file_entpb_entpb_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2970,7 +3596,7 @@ func (x *Organization) String() string {
 func (*Organization) ProtoMessage() {}
 
 func (x *Organization) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[36]
+	mi := &file_entpb_entpb_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2983,7 +3609,7 @@ func (x *Organization) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Organization.ProtoReflect.Descriptor instead.
 func (*Organization) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{36}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *Organization) GetId() int64 {
@@ -3093,7 +3719,7 @@ type CreateOrganizationRequest struct {
 
 func (x *CreateOrganizationRequest) Reset() {
 	*x = CreateOrganizationRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[37]
+	mi := &file_entpb_entpb_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3105,7 +3731,7 @@ func (x *CreateOrganizationRequest) String() string {
 func (*CreateOrganizationRequest) ProtoMessage() {}
 
 func (x *CreateOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[37]
+	mi := &file_entpb_entpb_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3118,7 +3744,7 @@ func (x *CreateOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*CreateOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{37}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *CreateOrganizationRequest) GetOrganization() *Organization {
@@ -3138,7 +3764,7 @@ type GetOrganizationRequest struct {
 
 func (x *GetOrganizationRequest) Reset() {
 	*x = GetOrganizationRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[38]
+	mi := &file_entpb_entpb_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3150,7 +3776,7 @@ func (x *GetOrganizationRequest) String() string {
 func (*GetOrganizationRequest) ProtoMessage() {}
 
 func (x *GetOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[38]
+	mi := &file_entpb_entpb_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3163,7 +3789,7 @@ func (x *GetOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*GetOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{38}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *GetOrganizationRequest) GetId() int64 {
@@ -3189,7 +3815,7 @@ type UpdateOrganizationRequest struct {
 
 func (x *UpdateOrganizationRequest) Reset() {
 	*x = UpdateOrganizationRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[39]
+	mi := &file_entpb_entpb_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3201,7 +3827,7 @@ func (x *UpdateOrganizationRequest) String() string {
 func (*UpdateOrganizationRequest) ProtoMessage() {}
 
 func (x *UpdateOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[39]
+	mi := &file_entpb_entpb_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3214,7 +3840,7 @@ func (x *UpdateOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{39}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *UpdateOrganizationRequest) GetOrganization() *Organization {
@@ -3233,7 +3859,7 @@ type DeleteOrganizationRequest struct {
 
 func (x *DeleteOrganizationRequest) Reset() {
 	*x = DeleteOrganizationRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[40]
+	mi := &file_entpb_entpb_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3245,7 +3871,7 @@ func (x *DeleteOrganizationRequest) String() string {
 func (*DeleteOrganizationRequest) ProtoMessage() {}
 
 func (x *DeleteOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[40]
+	mi := &file_entpb_entpb_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3258,7 +3884,7 @@ func (x *DeleteOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{40}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *DeleteOrganizationRequest) GetId() int64 {
@@ -3279,7 +3905,7 @@ type ListOrganizationRequest struct {
 
 func (x *ListOrganizationRequest) Reset() {
 	*x = ListOrganizationRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[41]
+	mi := &file_entpb_entpb_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3291,7 +3917,7 @@ func (x *ListOrganizationRequest) String() string {
 func (*ListOrganizationRequest) ProtoMessage() {}
 
 func (x *ListOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[41]
+	mi := &file_entpb_entpb_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3304,7 +3930,7 @@ func (x *ListOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*ListOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{41}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *ListOrganizationRequest) GetPageSize() int32 {
@@ -3338,7 +3964,7 @@ type ListOrganizationResponse struct {
 
 func (x *ListOrganizationResponse) Reset() {
 	*x = ListOrganizationResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[42]
+	mi := &file_entpb_entpb_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3350,7 +3976,7 @@ func (x *ListOrganizationResponse) String() string {
 func (*ListOrganizationResponse) ProtoMessage() {}
 
 func (x *ListOrganizationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[42]
+	mi := &file_entpb_entpb_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3363,7 +3989,7 @@ func (x *ListOrganizationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrganizationResponse.ProtoReflect.Descriptor instead.
 func (*ListOrganizationResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{42}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *ListOrganizationResponse) GetOrganizationList() []*Organization {
@@ -3389,7 +4015,7 @@ type BatchCreateOrganizationsRequest struct {
 
 func (x *BatchCreateOrganizationsRequest) Reset() {
 	*x = BatchCreateOrganizationsRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[43]
+	mi := &file_entpb_entpb_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3401,7 +4027,7 @@ func (x *BatchCreateOrganizationsRequest) String() string {
 func (*BatchCreateOrganizationsRequest) ProtoMessage() {}
 
 func (x *BatchCreateOrganizationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[43]
+	mi := &file_entpb_entpb_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3414,7 +4040,7 @@ func (x *BatchCreateOrganizationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateOrganizationsRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateOrganizationsRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{43}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *BatchCreateOrganizationsRequest) GetRequests() []*CreateOrganizationRequest {
@@ -3433,7 +4059,7 @@ type BatchCreateOrganizationsResponse struct {
 
 func (x *BatchCreateOrganizationsResponse) Reset() {
 	*x = BatchCreateOrganizationsResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[44]
+	mi := &file_entpb_entpb_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3445,7 +4071,7 @@ func (x *BatchCreateOrganizationsResponse) String() string {
 func (*BatchCreateOrganizationsResponse) ProtoMessage() {}
 
 func (x *BatchCreateOrganizationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[44]
+	mi := &file_entpb_entpb_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3458,7 +4084,7 @@ func (x *BatchCreateOrganizationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateOrganizationsResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateOrganizationsResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{44}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *BatchCreateOrganizationsResponse) GetOrganizations() []*Organization {
@@ -3487,7 +4113,7 @@ type Position struct {
 
 func (x *Position) Reset() {
 	*x = Position{}
-	mi := &file_entpb_entpb_proto_msgTypes[45]
+	mi := &file_entpb_entpb_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3499,7 +4125,7 @@ func (x *Position) String() string {
 func (*Position) ProtoMessage() {}
 
 func (x *Position) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[45]
+	mi := &file_entpb_entpb_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3512,7 +4138,7 @@ func (x *Position) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Position.ProtoReflect.Descriptor instead.
 func (*Position) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{45}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *Position) GetId() int64 {
@@ -3601,7 +4227,7 @@ type CreatePositionRequest struct {
 
 func (x *CreatePositionRequest) Reset() {
 	*x = CreatePositionRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[46]
+	mi := &file_entpb_entpb_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3613,7 +4239,7 @@ func (x *CreatePositionRequest) String() string {
 func (*CreatePositionRequest) ProtoMessage() {}
 
 func (x *CreatePositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[46]
+	mi := &file_entpb_entpb_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3626,7 +4252,7 @@ func (x *CreatePositionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePositionRequest.ProtoReflect.Descriptor instead.
 func (*CreatePositionRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{46}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *CreatePositionRequest) GetPosition() *Position {
@@ -3646,7 +4272,7 @@ type GetPositionRequest struct {
 
 func (x *GetPositionRequest) Reset() {
 	*x = GetPositionRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[47]
+	mi := &file_entpb_entpb_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3658,7 +4284,7 @@ func (x *GetPositionRequest) String() string {
 func (*GetPositionRequest) ProtoMessage() {}
 
 func (x *GetPositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[47]
+	mi := &file_entpb_entpb_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3671,7 +4297,7 @@ func (x *GetPositionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPositionRequest.ProtoReflect.Descriptor instead.
 func (*GetPositionRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{47}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *GetPositionRequest) GetId() int64 {
@@ -3697,7 +4323,7 @@ type UpdatePositionRequest struct {
 
 func (x *UpdatePositionRequest) Reset() {
 	*x = UpdatePositionRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[48]
+	mi := &file_entpb_entpb_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3709,7 +4335,7 @@ func (x *UpdatePositionRequest) String() string {
 func (*UpdatePositionRequest) ProtoMessage() {}
 
 func (x *UpdatePositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[48]
+	mi := &file_entpb_entpb_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3722,7 +4348,7 @@ func (x *UpdatePositionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePositionRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePositionRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{48}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *UpdatePositionRequest) GetPosition() *Position {
@@ -3741,7 +4367,7 @@ type DeletePositionRequest struct {
 
 func (x *DeletePositionRequest) Reset() {
 	*x = DeletePositionRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[49]
+	mi := &file_entpb_entpb_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3753,7 +4379,7 @@ func (x *DeletePositionRequest) String() string {
 func (*DeletePositionRequest) ProtoMessage() {}
 
 func (x *DeletePositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[49]
+	mi := &file_entpb_entpb_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3766,7 +4392,7 @@ func (x *DeletePositionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePositionRequest.ProtoReflect.Descriptor instead.
 func (*DeletePositionRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{49}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *DeletePositionRequest) GetId() int64 {
@@ -3787,7 +4413,7 @@ type ListPositionRequest struct {
 
 func (x *ListPositionRequest) Reset() {
 	*x = ListPositionRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[50]
+	mi := &file_entpb_entpb_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3799,7 +4425,7 @@ func (x *ListPositionRequest) String() string {
 func (*ListPositionRequest) ProtoMessage() {}
 
 func (x *ListPositionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[50]
+	mi := &file_entpb_entpb_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3812,7 +4438,7 @@ func (x *ListPositionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPositionRequest.ProtoReflect.Descriptor instead.
 func (*ListPositionRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{50}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *ListPositionRequest) GetPageSize() int32 {
@@ -3846,7 +4472,7 @@ type ListPositionResponse struct {
 
 func (x *ListPositionResponse) Reset() {
 	*x = ListPositionResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[51]
+	mi := &file_entpb_entpb_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3858,7 +4484,7 @@ func (x *ListPositionResponse) String() string {
 func (*ListPositionResponse) ProtoMessage() {}
 
 func (x *ListPositionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[51]
+	mi := &file_entpb_entpb_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3871,7 +4497,7 @@ func (x *ListPositionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPositionResponse.ProtoReflect.Descriptor instead.
 func (*ListPositionResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{51}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *ListPositionResponse) GetPositionList() []*Position {
@@ -3897,7 +4523,7 @@ type BatchCreatePositionsRequest struct {
 
 func (x *BatchCreatePositionsRequest) Reset() {
 	*x = BatchCreatePositionsRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[52]
+	mi := &file_entpb_entpb_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3909,7 +4535,7 @@ func (x *BatchCreatePositionsRequest) String() string {
 func (*BatchCreatePositionsRequest) ProtoMessage() {}
 
 func (x *BatchCreatePositionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[52]
+	mi := &file_entpb_entpb_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3922,7 +4548,7 @@ func (x *BatchCreatePositionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreatePositionsRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreatePositionsRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{52}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *BatchCreatePositionsRequest) GetRequests() []*CreatePositionRequest {
@@ -3941,7 +4567,7 @@ type BatchCreatePositionsResponse struct {
 
 func (x *BatchCreatePositionsResponse) Reset() {
 	*x = BatchCreatePositionsResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[53]
+	mi := &file_entpb_entpb_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3953,7 +4579,7 @@ func (x *BatchCreatePositionsResponse) String() string {
 func (*BatchCreatePositionsResponse) ProtoMessage() {}
 
 func (x *BatchCreatePositionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[53]
+	mi := &file_entpb_entpb_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3966,7 +4592,7 @@ func (x *BatchCreatePositionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreatePositionsResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreatePositionsResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{53}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *BatchCreatePositionsResponse) GetPositions() []*Position {
@@ -3978,26 +4604,27 @@ func (x *BatchCreatePositionsResponse) GetPositions() []*Position {
 
 type Project struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Id            []byte                  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	StartAt       *timestamppb.Timestamp  `protobuf:"bytes,4,opt,name=start_at,json=startAt,proto3" json:"start_at,omitempty"`
-	EndAt         *timestamppb.Timestamp  `protobuf:"bytes,5,opt,name=end_at,json=endAt,proto3" json:"end_at,omitempty"`
-	CreatorId     []byte                  `protobuf:"bytes,6,opt,name=creator_id,json=creatorId,proto3" json:"creator_id,omitempty"`
-	UpdaterId     []byte                  `protobuf:"bytes,7,opt,name=updater_id,json=updaterId,proto3" json:"updater_id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	BranchId      []byte                  `protobuf:"bytes,10,opt,name=branch_id,json=branchId,proto3" json:"branch_id,omitempty"`
-	Process       int64                   `protobuf:"varint,11,opt,name=process,proto3" json:"process,omitempty"`
-	Status        Project_Status          `protobuf:"varint,12,opt,name=status,proto3,enum=entpb.Project_Status" json:"status,omitempty"`
-	Tasks         []*Task                 `protobuf:"bytes,13,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	Code          string                  `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
+	Description   *wrapperspb.StringValue `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	StartAt       *timestamppb.Timestamp  `protobuf:"bytes,5,opt,name=start_at,json=startAt,proto3" json:"start_at,omitempty"`
+	EndAt         *timestamppb.Timestamp  `protobuf:"bytes,6,opt,name=end_at,json=endAt,proto3" json:"end_at,omitempty"`
+	CreatorId     int64                   `protobuf:"varint,7,opt,name=creator_id,json=creatorId,proto3" json:"creator_id,omitempty"`
+	UpdaterId     int64                   `protobuf:"varint,8,opt,name=updater_id,json=updaterId,proto3" json:"updater_id,omitempty"`
+	OrgId         int64                   `protobuf:"varint,9,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Process       *wrapperspb.Int64Value  `protobuf:"bytes,10,opt,name=process,proto3" json:"process,omitempty"`
+	Status        Project_Status          `protobuf:"varint,11,opt,name=status,proto3,enum=entpb.Project_Status" json:"status,omitempty"`
+	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,13,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Tasks         []*Task                 `protobuf:"bytes,14,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Project) Reset() {
 	*x = Project{}
-	mi := &file_entpb_entpb_proto_msgTypes[54]
+	mi := &file_entpb_entpb_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4009,7 +4636,7 @@ func (x *Project) String() string {
 func (*Project) ProtoMessage() {}
 
 func (x *Project) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[54]
+	mi := &file_entpb_entpb_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4022,19 +4649,26 @@ func (x *Project) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Project.ProtoReflect.Descriptor instead.
 func (*Project) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{54}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{63}
 }
 
-func (x *Project) GetId() []byte {
+func (x *Project) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return nil
+	return 0
 }
 
 func (x *Project) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *Project) GetCode() string {
+	if x != nil {
+		return x.Code
 	}
 	return ""
 }
@@ -4060,18 +4694,39 @@ func (x *Project) GetEndAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Project) GetCreatorId() []byte {
+func (x *Project) GetCreatorId() int64 {
 	if x != nil {
 		return x.CreatorId
+	}
+	return 0
+}
+
+func (x *Project) GetUpdaterId() int64 {
+	if x != nil {
+		return x.UpdaterId
+	}
+	return 0
+}
+
+func (x *Project) GetOrgId() int64 {
+	if x != nil {
+		return x.OrgId
+	}
+	return 0
+}
+
+func (x *Project) GetProcess() *wrapperspb.Int64Value {
+	if x != nil {
+		return x.Process
 	}
 	return nil
 }
 
-func (x *Project) GetUpdaterId() []byte {
+func (x *Project) GetStatus() Project_Status {
 	if x != nil {
-		return x.UpdaterId
+		return x.Status
 	}
-	return nil
+	return Project_STATUS_NOT_STARTED
 }
 
 func (x *Project) GetCreatedAt() *timestamppb.Timestamp {
@@ -4086,27 +4741,6 @@ func (x *Project) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
-}
-
-func (x *Project) GetBranchId() []byte {
-	if x != nil {
-		return x.BranchId
-	}
-	return nil
-}
-
-func (x *Project) GetProcess() int64 {
-	if x != nil {
-		return x.Process
-	}
-	return 0
-}
-
-func (x *Project) GetStatus() Project_Status {
-	if x != nil {
-		return x.Status
-	}
-	return Project_STATUS_NOT_STARTED
 }
 
 func (x *Project) GetTasks() []*Task {
@@ -4125,7 +4759,7 @@ type CreateProjectRequest struct {
 
 func (x *CreateProjectRequest) Reset() {
 	*x = CreateProjectRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[55]
+	mi := &file_entpb_entpb_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4137,7 +4771,7 @@ func (x *CreateProjectRequest) String() string {
 func (*CreateProjectRequest) ProtoMessage() {}
 
 func (x *CreateProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[55]
+	mi := &file_entpb_entpb_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4150,7 +4784,7 @@ func (x *CreateProjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateProjectRequest.ProtoReflect.Descriptor instead.
 func (*CreateProjectRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{55}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *CreateProjectRequest) GetProject() *Project {
@@ -4162,7 +4796,7 @@ func (x *CreateProjectRequest) GetProject() *Project {
 
 type GetProjectRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	View          GetProjectRequest_View `protobuf:"varint,2,opt,name=view,proto3,enum=entpb.GetProjectRequest_View" json:"view,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4170,7 +4804,7 @@ type GetProjectRequest struct {
 
 func (x *GetProjectRequest) Reset() {
 	*x = GetProjectRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[56]
+	mi := &file_entpb_entpb_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4182,7 +4816,7 @@ func (x *GetProjectRequest) String() string {
 func (*GetProjectRequest) ProtoMessage() {}
 
 func (x *GetProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[56]
+	mi := &file_entpb_entpb_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4195,14 +4829,14 @@ func (x *GetProjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProjectRequest.ProtoReflect.Descriptor instead.
 func (*GetProjectRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{56}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{65}
 }
 
-func (x *GetProjectRequest) GetId() []byte {
+func (x *GetProjectRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return nil
+	return 0
 }
 
 func (x *GetProjectRequest) GetView() GetProjectRequest_View {
@@ -4221,7 +4855,7 @@ type UpdateProjectRequest struct {
 
 func (x *UpdateProjectRequest) Reset() {
 	*x = UpdateProjectRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[57]
+	mi := &file_entpb_entpb_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4233,7 +4867,7 @@ func (x *UpdateProjectRequest) String() string {
 func (*UpdateProjectRequest) ProtoMessage() {}
 
 func (x *UpdateProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[57]
+	mi := &file_entpb_entpb_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4246,7 +4880,7 @@ func (x *UpdateProjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateProjectRequest.ProtoReflect.Descriptor instead.
 func (*UpdateProjectRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{57}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *UpdateProjectRequest) GetProject() *Project {
@@ -4258,14 +4892,14 @@ func (x *UpdateProjectRequest) GetProject() *Project {
 
 type DeleteProjectRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteProjectRequest) Reset() {
 	*x = DeleteProjectRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[58]
+	mi := &file_entpb_entpb_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4277,7 +4911,7 @@ func (x *DeleteProjectRequest) String() string {
 func (*DeleteProjectRequest) ProtoMessage() {}
 
 func (x *DeleteProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[58]
+	mi := &file_entpb_entpb_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4290,14 +4924,14 @@ func (x *DeleteProjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteProjectRequest.ProtoReflect.Descriptor instead.
 func (*DeleteProjectRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{58}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{67}
 }
 
-func (x *DeleteProjectRequest) GetId() []byte {
+func (x *DeleteProjectRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return nil
+	return 0
 }
 
 type ListProjectRequest struct {
@@ -4311,7 +4945,7 @@ type ListProjectRequest struct {
 
 func (x *ListProjectRequest) Reset() {
 	*x = ListProjectRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[59]
+	mi := &file_entpb_entpb_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4323,7 +4957,7 @@ func (x *ListProjectRequest) String() string {
 func (*ListProjectRequest) ProtoMessage() {}
 
 func (x *ListProjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[59]
+	mi := &file_entpb_entpb_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4336,7 +4970,7 @@ func (x *ListProjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProjectRequest.ProtoReflect.Descriptor instead.
 func (*ListProjectRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{59}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *ListProjectRequest) GetPageSize() int32 {
@@ -4370,7 +5004,7 @@ type ListProjectResponse struct {
 
 func (x *ListProjectResponse) Reset() {
 	*x = ListProjectResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[60]
+	mi := &file_entpb_entpb_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4382,7 +5016,7 @@ func (x *ListProjectResponse) String() string {
 func (*ListProjectResponse) ProtoMessage() {}
 
 func (x *ListProjectResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[60]
+	mi := &file_entpb_entpb_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4395,7 +5029,7 @@ func (x *ListProjectResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProjectResponse.ProtoReflect.Descriptor instead.
 func (*ListProjectResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{60}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *ListProjectResponse) GetProjectList() []*Project {
@@ -4421,7 +5055,7 @@ type BatchCreateProjectsRequest struct {
 
 func (x *BatchCreateProjectsRequest) Reset() {
 	*x = BatchCreateProjectsRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[61]
+	mi := &file_entpb_entpb_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4433,7 +5067,7 @@ func (x *BatchCreateProjectsRequest) String() string {
 func (*BatchCreateProjectsRequest) ProtoMessage() {}
 
 func (x *BatchCreateProjectsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[61]
+	mi := &file_entpb_entpb_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4446,7 +5080,7 @@ func (x *BatchCreateProjectsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateProjectsRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateProjectsRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{61}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *BatchCreateProjectsRequest) GetRequests() []*CreateProjectRequest {
@@ -4465,7 +5099,7 @@ type BatchCreateProjectsResponse struct {
 
 func (x *BatchCreateProjectsResponse) Reset() {
 	*x = BatchCreateProjectsResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[62]
+	mi := &file_entpb_entpb_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4477,7 +5111,7 @@ func (x *BatchCreateProjectsResponse) String() string {
 func (*BatchCreateProjectsResponse) ProtoMessage() {}
 
 func (x *BatchCreateProjectsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[62]
+	mi := &file_entpb_entpb_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4490,7 +5124,7 @@ func (x *BatchCreateProjectsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateProjectsResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateProjectsResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{62}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *BatchCreateProjectsResponse) GetProjects() []*Project {
@@ -4502,26 +5136,28 @@ func (x *BatchCreateProjectsResponse) GetProjects() []*Project {
 
 type Task struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Id            []byte                  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title         string                  `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Description   *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Process       int64                   `protobuf:"varint,4,opt,name=process,proto3" json:"process,omitempty"`
-	Status        bool                    `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`
-	StartAt       *timestamppb.Timestamp  `protobuf:"bytes,6,opt,name=start_at,json=startAt,proto3" json:"start_at,omitempty"`
-	ProjectId     []byte                  `protobuf:"bytes,7,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	BranchId      []byte                  `protobuf:"bytes,8,opt,name=branch_id,json=branchId,proto3" json:"branch_id,omitempty"`
-	CreatorId     []byte                  `protobuf:"bytes,9,opt,name=creator_id,json=creatorId,proto3" json:"creator_id,omitempty"`
-	UpdaterId     []byte                  `protobuf:"bytes,10,opt,name=updater_id,json=updaterId,proto3" json:"updater_id,omitempty"`
+	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Code          string                  `protobuf:"bytes,3,opt,name=code,proto3" json:"code,omitempty"`
+	Description   *wrapperspb.StringValue `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Process       int64                   `protobuf:"varint,5,opt,name=process,proto3" json:"process,omitempty"`
+	Status        bool                    `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
+	StartAt       *timestamppb.Timestamp  `protobuf:"bytes,7,opt,name=start_at,json=startAt,proto3" json:"start_at,omitempty"`
+	ProjectId     int64                   `protobuf:"varint,8,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	CreatorId     int64                   `protobuf:"varint,9,opt,name=creator_id,json=creatorId,proto3" json:"creator_id,omitempty"`
+	UpdaterId     int64                   `protobuf:"varint,10,opt,name=updater_id,json=updaterId,proto3" json:"updater_id,omitempty"`
 	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Project       *Project                `protobuf:"bytes,13,opt,name=project,proto3" json:"project,omitempty"`
+	Type          Task_Type               `protobuf:"varint,13,opt,name=type,proto3,enum=entpb.Task_Type" json:"type,omitempty"`
+	Project       *Project                `protobuf:"bytes,14,opt,name=project,proto3" json:"project,omitempty"`
+	Labels        []*Label                `protobuf:"bytes,15,rep,name=labels,proto3" json:"labels,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Task) Reset() {
 	*x = Task{}
-	mi := &file_entpb_entpb_proto_msgTypes[63]
+	mi := &file_entpb_entpb_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4533,7 +5169,7 @@ func (x *Task) String() string {
 func (*Task) ProtoMessage() {}
 
 func (x *Task) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[63]
+	mi := &file_entpb_entpb_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4546,19 +5182,26 @@ func (x *Task) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Task.ProtoReflect.Descriptor instead.
 func (*Task) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{63}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{72}
 }
 
-func (x *Task) GetId() []byte {
+func (x *Task) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return nil
+	return 0
 }
 
-func (x *Task) GetTitle() string {
+func (x *Task) GetName() string {
 	if x != nil {
-		return x.Title
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Task) GetCode() string {
+	if x != nil {
+		return x.Code
 	}
 	return ""
 }
@@ -4591,32 +5234,25 @@ func (x *Task) GetStartAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Task) GetProjectId() []byte {
+func (x *Task) GetProjectId() int64 {
 	if x != nil {
 		return x.ProjectId
 	}
-	return nil
+	return 0
 }
 
-func (x *Task) GetBranchId() []byte {
-	if x != nil {
-		return x.BranchId
-	}
-	return nil
-}
-
-func (x *Task) GetCreatorId() []byte {
+func (x *Task) GetCreatorId() int64 {
 	if x != nil {
 		return x.CreatorId
 	}
-	return nil
+	return 0
 }
 
-func (x *Task) GetUpdaterId() []byte {
+func (x *Task) GetUpdaterId() int64 {
 	if x != nil {
 		return x.UpdaterId
 	}
-	return nil
+	return 0
 }
 
 func (x *Task) GetCreatedAt() *timestamppb.Timestamp {
@@ -4633,9 +5269,23 @@ func (x *Task) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Task) GetType() Task_Type {
+	if x != nil {
+		return x.Type
+	}
+	return Task_TYPE_TASK
+}
+
 func (x *Task) GetProject() *Project {
 	if x != nil {
 		return x.Project
+	}
+	return nil
+}
+
+func (x *Task) GetLabels() []*Label {
+	if x != nil {
+		return x.Labels
 	}
 	return nil
 }
@@ -4649,7 +5299,7 @@ type CreateTaskRequest struct {
 
 func (x *CreateTaskRequest) Reset() {
 	*x = CreateTaskRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[64]
+	mi := &file_entpb_entpb_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4661,7 +5311,7 @@ func (x *CreateTaskRequest) String() string {
 func (*CreateTaskRequest) ProtoMessage() {}
 
 func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[64]
+	mi := &file_entpb_entpb_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4674,7 +5324,7 @@ func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTaskRequest.ProtoReflect.Descriptor instead.
 func (*CreateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{64}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *CreateTaskRequest) GetTask() *Task {
@@ -4686,7 +5336,7 @@ func (x *CreateTaskRequest) GetTask() *Task {
 
 type GetTaskRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	View          GetTaskRequest_View    `protobuf:"varint,2,opt,name=view,proto3,enum=entpb.GetTaskRequest_View" json:"view,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4694,7 +5344,7 @@ type GetTaskRequest struct {
 
 func (x *GetTaskRequest) Reset() {
 	*x = GetTaskRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[65]
+	mi := &file_entpb_entpb_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4706,7 +5356,7 @@ func (x *GetTaskRequest) String() string {
 func (*GetTaskRequest) ProtoMessage() {}
 
 func (x *GetTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[65]
+	mi := &file_entpb_entpb_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4719,14 +5369,14 @@ func (x *GetTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTaskRequest.ProtoReflect.Descriptor instead.
 func (*GetTaskRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{65}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{74}
 }
 
-func (x *GetTaskRequest) GetId() []byte {
+func (x *GetTaskRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return nil
+	return 0
 }
 
 func (x *GetTaskRequest) GetView() GetTaskRequest_View {
@@ -4745,7 +5395,7 @@ type UpdateTaskRequest struct {
 
 func (x *UpdateTaskRequest) Reset() {
 	*x = UpdateTaskRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[66]
+	mi := &file_entpb_entpb_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4757,7 +5407,7 @@ func (x *UpdateTaskRequest) String() string {
 func (*UpdateTaskRequest) ProtoMessage() {}
 
 func (x *UpdateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[66]
+	mi := &file_entpb_entpb_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4770,7 +5420,7 @@ func (x *UpdateTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTaskRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{66}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *UpdateTaskRequest) GetTask() *Task {
@@ -4782,14 +5432,14 @@ func (x *UpdateTaskRequest) GetTask() *Task {
 
 type DeleteTaskRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            []byte                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteTaskRequest) Reset() {
 	*x = DeleteTaskRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[67]
+	mi := &file_entpb_entpb_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4801,7 +5451,7 @@ func (x *DeleteTaskRequest) String() string {
 func (*DeleteTaskRequest) ProtoMessage() {}
 
 func (x *DeleteTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[67]
+	mi := &file_entpb_entpb_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4814,14 +5464,14 @@ func (x *DeleteTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTaskRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTaskRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{67}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{76}
 }
 
-func (x *DeleteTaskRequest) GetId() []byte {
+func (x *DeleteTaskRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return nil
+	return 0
 }
 
 type ListTaskRequest struct {
@@ -4835,7 +5485,7 @@ type ListTaskRequest struct {
 
 func (x *ListTaskRequest) Reset() {
 	*x = ListTaskRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[68]
+	mi := &file_entpb_entpb_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4847,7 +5497,7 @@ func (x *ListTaskRequest) String() string {
 func (*ListTaskRequest) ProtoMessage() {}
 
 func (x *ListTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[68]
+	mi := &file_entpb_entpb_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4860,7 +5510,7 @@ func (x *ListTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTaskRequest.ProtoReflect.Descriptor instead.
 func (*ListTaskRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{68}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *ListTaskRequest) GetPageSize() int32 {
@@ -4894,7 +5544,7 @@ type ListTaskResponse struct {
 
 func (x *ListTaskResponse) Reset() {
 	*x = ListTaskResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[69]
+	mi := &file_entpb_entpb_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4906,7 +5556,7 @@ func (x *ListTaskResponse) String() string {
 func (*ListTaskResponse) ProtoMessage() {}
 
 func (x *ListTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[69]
+	mi := &file_entpb_entpb_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4919,7 +5569,7 @@ func (x *ListTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTaskResponse.ProtoReflect.Descriptor instead.
 func (*ListTaskResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{69}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *ListTaskResponse) GetTaskList() []*Task {
@@ -4945,7 +5595,7 @@ type BatchCreateTasksRequest struct {
 
 func (x *BatchCreateTasksRequest) Reset() {
 	*x = BatchCreateTasksRequest{}
-	mi := &file_entpb_entpb_proto_msgTypes[70]
+	mi := &file_entpb_entpb_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4957,7 +5607,7 @@ func (x *BatchCreateTasksRequest) String() string {
 func (*BatchCreateTasksRequest) ProtoMessage() {}
 
 func (x *BatchCreateTasksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[70]
+	mi := &file_entpb_entpb_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4970,7 +5620,7 @@ func (x *BatchCreateTasksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateTasksRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateTasksRequest) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{70}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *BatchCreateTasksRequest) GetRequests() []*CreateTaskRequest {
@@ -4989,7 +5639,7 @@ type BatchCreateTasksResponse struct {
 
 func (x *BatchCreateTasksResponse) Reset() {
 	*x = BatchCreateTasksResponse{}
-	mi := &file_entpb_entpb_proto_msgTypes[71]
+	mi := &file_entpb_entpb_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5001,7 +5651,7 @@ func (x *BatchCreateTasksResponse) String() string {
 func (*BatchCreateTasksResponse) ProtoMessage() {}
 
 func (x *BatchCreateTasksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_entpb_entpb_proto_msgTypes[71]
+	mi := &file_entpb_entpb_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5014,7 +5664,7 @@ func (x *BatchCreateTasksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateTasksResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateTasksResponse) Descriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{71}
+	return file_entpb_entpb_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *BatchCreateTasksResponse) GetTasks() []*Task {
@@ -5121,7 +5771,47 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x1bBatchCreateEmployeesRequest\x128\n" +
 	"\brequests\x18\x01 \x03(\v2\x1c.entpb.CreateEmployeeRequestR\brequests\"M\n" +
 	"\x1cBatchCreateEmployeesResponse\x12-\n" +
-	"\temployees\x18\x01 \x03(\v2\x0f.entpb.EmployeeR\temployees\"\xcd\x01\n" +
+	"\temployees\x18\x01 \x03(\v2\x0f.entpb.EmployeeR\temployees\"\x9a\x02\n" +
+	"\x05Label\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12>\n" +
+	"\vdescription\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\vdescription\x12\x14\n" +
+	"\x05color\x18\x04 \x01(\tR\x05color\x129\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12!\n" +
+	"\x05tasks\x18\a \x03(\v2\v.entpb.TaskR\x05tasks\"8\n" +
+	"\x12CreateLabelRequest\x12\"\n" +
+	"\x05label\x18\x01 \x01(\v2\f.entpb.LabelR\x05label\"\x8e\x01\n" +
+	"\x0fGetLabelRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12/\n" +
+	"\x04view\x18\x02 \x01(\x0e2\x1b.entpb.GetLabelRequest.ViewR\x04view\":\n" +
+	"\x04View\x12\x14\n" +
+	"\x10VIEW_UNSPECIFIED\x10\x00\x12\t\n" +
+	"\x05BASIC\x10\x01\x12\x11\n" +
+	"\rWITH_EDGE_IDS\x10\x02\"8\n" +
+	"\x12UpdateLabelRequest\x12\"\n" +
+	"\x05label\x18\x01 \x01(\v2\f.entpb.LabelR\x05label\"$\n" +
+	"\x12DeleteLabelRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\xbc\x01\n" +
+	"\x10ListLabelRequest\x12\x1b\n" +
+	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x120\n" +
+	"\x04view\x18\x03 \x01(\x0e2\x1c.entpb.ListLabelRequest.ViewR\x04view\":\n" +
+	"\x04View\x12\x14\n" +
+	"\x10VIEW_UNSPECIFIED\x10\x00\x12\t\n" +
+	"\x05BASIC\x10\x01\x12\x11\n" +
+	"\rWITH_EDGE_IDS\x10\x02\"h\n" +
+	"\x11ListLabelResponse\x12+\n" +
+	"\n" +
+	"label_list\x18\x01 \x03(\v2\f.entpb.LabelR\tlabelList\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"Q\n" +
+	"\x18BatchCreateLabelsRequest\x125\n" +
+	"\brequests\x18\x01 \x03(\v2\x19.entpb.CreateLabelRequestR\brequests\"A\n" +
+	"\x19BatchCreateLabelsResponse\x12$\n" +
+	"\x06labels\x18\x01 \x03(\v2\f.entpb.LabelR\x06labels\"\xcd\x01\n" +
 	"\rLeaveApproval\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x126\n" +
 	"\acomment\x18\x02 \x01(\v2\x1c.google.protobuf.StringValueR\acomment\x129\n" +
@@ -5299,26 +5989,27 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x1bBatchCreatePositionsRequest\x128\n" +
 	"\brequests\x18\x01 \x03(\v2\x1c.entpb.CreatePositionRequestR\brequests\"M\n" +
 	"\x1cBatchCreatePositionsResponse\x12-\n" +
-	"\tpositions\x18\x01 \x03(\v2\x0f.entpb.PositionR\tpositions\"\xe4\x04\n" +
+	"\tpositions\x18\x01 \x03(\v2\x0f.entpb.PositionR\tpositions\"\x8f\x05\n" +
 	"\aProject\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12>\n" +
-	"\vdescription\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\vdescription\x125\n" +
-	"\bstart_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\astartAt\x121\n" +
-	"\x06end_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x05endAt\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\x12>\n" +
+	"\vdescription\x18\x04 \x01(\v2\x1c.google.protobuf.StringValueR\vdescription\x125\n" +
+	"\bstart_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\astartAt\x121\n" +
+	"\x06end_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x05endAt\x12\x1d\n" +
 	"\n" +
-	"creator_id\x18\x06 \x01(\fR\tcreatorId\x12\x1d\n" +
+	"creator_id\x18\a \x01(\x03R\tcreatorId\x12\x1d\n" +
 	"\n" +
-	"updater_id\x18\a \x01(\fR\tupdaterId\x129\n" +
+	"updater_id\x18\b \x01(\x03R\tupdaterId\x12\x15\n" +
+	"\x06org_id\x18\t \x01(\x03R\x05orgId\x125\n" +
+	"\aprocess\x18\n" +
+	" \x01(\v2\x1b.google.protobuf.Int64ValueR\aprocess\x12-\n" +
+	"\x06status\x18\v \x01(\x0e2\x15.entpb.Project.StatusR\x06status\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1b\n" +
-	"\tbranch_id\x18\n" +
-	" \x01(\fR\bbranchId\x12\x18\n" +
-	"\aprocess\x18\v \x01(\x03R\aprocess\x12-\n" +
-	"\x06status\x18\f \x01(\x0e2\x15.entpb.Project.StatusR\x06status\x12!\n" +
-	"\x05tasks\x18\r \x03(\v2\v.entpb.TaskR\x05tasks\"N\n" +
+	"updated_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12!\n" +
+	"\x05tasks\x18\x0e \x03(\v2\v.entpb.TaskR\x05tasks\"N\n" +
 	"\x06Status\x12\x16\n" +
 	"\x12STATUS_NOT_STARTED\x10\x00\x12\x16\n" +
 	"\x12STATUS_IN_PROGRESS\x10\x01\x12\x14\n" +
@@ -5326,7 +6017,7 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x14CreateProjectRequest\x12(\n" +
 	"\aproject\x18\x01 \x01(\v2\x0e.entpb.ProjectR\aproject\"\x92\x01\n" +
 	"\x11GetProjectRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\x121\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x121\n" +
 	"\x04view\x18\x02 \x01(\x0e2\x1d.entpb.GetProjectRequest.ViewR\x04view\":\n" +
 	"\x04View\x12\x14\n" +
 	"\x10VIEW_UNSPECIFIED\x10\x00\x12\t\n" +
@@ -5335,7 +6026,7 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x14UpdateProjectRequest\x12(\n" +
 	"\aproject\x18\x01 \x01(\v2\x0e.entpb.ProjectR\aproject\"&\n" +
 	"\x14DeleteProjectRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\"\xc0\x01\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\xc0\x01\n" +
 	"\x12ListProjectRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -5351,31 +6042,38 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x1aBatchCreateProjectsRequest\x127\n" +
 	"\brequests\x18\x01 \x03(\v2\x1b.entpb.CreateProjectRequestR\brequests\"I\n" +
 	"\x1bBatchCreateProjectsResponse\x12*\n" +
-	"\bprojects\x18\x01 \x03(\v2\x0e.entpb.ProjectR\bprojects\"\xef\x03\n" +
+	"\bprojects\x18\x01 \x03(\v2\x0e.entpb.ProjectR\bprojects\"\xf9\x04\n" +
 	"\x04Task\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12>\n" +
-	"\vdescription\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\vdescription\x12\x18\n" +
-	"\aprocess\x18\x04 \x01(\x03R\aprocess\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\bR\x06status\x125\n" +
-	"\bstart_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\astartAt\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\x12>\n" +
+	"\vdescription\x18\x04 \x01(\v2\x1c.google.protobuf.StringValueR\vdescription\x12\x18\n" +
+	"\aprocess\x18\x05 \x01(\x03R\aprocess\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\bR\x06status\x125\n" +
+	"\bstart_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\astartAt\x12\x1d\n" +
 	"\n" +
-	"project_id\x18\a \x01(\fR\tprojectId\x12\x1b\n" +
-	"\tbranch_id\x18\b \x01(\fR\bbranchId\x12\x1d\n" +
+	"project_id\x18\b \x01(\x03R\tprojectId\x12\x1d\n" +
 	"\n" +
-	"creator_id\x18\t \x01(\fR\tcreatorId\x12\x1d\n" +
+	"creator_id\x18\t \x01(\x03R\tcreatorId\x12\x1d\n" +
 	"\n" +
 	"updater_id\x18\n" +
-	" \x01(\fR\tupdaterId\x129\n" +
+	" \x01(\x03R\tupdaterId\x129\n" +
 	"\n" +
 	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12(\n" +
-	"\aproject\x18\r \x01(\v2\x0e.entpb.ProjectR\aproject\"4\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12$\n" +
+	"\x04type\x18\r \x01(\x0e2\x10.entpb.Task.TypeR\x04type\x12(\n" +
+	"\aproject\x18\x0e \x01(\v2\x0e.entpb.ProjectR\aproject\x12$\n" +
+	"\x06labels\x18\x0f \x03(\v2\f.entpb.LabelR\x06labels\"G\n" +
+	"\x04Type\x12\r\n" +
+	"\tTYPE_TASK\x10\x00\x12\x10\n" +
+	"\fTYPE_FEATURE\x10\x01\x12\f\n" +
+	"\bTYPE_BUG\x10\x02\x12\x10\n" +
+	"\fTYPE_ANOTHER\x10\x03\"4\n" +
 	"\x11CreateTaskRequest\x12\x1f\n" +
 	"\x04task\x18\x01 \x01(\v2\v.entpb.TaskR\x04task\"\x8c\x01\n" +
 	"\x0eGetTaskRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\x12.\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12.\n" +
 	"\x04view\x18\x02 \x01(\x0e2\x1a.entpb.GetTaskRequest.ViewR\x04view\":\n" +
 	"\x04View\x12\x14\n" +
 	"\x10VIEW_UNSPECIFIED\x10\x00\x12\t\n" +
@@ -5384,7 +6082,7 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x11UpdateTaskRequest\x12\x1f\n" +
 	"\x04task\x18\x01 \x01(\v2\v.entpb.TaskR\x04task\"#\n" +
 	"\x11DeleteTaskRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\fR\x02id\"\xba\x01\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\xba\x01\n" +
 	"\x0fListTaskRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -5414,7 +6112,14 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x06Update\x12\x1c.entpb.UpdateEmployeeRequest\x1a\x0f.entpb.Employee\x12>\n" +
 	"\x06Delete\x12\x1c.entpb.DeleteEmployeeRequest\x1a\x16.google.protobuf.Empty\x12?\n" +
 	"\x04List\x12\x1a.entpb.ListEmployeeRequest\x1a\x1b.entpb.ListEmployeeResponse\x12V\n" +
-	"\vBatchCreate\x12\".entpb.BatchCreateEmployeesRequest\x1a#.entpb.BatchCreateEmployeesResponse2\xcb\x03\n" +
+	"\vBatchCreate\x12\".entpb.BatchCreateEmployeesRequest\x1a#.entpb.BatchCreateEmployeesResponse2\xeb\x02\n" +
+	"\fLabelService\x121\n" +
+	"\x06Create\x12\x19.entpb.CreateLabelRequest\x1a\f.entpb.Label\x12+\n" +
+	"\x03Get\x12\x16.entpb.GetLabelRequest\x1a\f.entpb.Label\x121\n" +
+	"\x06Update\x12\x19.entpb.UpdateLabelRequest\x1a\f.entpb.Label\x12;\n" +
+	"\x06Delete\x12\x19.entpb.DeleteLabelRequest\x1a\x16.google.protobuf.Empty\x129\n" +
+	"\x04List\x12\x17.entpb.ListLabelRequest\x1a\x18.entpb.ListLabelResponse\x12P\n" +
+	"\vBatchCreate\x12\x1f.entpb.BatchCreateLabelsRequest\x1a .entpb.BatchCreateLabelsResponse2\xcb\x03\n" +
 	"\x14LeaveApprovalService\x12A\n" +
 	"\x06Create\x12!.entpb.CreateLeaveApprovalRequest\x1a\x14.entpb.LeaveApproval\x12;\n" +
 	"\x03Get\x12\x1e.entpb.GetLeaveApprovalRequest\x1a\x14.entpb.LeaveApproval\x12A\n" +
@@ -5470,315 +6175,353 @@ func file_entpb_entpb_proto_rawDescGZIP() []byte {
 	return file_entpb_entpb_proto_rawDescData
 }
 
-var file_entpb_entpb_proto_enumTypes = make([]protoimpl.EnumInfo, 20)
-var file_entpb_entpb_proto_msgTypes = make([]protoimpl.MessageInfo, 72)
+var file_entpb_entpb_proto_enumTypes = make([]protoimpl.EnumInfo, 23)
+var file_entpb_entpb_proto_msgTypes = make([]protoimpl.MessageInfo, 81)
 var file_entpb_entpb_proto_goTypes = []any{
 	(GetDepartmentRequest_View)(0),            // 0: entpb.GetDepartmentRequest.View
 	(ListDepartmentRequest_View)(0),           // 1: entpb.ListDepartmentRequest.View
 	(Employee_Status)(0),                      // 2: entpb.Employee.Status
 	(GetEmployeeRequest_View)(0),              // 3: entpb.GetEmployeeRequest.View
 	(ListEmployeeRequest_View)(0),             // 4: entpb.ListEmployeeRequest.View
-	(GetLeaveApprovalRequest_View)(0),         // 5: entpb.GetLeaveApprovalRequest.View
-	(ListLeaveApprovalRequest_View)(0),        // 6: entpb.ListLeaveApprovalRequest.View
-	(LeaveRequest_Type)(0),                    // 7: entpb.LeaveRequest.Type
-	(LeaveRequest_Status)(0),                  // 8: entpb.LeaveRequest.Status
-	(GetLeaveRequestRequest_View)(0),          // 9: entpb.GetLeaveRequestRequest.View
-	(ListLeaveRequestRequest_View)(0),         // 10: entpb.ListLeaveRequestRequest.View
-	(GetOrganizationRequest_View)(0),          // 11: entpb.GetOrganizationRequest.View
-	(ListOrganizationRequest_View)(0),         // 12: entpb.ListOrganizationRequest.View
-	(GetPositionRequest_View)(0),              // 13: entpb.GetPositionRequest.View
-	(ListPositionRequest_View)(0),             // 14: entpb.ListPositionRequest.View
-	(Project_Status)(0),                       // 15: entpb.Project.Status
-	(GetProjectRequest_View)(0),               // 16: entpb.GetProjectRequest.View
-	(ListProjectRequest_View)(0),              // 17: entpb.ListProjectRequest.View
-	(GetTaskRequest_View)(0),                  // 18: entpb.GetTaskRequest.View
-	(ListTaskRequest_View)(0),                 // 19: entpb.ListTaskRequest.View
-	(*Department)(nil),                        // 20: entpb.Department
-	(*CreateDepartmentRequest)(nil),           // 21: entpb.CreateDepartmentRequest
-	(*GetDepartmentRequest)(nil),              // 22: entpb.GetDepartmentRequest
-	(*UpdateDepartmentRequest)(nil),           // 23: entpb.UpdateDepartmentRequest
-	(*DeleteDepartmentRequest)(nil),           // 24: entpb.DeleteDepartmentRequest
-	(*ListDepartmentRequest)(nil),             // 25: entpb.ListDepartmentRequest
-	(*ListDepartmentResponse)(nil),            // 26: entpb.ListDepartmentResponse
-	(*BatchCreateDepartmentsRequest)(nil),     // 27: entpb.BatchCreateDepartmentsRequest
-	(*BatchCreateDepartmentsResponse)(nil),    // 28: entpb.BatchCreateDepartmentsResponse
-	(*Employee)(nil),                          // 29: entpb.Employee
-	(*CreateEmployeeRequest)(nil),             // 30: entpb.CreateEmployeeRequest
-	(*GetEmployeeRequest)(nil),                // 31: entpb.GetEmployeeRequest
-	(*UpdateEmployeeRequest)(nil),             // 32: entpb.UpdateEmployeeRequest
-	(*DeleteEmployeeRequest)(nil),             // 33: entpb.DeleteEmployeeRequest
-	(*ListEmployeeRequest)(nil),               // 34: entpb.ListEmployeeRequest
-	(*ListEmployeeResponse)(nil),              // 35: entpb.ListEmployeeResponse
-	(*BatchCreateEmployeesRequest)(nil),       // 36: entpb.BatchCreateEmployeesRequest
-	(*BatchCreateEmployeesResponse)(nil),      // 37: entpb.BatchCreateEmployeesResponse
-	(*LeaveApproval)(nil),                     // 38: entpb.LeaveApproval
-	(*CreateLeaveApprovalRequest)(nil),        // 39: entpb.CreateLeaveApprovalRequest
-	(*GetLeaveApprovalRequest)(nil),           // 40: entpb.GetLeaveApprovalRequest
-	(*UpdateLeaveApprovalRequest)(nil),        // 41: entpb.UpdateLeaveApprovalRequest
-	(*DeleteLeaveApprovalRequest)(nil),        // 42: entpb.DeleteLeaveApprovalRequest
-	(*ListLeaveApprovalRequest)(nil),          // 43: entpb.ListLeaveApprovalRequest
-	(*ListLeaveApprovalResponse)(nil),         // 44: entpb.ListLeaveApprovalResponse
-	(*BatchCreateLeaveApprovalsRequest)(nil),  // 45: entpb.BatchCreateLeaveApprovalsRequest
-	(*BatchCreateLeaveApprovalsResponse)(nil), // 46: entpb.BatchCreateLeaveApprovalsResponse
-	(*LeaveRequest)(nil),                      // 47: entpb.LeaveRequest
-	(*CreateLeaveRequestRequest)(nil),         // 48: entpb.CreateLeaveRequestRequest
-	(*GetLeaveRequestRequest)(nil),            // 49: entpb.GetLeaveRequestRequest
-	(*UpdateLeaveRequestRequest)(nil),         // 50: entpb.UpdateLeaveRequestRequest
-	(*DeleteLeaveRequestRequest)(nil),         // 51: entpb.DeleteLeaveRequestRequest
-	(*ListLeaveRequestRequest)(nil),           // 52: entpb.ListLeaveRequestRequest
-	(*ListLeaveRequestResponse)(nil),          // 53: entpb.ListLeaveRequestResponse
-	(*BatchCreateLeaveRequestsRequest)(nil),   // 54: entpb.BatchCreateLeaveRequestsRequest
-	(*BatchCreateLeaveRequestsResponse)(nil),  // 55: entpb.BatchCreateLeaveRequestsResponse
-	(*Organization)(nil),                      // 56: entpb.Organization
-	(*CreateOrganizationRequest)(nil),         // 57: entpb.CreateOrganizationRequest
-	(*GetOrganizationRequest)(nil),            // 58: entpb.GetOrganizationRequest
-	(*UpdateOrganizationRequest)(nil),         // 59: entpb.UpdateOrganizationRequest
-	(*DeleteOrganizationRequest)(nil),         // 60: entpb.DeleteOrganizationRequest
-	(*ListOrganizationRequest)(nil),           // 61: entpb.ListOrganizationRequest
-	(*ListOrganizationResponse)(nil),          // 62: entpb.ListOrganizationResponse
-	(*BatchCreateOrganizationsRequest)(nil),   // 63: entpb.BatchCreateOrganizationsRequest
-	(*BatchCreateOrganizationsResponse)(nil),  // 64: entpb.BatchCreateOrganizationsResponse
-	(*Position)(nil),                          // 65: entpb.Position
-	(*CreatePositionRequest)(nil),             // 66: entpb.CreatePositionRequest
-	(*GetPositionRequest)(nil),                // 67: entpb.GetPositionRequest
-	(*UpdatePositionRequest)(nil),             // 68: entpb.UpdatePositionRequest
-	(*DeletePositionRequest)(nil),             // 69: entpb.DeletePositionRequest
-	(*ListPositionRequest)(nil),               // 70: entpb.ListPositionRequest
-	(*ListPositionResponse)(nil),              // 71: entpb.ListPositionResponse
-	(*BatchCreatePositionsRequest)(nil),       // 72: entpb.BatchCreatePositionsRequest
-	(*BatchCreatePositionsResponse)(nil),      // 73: entpb.BatchCreatePositionsResponse
-	(*Project)(nil),                           // 74: entpb.Project
-	(*CreateProjectRequest)(nil),              // 75: entpb.CreateProjectRequest
-	(*GetProjectRequest)(nil),                 // 76: entpb.GetProjectRequest
-	(*UpdateProjectRequest)(nil),              // 77: entpb.UpdateProjectRequest
-	(*DeleteProjectRequest)(nil),              // 78: entpb.DeleteProjectRequest
-	(*ListProjectRequest)(nil),                // 79: entpb.ListProjectRequest
-	(*ListProjectResponse)(nil),               // 80: entpb.ListProjectResponse
-	(*BatchCreateProjectsRequest)(nil),        // 81: entpb.BatchCreateProjectsRequest
-	(*BatchCreateProjectsResponse)(nil),       // 82: entpb.BatchCreateProjectsResponse
-	(*Task)(nil),                              // 83: entpb.Task
-	(*CreateTaskRequest)(nil),                 // 84: entpb.CreateTaskRequest
-	(*GetTaskRequest)(nil),                    // 85: entpb.GetTaskRequest
-	(*UpdateTaskRequest)(nil),                 // 86: entpb.UpdateTaskRequest
-	(*DeleteTaskRequest)(nil),                 // 87: entpb.DeleteTaskRequest
-	(*ListTaskRequest)(nil),                   // 88: entpb.ListTaskRequest
-	(*ListTaskResponse)(nil),                  // 89: entpb.ListTaskResponse
-	(*BatchCreateTasksRequest)(nil),           // 90: entpb.BatchCreateTasksRequest
-	(*BatchCreateTasksResponse)(nil),          // 91: entpb.BatchCreateTasksResponse
-	(*timestamppb.Timestamp)(nil),             // 92: google.protobuf.Timestamp
-	(*wrapperspb.StringValue)(nil),            // 93: google.protobuf.StringValue
-	(*wrapperspb.Int64Value)(nil),             // 94: google.protobuf.Int64Value
-	(*emptypb.Empty)(nil),                     // 95: google.protobuf.Empty
+	(GetLabelRequest_View)(0),                 // 5: entpb.GetLabelRequest.View
+	(ListLabelRequest_View)(0),                // 6: entpb.ListLabelRequest.View
+	(GetLeaveApprovalRequest_View)(0),         // 7: entpb.GetLeaveApprovalRequest.View
+	(ListLeaveApprovalRequest_View)(0),        // 8: entpb.ListLeaveApprovalRequest.View
+	(LeaveRequest_Type)(0),                    // 9: entpb.LeaveRequest.Type
+	(LeaveRequest_Status)(0),                  // 10: entpb.LeaveRequest.Status
+	(GetLeaveRequestRequest_View)(0),          // 11: entpb.GetLeaveRequestRequest.View
+	(ListLeaveRequestRequest_View)(0),         // 12: entpb.ListLeaveRequestRequest.View
+	(GetOrganizationRequest_View)(0),          // 13: entpb.GetOrganizationRequest.View
+	(ListOrganizationRequest_View)(0),         // 14: entpb.ListOrganizationRequest.View
+	(GetPositionRequest_View)(0),              // 15: entpb.GetPositionRequest.View
+	(ListPositionRequest_View)(0),             // 16: entpb.ListPositionRequest.View
+	(Project_Status)(0),                       // 17: entpb.Project.Status
+	(GetProjectRequest_View)(0),               // 18: entpb.GetProjectRequest.View
+	(ListProjectRequest_View)(0),              // 19: entpb.ListProjectRequest.View
+	(Task_Type)(0),                            // 20: entpb.Task.Type
+	(GetTaskRequest_View)(0),                  // 21: entpb.GetTaskRequest.View
+	(ListTaskRequest_View)(0),                 // 22: entpb.ListTaskRequest.View
+	(*Department)(nil),                        // 23: entpb.Department
+	(*CreateDepartmentRequest)(nil),           // 24: entpb.CreateDepartmentRequest
+	(*GetDepartmentRequest)(nil),              // 25: entpb.GetDepartmentRequest
+	(*UpdateDepartmentRequest)(nil),           // 26: entpb.UpdateDepartmentRequest
+	(*DeleteDepartmentRequest)(nil),           // 27: entpb.DeleteDepartmentRequest
+	(*ListDepartmentRequest)(nil),             // 28: entpb.ListDepartmentRequest
+	(*ListDepartmentResponse)(nil),            // 29: entpb.ListDepartmentResponse
+	(*BatchCreateDepartmentsRequest)(nil),     // 30: entpb.BatchCreateDepartmentsRequest
+	(*BatchCreateDepartmentsResponse)(nil),    // 31: entpb.BatchCreateDepartmentsResponse
+	(*Employee)(nil),                          // 32: entpb.Employee
+	(*CreateEmployeeRequest)(nil),             // 33: entpb.CreateEmployeeRequest
+	(*GetEmployeeRequest)(nil),                // 34: entpb.GetEmployeeRequest
+	(*UpdateEmployeeRequest)(nil),             // 35: entpb.UpdateEmployeeRequest
+	(*DeleteEmployeeRequest)(nil),             // 36: entpb.DeleteEmployeeRequest
+	(*ListEmployeeRequest)(nil),               // 37: entpb.ListEmployeeRequest
+	(*ListEmployeeResponse)(nil),              // 38: entpb.ListEmployeeResponse
+	(*BatchCreateEmployeesRequest)(nil),       // 39: entpb.BatchCreateEmployeesRequest
+	(*BatchCreateEmployeesResponse)(nil),      // 40: entpb.BatchCreateEmployeesResponse
+	(*Label)(nil),                             // 41: entpb.Label
+	(*CreateLabelRequest)(nil),                // 42: entpb.CreateLabelRequest
+	(*GetLabelRequest)(nil),                   // 43: entpb.GetLabelRequest
+	(*UpdateLabelRequest)(nil),                // 44: entpb.UpdateLabelRequest
+	(*DeleteLabelRequest)(nil),                // 45: entpb.DeleteLabelRequest
+	(*ListLabelRequest)(nil),                  // 46: entpb.ListLabelRequest
+	(*ListLabelResponse)(nil),                 // 47: entpb.ListLabelResponse
+	(*BatchCreateLabelsRequest)(nil),          // 48: entpb.BatchCreateLabelsRequest
+	(*BatchCreateLabelsResponse)(nil),         // 49: entpb.BatchCreateLabelsResponse
+	(*LeaveApproval)(nil),                     // 50: entpb.LeaveApproval
+	(*CreateLeaveApprovalRequest)(nil),        // 51: entpb.CreateLeaveApprovalRequest
+	(*GetLeaveApprovalRequest)(nil),           // 52: entpb.GetLeaveApprovalRequest
+	(*UpdateLeaveApprovalRequest)(nil),        // 53: entpb.UpdateLeaveApprovalRequest
+	(*DeleteLeaveApprovalRequest)(nil),        // 54: entpb.DeleteLeaveApprovalRequest
+	(*ListLeaveApprovalRequest)(nil),          // 55: entpb.ListLeaveApprovalRequest
+	(*ListLeaveApprovalResponse)(nil),         // 56: entpb.ListLeaveApprovalResponse
+	(*BatchCreateLeaveApprovalsRequest)(nil),  // 57: entpb.BatchCreateLeaveApprovalsRequest
+	(*BatchCreateLeaveApprovalsResponse)(nil), // 58: entpb.BatchCreateLeaveApprovalsResponse
+	(*LeaveRequest)(nil),                      // 59: entpb.LeaveRequest
+	(*CreateLeaveRequestRequest)(nil),         // 60: entpb.CreateLeaveRequestRequest
+	(*GetLeaveRequestRequest)(nil),            // 61: entpb.GetLeaveRequestRequest
+	(*UpdateLeaveRequestRequest)(nil),         // 62: entpb.UpdateLeaveRequestRequest
+	(*DeleteLeaveRequestRequest)(nil),         // 63: entpb.DeleteLeaveRequestRequest
+	(*ListLeaveRequestRequest)(nil),           // 64: entpb.ListLeaveRequestRequest
+	(*ListLeaveRequestResponse)(nil),          // 65: entpb.ListLeaveRequestResponse
+	(*BatchCreateLeaveRequestsRequest)(nil),   // 66: entpb.BatchCreateLeaveRequestsRequest
+	(*BatchCreateLeaveRequestsResponse)(nil),  // 67: entpb.BatchCreateLeaveRequestsResponse
+	(*Organization)(nil),                      // 68: entpb.Organization
+	(*CreateOrganizationRequest)(nil),         // 69: entpb.CreateOrganizationRequest
+	(*GetOrganizationRequest)(nil),            // 70: entpb.GetOrganizationRequest
+	(*UpdateOrganizationRequest)(nil),         // 71: entpb.UpdateOrganizationRequest
+	(*DeleteOrganizationRequest)(nil),         // 72: entpb.DeleteOrganizationRequest
+	(*ListOrganizationRequest)(nil),           // 73: entpb.ListOrganizationRequest
+	(*ListOrganizationResponse)(nil),          // 74: entpb.ListOrganizationResponse
+	(*BatchCreateOrganizationsRequest)(nil),   // 75: entpb.BatchCreateOrganizationsRequest
+	(*BatchCreateOrganizationsResponse)(nil),  // 76: entpb.BatchCreateOrganizationsResponse
+	(*Position)(nil),                          // 77: entpb.Position
+	(*CreatePositionRequest)(nil),             // 78: entpb.CreatePositionRequest
+	(*GetPositionRequest)(nil),                // 79: entpb.GetPositionRequest
+	(*UpdatePositionRequest)(nil),             // 80: entpb.UpdatePositionRequest
+	(*DeletePositionRequest)(nil),             // 81: entpb.DeletePositionRequest
+	(*ListPositionRequest)(nil),               // 82: entpb.ListPositionRequest
+	(*ListPositionResponse)(nil),              // 83: entpb.ListPositionResponse
+	(*BatchCreatePositionsRequest)(nil),       // 84: entpb.BatchCreatePositionsRequest
+	(*BatchCreatePositionsResponse)(nil),      // 85: entpb.BatchCreatePositionsResponse
+	(*Project)(nil),                           // 86: entpb.Project
+	(*CreateProjectRequest)(nil),              // 87: entpb.CreateProjectRequest
+	(*GetProjectRequest)(nil),                 // 88: entpb.GetProjectRequest
+	(*UpdateProjectRequest)(nil),              // 89: entpb.UpdateProjectRequest
+	(*DeleteProjectRequest)(nil),              // 90: entpb.DeleteProjectRequest
+	(*ListProjectRequest)(nil),                // 91: entpb.ListProjectRequest
+	(*ListProjectResponse)(nil),               // 92: entpb.ListProjectResponse
+	(*BatchCreateProjectsRequest)(nil),        // 93: entpb.BatchCreateProjectsRequest
+	(*BatchCreateProjectsResponse)(nil),       // 94: entpb.BatchCreateProjectsResponse
+	(*Task)(nil),                              // 95: entpb.Task
+	(*CreateTaskRequest)(nil),                 // 96: entpb.CreateTaskRequest
+	(*GetTaskRequest)(nil),                    // 97: entpb.GetTaskRequest
+	(*UpdateTaskRequest)(nil),                 // 98: entpb.UpdateTaskRequest
+	(*DeleteTaskRequest)(nil),                 // 99: entpb.DeleteTaskRequest
+	(*ListTaskRequest)(nil),                   // 100: entpb.ListTaskRequest
+	(*ListTaskResponse)(nil),                  // 101: entpb.ListTaskResponse
+	(*BatchCreateTasksRequest)(nil),           // 102: entpb.BatchCreateTasksRequest
+	(*BatchCreateTasksResponse)(nil),          // 103: entpb.BatchCreateTasksResponse
+	(*timestamppb.Timestamp)(nil),             // 104: google.protobuf.Timestamp
+	(*wrapperspb.StringValue)(nil),            // 105: google.protobuf.StringValue
+	(*wrapperspb.Int64Value)(nil),             // 106: google.protobuf.Int64Value
+	(*emptypb.Empty)(nil),                     // 107: google.protobuf.Empty
 }
 var file_entpb_entpb_proto_depIdxs = []int32{
-	92,  // 0: entpb.Department.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 1: entpb.Department.updated_at:type_name -> google.protobuf.Timestamp
-	65,  // 2: entpb.Department.positions:type_name -> entpb.Position
-	56,  // 3: entpb.Department.organization:type_name -> entpb.Organization
-	20,  // 4: entpb.CreateDepartmentRequest.department:type_name -> entpb.Department
+	104, // 0: entpb.Department.created_at:type_name -> google.protobuf.Timestamp
+	104, // 1: entpb.Department.updated_at:type_name -> google.protobuf.Timestamp
+	77,  // 2: entpb.Department.positions:type_name -> entpb.Position
+	68,  // 3: entpb.Department.organization:type_name -> entpb.Organization
+	23,  // 4: entpb.CreateDepartmentRequest.department:type_name -> entpb.Department
 	0,   // 5: entpb.GetDepartmentRequest.view:type_name -> entpb.GetDepartmentRequest.View
-	20,  // 6: entpb.UpdateDepartmentRequest.department:type_name -> entpb.Department
+	23,  // 6: entpb.UpdateDepartmentRequest.department:type_name -> entpb.Department
 	1,   // 7: entpb.ListDepartmentRequest.view:type_name -> entpb.ListDepartmentRequest.View
-	20,  // 8: entpb.ListDepartmentResponse.department_list:type_name -> entpb.Department
-	21,  // 9: entpb.BatchCreateDepartmentsRequest.requests:type_name -> entpb.CreateDepartmentRequest
-	20,  // 10: entpb.BatchCreateDepartmentsResponse.departments:type_name -> entpb.Department
-	93,  // 11: entpb.Employee.user_id:type_name -> google.protobuf.StringValue
+	23,  // 8: entpb.ListDepartmentResponse.department_list:type_name -> entpb.Department
+	24,  // 9: entpb.BatchCreateDepartmentsRequest.requests:type_name -> entpb.CreateDepartmentRequest
+	23,  // 10: entpb.BatchCreateDepartmentsResponse.departments:type_name -> entpb.Department
+	105, // 11: entpb.Employee.user_id:type_name -> google.protobuf.StringValue
 	2,   // 12: entpb.Employee.status:type_name -> entpb.Employee.Status
-	92,  // 13: entpb.Employee.joining_at:type_name -> google.protobuf.Timestamp
-	92,  // 14: entpb.Employee.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 15: entpb.Employee.updated_at:type_name -> google.protobuf.Timestamp
-	65,  // 16: entpb.Employee.position:type_name -> entpb.Position
-	29,  // 17: entpb.CreateEmployeeRequest.employee:type_name -> entpb.Employee
+	104, // 13: entpb.Employee.joining_at:type_name -> google.protobuf.Timestamp
+	104, // 14: entpb.Employee.created_at:type_name -> google.protobuf.Timestamp
+	104, // 15: entpb.Employee.updated_at:type_name -> google.protobuf.Timestamp
+	77,  // 16: entpb.Employee.position:type_name -> entpb.Position
+	32,  // 17: entpb.CreateEmployeeRequest.employee:type_name -> entpb.Employee
 	3,   // 18: entpb.GetEmployeeRequest.view:type_name -> entpb.GetEmployeeRequest.View
-	29,  // 19: entpb.UpdateEmployeeRequest.employee:type_name -> entpb.Employee
+	32,  // 19: entpb.UpdateEmployeeRequest.employee:type_name -> entpb.Employee
 	4,   // 20: entpb.ListEmployeeRequest.view:type_name -> entpb.ListEmployeeRequest.View
-	29,  // 21: entpb.ListEmployeeResponse.employee_list:type_name -> entpb.Employee
-	30,  // 22: entpb.BatchCreateEmployeesRequest.requests:type_name -> entpb.CreateEmployeeRequest
-	29,  // 23: entpb.BatchCreateEmployeesResponse.employees:type_name -> entpb.Employee
-	93,  // 24: entpb.LeaveApproval.comment:type_name -> google.protobuf.StringValue
-	92,  // 25: entpb.LeaveApproval.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 26: entpb.LeaveApproval.updated_at:type_name -> google.protobuf.Timestamp
-	38,  // 27: entpb.CreateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
-	5,   // 28: entpb.GetLeaveApprovalRequest.view:type_name -> entpb.GetLeaveApprovalRequest.View
-	38,  // 29: entpb.UpdateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
-	6,   // 30: entpb.ListLeaveApprovalRequest.view:type_name -> entpb.ListLeaveApprovalRequest.View
-	38,  // 31: entpb.ListLeaveApprovalResponse.leave_approval_list:type_name -> entpb.LeaveApproval
-	39,  // 32: entpb.BatchCreateLeaveApprovalsRequest.requests:type_name -> entpb.CreateLeaveApprovalRequest
-	38,  // 33: entpb.BatchCreateLeaveApprovalsResponse.leave_approvals:type_name -> entpb.LeaveApproval
-	92,  // 34: entpb.LeaveRequest.start_at:type_name -> google.protobuf.Timestamp
-	92,  // 35: entpb.LeaveRequest.end_at:type_name -> google.protobuf.Timestamp
-	93,  // 36: entpb.LeaveRequest.reason:type_name -> google.protobuf.StringValue
-	7,   // 37: entpb.LeaveRequest.type:type_name -> entpb.LeaveRequest.Type
-	8,   // 38: entpb.LeaveRequest.status:type_name -> entpb.LeaveRequest.Status
-	92,  // 39: entpb.LeaveRequest.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 40: entpb.LeaveRequest.updated_at:type_name -> google.protobuf.Timestamp
-	38,  // 41: entpb.LeaveRequest.leaveapprove:type_name -> entpb.LeaveApproval
-	47,  // 42: entpb.CreateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
-	9,   // 43: entpb.GetLeaveRequestRequest.view:type_name -> entpb.GetLeaveRequestRequest.View
-	47,  // 44: entpb.UpdateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
-	10,  // 45: entpb.ListLeaveRequestRequest.view:type_name -> entpb.ListLeaveRequestRequest.View
-	47,  // 46: entpb.ListLeaveRequestResponse.leave_request_list:type_name -> entpb.LeaveRequest
-	48,  // 47: entpb.BatchCreateLeaveRequestsRequest.requests:type_name -> entpb.CreateLeaveRequestRequest
-	47,  // 48: entpb.BatchCreateLeaveRequestsResponse.leave_requests:type_name -> entpb.LeaveRequest
-	93,  // 49: entpb.Organization.logo_url:type_name -> google.protobuf.StringValue
-	93,  // 50: entpb.Organization.address:type_name -> google.protobuf.StringValue
-	93,  // 51: entpb.Organization.phone:type_name -> google.protobuf.StringValue
-	93,  // 52: entpb.Organization.email:type_name -> google.protobuf.StringValue
-	93,  // 53: entpb.Organization.website:type_name -> google.protobuf.StringValue
-	92,  // 54: entpb.Organization.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 55: entpb.Organization.updated_at:type_name -> google.protobuf.Timestamp
-	94,  // 56: entpb.Organization.parent_id:type_name -> google.protobuf.Int64Value
-	56,  // 57: entpb.Organization.parent:type_name -> entpb.Organization
-	56,  // 58: entpb.Organization.children:type_name -> entpb.Organization
-	20,  // 59: entpb.Organization.departments:type_name -> entpb.Department
-	56,  // 60: entpb.CreateOrganizationRequest.organization:type_name -> entpb.Organization
-	11,  // 61: entpb.GetOrganizationRequest.view:type_name -> entpb.GetOrganizationRequest.View
-	56,  // 62: entpb.UpdateOrganizationRequest.organization:type_name -> entpb.Organization
-	12,  // 63: entpb.ListOrganizationRequest.view:type_name -> entpb.ListOrganizationRequest.View
-	56,  // 64: entpb.ListOrganizationResponse.organization_list:type_name -> entpb.Organization
-	57,  // 65: entpb.BatchCreateOrganizationsRequest.requests:type_name -> entpb.CreateOrganizationRequest
-	56,  // 66: entpb.BatchCreateOrganizationsResponse.organizations:type_name -> entpb.Organization
-	94,  // 67: entpb.Position.parent_id:type_name -> google.protobuf.Int64Value
-	92,  // 68: entpb.Position.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 69: entpb.Position.updated_at:type_name -> google.protobuf.Timestamp
-	29,  // 70: entpb.Position.employees:type_name -> entpb.Employee
-	20,  // 71: entpb.Position.departments:type_name -> entpb.Department
-	65,  // 72: entpb.Position.children:type_name -> entpb.Position
-	65,  // 73: entpb.Position.parent:type_name -> entpb.Position
-	65,  // 74: entpb.CreatePositionRequest.position:type_name -> entpb.Position
-	13,  // 75: entpb.GetPositionRequest.view:type_name -> entpb.GetPositionRequest.View
-	65,  // 76: entpb.UpdatePositionRequest.position:type_name -> entpb.Position
-	14,  // 77: entpb.ListPositionRequest.view:type_name -> entpb.ListPositionRequest.View
-	65,  // 78: entpb.ListPositionResponse.position_list:type_name -> entpb.Position
-	66,  // 79: entpb.BatchCreatePositionsRequest.requests:type_name -> entpb.CreatePositionRequest
-	65,  // 80: entpb.BatchCreatePositionsResponse.positions:type_name -> entpb.Position
-	93,  // 81: entpb.Project.description:type_name -> google.protobuf.StringValue
-	92,  // 82: entpb.Project.start_at:type_name -> google.protobuf.Timestamp
-	92,  // 83: entpb.Project.end_at:type_name -> google.protobuf.Timestamp
-	92,  // 84: entpb.Project.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 85: entpb.Project.updated_at:type_name -> google.protobuf.Timestamp
-	15,  // 86: entpb.Project.status:type_name -> entpb.Project.Status
-	83,  // 87: entpb.Project.tasks:type_name -> entpb.Task
-	74,  // 88: entpb.CreateProjectRequest.project:type_name -> entpb.Project
-	16,  // 89: entpb.GetProjectRequest.view:type_name -> entpb.GetProjectRequest.View
-	74,  // 90: entpb.UpdateProjectRequest.project:type_name -> entpb.Project
-	17,  // 91: entpb.ListProjectRequest.view:type_name -> entpb.ListProjectRequest.View
-	74,  // 92: entpb.ListProjectResponse.project_list:type_name -> entpb.Project
-	75,  // 93: entpb.BatchCreateProjectsRequest.requests:type_name -> entpb.CreateProjectRequest
-	74,  // 94: entpb.BatchCreateProjectsResponse.projects:type_name -> entpb.Project
-	93,  // 95: entpb.Task.description:type_name -> google.protobuf.StringValue
-	92,  // 96: entpb.Task.start_at:type_name -> google.protobuf.Timestamp
-	92,  // 97: entpb.Task.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 98: entpb.Task.updated_at:type_name -> google.protobuf.Timestamp
-	74,  // 99: entpb.Task.project:type_name -> entpb.Project
-	83,  // 100: entpb.CreateTaskRequest.task:type_name -> entpb.Task
-	18,  // 101: entpb.GetTaskRequest.view:type_name -> entpb.GetTaskRequest.View
-	83,  // 102: entpb.UpdateTaskRequest.task:type_name -> entpb.Task
-	19,  // 103: entpb.ListTaskRequest.view:type_name -> entpb.ListTaskRequest.View
-	83,  // 104: entpb.ListTaskResponse.task_list:type_name -> entpb.Task
-	84,  // 105: entpb.BatchCreateTasksRequest.requests:type_name -> entpb.CreateTaskRequest
-	83,  // 106: entpb.BatchCreateTasksResponse.tasks:type_name -> entpb.Task
-	21,  // 107: entpb.DepartmentService.Create:input_type -> entpb.CreateDepartmentRequest
-	22,  // 108: entpb.DepartmentService.Get:input_type -> entpb.GetDepartmentRequest
-	23,  // 109: entpb.DepartmentService.Update:input_type -> entpb.UpdateDepartmentRequest
-	24,  // 110: entpb.DepartmentService.Delete:input_type -> entpb.DeleteDepartmentRequest
-	25,  // 111: entpb.DepartmentService.List:input_type -> entpb.ListDepartmentRequest
-	27,  // 112: entpb.DepartmentService.BatchCreate:input_type -> entpb.BatchCreateDepartmentsRequest
-	30,  // 113: entpb.EmployeeService.Create:input_type -> entpb.CreateEmployeeRequest
-	31,  // 114: entpb.EmployeeService.Get:input_type -> entpb.GetEmployeeRequest
-	32,  // 115: entpb.EmployeeService.Update:input_type -> entpb.UpdateEmployeeRequest
-	33,  // 116: entpb.EmployeeService.Delete:input_type -> entpb.DeleteEmployeeRequest
-	34,  // 117: entpb.EmployeeService.List:input_type -> entpb.ListEmployeeRequest
-	36,  // 118: entpb.EmployeeService.BatchCreate:input_type -> entpb.BatchCreateEmployeesRequest
-	39,  // 119: entpb.LeaveApprovalService.Create:input_type -> entpb.CreateLeaveApprovalRequest
-	40,  // 120: entpb.LeaveApprovalService.Get:input_type -> entpb.GetLeaveApprovalRequest
-	41,  // 121: entpb.LeaveApprovalService.Update:input_type -> entpb.UpdateLeaveApprovalRequest
-	42,  // 122: entpb.LeaveApprovalService.Delete:input_type -> entpb.DeleteLeaveApprovalRequest
-	43,  // 123: entpb.LeaveApprovalService.List:input_type -> entpb.ListLeaveApprovalRequest
-	45,  // 124: entpb.LeaveApprovalService.BatchCreate:input_type -> entpb.BatchCreateLeaveApprovalsRequest
-	48,  // 125: entpb.LeaveRequestService.Create:input_type -> entpb.CreateLeaveRequestRequest
-	49,  // 126: entpb.LeaveRequestService.Get:input_type -> entpb.GetLeaveRequestRequest
-	50,  // 127: entpb.LeaveRequestService.Update:input_type -> entpb.UpdateLeaveRequestRequest
-	51,  // 128: entpb.LeaveRequestService.Delete:input_type -> entpb.DeleteLeaveRequestRequest
-	52,  // 129: entpb.LeaveRequestService.List:input_type -> entpb.ListLeaveRequestRequest
-	54,  // 130: entpb.LeaveRequestService.BatchCreate:input_type -> entpb.BatchCreateLeaveRequestsRequest
-	57,  // 131: entpb.OrganizationService.Create:input_type -> entpb.CreateOrganizationRequest
-	58,  // 132: entpb.OrganizationService.Get:input_type -> entpb.GetOrganizationRequest
-	59,  // 133: entpb.OrganizationService.Update:input_type -> entpb.UpdateOrganizationRequest
-	60,  // 134: entpb.OrganizationService.Delete:input_type -> entpb.DeleteOrganizationRequest
-	61,  // 135: entpb.OrganizationService.List:input_type -> entpb.ListOrganizationRequest
-	63,  // 136: entpb.OrganizationService.BatchCreate:input_type -> entpb.BatchCreateOrganizationsRequest
-	66,  // 137: entpb.PositionService.Create:input_type -> entpb.CreatePositionRequest
-	67,  // 138: entpb.PositionService.Get:input_type -> entpb.GetPositionRequest
-	68,  // 139: entpb.PositionService.Update:input_type -> entpb.UpdatePositionRequest
-	69,  // 140: entpb.PositionService.Delete:input_type -> entpb.DeletePositionRequest
-	70,  // 141: entpb.PositionService.List:input_type -> entpb.ListPositionRequest
-	72,  // 142: entpb.PositionService.BatchCreate:input_type -> entpb.BatchCreatePositionsRequest
-	75,  // 143: entpb.ProjectService.Create:input_type -> entpb.CreateProjectRequest
-	76,  // 144: entpb.ProjectService.Get:input_type -> entpb.GetProjectRequest
-	77,  // 145: entpb.ProjectService.Update:input_type -> entpb.UpdateProjectRequest
-	78,  // 146: entpb.ProjectService.Delete:input_type -> entpb.DeleteProjectRequest
-	79,  // 147: entpb.ProjectService.List:input_type -> entpb.ListProjectRequest
-	81,  // 148: entpb.ProjectService.BatchCreate:input_type -> entpb.BatchCreateProjectsRequest
-	84,  // 149: entpb.TaskService.Create:input_type -> entpb.CreateTaskRequest
-	85,  // 150: entpb.TaskService.Get:input_type -> entpb.GetTaskRequest
-	86,  // 151: entpb.TaskService.Update:input_type -> entpb.UpdateTaskRequest
-	87,  // 152: entpb.TaskService.Delete:input_type -> entpb.DeleteTaskRequest
-	88,  // 153: entpb.TaskService.List:input_type -> entpb.ListTaskRequest
-	90,  // 154: entpb.TaskService.BatchCreate:input_type -> entpb.BatchCreateTasksRequest
-	20,  // 155: entpb.DepartmentService.Create:output_type -> entpb.Department
-	20,  // 156: entpb.DepartmentService.Get:output_type -> entpb.Department
-	20,  // 157: entpb.DepartmentService.Update:output_type -> entpb.Department
-	95,  // 158: entpb.DepartmentService.Delete:output_type -> google.protobuf.Empty
-	26,  // 159: entpb.DepartmentService.List:output_type -> entpb.ListDepartmentResponse
-	28,  // 160: entpb.DepartmentService.BatchCreate:output_type -> entpb.BatchCreateDepartmentsResponse
-	29,  // 161: entpb.EmployeeService.Create:output_type -> entpb.Employee
-	29,  // 162: entpb.EmployeeService.Get:output_type -> entpb.Employee
-	29,  // 163: entpb.EmployeeService.Update:output_type -> entpb.Employee
-	95,  // 164: entpb.EmployeeService.Delete:output_type -> google.protobuf.Empty
-	35,  // 165: entpb.EmployeeService.List:output_type -> entpb.ListEmployeeResponse
-	37,  // 166: entpb.EmployeeService.BatchCreate:output_type -> entpb.BatchCreateEmployeesResponse
-	38,  // 167: entpb.LeaveApprovalService.Create:output_type -> entpb.LeaveApproval
-	38,  // 168: entpb.LeaveApprovalService.Get:output_type -> entpb.LeaveApproval
-	38,  // 169: entpb.LeaveApprovalService.Update:output_type -> entpb.LeaveApproval
-	95,  // 170: entpb.LeaveApprovalService.Delete:output_type -> google.protobuf.Empty
-	44,  // 171: entpb.LeaveApprovalService.List:output_type -> entpb.ListLeaveApprovalResponse
-	46,  // 172: entpb.LeaveApprovalService.BatchCreate:output_type -> entpb.BatchCreateLeaveApprovalsResponse
-	47,  // 173: entpb.LeaveRequestService.Create:output_type -> entpb.LeaveRequest
-	47,  // 174: entpb.LeaveRequestService.Get:output_type -> entpb.LeaveRequest
-	47,  // 175: entpb.LeaveRequestService.Update:output_type -> entpb.LeaveRequest
-	95,  // 176: entpb.LeaveRequestService.Delete:output_type -> google.protobuf.Empty
-	53,  // 177: entpb.LeaveRequestService.List:output_type -> entpb.ListLeaveRequestResponse
-	55,  // 178: entpb.LeaveRequestService.BatchCreate:output_type -> entpb.BatchCreateLeaveRequestsResponse
-	56,  // 179: entpb.OrganizationService.Create:output_type -> entpb.Organization
-	56,  // 180: entpb.OrganizationService.Get:output_type -> entpb.Organization
-	56,  // 181: entpb.OrganizationService.Update:output_type -> entpb.Organization
-	95,  // 182: entpb.OrganizationService.Delete:output_type -> google.protobuf.Empty
-	62,  // 183: entpb.OrganizationService.List:output_type -> entpb.ListOrganizationResponse
-	64,  // 184: entpb.OrganizationService.BatchCreate:output_type -> entpb.BatchCreateOrganizationsResponse
-	65,  // 185: entpb.PositionService.Create:output_type -> entpb.Position
-	65,  // 186: entpb.PositionService.Get:output_type -> entpb.Position
-	65,  // 187: entpb.PositionService.Update:output_type -> entpb.Position
-	95,  // 188: entpb.PositionService.Delete:output_type -> google.protobuf.Empty
-	71,  // 189: entpb.PositionService.List:output_type -> entpb.ListPositionResponse
-	73,  // 190: entpb.PositionService.BatchCreate:output_type -> entpb.BatchCreatePositionsResponse
-	74,  // 191: entpb.ProjectService.Create:output_type -> entpb.Project
-	74,  // 192: entpb.ProjectService.Get:output_type -> entpb.Project
-	74,  // 193: entpb.ProjectService.Update:output_type -> entpb.Project
-	95,  // 194: entpb.ProjectService.Delete:output_type -> google.protobuf.Empty
-	80,  // 195: entpb.ProjectService.List:output_type -> entpb.ListProjectResponse
-	82,  // 196: entpb.ProjectService.BatchCreate:output_type -> entpb.BatchCreateProjectsResponse
-	83,  // 197: entpb.TaskService.Create:output_type -> entpb.Task
-	83,  // 198: entpb.TaskService.Get:output_type -> entpb.Task
-	83,  // 199: entpb.TaskService.Update:output_type -> entpb.Task
-	95,  // 200: entpb.TaskService.Delete:output_type -> google.protobuf.Empty
-	89,  // 201: entpb.TaskService.List:output_type -> entpb.ListTaskResponse
-	91,  // 202: entpb.TaskService.BatchCreate:output_type -> entpb.BatchCreateTasksResponse
-	155, // [155:203] is the sub-list for method output_type
-	107, // [107:155] is the sub-list for method input_type
-	107, // [107:107] is the sub-list for extension type_name
-	107, // [107:107] is the sub-list for extension extendee
-	0,   // [0:107] is the sub-list for field type_name
+	32,  // 21: entpb.ListEmployeeResponse.employee_list:type_name -> entpb.Employee
+	33,  // 22: entpb.BatchCreateEmployeesRequest.requests:type_name -> entpb.CreateEmployeeRequest
+	32,  // 23: entpb.BatchCreateEmployeesResponse.employees:type_name -> entpb.Employee
+	105, // 24: entpb.Label.description:type_name -> google.protobuf.StringValue
+	104, // 25: entpb.Label.created_at:type_name -> google.protobuf.Timestamp
+	104, // 26: entpb.Label.updated_at:type_name -> google.protobuf.Timestamp
+	95,  // 27: entpb.Label.tasks:type_name -> entpb.Task
+	41,  // 28: entpb.CreateLabelRequest.label:type_name -> entpb.Label
+	5,   // 29: entpb.GetLabelRequest.view:type_name -> entpb.GetLabelRequest.View
+	41,  // 30: entpb.UpdateLabelRequest.label:type_name -> entpb.Label
+	6,   // 31: entpb.ListLabelRequest.view:type_name -> entpb.ListLabelRequest.View
+	41,  // 32: entpb.ListLabelResponse.label_list:type_name -> entpb.Label
+	42,  // 33: entpb.BatchCreateLabelsRequest.requests:type_name -> entpb.CreateLabelRequest
+	41,  // 34: entpb.BatchCreateLabelsResponse.labels:type_name -> entpb.Label
+	105, // 35: entpb.LeaveApproval.comment:type_name -> google.protobuf.StringValue
+	104, // 36: entpb.LeaveApproval.created_at:type_name -> google.protobuf.Timestamp
+	104, // 37: entpb.LeaveApproval.updated_at:type_name -> google.protobuf.Timestamp
+	50,  // 38: entpb.CreateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
+	7,   // 39: entpb.GetLeaveApprovalRequest.view:type_name -> entpb.GetLeaveApprovalRequest.View
+	50,  // 40: entpb.UpdateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
+	8,   // 41: entpb.ListLeaveApprovalRequest.view:type_name -> entpb.ListLeaveApprovalRequest.View
+	50,  // 42: entpb.ListLeaveApprovalResponse.leave_approval_list:type_name -> entpb.LeaveApproval
+	51,  // 43: entpb.BatchCreateLeaveApprovalsRequest.requests:type_name -> entpb.CreateLeaveApprovalRequest
+	50,  // 44: entpb.BatchCreateLeaveApprovalsResponse.leave_approvals:type_name -> entpb.LeaveApproval
+	104, // 45: entpb.LeaveRequest.start_at:type_name -> google.protobuf.Timestamp
+	104, // 46: entpb.LeaveRequest.end_at:type_name -> google.protobuf.Timestamp
+	105, // 47: entpb.LeaveRequest.reason:type_name -> google.protobuf.StringValue
+	9,   // 48: entpb.LeaveRequest.type:type_name -> entpb.LeaveRequest.Type
+	10,  // 49: entpb.LeaveRequest.status:type_name -> entpb.LeaveRequest.Status
+	104, // 50: entpb.LeaveRequest.created_at:type_name -> google.protobuf.Timestamp
+	104, // 51: entpb.LeaveRequest.updated_at:type_name -> google.protobuf.Timestamp
+	50,  // 52: entpb.LeaveRequest.leaveapprove:type_name -> entpb.LeaveApproval
+	59,  // 53: entpb.CreateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
+	11,  // 54: entpb.GetLeaveRequestRequest.view:type_name -> entpb.GetLeaveRequestRequest.View
+	59,  // 55: entpb.UpdateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
+	12,  // 56: entpb.ListLeaveRequestRequest.view:type_name -> entpb.ListLeaveRequestRequest.View
+	59,  // 57: entpb.ListLeaveRequestResponse.leave_request_list:type_name -> entpb.LeaveRequest
+	60,  // 58: entpb.BatchCreateLeaveRequestsRequest.requests:type_name -> entpb.CreateLeaveRequestRequest
+	59,  // 59: entpb.BatchCreateLeaveRequestsResponse.leave_requests:type_name -> entpb.LeaveRequest
+	105, // 60: entpb.Organization.logo_url:type_name -> google.protobuf.StringValue
+	105, // 61: entpb.Organization.address:type_name -> google.protobuf.StringValue
+	105, // 62: entpb.Organization.phone:type_name -> google.protobuf.StringValue
+	105, // 63: entpb.Organization.email:type_name -> google.protobuf.StringValue
+	105, // 64: entpb.Organization.website:type_name -> google.protobuf.StringValue
+	104, // 65: entpb.Organization.created_at:type_name -> google.protobuf.Timestamp
+	104, // 66: entpb.Organization.updated_at:type_name -> google.protobuf.Timestamp
+	106, // 67: entpb.Organization.parent_id:type_name -> google.protobuf.Int64Value
+	68,  // 68: entpb.Organization.parent:type_name -> entpb.Organization
+	68,  // 69: entpb.Organization.children:type_name -> entpb.Organization
+	23,  // 70: entpb.Organization.departments:type_name -> entpb.Department
+	68,  // 71: entpb.CreateOrganizationRequest.organization:type_name -> entpb.Organization
+	13,  // 72: entpb.GetOrganizationRequest.view:type_name -> entpb.GetOrganizationRequest.View
+	68,  // 73: entpb.UpdateOrganizationRequest.organization:type_name -> entpb.Organization
+	14,  // 74: entpb.ListOrganizationRequest.view:type_name -> entpb.ListOrganizationRequest.View
+	68,  // 75: entpb.ListOrganizationResponse.organization_list:type_name -> entpb.Organization
+	69,  // 76: entpb.BatchCreateOrganizationsRequest.requests:type_name -> entpb.CreateOrganizationRequest
+	68,  // 77: entpb.BatchCreateOrganizationsResponse.organizations:type_name -> entpb.Organization
+	106, // 78: entpb.Position.parent_id:type_name -> google.protobuf.Int64Value
+	104, // 79: entpb.Position.created_at:type_name -> google.protobuf.Timestamp
+	104, // 80: entpb.Position.updated_at:type_name -> google.protobuf.Timestamp
+	32,  // 81: entpb.Position.employees:type_name -> entpb.Employee
+	23,  // 82: entpb.Position.departments:type_name -> entpb.Department
+	77,  // 83: entpb.Position.children:type_name -> entpb.Position
+	77,  // 84: entpb.Position.parent:type_name -> entpb.Position
+	77,  // 85: entpb.CreatePositionRequest.position:type_name -> entpb.Position
+	15,  // 86: entpb.GetPositionRequest.view:type_name -> entpb.GetPositionRequest.View
+	77,  // 87: entpb.UpdatePositionRequest.position:type_name -> entpb.Position
+	16,  // 88: entpb.ListPositionRequest.view:type_name -> entpb.ListPositionRequest.View
+	77,  // 89: entpb.ListPositionResponse.position_list:type_name -> entpb.Position
+	78,  // 90: entpb.BatchCreatePositionsRequest.requests:type_name -> entpb.CreatePositionRequest
+	77,  // 91: entpb.BatchCreatePositionsResponse.positions:type_name -> entpb.Position
+	105, // 92: entpb.Project.description:type_name -> google.protobuf.StringValue
+	104, // 93: entpb.Project.start_at:type_name -> google.protobuf.Timestamp
+	104, // 94: entpb.Project.end_at:type_name -> google.protobuf.Timestamp
+	106, // 95: entpb.Project.process:type_name -> google.protobuf.Int64Value
+	17,  // 96: entpb.Project.status:type_name -> entpb.Project.Status
+	104, // 97: entpb.Project.created_at:type_name -> google.protobuf.Timestamp
+	104, // 98: entpb.Project.updated_at:type_name -> google.protobuf.Timestamp
+	95,  // 99: entpb.Project.tasks:type_name -> entpb.Task
+	86,  // 100: entpb.CreateProjectRequest.project:type_name -> entpb.Project
+	18,  // 101: entpb.GetProjectRequest.view:type_name -> entpb.GetProjectRequest.View
+	86,  // 102: entpb.UpdateProjectRequest.project:type_name -> entpb.Project
+	19,  // 103: entpb.ListProjectRequest.view:type_name -> entpb.ListProjectRequest.View
+	86,  // 104: entpb.ListProjectResponse.project_list:type_name -> entpb.Project
+	87,  // 105: entpb.BatchCreateProjectsRequest.requests:type_name -> entpb.CreateProjectRequest
+	86,  // 106: entpb.BatchCreateProjectsResponse.projects:type_name -> entpb.Project
+	105, // 107: entpb.Task.description:type_name -> google.protobuf.StringValue
+	104, // 108: entpb.Task.start_at:type_name -> google.protobuf.Timestamp
+	104, // 109: entpb.Task.created_at:type_name -> google.protobuf.Timestamp
+	104, // 110: entpb.Task.updated_at:type_name -> google.protobuf.Timestamp
+	20,  // 111: entpb.Task.type:type_name -> entpb.Task.Type
+	86,  // 112: entpb.Task.project:type_name -> entpb.Project
+	41,  // 113: entpb.Task.labels:type_name -> entpb.Label
+	95,  // 114: entpb.CreateTaskRequest.task:type_name -> entpb.Task
+	21,  // 115: entpb.GetTaskRequest.view:type_name -> entpb.GetTaskRequest.View
+	95,  // 116: entpb.UpdateTaskRequest.task:type_name -> entpb.Task
+	22,  // 117: entpb.ListTaskRequest.view:type_name -> entpb.ListTaskRequest.View
+	95,  // 118: entpb.ListTaskResponse.task_list:type_name -> entpb.Task
+	96,  // 119: entpb.BatchCreateTasksRequest.requests:type_name -> entpb.CreateTaskRequest
+	95,  // 120: entpb.BatchCreateTasksResponse.tasks:type_name -> entpb.Task
+	24,  // 121: entpb.DepartmentService.Create:input_type -> entpb.CreateDepartmentRequest
+	25,  // 122: entpb.DepartmentService.Get:input_type -> entpb.GetDepartmentRequest
+	26,  // 123: entpb.DepartmentService.Update:input_type -> entpb.UpdateDepartmentRequest
+	27,  // 124: entpb.DepartmentService.Delete:input_type -> entpb.DeleteDepartmentRequest
+	28,  // 125: entpb.DepartmentService.List:input_type -> entpb.ListDepartmentRequest
+	30,  // 126: entpb.DepartmentService.BatchCreate:input_type -> entpb.BatchCreateDepartmentsRequest
+	33,  // 127: entpb.EmployeeService.Create:input_type -> entpb.CreateEmployeeRequest
+	34,  // 128: entpb.EmployeeService.Get:input_type -> entpb.GetEmployeeRequest
+	35,  // 129: entpb.EmployeeService.Update:input_type -> entpb.UpdateEmployeeRequest
+	36,  // 130: entpb.EmployeeService.Delete:input_type -> entpb.DeleteEmployeeRequest
+	37,  // 131: entpb.EmployeeService.List:input_type -> entpb.ListEmployeeRequest
+	39,  // 132: entpb.EmployeeService.BatchCreate:input_type -> entpb.BatchCreateEmployeesRequest
+	42,  // 133: entpb.LabelService.Create:input_type -> entpb.CreateLabelRequest
+	43,  // 134: entpb.LabelService.Get:input_type -> entpb.GetLabelRequest
+	44,  // 135: entpb.LabelService.Update:input_type -> entpb.UpdateLabelRequest
+	45,  // 136: entpb.LabelService.Delete:input_type -> entpb.DeleteLabelRequest
+	46,  // 137: entpb.LabelService.List:input_type -> entpb.ListLabelRequest
+	48,  // 138: entpb.LabelService.BatchCreate:input_type -> entpb.BatchCreateLabelsRequest
+	51,  // 139: entpb.LeaveApprovalService.Create:input_type -> entpb.CreateLeaveApprovalRequest
+	52,  // 140: entpb.LeaveApprovalService.Get:input_type -> entpb.GetLeaveApprovalRequest
+	53,  // 141: entpb.LeaveApprovalService.Update:input_type -> entpb.UpdateLeaveApprovalRequest
+	54,  // 142: entpb.LeaveApprovalService.Delete:input_type -> entpb.DeleteLeaveApprovalRequest
+	55,  // 143: entpb.LeaveApprovalService.List:input_type -> entpb.ListLeaveApprovalRequest
+	57,  // 144: entpb.LeaveApprovalService.BatchCreate:input_type -> entpb.BatchCreateLeaveApprovalsRequest
+	60,  // 145: entpb.LeaveRequestService.Create:input_type -> entpb.CreateLeaveRequestRequest
+	61,  // 146: entpb.LeaveRequestService.Get:input_type -> entpb.GetLeaveRequestRequest
+	62,  // 147: entpb.LeaveRequestService.Update:input_type -> entpb.UpdateLeaveRequestRequest
+	63,  // 148: entpb.LeaveRequestService.Delete:input_type -> entpb.DeleteLeaveRequestRequest
+	64,  // 149: entpb.LeaveRequestService.List:input_type -> entpb.ListLeaveRequestRequest
+	66,  // 150: entpb.LeaveRequestService.BatchCreate:input_type -> entpb.BatchCreateLeaveRequestsRequest
+	69,  // 151: entpb.OrganizationService.Create:input_type -> entpb.CreateOrganizationRequest
+	70,  // 152: entpb.OrganizationService.Get:input_type -> entpb.GetOrganizationRequest
+	71,  // 153: entpb.OrganizationService.Update:input_type -> entpb.UpdateOrganizationRequest
+	72,  // 154: entpb.OrganizationService.Delete:input_type -> entpb.DeleteOrganizationRequest
+	73,  // 155: entpb.OrganizationService.List:input_type -> entpb.ListOrganizationRequest
+	75,  // 156: entpb.OrganizationService.BatchCreate:input_type -> entpb.BatchCreateOrganizationsRequest
+	78,  // 157: entpb.PositionService.Create:input_type -> entpb.CreatePositionRequest
+	79,  // 158: entpb.PositionService.Get:input_type -> entpb.GetPositionRequest
+	80,  // 159: entpb.PositionService.Update:input_type -> entpb.UpdatePositionRequest
+	81,  // 160: entpb.PositionService.Delete:input_type -> entpb.DeletePositionRequest
+	82,  // 161: entpb.PositionService.List:input_type -> entpb.ListPositionRequest
+	84,  // 162: entpb.PositionService.BatchCreate:input_type -> entpb.BatchCreatePositionsRequest
+	87,  // 163: entpb.ProjectService.Create:input_type -> entpb.CreateProjectRequest
+	88,  // 164: entpb.ProjectService.Get:input_type -> entpb.GetProjectRequest
+	89,  // 165: entpb.ProjectService.Update:input_type -> entpb.UpdateProjectRequest
+	90,  // 166: entpb.ProjectService.Delete:input_type -> entpb.DeleteProjectRequest
+	91,  // 167: entpb.ProjectService.List:input_type -> entpb.ListProjectRequest
+	93,  // 168: entpb.ProjectService.BatchCreate:input_type -> entpb.BatchCreateProjectsRequest
+	96,  // 169: entpb.TaskService.Create:input_type -> entpb.CreateTaskRequest
+	97,  // 170: entpb.TaskService.Get:input_type -> entpb.GetTaskRequest
+	98,  // 171: entpb.TaskService.Update:input_type -> entpb.UpdateTaskRequest
+	99,  // 172: entpb.TaskService.Delete:input_type -> entpb.DeleteTaskRequest
+	100, // 173: entpb.TaskService.List:input_type -> entpb.ListTaskRequest
+	102, // 174: entpb.TaskService.BatchCreate:input_type -> entpb.BatchCreateTasksRequest
+	23,  // 175: entpb.DepartmentService.Create:output_type -> entpb.Department
+	23,  // 176: entpb.DepartmentService.Get:output_type -> entpb.Department
+	23,  // 177: entpb.DepartmentService.Update:output_type -> entpb.Department
+	107, // 178: entpb.DepartmentService.Delete:output_type -> google.protobuf.Empty
+	29,  // 179: entpb.DepartmentService.List:output_type -> entpb.ListDepartmentResponse
+	31,  // 180: entpb.DepartmentService.BatchCreate:output_type -> entpb.BatchCreateDepartmentsResponse
+	32,  // 181: entpb.EmployeeService.Create:output_type -> entpb.Employee
+	32,  // 182: entpb.EmployeeService.Get:output_type -> entpb.Employee
+	32,  // 183: entpb.EmployeeService.Update:output_type -> entpb.Employee
+	107, // 184: entpb.EmployeeService.Delete:output_type -> google.protobuf.Empty
+	38,  // 185: entpb.EmployeeService.List:output_type -> entpb.ListEmployeeResponse
+	40,  // 186: entpb.EmployeeService.BatchCreate:output_type -> entpb.BatchCreateEmployeesResponse
+	41,  // 187: entpb.LabelService.Create:output_type -> entpb.Label
+	41,  // 188: entpb.LabelService.Get:output_type -> entpb.Label
+	41,  // 189: entpb.LabelService.Update:output_type -> entpb.Label
+	107, // 190: entpb.LabelService.Delete:output_type -> google.protobuf.Empty
+	47,  // 191: entpb.LabelService.List:output_type -> entpb.ListLabelResponse
+	49,  // 192: entpb.LabelService.BatchCreate:output_type -> entpb.BatchCreateLabelsResponse
+	50,  // 193: entpb.LeaveApprovalService.Create:output_type -> entpb.LeaveApproval
+	50,  // 194: entpb.LeaveApprovalService.Get:output_type -> entpb.LeaveApproval
+	50,  // 195: entpb.LeaveApprovalService.Update:output_type -> entpb.LeaveApproval
+	107, // 196: entpb.LeaveApprovalService.Delete:output_type -> google.protobuf.Empty
+	56,  // 197: entpb.LeaveApprovalService.List:output_type -> entpb.ListLeaveApprovalResponse
+	58,  // 198: entpb.LeaveApprovalService.BatchCreate:output_type -> entpb.BatchCreateLeaveApprovalsResponse
+	59,  // 199: entpb.LeaveRequestService.Create:output_type -> entpb.LeaveRequest
+	59,  // 200: entpb.LeaveRequestService.Get:output_type -> entpb.LeaveRequest
+	59,  // 201: entpb.LeaveRequestService.Update:output_type -> entpb.LeaveRequest
+	107, // 202: entpb.LeaveRequestService.Delete:output_type -> google.protobuf.Empty
+	65,  // 203: entpb.LeaveRequestService.List:output_type -> entpb.ListLeaveRequestResponse
+	67,  // 204: entpb.LeaveRequestService.BatchCreate:output_type -> entpb.BatchCreateLeaveRequestsResponse
+	68,  // 205: entpb.OrganizationService.Create:output_type -> entpb.Organization
+	68,  // 206: entpb.OrganizationService.Get:output_type -> entpb.Organization
+	68,  // 207: entpb.OrganizationService.Update:output_type -> entpb.Organization
+	107, // 208: entpb.OrganizationService.Delete:output_type -> google.protobuf.Empty
+	74,  // 209: entpb.OrganizationService.List:output_type -> entpb.ListOrganizationResponse
+	76,  // 210: entpb.OrganizationService.BatchCreate:output_type -> entpb.BatchCreateOrganizationsResponse
+	77,  // 211: entpb.PositionService.Create:output_type -> entpb.Position
+	77,  // 212: entpb.PositionService.Get:output_type -> entpb.Position
+	77,  // 213: entpb.PositionService.Update:output_type -> entpb.Position
+	107, // 214: entpb.PositionService.Delete:output_type -> google.protobuf.Empty
+	83,  // 215: entpb.PositionService.List:output_type -> entpb.ListPositionResponse
+	85,  // 216: entpb.PositionService.BatchCreate:output_type -> entpb.BatchCreatePositionsResponse
+	86,  // 217: entpb.ProjectService.Create:output_type -> entpb.Project
+	86,  // 218: entpb.ProjectService.Get:output_type -> entpb.Project
+	86,  // 219: entpb.ProjectService.Update:output_type -> entpb.Project
+	107, // 220: entpb.ProjectService.Delete:output_type -> google.protobuf.Empty
+	92,  // 221: entpb.ProjectService.List:output_type -> entpb.ListProjectResponse
+	94,  // 222: entpb.ProjectService.BatchCreate:output_type -> entpb.BatchCreateProjectsResponse
+	95,  // 223: entpb.TaskService.Create:output_type -> entpb.Task
+	95,  // 224: entpb.TaskService.Get:output_type -> entpb.Task
+	95,  // 225: entpb.TaskService.Update:output_type -> entpb.Task
+	107, // 226: entpb.TaskService.Delete:output_type -> google.protobuf.Empty
+	101, // 227: entpb.TaskService.List:output_type -> entpb.ListTaskResponse
+	103, // 228: entpb.TaskService.BatchCreate:output_type -> entpb.BatchCreateTasksResponse
+	175, // [175:229] is the sub-list for method output_type
+	121, // [121:175] is the sub-list for method input_type
+	121, // [121:121] is the sub-list for extension type_name
+	121, // [121:121] is the sub-list for extension extendee
+	0,   // [0:121] is the sub-list for field type_name
 }
 
 func init() { file_entpb_entpb_proto_init() }
@@ -5791,10 +6534,10 @@ func file_entpb_entpb_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_entpb_entpb_proto_rawDesc), len(file_entpb_entpb_proto_rawDesc)),
-			NumEnums:      20,
-			NumMessages:   72,
+			NumEnums:      23,
+			NumMessages:   81,
 			NumExtensions: 0,
-			NumServices:   8,
+			NumServices:   9,
 		},
 		GoTypes:           file_entpb_entpb_proto_goTypes,
 		DependencyIndexes: file_entpb_entpb_proto_depIdxs,

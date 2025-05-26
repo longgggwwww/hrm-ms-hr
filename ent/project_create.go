@@ -8,11 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
@@ -28,6 +26,12 @@ type ProjectCreate struct {
 // SetName sets the "name" field.
 func (pc *ProjectCreate) SetName(s string) *ProjectCreate {
 	pc.mutation.SetName(s)
+	return pc
+}
+
+// SetCode sets the "code" field.
+func (pc *ProjectCreate) SetCode(s string) *ProjectCreate {
+	pc.mutation.SetCode(s)
 	return pc
 }
 
@@ -66,14 +70,48 @@ func (pc *ProjectCreate) SetNillableEndAt(t *time.Time) *ProjectCreate {
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (pc *ProjectCreate) SetCreatorID(u uuid.UUID) *ProjectCreate {
-	pc.mutation.SetCreatorID(u)
+func (pc *ProjectCreate) SetCreatorID(i int) *ProjectCreate {
+	pc.mutation.SetCreatorID(i)
 	return pc
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (pc *ProjectCreate) SetUpdaterID(uu uuid.NullUUID) *ProjectCreate {
-	pc.mutation.SetUpdaterID(uu)
+func (pc *ProjectCreate) SetUpdaterID(i int) *ProjectCreate {
+	pc.mutation.SetUpdaterID(i)
+	return pc
+}
+
+// SetOrgID sets the "org_id" field.
+func (pc *ProjectCreate) SetOrgID(i int) *ProjectCreate {
+	pc.mutation.SetOrgID(i)
+	return pc
+}
+
+// SetProcess sets the "process" field.
+func (pc *ProjectCreate) SetProcess(i int) *ProjectCreate {
+	pc.mutation.SetProcess(i)
+	return pc
+}
+
+// SetNillableProcess sets the "process" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableProcess(i *int) *ProjectCreate {
+	if i != nil {
+		pc.SetProcess(*i)
+	}
+	return pc
+}
+
+// SetStatus sets the "status" field.
+func (pc *ProjectCreate) SetStatus(pr project.Status) *ProjectCreate {
+	pc.mutation.SetStatus(pr)
+	return pc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableStatus(pr *project.Status) *ProjectCreate {
+	if pr != nil {
+		pc.SetStatus(*pr)
+	}
 	return pc
 }
 
@@ -105,55 +143,15 @@ func (pc *ProjectCreate) SetNillableUpdatedAt(t *time.Time) *ProjectCreate {
 	return pc
 }
 
-// SetBranchID sets the "branch_id" field.
-func (pc *ProjectCreate) SetBranchID(uu uuid.NullUUID) *ProjectCreate {
-	pc.mutation.SetBranchID(uu)
-	return pc
-}
-
-// SetProcess sets the "process" field.
-func (pc *ProjectCreate) SetProcess(i int) *ProjectCreate {
-	pc.mutation.SetProcess(i)
-	return pc
-}
-
-// SetStatus sets the "status" field.
-func (pc *ProjectCreate) SetStatus(pr project.Status) *ProjectCreate {
-	pc.mutation.SetStatus(pr)
-	return pc
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableStatus(pr *project.Status) *ProjectCreate {
-	if pr != nil {
-		pc.SetStatus(*pr)
-	}
-	return pc
-}
-
-// SetID sets the "id" field.
-func (pc *ProjectCreate) SetID(u uuid.UUID) *ProjectCreate {
-	pc.mutation.SetID(u)
-	return pc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableID(u *uuid.UUID) *ProjectCreate {
-	if u != nil {
-		pc.SetID(*u)
-	}
-	return pc
-}
-
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
-func (pc *ProjectCreate) AddTaskIDs(ids ...uuid.UUID) *ProjectCreate {
+func (pc *ProjectCreate) AddTaskIDs(ids ...int) *ProjectCreate {
 	pc.mutation.AddTaskIDs(ids...)
 	return pc
 }
 
 // AddTasks adds the "tasks" edges to the Task entity.
 func (pc *ProjectCreate) AddTasks(t ...*Task) *ProjectCreate {
-	ids := make([]uuid.UUID, len(t))
+	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
@@ -195,6 +193,10 @@ func (pc *ProjectCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *ProjectCreate) defaults() {
+	if _, ok := pc.mutation.Status(); !ok {
+		v := project.DefaultStatus
+		pc.mutation.SetStatus(v)
+	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		v := project.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
@@ -203,20 +205,15 @@ func (pc *ProjectCreate) defaults() {
 		v := project.DefaultUpdatedAt()
 		pc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := pc.mutation.Status(); !ok {
-		v := project.DefaultStatus
-		pc.mutation.SetStatus(v)
-	}
-	if _, ok := pc.mutation.ID(); !ok {
-		v := project.DefaultID()
-		pc.mutation.SetID(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *ProjectCreate) check() error {
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Project.name"`)}
+	}
+	if _, ok := pc.mutation.Code(); !ok {
+		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Project.code"`)}
 	}
 	if _, ok := pc.mutation.StartAt(); !ok {
 		return &ValidationError{Name: "start_at", err: errors.New(`ent: missing required field "Project.start_at"`)}
@@ -227,17 +224,8 @@ func (pc *ProjectCreate) check() error {
 	if _, ok := pc.mutation.UpdaterID(); !ok {
 		return &ValidationError{Name: "updater_id", err: errors.New(`ent: missing required field "Project.updater_id"`)}
 	}
-	if _, ok := pc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Project.created_at"`)}
-	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Project.updated_at"`)}
-	}
-	if _, ok := pc.mutation.BranchID(); !ok {
-		return &ValidationError{Name: "branch_id", err: errors.New(`ent: missing required field "Project.branch_id"`)}
-	}
-	if _, ok := pc.mutation.Process(); !ok {
-		return &ValidationError{Name: "process", err: errors.New(`ent: missing required field "Project.process"`)}
+	if _, ok := pc.mutation.OrgID(); !ok {
+		return &ValidationError{Name: "org_id", err: errors.New(`ent: missing required field "Project.org_id"`)}
 	}
 	if _, ok := pc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Project.status"`)}
@@ -246,6 +234,12 @@ func (pc *ProjectCreate) check() error {
 		if err := project.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
 		}
+	}
+	if _, ok := pc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Project.created_at"`)}
+	}
+	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Project.updated_at"`)}
 	}
 	return nil
 }
@@ -261,13 +255,8 @@ func (pc *ProjectCreate) sqlSave(ctx context.Context) (*Project, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
-	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	pc.mutation.id = &_node.ID
 	pc.mutation.done = true
 	return _node, nil
@@ -276,16 +265,16 @@ func (pc *ProjectCreate) sqlSave(ctx context.Context) (*Project, error) {
 func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Project{config: pc.config}
-		_spec = sqlgraph.NewCreateSpec(project.Table, sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID))
+		_spec = sqlgraph.NewCreateSpec(project.Table, sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt))
 	)
 	_spec.OnConflict = pc.conflict
-	if id, ok := pc.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = &id
-	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := pc.mutation.Code(); ok {
+		_spec.SetField(project.FieldCode, field.TypeString, value)
+		_node.Code = value
 	}
 	if value, ok := pc.mutation.Description(); ok {
 		_spec.SetField(project.FieldDescription, field.TypeString, value)
@@ -300,24 +289,16 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_node.EndAt = value
 	}
 	if value, ok := pc.mutation.CreatorID(); ok {
-		_spec.SetField(project.FieldCreatorID, field.TypeUUID, value)
+		_spec.SetField(project.FieldCreatorID, field.TypeInt, value)
 		_node.CreatorID = value
 	}
 	if value, ok := pc.mutation.UpdaterID(); ok {
-		_spec.SetField(project.FieldUpdaterID, field.TypeUUID, value)
+		_spec.SetField(project.FieldUpdaterID, field.TypeInt, value)
 		_node.UpdaterID = value
 	}
-	if value, ok := pc.mutation.CreatedAt(); ok {
-		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := pc.mutation.UpdatedAt(); ok {
-		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
-	}
-	if value, ok := pc.mutation.BranchID(); ok {
-		_spec.SetField(project.FieldBranchID, field.TypeUUID, value)
-		_node.BranchID = value
+	if value, ok := pc.mutation.OrgID(); ok {
+		_spec.SetField(project.FieldOrgID, field.TypeInt, value)
+		_node.OrgID = value
 	}
 	if value, ok := pc.mutation.Process(); ok {
 		_spec.SetField(project.FieldProcess, field.TypeInt, value)
@@ -327,6 +308,14 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
+	if value, ok := pc.mutation.CreatedAt(); ok {
+		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := pc.mutation.UpdatedAt(); ok {
+		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if nodes := pc.mutation.TasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -335,7 +324,7 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			Columns: []string{project.TasksColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -407,6 +396,18 @@ func (u *ProjectUpsert) UpdateName() *ProjectUpsert {
 	return u
 }
 
+// SetCode sets the "code" field.
+func (u *ProjectUpsert) SetCode(v string) *ProjectUpsert {
+	u.Set(project.FieldCode, v)
+	return u
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *ProjectUpsert) UpdateCode() *ProjectUpsert {
+	u.SetExcluded(project.FieldCode)
+	return u
+}
+
 // SetDescription sets the "description" field.
 func (u *ProjectUpsert) SetDescription(v string) *ProjectUpsert {
 	u.Set(project.FieldDescription, v)
@@ -456,7 +457,7 @@ func (u *ProjectUpsert) ClearEndAt() *ProjectUpsert {
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (u *ProjectUpsert) SetCreatorID(v uuid.UUID) *ProjectUpsert {
+func (u *ProjectUpsert) SetCreatorID(v int) *ProjectUpsert {
 	u.Set(project.FieldCreatorID, v)
 	return u
 }
@@ -467,8 +468,14 @@ func (u *ProjectUpsert) UpdateCreatorID() *ProjectUpsert {
 	return u
 }
 
+// AddCreatorID adds v to the "creator_id" field.
+func (u *ProjectUpsert) AddCreatorID(v int) *ProjectUpsert {
+	u.Add(project.FieldCreatorID, v)
+	return u
+}
+
 // SetUpdaterID sets the "updater_id" field.
-func (u *ProjectUpsert) SetUpdaterID(v uuid.NullUUID) *ProjectUpsert {
+func (u *ProjectUpsert) SetUpdaterID(v int) *ProjectUpsert {
 	u.Set(project.FieldUpdaterID, v)
 	return u
 }
@@ -479,39 +486,27 @@ func (u *ProjectUpsert) UpdateUpdaterID() *ProjectUpsert {
 	return u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *ProjectUpsert) SetCreatedAt(v time.Time) *ProjectUpsert {
-	u.Set(project.FieldCreatedAt, v)
+// AddUpdaterID adds v to the "updater_id" field.
+func (u *ProjectUpsert) AddUpdaterID(v int) *ProjectUpsert {
+	u.Add(project.FieldUpdaterID, v)
 	return u
 }
 
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *ProjectUpsert) UpdateCreatedAt() *ProjectUpsert {
-	u.SetExcluded(project.FieldCreatedAt)
+// SetOrgID sets the "org_id" field.
+func (u *ProjectUpsert) SetOrgID(v int) *ProjectUpsert {
+	u.Set(project.FieldOrgID, v)
 	return u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *ProjectUpsert) SetUpdatedAt(v time.Time) *ProjectUpsert {
-	u.Set(project.FieldUpdatedAt, v)
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *ProjectUpsert) UpdateOrgID() *ProjectUpsert {
+	u.SetExcluded(project.FieldOrgID)
 	return u
 }
 
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *ProjectUpsert) UpdateUpdatedAt() *ProjectUpsert {
-	u.SetExcluded(project.FieldUpdatedAt)
-	return u
-}
-
-// SetBranchID sets the "branch_id" field.
-func (u *ProjectUpsert) SetBranchID(v uuid.NullUUID) *ProjectUpsert {
-	u.Set(project.FieldBranchID, v)
-	return u
-}
-
-// UpdateBranchID sets the "branch_id" field to the value that was provided on create.
-func (u *ProjectUpsert) UpdateBranchID() *ProjectUpsert {
-	u.SetExcluded(project.FieldBranchID)
+// AddOrgID adds v to the "org_id" field.
+func (u *ProjectUpsert) AddOrgID(v int) *ProjectUpsert {
+	u.Add(project.FieldOrgID, v)
 	return u
 }
 
@@ -533,6 +528,12 @@ func (u *ProjectUpsert) AddProcess(v int) *ProjectUpsert {
 	return u
 }
 
+// ClearProcess clears the value of the "process" field.
+func (u *ProjectUpsert) ClearProcess() *ProjectUpsert {
+	u.SetNull(project.FieldProcess)
+	return u
+}
+
 // SetStatus sets the "status" field.
 func (u *ProjectUpsert) SetStatus(v project.Status) *ProjectUpsert {
 	u.Set(project.FieldStatus, v)
@@ -545,22 +546,31 @@ func (u *ProjectUpsert) UpdateStatus() *ProjectUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ProjectUpsert) SetUpdatedAt(v time.Time) *ProjectUpsert {
+	u.Set(project.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ProjectUpsert) UpdateUpdatedAt() *ProjectUpsert {
+	u.SetExcluded(project.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
 //	client.Project.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
-//			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(project.FieldID)
-//			}),
 //		).
 //		Exec(ctx)
 func (u *ProjectUpsertOne) UpdateNewValues() *ProjectUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
-		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(project.FieldID)
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(project.FieldCreatedAt)
 		}
 	}))
 	return u
@@ -604,6 +614,20 @@ func (u *ProjectUpsertOne) SetName(v string) *ProjectUpsertOne {
 func (u *ProjectUpsertOne) UpdateName() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *ProjectUpsertOne) SetCode(v string) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *ProjectUpsertOne) UpdateCode() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateCode()
 	})
 }
 
@@ -664,9 +688,16 @@ func (u *ProjectUpsertOne) ClearEndAt() *ProjectUpsertOne {
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (u *ProjectUpsertOne) SetCreatorID(v uuid.UUID) *ProjectUpsertOne {
+func (u *ProjectUpsertOne) SetCreatorID(v int) *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.SetCreatorID(v)
+	})
+}
+
+// AddCreatorID adds v to the "creator_id" field.
+func (u *ProjectUpsertOne) AddCreatorID(v int) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.AddCreatorID(v)
 	})
 }
 
@@ -678,9 +709,16 @@ func (u *ProjectUpsertOne) UpdateCreatorID() *ProjectUpsertOne {
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (u *ProjectUpsertOne) SetUpdaterID(v uuid.NullUUID) *ProjectUpsertOne {
+func (u *ProjectUpsertOne) SetUpdaterID(v int) *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.SetUpdaterID(v)
+	})
+}
+
+// AddUpdaterID adds v to the "updater_id" field.
+func (u *ProjectUpsertOne) AddUpdaterID(v int) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.AddUpdaterID(v)
 	})
 }
 
@@ -691,45 +729,24 @@ func (u *ProjectUpsertOne) UpdateUpdaterID() *ProjectUpsertOne {
 	})
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *ProjectUpsertOne) SetCreatedAt(v time.Time) *ProjectUpsertOne {
+// SetOrgID sets the "org_id" field.
+func (u *ProjectUpsertOne) SetOrgID(v int) *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
-		s.SetCreatedAt(v)
+		s.SetOrgID(v)
 	})
 }
 
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *ProjectUpsertOne) UpdateCreatedAt() *ProjectUpsertOne {
+// AddOrgID adds v to the "org_id" field.
+func (u *ProjectUpsertOne) AddOrgID(v int) *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateCreatedAt()
+		s.AddOrgID(v)
 	})
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *ProjectUpsertOne) SetUpdatedAt(v time.Time) *ProjectUpsertOne {
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *ProjectUpsertOne) UpdateOrgID() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *ProjectUpsertOne) UpdateUpdatedAt() *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateUpdatedAt()
-	})
-}
-
-// SetBranchID sets the "branch_id" field.
-func (u *ProjectUpsertOne) SetBranchID(v uuid.NullUUID) *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.SetBranchID(v)
-	})
-}
-
-// UpdateBranchID sets the "branch_id" field to the value that was provided on create.
-func (u *ProjectUpsertOne) UpdateBranchID() *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateBranchID()
+		s.UpdateOrgID()
 	})
 }
 
@@ -754,6 +771,13 @@ func (u *ProjectUpsertOne) UpdateProcess() *ProjectUpsertOne {
 	})
 }
 
+// ClearProcess clears the value of the "process" field.
+func (u *ProjectUpsertOne) ClearProcess() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearProcess()
+	})
+}
+
 // SetStatus sets the "status" field.
 func (u *ProjectUpsertOne) SetStatus(v project.Status) *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
@@ -765,6 +789,20 @@ func (u *ProjectUpsertOne) SetStatus(v project.Status) *ProjectUpsertOne {
 func (u *ProjectUpsertOne) UpdateStatus() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateStatus()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ProjectUpsertOne) SetUpdatedAt(v time.Time) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ProjectUpsertOne) UpdateUpdatedAt() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateUpdatedAt()
 	})
 }
 
@@ -784,12 +822,7 @@ func (u *ProjectUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ProjectUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
-	if u.create.driver.Dialect() == dialect.MySQL {
-		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
-		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: ProjectUpsertOne.ID is not supported by MySQL driver. Use ProjectUpsertOne.Exec instead")
-	}
+func (u *ProjectUpsertOne) ID(ctx context.Context) (id int, err error) {
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -798,7 +831,7 @@ func (u *ProjectUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ProjectUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *ProjectUpsertOne) IDX(ctx context.Context) int {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -853,6 +886,10 @@ func (pcb *ProjectCreateBulk) Save(ctx context.Context) ([]*Project, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -939,17 +976,14 @@ type ProjectUpsertBulk struct {
 //	client.Project.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
-//			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(project.FieldID)
-//			}),
 //		).
 //		Exec(ctx)
 func (u *ProjectUpsertBulk) UpdateNewValues() *ProjectUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
-			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(project.FieldID)
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(project.FieldCreatedAt)
 			}
 		}
 	}))
@@ -994,6 +1028,20 @@ func (u *ProjectUpsertBulk) SetName(v string) *ProjectUpsertBulk {
 func (u *ProjectUpsertBulk) UpdateName() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetCode sets the "code" field.
+func (u *ProjectUpsertBulk) SetCode(v string) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetCode(v)
+	})
+}
+
+// UpdateCode sets the "code" field to the value that was provided on create.
+func (u *ProjectUpsertBulk) UpdateCode() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateCode()
 	})
 }
 
@@ -1054,9 +1102,16 @@ func (u *ProjectUpsertBulk) ClearEndAt() *ProjectUpsertBulk {
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (u *ProjectUpsertBulk) SetCreatorID(v uuid.UUID) *ProjectUpsertBulk {
+func (u *ProjectUpsertBulk) SetCreatorID(v int) *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.SetCreatorID(v)
+	})
+}
+
+// AddCreatorID adds v to the "creator_id" field.
+func (u *ProjectUpsertBulk) AddCreatorID(v int) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.AddCreatorID(v)
 	})
 }
 
@@ -1068,9 +1123,16 @@ func (u *ProjectUpsertBulk) UpdateCreatorID() *ProjectUpsertBulk {
 }
 
 // SetUpdaterID sets the "updater_id" field.
-func (u *ProjectUpsertBulk) SetUpdaterID(v uuid.NullUUID) *ProjectUpsertBulk {
+func (u *ProjectUpsertBulk) SetUpdaterID(v int) *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.SetUpdaterID(v)
+	})
+}
+
+// AddUpdaterID adds v to the "updater_id" field.
+func (u *ProjectUpsertBulk) AddUpdaterID(v int) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.AddUpdaterID(v)
 	})
 }
 
@@ -1081,45 +1143,24 @@ func (u *ProjectUpsertBulk) UpdateUpdaterID() *ProjectUpsertBulk {
 	})
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *ProjectUpsertBulk) SetCreatedAt(v time.Time) *ProjectUpsertBulk {
+// SetOrgID sets the "org_id" field.
+func (u *ProjectUpsertBulk) SetOrgID(v int) *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
-		s.SetCreatedAt(v)
+		s.SetOrgID(v)
 	})
 }
 
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *ProjectUpsertBulk) UpdateCreatedAt() *ProjectUpsertBulk {
+// AddOrgID adds v to the "org_id" field.
+func (u *ProjectUpsertBulk) AddOrgID(v int) *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateCreatedAt()
+		s.AddOrgID(v)
 	})
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *ProjectUpsertBulk) SetUpdatedAt(v time.Time) *ProjectUpsertBulk {
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *ProjectUpsertBulk) UpdateOrgID() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *ProjectUpsertBulk) UpdateUpdatedAt() *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateUpdatedAt()
-	})
-}
-
-// SetBranchID sets the "branch_id" field.
-func (u *ProjectUpsertBulk) SetBranchID(v uuid.NullUUID) *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.SetBranchID(v)
-	})
-}
-
-// UpdateBranchID sets the "branch_id" field to the value that was provided on create.
-func (u *ProjectUpsertBulk) UpdateBranchID() *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateBranchID()
+		s.UpdateOrgID()
 	})
 }
 
@@ -1144,6 +1185,13 @@ func (u *ProjectUpsertBulk) UpdateProcess() *ProjectUpsertBulk {
 	})
 }
 
+// ClearProcess clears the value of the "process" field.
+func (u *ProjectUpsertBulk) ClearProcess() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearProcess()
+	})
+}
+
 // SetStatus sets the "status" field.
 func (u *ProjectUpsertBulk) SetStatus(v project.Status) *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
@@ -1155,6 +1203,20 @@ func (u *ProjectUpsertBulk) SetStatus(v project.Status) *ProjectUpsertBulk {
 func (u *ProjectUpsertBulk) UpdateStatus() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateStatus()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *ProjectUpsertBulk) SetUpdatedAt(v time.Time) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *ProjectUpsertBulk) UpdateUpdatedAt() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdateUpdatedAt()
 	})
 }
 

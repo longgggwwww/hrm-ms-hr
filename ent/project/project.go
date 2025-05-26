@@ -8,7 +8,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/google/uuid"
 )
 
 const (
@@ -18,6 +17,8 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldCode holds the string denoting the code field in the database.
+	FieldCode = "code"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldStartAt holds the string denoting the start_at field in the database.
@@ -28,16 +29,16 @@ const (
 	FieldCreatorID = "creator_id"
 	// FieldUpdaterID holds the string denoting the updater_id field in the database.
 	FieldUpdaterID = "updater_id"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
-	// FieldBranchID holds the string denoting the branch_id field in the database.
-	FieldBranchID = "branch_id"
+	// FieldOrgID holds the string denoting the org_id field in the database.
+	FieldOrgID = "org_id"
 	// FieldProcess holds the string denoting the process field in the database.
 	FieldProcess = "process"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
 	// Table holds the table name of the project in the database.
@@ -55,16 +56,17 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
+	FieldCode,
 	FieldDescription,
 	FieldStartAt,
 	FieldEndAt,
 	FieldCreatorID,
 	FieldUpdaterID,
-	FieldCreatedAt,
-	FieldUpdatedAt,
-	FieldBranchID,
+	FieldOrgID,
 	FieldProcess,
 	FieldStatus,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -84,8 +86,6 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// DefaultID holds the default value on creation for the "id" field.
-	DefaultID func() uuid.UUID
 )
 
 // Status defines the type for the "status" enum field.
@@ -128,6 +128,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
+// ByCode orders the results by the code field.
+func ByCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCode, opts...).ToFunc()
+}
+
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
@@ -153,19 +158,9 @@ func ByUpdaterID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdaterID, opts...).ToFunc()
 }
 
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
-// ByBranchID orders the results by the branch_id field.
-func ByBranchID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldBranchID, opts...).ToFunc()
+// ByOrgID orders the results by the org_id field.
+func ByOrgID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOrgID, opts...).ToFunc()
 }
 
 // ByProcess orders the results by the process field.
@@ -176,6 +171,16 @@ func ByProcess(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByTasksCount orders the results by tasks count.

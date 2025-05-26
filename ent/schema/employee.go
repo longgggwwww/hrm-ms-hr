@@ -19,7 +19,7 @@ type Employee struct {
 func (Employee) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("user_id").
-			Unique().
+			Unique(). // mã nhân viên yêu cầu uniq kể cả khác tổ chức
 			Optional().
 			Annotations(entproto.Field(2)),
 		field.String("code").
@@ -42,6 +42,7 @@ func (Employee) Fields() []ent.Field {
 		field.Int("org_id").
 			Annotations(entproto.Field(7)),
 		field.Time("created_at").
+			Immutable().
 			Default(time.Now).
 			Annotations(entproto.Field(8)),
 		field.Time("updated_at").

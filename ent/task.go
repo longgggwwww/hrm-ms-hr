@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
@@ -18,9 +17,11 @@ import (
 type Task struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
+	ID int `json:"id,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
+	// Code holds the value of the "code" field.
+	Code string `json:"code,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// Process holds the value of the "process" field.
@@ -30,20 +31,21 @@ type Task struct {
 	// StartAt holds the value of the "start_at" field.
 	StartAt time.Time `json:"start_at,omitempty"`
 	// ProjectID holds the value of the "project_id" field.
-	ProjectID uuid.UUID `json:"project_id,omitempty"`
-	// BranchID holds the value of the "branch_id" field.
-	BranchID uuid.NullUUID `json:"branch_id,omitempty"`
+	ProjectID int `json:"project_id,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
-	CreatorID uuid.UUID `json:"creator_id,omitempty"`
+	CreatorID int `json:"creator_id,omitempty"`
 	// UpdaterID holds the value of the "updater_id" field.
-	UpdaterID uuid.NullUUID `json:"updater_id,omitempty"`
+	UpdaterID int `json:"updater_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Type holds the value of the "type" field.
+	Type task.Type `json:"type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
 	Edges        TaskEdges `json:"edges"`
+	label_tasks  *int
 	selectValues sql.SelectValues
 }
 
@@ -51,9 +53,11 @@ type Task struct {
 type TaskEdges struct {
 	// Project holds the value of the project edge.
 	Project *Project `json:"project,omitempty"`
+	// Labels holds the value of the labels edge.
+	Labels []*Label `json:"labels,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -67,6 +71,15 @@ func (e TaskEdges) ProjectOrErr() (*Project, error) {
 	return nil, &NotLoadedError{edge: "project"}
 }
 
+// LabelsOrErr returns the Labels value or an error if the edge
+// was not loaded in eager-loading.
+func (e TaskEdges) LabelsOrErr() ([]*Label, error) {
+	if e.loadedTypes[1] {
+		return e.Labels, nil
+	}
+	return nil, &NotLoadedError{edge: "labels"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -74,16 +87,14 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case task.FieldStatus:
 			values[i] = new(sql.NullBool)
-		case task.FieldProcess:
+		case task.FieldID, task.FieldProcess, task.FieldProjectID, task.FieldCreatorID, task.FieldUpdaterID:
 			values[i] = new(sql.NullInt64)
-		case task.FieldTitle, task.FieldDescription:
+		case task.FieldName, task.FieldCode, task.FieldDescription, task.FieldType:
 			values[i] = new(sql.NullString)
 		case task.FieldStartAt, task.FieldCreatedAt, task.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case task.FieldBranchID, task.FieldUpdaterID:
-			values[i] = new(uuid.NullUUID)
-		case task.FieldID, task.FieldProjectID, task.FieldCreatorID:
-			values[i] = new(uuid.UUID)
+		case task.ForeignKeys[0]: // label_tasks
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -100,16 +111,22 @@ func (t *Task) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case task.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				t.ID = *value
+			value, ok := values[i].(*sql.NullInt64)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-		case task.FieldTitle:
+			t.ID = int(value.Int64)
+		case task.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
+				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				t.Title = value.String
+				t.Name = value.String
+			}
+		case task.FieldCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field code", values[i])
+			} else if value.Valid {
+				t.Code = value.String
 			}
 		case task.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -136,28 +153,22 @@ func (t *Task) assignValues(columns []string, values []any) error {
 				t.StartAt = value.Time
 			}
 		case task.FieldProjectID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field project_id", values[i])
-			} else if value != nil {
-				t.ProjectID = *value
-			}
-		case task.FieldBranchID:
-			if value, ok := values[i].(*uuid.NullUUID); !ok {
-				return fmt.Errorf("unexpected type %T for field branch_id", values[i])
-			} else if value != nil {
-				t.BranchID = *value
+			} else if value.Valid {
+				t.ProjectID = int(value.Int64)
 			}
 		case task.FieldCreatorID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field creator_id", values[i])
-			} else if value != nil {
-				t.CreatorID = *value
+			} else if value.Valid {
+				t.CreatorID = int(value.Int64)
 			}
 		case task.FieldUpdaterID:
-			if value, ok := values[i].(*uuid.NullUUID); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field updater_id", values[i])
-			} else if value != nil {
-				t.UpdaterID = *value
+			} else if value.Valid {
+				t.UpdaterID = int(value.Int64)
 			}
 		case task.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -170,6 +181,19 @@ func (t *Task) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				t.UpdatedAt = value.Time
+			}
+		case task.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				t.Type = task.Type(value.String)
+			}
+		case task.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field label_tasks", value)
+			} else if value.Valid {
+				t.label_tasks = new(int)
+				*t.label_tasks = int(value.Int64)
 			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
@@ -187,6 +211,11 @@ func (t *Task) Value(name string) (ent.Value, error) {
 // QueryProject queries the "project" edge of the Task entity.
 func (t *Task) QueryProject() *ProjectQuery {
 	return NewTaskClient(t.config).QueryProject(t)
+}
+
+// QueryLabels queries the "labels" edge of the Task entity.
+func (t *Task) QueryLabels() *LabelQuery {
+	return NewTaskClient(t.config).QueryLabels(t)
 }
 
 // Update returns a builder for updating this Task.
@@ -212,8 +241,11 @@ func (t *Task) String() string {
 	var builder strings.Builder
 	builder.WriteString("Task(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
-	builder.WriteString("title=")
-	builder.WriteString(t.Title)
+	builder.WriteString("name=")
+	builder.WriteString(t.Name)
+	builder.WriteString(", ")
+	builder.WriteString("code=")
+	builder.WriteString(t.Code)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(t.Description)
@@ -230,9 +262,6 @@ func (t *Task) String() string {
 	builder.WriteString("project_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.ProjectID))
 	builder.WriteString(", ")
-	builder.WriteString("branch_id=")
-	builder.WriteString(fmt.Sprintf("%v", t.BranchID))
-	builder.WriteString(", ")
 	builder.WriteString("creator_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.CreatorID))
 	builder.WriteString(", ")
@@ -244,6 +273,9 @@ func (t *Task) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", t.Type))
 	builder.WriteByte(')')
 	return builder.String()
 }

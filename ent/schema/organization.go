@@ -62,14 +62,13 @@ func (Organization) Fields() []ent.Field {
 // Edges of the Organization.
 func (Organization) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("parent", Organization.Type). // edge đến cha
-							Ref("children").
-							Unique().
-							Field("parent_id").
-							Annotations(entproto.Field(12)),
-		edge.To("children", Organization.Type). // edge đến con
-							Annotations(entproto.Field(13)),
-
+		edge.From("parent", Organization.Type).
+			Ref("children").
+			Unique().
+			Field("parent_id").
+			Annotations(entproto.Field(12)),
+		edge.To("children", Organization.Type).
+			Annotations(entproto.Field(13)),
 		edge.To("departments", Department.Type).
 			Annotations(entproto.Field(14)),
 	}

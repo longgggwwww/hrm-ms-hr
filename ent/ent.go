@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
@@ -82,6 +83,7 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			department.Table:    department.ValidColumn,
 			employee.Table:      employee.ValidColumn,
+			label.Table:         label.ValidColumn,
 			leaveapproval.Table: leaveapproval.ValidColumn,
 			leaverequest.Table:  leaverequest.ValidColumn,
 			organization.Table:  organization.ValidColumn,

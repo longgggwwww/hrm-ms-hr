@@ -126,20 +126,6 @@ func (eu *EmployeeUpdate) AddOrgID(i int) *EmployeeUpdate {
 	return eu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (eu *EmployeeUpdate) SetCreatedAt(t time.Time) *EmployeeUpdate {
-	eu.mutation.SetCreatedAt(t)
-	return eu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (eu *EmployeeUpdate) SetNillableCreatedAt(t *time.Time) *EmployeeUpdate {
-	if t != nil {
-		eu.SetCreatedAt(*t)
-	}
-	return eu
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (eu *EmployeeUpdate) SetUpdatedAt(t time.Time) *EmployeeUpdate {
 	eu.mutation.SetUpdatedAt(t)
@@ -248,9 +234,6 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := eu.mutation.AddedOrgID(); ok {
 		_spec.AddField(employee.FieldOrgID, field.TypeInt, value)
-	}
-	if value, ok := eu.mutation.CreatedAt(); ok {
-		_spec.SetField(employee.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := eu.mutation.UpdatedAt(); ok {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
@@ -401,20 +384,6 @@ func (euo *EmployeeUpdateOne) AddOrgID(i int) *EmployeeUpdateOne {
 	return euo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (euo *EmployeeUpdateOne) SetCreatedAt(t time.Time) *EmployeeUpdateOne {
-	euo.mutation.SetCreatedAt(t)
-	return euo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (euo *EmployeeUpdateOne) SetNillableCreatedAt(t *time.Time) *EmployeeUpdateOne {
-	if t != nil {
-		euo.SetCreatedAt(*t)
-	}
-	return euo
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (euo *EmployeeUpdateOne) SetUpdatedAt(t time.Time) *EmployeeUpdateOne {
 	euo.mutation.SetUpdatedAt(t)
@@ -553,9 +522,6 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 	}
 	if value, ok := euo.mutation.AddedOrgID(); ok {
 		_spec.AddField(employee.FieldOrgID, field.TypeInt, value)
-	}
-	if value, ok := euo.mutation.CreatedAt(); ok {
-		_spec.SetField(employee.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := euo.mutation.UpdatedAt(); ok {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)

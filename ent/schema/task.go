@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // Task holds the schema definition for the Task entity.
@@ -19,35 +18,45 @@ type Task struct {
 // Fields of the Task.
 func (Task) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New).
-			Annotations(entproto.Field(1)),
-		field.String("title").
+		field.String("name").
 			Annotations(entproto.Field(2)),
+		field.String("code").
+			Annotations(entproto.Field(3)),
 		field.String("description").
 			Optional().
-			Annotations(entproto.Field(3)),
-		field.Int("process").
 			Annotations(entproto.Field(4)),
-		field.Bool("status").
+		field.Int("process").
 			Annotations(entproto.Field(5)),
-		field.Time("start_at").
+		field.Bool("status").
 			Annotations(entproto.Field(6)),
-		field.UUID("project_id", uuid.UUID{}).
+		field.Time("start_at").
 			Annotations(entproto.Field(7)),
-		field.UUID("branch_id", uuid.NullUUID{}).
+		field.Int("project_id").
+			Optional().
 			Annotations(entproto.Field(8)),
-		field.UUID("creator_id", uuid.UUID{}).
+		field.Int("creator_id").
 			Annotations(entproto.Field(9)),
-		field.UUID("updater_id", uuid.NullUUID{}).
+		field.Int("updater_id").
 			Annotations(entproto.Field(10)),
 		field.Time("created_at").
+			Immutable().
 			Default(time.Now).
 			Annotations(entproto.Field(11)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
 			Annotations(entproto.Field(12)),
+		field.Enum("type").
+			Values("task", "feature", "bug", "another").
+			Default("task").
+			Annotations(
+				entproto.Field(13),
+				entproto.Enum(map[string]int32{
+					"task":    0,
+					"feature": 1,
+					"bug":     2,
+					"another": 3,
+				})),
 	}
 }
 
@@ -58,9 +67,9 @@ func (Task) Edges() []ent.Edge {
 			Ref("tasks").
 			Field("project_id").
 			Unique().
-			Required().
-			Annotations(entproto.Field(13)),
-		edge.To("labels", Label.Type), // Thêm edge tới label
+			Annotations(entproto.Field(14)),
+		edge.To("labels", Label.Type).
+			Annotations(entproto.Field(15)), // Thêm edge tới label
 	}
 }
 

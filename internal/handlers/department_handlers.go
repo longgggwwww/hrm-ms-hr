@@ -24,7 +24,7 @@ func NewDeptHandler(client *ent.Client, userpb *userpb.UserServiceClient) *Depar
 }
 
 func (h *DepartmentHandler) RegisterRoutes(r *gin.Engine) {
-	depts := r.Group("/departments")
+	depts := r.Group("departments")
 	{
 		depts.POST("", h.Create)
 		depts.GET("", h.List)

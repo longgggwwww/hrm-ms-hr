@@ -8,7 +8,6 @@ import (
 	runtime "entgo.io/contrib/entproto/runtime"
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
-	uuid "github.com/google/uuid"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -18,6 +17,7 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	regexp "regexp"
+	strconv "strconv"
 	strings "strings"
 )
 
@@ -62,30 +62,23 @@ func toEntProject_Status(e Project_Status) project.Status {
 // toProtoProject transforms the ent type to the pb type
 func toProtoProject(e *ent.Project) (*Project, error) {
 	v := &Project{}
-	branch_id, err := e.BranchID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
-	v.BranchId = branch_id
+	code := e.Code
+	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	creator_id, err := e.CreatorID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	creator_id := int64(e.CreatorID)
 	v.CreatorId = creator_id
 	description := wrapperspb.String(e.Description)
 	v.Description = description
 	end_at := timestamppb.New(e.EndAt)
 	v.EndAt = end_at
-	id, err := e.ID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	id := int64(e.ID)
 	v.Id = id
 	name := e.Name
 	v.Name = name
-	process := int64(e.Process)
+	org_id := int64(e.OrgID)
+	v.OrgId = org_id
+	process := wrapperspb.Int64(int64(e.Process))
 	v.Process = process
 	start_at := timestamppb.New(e.StartAt)
 	v.StartAt = start_at
@@ -93,16 +86,10 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 	v.Status = status
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
-	updater_id, err := e.UpdaterID.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	updater_id := int64(e.UpdaterID)
 	v.UpdaterId = updater_id
 	for _, edg := range e.Edges.Tasks {
-		id, err := edg.ID.MarshalBinary()
-		if err != nil {
-			return nil, err
-		}
+		id := int64(edg.ID)
 		v.Tasks = append(v.Tasks, &Task{
 			Id: id,
 		})
@@ -154,10 +141,7 @@ func (svc *ProjectService) Get(ctx context.Context, req *GetProjectRequest) (*Pr
 		err error
 		get *ent.Project
 	)
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	switch req.GetView() {
 	case GetProjectRequest_VIEW_UNSPECIFIED, GetProjectRequest_BASIC:
 		get, err = svc.client.Project.Get(ctx, id)
@@ -185,22 +169,11 @@ func (svc *ProjectService) Get(ctx context.Context, req *GetProjectRequest) (*Pr
 // Update implements ProjectServiceServer.Update
 func (svc *ProjectService) Update(ctx context.Context, req *UpdateProjectRequest) (*Project, error) {
 	project := req.GetProject()
-	var projectID uuid.UUID
-	if err := (&projectID).UnmarshalBinary(project.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	projectID := int(project.GetId())
 	m := svc.client.Project.UpdateOneID(projectID)
-	var projectBranchID uuid.NullUUID
-	if err := (&projectBranchID).UnmarshalBinary(project.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(projectBranchID)
-	projectCreatedAt := runtime.ExtractTime(project.GetCreatedAt())
-	m.SetCreatedAt(projectCreatedAt)
-	var projectCreatorID uuid.UUID
-	if err := (&projectCreatorID).UnmarshalBinary(project.GetCreatorId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	projectCode := project.GetCode()
+	m.SetCode(projectCode)
+	projectCreatorID := int(project.GetCreatorId())
 	m.SetCreatorID(projectCreatorID)
 	if project.GetDescription() != nil {
 		projectDescription := project.GetDescription().GetValue()
@@ -212,24 +185,22 @@ func (svc *ProjectService) Update(ctx context.Context, req *UpdateProjectRequest
 	}
 	projectName := project.GetName()
 	m.SetName(projectName)
-	projectProcess := int(project.GetProcess())
-	m.SetProcess(projectProcess)
+	projectOrgID := int(project.GetOrgId())
+	m.SetOrgID(projectOrgID)
+	if project.GetProcess() != nil {
+		projectProcess := int(project.GetProcess().GetValue())
+		m.SetProcess(projectProcess)
+	}
 	projectStartAt := runtime.ExtractTime(project.GetStartAt())
 	m.SetStartAt(projectStartAt)
 	projectStatus := toEntProject_Status(project.GetStatus())
 	m.SetStatus(projectStatus)
 	projectUpdatedAt := runtime.ExtractTime(project.GetUpdatedAt())
 	m.SetUpdatedAt(projectUpdatedAt)
-	var projectUpdaterID uuid.NullUUID
-	if err := (&projectUpdaterID).UnmarshalBinary(project.GetUpdaterId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	projectUpdaterID := int(project.GetUpdaterId())
 	m.SetUpdaterID(projectUpdaterID)
 	for _, item := range project.GetTasks() {
-		var tasks uuid.UUID
-		if err := (&tasks).UnmarshalBinary(item.GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		tasks := int(item.GetId())
 		m.AddTaskIDs(tasks)
 	}
 
@@ -254,10 +225,7 @@ func (svc *ProjectService) Update(ctx context.Context, req *UpdateProjectRequest
 // Delete implements ProjectServiceServer.Delete
 func (svc *ProjectService) Delete(ctx context.Context, req *DeleteProjectRequest) (*emptypb.Empty, error) {
 	var err error
-	var id uuid.UUID
-	if err := (&id).UnmarshalBinary(req.GetId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	id := int(req.GetId())
 	err = svc.client.Project.DeleteOneID(id).Exec(ctx)
 	switch {
 	case err == nil:
@@ -292,10 +260,11 @@ func (svc *ProjectService) List(ctx context.Context, req *ListProjectRequest) (*
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
-		pageToken, err := uuid.ParseBytes(bytes)
+		token, err := strconv.ParseInt(string(bytes), 10, 32)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "page token is invalid")
 		}
+		pageToken := int(token)
 		listQuery = listQuery.
 			Where(project.IDLTE(pageToken))
 	}
@@ -368,17 +337,11 @@ func (svc *ProjectService) BatchCreate(ctx context.Context, req *BatchCreateProj
 
 func (svc *ProjectService) createBuilder(project *Project) (*ent.ProjectCreate, error) {
 	m := svc.client.Project.Create()
-	var projectBranchID uuid.NullUUID
-	if err := (&projectBranchID).UnmarshalBinary(project.GetBranchId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
-	m.SetBranchID(projectBranchID)
+	projectCode := project.GetCode()
+	m.SetCode(projectCode)
 	projectCreatedAt := runtime.ExtractTime(project.GetCreatedAt())
 	m.SetCreatedAt(projectCreatedAt)
-	var projectCreatorID uuid.UUID
-	if err := (&projectCreatorID).UnmarshalBinary(project.GetCreatorId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	projectCreatorID := int(project.GetCreatorId())
 	m.SetCreatorID(projectCreatorID)
 	if project.GetDescription() != nil {
 		projectDescription := project.GetDescription().GetValue()
@@ -390,24 +353,22 @@ func (svc *ProjectService) createBuilder(project *Project) (*ent.ProjectCreate, 
 	}
 	projectName := project.GetName()
 	m.SetName(projectName)
-	projectProcess := int(project.GetProcess())
-	m.SetProcess(projectProcess)
+	projectOrgID := int(project.GetOrgId())
+	m.SetOrgID(projectOrgID)
+	if project.GetProcess() != nil {
+		projectProcess := int(project.GetProcess().GetValue())
+		m.SetProcess(projectProcess)
+	}
 	projectStartAt := runtime.ExtractTime(project.GetStartAt())
 	m.SetStartAt(projectStartAt)
 	projectStatus := toEntProject_Status(project.GetStatus())
 	m.SetStatus(projectStatus)
 	projectUpdatedAt := runtime.ExtractTime(project.GetUpdatedAt())
 	m.SetUpdatedAt(projectUpdatedAt)
-	var projectUpdaterID uuid.NullUUID
-	if err := (&projectUpdaterID).UnmarshalBinary(project.GetUpdaterId()); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-	}
+	projectUpdaterID := int(project.GetUpdaterId())
 	m.SetUpdaterID(projectUpdaterID)
 	for _, item := range project.GetTasks() {
-		var tasks uuid.UUID
-		if err := (&tasks).UnmarshalBinary(item.GetId()); err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid argument: %s", err)
-		}
+		tasks := int(item.GetId())
 		m.AddTaskIDs(tasks)
 	}
 	return m, nil

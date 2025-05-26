@@ -52,6 +52,7 @@ func startHTTPServer(cli *ent.Client) {
 		{handlers.NewOrgHandler(cli, nil).RegisterRoutes},
 		{handlers.NewDeptHandler(cli, nil).RegisterRoutes},
 		{handlers.NewPositionHandler(cli, nil).RegisterRoutes},
+		{handlers.NewProjectHandler(cli).RegisterRoutes},
 	}
 	for _, h := range handlersList {
 		h.register(r)
