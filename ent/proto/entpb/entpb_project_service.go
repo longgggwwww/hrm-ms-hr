@@ -61,6 +61,31 @@ func toEntProject_Status(e Project_Status) project.Status {
 	return ""
 }
 
+var protoIdentNormalizeRegexpProject_Visibility = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
+
+func protoIdentNormalizeProject_Visibility(e string) string {
+	return protoIdentNormalizeRegexpProject_Visibility.ReplaceAllString(e, "_")
+}
+
+func toProtoProject_Visibility(e project.Visibility) Project_Visibility {
+	if v, ok := Project_Visibility_value[strings.ToUpper("VISIBILITY_"+protoIdentNormalizeProject_Visibility(string(e)))]; ok {
+		return Project_Visibility(v)
+	}
+	return Project_Visibility(0)
+}
+
+func toEntProject_Visibility(e Project_Visibility) project.Visibility {
+	if v, ok := Project_Visibility_name[int32(e)]; ok {
+		entVal := map[string]string{
+			"VISIBILITY_PRIVATE":  "private",
+			"VISIBILITY_PUBLIC":   "public",
+			"VISIBILITY_INTERNAL": "internal",
+		}[v]
+		return project.Visibility(entVal)
+	}
+	return ""
+}
+
 // toProtoProject transforms the ent type to the pb type
 func toProtoProject(e *ent.Project) (*Project, error) {
 	v := &Project{}
@@ -90,6 +115,8 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 	v.UpdatedAt = updated_at
 	updater := int64(e.UpdaterID)
 	v.UpdaterId = updater
+	visibility := toProtoProject_Visibility(e.Visibility)
+	v.Visibility = visibility
 	if edg := e.Edges.Creator; edg != nil {
 		id := int64(edg.ID)
 		v.Creator = &Employee{
@@ -228,6 +255,8 @@ func (svc *ProjectService) Update(ctx context.Context, req *UpdateProjectRequest
 	m.SetUpdatedAt(projectUpdatedAt)
 	projectUpdaterID := int(project.GetUpdaterId())
 	m.SetUpdaterID(projectUpdaterID)
+	projectVisibility := toEntProject_Visibility(project.GetVisibility())
+	m.SetVisibility(projectVisibility)
 	if project.GetCreator() != nil {
 		projectCreator := int(project.GetCreator().GetId())
 		m.SetCreatorID(projectCreator)
@@ -417,6 +446,8 @@ func (svc *ProjectService) createBuilder(project *Project) (*ent.ProjectCreate, 
 	m.SetUpdatedAt(projectUpdatedAt)
 	projectUpdaterID := int(project.GetUpdaterId())
 	m.SetUpdaterID(projectUpdaterID)
+	projectVisibility := toEntProject_Visibility(project.GetVisibility())
+	m.SetVisibility(projectVisibility)
 	if project.GetCreator() != nil {
 		projectCreator := int(project.GetCreator().GetId())
 		m.SetCreatorID(projectCreator)

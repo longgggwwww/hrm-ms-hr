@@ -27,9 +27,20 @@ func (Task) Fields() []ent.Field {
 			Annotations(entproto.Field(4)),
 		field.Int("process").
 			Annotations(entproto.Field(5)),
-		field.Bool("status").
-			Annotations(entproto.Field(6)),
+		field.Enum("status").
+			Values("not_received", "received", "in_progress", "completed", "cancelled").
+			Default("not_received").
+			Annotations(
+				entproto.Field(6),
+				entproto.Enum(map[string]int32{
+					"not_received": 0,
+					"received":     1,
+					"in_progress":  2,
+					"completed":    3,
+					"cancelled":    4,
+				})),
 		field.Time("start_at").
+			Optional().
 			Annotations(entproto.Field(7)),
 		field.Int("project_id").
 			Optional().

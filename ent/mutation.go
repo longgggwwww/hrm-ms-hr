@@ -5819,6 +5819,7 @@ type ProjectMutation struct {
 	process             *int
 	addprocess          *int
 	status              *project.Status
+	visibility          *project.Visibility
 	created_at          *time.Time
 	updated_at          *time.Time
 	clearedFields       map[string]struct{}
@@ -6354,6 +6355,42 @@ func (m *ProjectMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetVisibility sets the "visibility" field.
+func (m *ProjectMutation) SetVisibility(pr project.Visibility) {
+	m.visibility = &pr
+}
+
+// Visibility returns the value of the "visibility" field in the mutation.
+func (m *ProjectMutation) Visibility() (r project.Visibility, exists bool) {
+	v := m.visibility
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVisibility returns the old "visibility" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldVisibility(ctx context.Context) (v project.Visibility, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVisibility is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVisibility requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVisibility: %w", err)
+	}
+	return oldValue.Visibility, nil
+}
+
+// ResetVisibility resets all changes to the "visibility" field.
+func (m *ProjectMutation) ResetVisibility() {
+	m.visibility = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ProjectMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -6608,7 +6645,7 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.name != nil {
 		fields = append(fields, project.FieldName)
 	}
@@ -6638,6 +6675,9 @@ func (m *ProjectMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, project.FieldStatus)
+	}
+	if m.visibility != nil {
+		fields = append(fields, project.FieldVisibility)
 	}
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
@@ -6673,6 +6713,8 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.Process()
 	case project.FieldStatus:
 		return m.Status()
+	case project.FieldVisibility:
+		return m.Visibility()
 	case project.FieldCreatedAt:
 		return m.CreatedAt()
 	case project.FieldUpdatedAt:
@@ -6706,6 +6748,8 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldProcess(ctx)
 	case project.FieldStatus:
 		return m.OldStatus(ctx)
+	case project.FieldVisibility:
+		return m.OldVisibility(ctx)
 	case project.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case project.FieldUpdatedAt:
@@ -6788,6 +6832,13 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case project.FieldVisibility:
+		v, ok := value.(project.Visibility)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVisibility(v)
 		return nil
 	case project.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -6917,6 +6968,9 @@ func (m *ProjectMutation) ResetField(name string) error {
 		return nil
 	case project.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case project.FieldVisibility:
+		m.ResetVisibility()
 		return nil
 	case project.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -7077,7 +7131,7 @@ type TaskMutation struct {
 	description    *string
 	process        *int
 	addprocess     *int
-	status         *bool
+	status         *task.Status
 	start_at       *time.Time
 	creator_id     *int
 	addcreator_id  *int
@@ -7373,12 +7427,12 @@ func (m *TaskMutation) ResetProcess() {
 }
 
 // SetStatus sets the "status" field.
-func (m *TaskMutation) SetStatus(b bool) {
-	m.status = &b
+func (m *TaskMutation) SetStatus(t task.Status) {
+	m.status = &t
 }
 
 // Status returns the value of the "status" field in the mutation.
-func (m *TaskMutation) Status() (r bool, exists bool) {
+func (m *TaskMutation) Status() (r task.Status, exists bool) {
 	v := m.status
 	if v == nil {
 		return
@@ -7389,7 +7443,7 @@ func (m *TaskMutation) Status() (r bool, exists bool) {
 // OldStatus returns the old "status" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldStatus(ctx context.Context) (v bool, err error) {
+func (m *TaskMutation) OldStatus(ctx context.Context) (v task.Status, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
@@ -7439,9 +7493,22 @@ func (m *TaskMutation) OldStartAt(ctx context.Context) (v time.Time, err error) 
 	return oldValue.StartAt, nil
 }
 
+// ClearStartAt clears the value of the "start_at" field.
+func (m *TaskMutation) ClearStartAt() {
+	m.start_at = nil
+	m.clearedFields[task.FieldStartAt] = struct{}{}
+}
+
+// StartAtCleared returns if the "start_at" field was cleared in this mutation.
+func (m *TaskMutation) StartAtCleared() bool {
+	_, ok := m.clearedFields[task.FieldStartAt]
+	return ok
+}
+
 // ResetStartAt resets all changes to the "start_at" field.
 func (m *TaskMutation) ResetStartAt() {
 	m.start_at = nil
+	delete(m.clearedFields, task.FieldStartAt)
 }
 
 // SetProjectID sets the "project_id" field.
@@ -7968,7 +8035,7 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		m.SetProcess(v)
 		return nil
 	case task.FieldStatus:
-		v, ok := value.(bool)
+		v, ok := value.(task.Status)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -8095,6 +8162,9 @@ func (m *TaskMutation) ClearedFields() []string {
 	if m.FieldCleared(task.FieldDescription) {
 		fields = append(fields, task.FieldDescription)
 	}
+	if m.FieldCleared(task.FieldStartAt) {
+		fields = append(fields, task.FieldStartAt)
+	}
 	if m.FieldCleared(task.FieldProjectID) {
 		fields = append(fields, task.FieldProjectID)
 	}
@@ -8114,6 +8184,9 @@ func (m *TaskMutation) ClearField(name string) error {
 	switch name {
 	case task.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case task.FieldStartAt:
+		m.ClearStartAt()
 		return nil
 	case task.FieldProjectID:
 		m.ClearProjectID()

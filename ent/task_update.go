@@ -100,15 +100,15 @@ func (tu *TaskUpdate) AddProcess(i int) *TaskUpdate {
 }
 
 // SetStatus sets the "status" field.
-func (tu *TaskUpdate) SetStatus(b bool) *TaskUpdate {
-	tu.mutation.SetStatus(b)
+func (tu *TaskUpdate) SetStatus(t task.Status) *TaskUpdate {
+	tu.mutation.SetStatus(t)
 	return tu
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableStatus(b *bool) *TaskUpdate {
-	if b != nil {
-		tu.SetStatus(*b)
+func (tu *TaskUpdate) SetNillableStatus(t *task.Status) *TaskUpdate {
+	if t != nil {
+		tu.SetStatus(*t)
 	}
 	return tu
 }
@@ -124,6 +124,12 @@ func (tu *TaskUpdate) SetNillableStartAt(t *time.Time) *TaskUpdate {
 	if t != nil {
 		tu.SetStartAt(*t)
 	}
+	return tu
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (tu *TaskUpdate) ClearStartAt() *TaskUpdate {
+	tu.mutation.ClearStartAt()
 	return tu
 }
 
@@ -299,6 +305,11 @@ func (tu *TaskUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tu *TaskUpdate) check() error {
+	if v, ok := tu.mutation.Status(); ok {
+		if err := task.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
+		}
+	}
 	if v, ok := tu.mutation.GetType(); ok {
 		if err := task.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
@@ -338,10 +349,13 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.AddField(task.FieldProcess, field.TypeInt, value)
 	}
 	if value, ok := tu.mutation.Status(); ok {
-		_spec.SetField(task.FieldStatus, field.TypeBool, value)
+		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := tu.mutation.StartAt(); ok {
 		_spec.SetField(task.FieldStartAt, field.TypeTime, value)
+	}
+	if tu.mutation.StartAtCleared() {
+		_spec.ClearField(task.FieldStartAt, field.TypeTime)
 	}
 	if value, ok := tu.mutation.CreatorID(); ok {
 		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)
@@ -525,15 +539,15 @@ func (tuo *TaskUpdateOne) AddProcess(i int) *TaskUpdateOne {
 }
 
 // SetStatus sets the "status" field.
-func (tuo *TaskUpdateOne) SetStatus(b bool) *TaskUpdateOne {
-	tuo.mutation.SetStatus(b)
+func (tuo *TaskUpdateOne) SetStatus(t task.Status) *TaskUpdateOne {
+	tuo.mutation.SetStatus(t)
 	return tuo
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableStatus(b *bool) *TaskUpdateOne {
-	if b != nil {
-		tuo.SetStatus(*b)
+func (tuo *TaskUpdateOne) SetNillableStatus(t *task.Status) *TaskUpdateOne {
+	if t != nil {
+		tuo.SetStatus(*t)
 	}
 	return tuo
 }
@@ -549,6 +563,12 @@ func (tuo *TaskUpdateOne) SetNillableStartAt(t *time.Time) *TaskUpdateOne {
 	if t != nil {
 		tuo.SetStartAt(*t)
 	}
+	return tuo
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (tuo *TaskUpdateOne) ClearStartAt() *TaskUpdateOne {
+	tuo.mutation.ClearStartAt()
 	return tuo
 }
 
@@ -737,6 +757,11 @@ func (tuo *TaskUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tuo *TaskUpdateOne) check() error {
+	if v, ok := tuo.mutation.Status(); ok {
+		if err := task.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
+		}
+	}
 	if v, ok := tuo.mutation.GetType(); ok {
 		if err := task.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
@@ -793,10 +818,13 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 		_spec.AddField(task.FieldProcess, field.TypeInt, value)
 	}
 	if value, ok := tuo.mutation.Status(); ok {
-		_spec.SetField(task.FieldStatus, field.TypeBool, value)
+		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := tuo.mutation.StartAt(); ok {
 		_spec.SetField(task.FieldStartAt, field.TypeTime, value)
+	}
+	if tuo.mutation.StartAtCleared() {
+		_spec.ClearField(task.FieldStartAt, field.TypeTime)
 	}
 	if value, ok := tuo.mutation.CreatorID(); ok {
 		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)
