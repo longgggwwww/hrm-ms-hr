@@ -78,7 +78,7 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 	v.Name = name
 	process := int64(e.Process)
 	v.Process = process
-	project := int64(e.ProjectID)
+	project := wrapperspb.Int64(int64(e.ProjectID))
 	v.ProjectId = project
 	start_at := timestamppb.New(e.StartAt)
 	v.StartAt = start_at
@@ -194,8 +194,10 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 	m.SetName(taskName)
 	taskProcess := int(task.GetProcess())
 	m.SetProcess(taskProcess)
-	taskProjectID := int(task.GetProjectId())
-	m.SetProjectID(taskProjectID)
+	if task.GetProjectId() != nil {
+		taskProjectID := int(task.GetProjectId().GetValue())
+		m.SetProjectID(taskProjectID)
+	}
 	taskStartAt := runtime.ExtractTime(task.GetStartAt())
 	m.SetStartAt(taskStartAt)
 	taskStatus := task.GetStatus()
@@ -365,8 +367,10 @@ func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 	m.SetName(taskName)
 	taskProcess := int(task.GetProcess())
 	m.SetProcess(taskProcess)
-	taskProjectID := int(task.GetProjectId())
-	m.SetProjectID(taskProjectID)
+	if task.GetProjectId() != nil {
+		taskProjectID := int(task.GetProjectId().GetValue())
+		m.SetProjectID(taskProjectID)
+	}
 	taskStartAt := runtime.ExtractTime(task.GetStartAt())
 	m.SetStartAt(taskStartAt)
 	taskStatus := task.GetStatus()

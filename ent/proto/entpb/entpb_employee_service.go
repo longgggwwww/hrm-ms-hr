@@ -11,6 +11,7 @@ import (
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
+	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -79,11 +80,23 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v.UpdatedAt = updated_at
 	user_id := wrapperspb.String(e.UserID)
 	v.UserId = user_id
+	for _, edg := range e.Edges.CreatedProjects {
+		id := int64(edg.ID)
+		v.CreatedProjects = append(v.CreatedProjects, &Project{
+			Id: id,
+		})
+	}
 	if edg := e.Edges.Position; edg != nil {
 		id := int64(edg.ID)
 		v.Position = &Position{
 			Id: id,
 		}
+	}
+	for _, edg := range e.Edges.UpdatedProjects {
+		id := int64(edg.ID)
+		v.UpdatedProjects = append(v.UpdatedProjects, &Project{
+			Id: id,
+		})
 	}
 	return v, nil
 }
@@ -139,8 +152,14 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 	case GetEmployeeRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Employee.Query().
 			Where(employee.ID(id)).
+			WithCreatedProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
+			}).
 			WithPosition(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
+			}).
+			WithUpdatedProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
 			}).
 			Only(ctx)
 	default:
@@ -178,9 +197,17 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
 	}
+	for _, item := range employee.GetCreatedProjects() {
+		createdprojects := int(item.GetId())
+		m.AddCreatedProjectIDs(createdprojects)
+	}
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
+	}
+	for _, item := range employee.GetUpdatedProjects() {
+		updatedprojects := int(item.GetId())
+		m.AddUpdatedProjectIDs(updatedprojects)
 	}
 
 	res, err := m.Save(ctx)
@@ -252,8 +279,14 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 		entList, err = listQuery.All(ctx)
 	case ListEmployeeRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithCreatedProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
+			}).
 			WithPosition(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
+			}).
+			WithUpdatedProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
 			}).
 			All(ctx)
 	}
@@ -334,9 +367,17 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
 	}
+	for _, item := range employee.GetCreatedProjects() {
+		createdprojects := int(item.GetId())
+		m.AddCreatedProjectIDs(createdprojects)
+	}
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
+	}
+	for _, item := range employee.GetUpdatedProjects() {
+		updatedprojects := int(item.GetId())
+		m.AddUpdatedProjectIDs(updatedprojects)
 	}
 	return m, nil
 }

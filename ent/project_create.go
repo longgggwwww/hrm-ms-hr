@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
@@ -158,6 +160,27 @@ func (pc *ProjectCreate) AddTasks(t ...*Task) *ProjectCreate {
 	return pc.AddTaskIDs(ids...)
 }
 
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (pc *ProjectCreate) SetOrganizationID(id int) *ProjectCreate {
+	pc.mutation.SetOrganizationID(id)
+	return pc
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (pc *ProjectCreate) SetOrganization(o *Organization) *ProjectCreate {
+	return pc.SetOrganizationID(o.ID)
+}
+
+// SetCreator sets the "creator" edge to the Employee entity.
+func (pc *ProjectCreate) SetCreator(e *Employee) *ProjectCreate {
+	return pc.SetCreatorID(e.ID)
+}
+
+// SetUpdater sets the "updater" edge to the Employee entity.
+func (pc *ProjectCreate) SetUpdater(e *Employee) *ProjectCreate {
+	return pc.SetUpdaterID(e.ID)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pc *ProjectCreate) Mutation() *ProjectMutation {
 	return pc.mutation
@@ -241,6 +264,15 @@ func (pc *ProjectCreate) check() error {
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Project.updated_at"`)}
 	}
+	if len(pc.mutation.OrganizationIDs()) == 0 {
+		return &ValidationError{Name: "organization", err: errors.New(`ent: missing required edge "Project.organization"`)}
+	}
+	if len(pc.mutation.CreatorIDs()) == 0 {
+		return &ValidationError{Name: "creator", err: errors.New(`ent: missing required edge "Project.creator"`)}
+	}
+	if len(pc.mutation.UpdaterIDs()) == 0 {
+		return &ValidationError{Name: "updater", err: errors.New(`ent: missing required edge "Project.updater"`)}
+	}
 	return nil
 }
 
@@ -288,18 +320,6 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_spec.SetField(project.FieldEndAt, field.TypeTime, value)
 		_node.EndAt = value
 	}
-	if value, ok := pc.mutation.CreatorID(); ok {
-		_spec.SetField(project.FieldCreatorID, field.TypeInt, value)
-		_node.CreatorID = value
-	}
-	if value, ok := pc.mutation.UpdaterID(); ok {
-		_spec.SetField(project.FieldUpdaterID, field.TypeInt, value)
-		_node.UpdaterID = value
-	}
-	if value, ok := pc.mutation.OrgID(); ok {
-		_spec.SetField(project.FieldOrgID, field.TypeInt, value)
-		_node.OrgID = value
-	}
 	if value, ok := pc.mutation.Process(); ok {
 		_spec.SetField(project.FieldProcess, field.TypeInt, value)
 		_node.Process = value
@@ -330,6 +350,57 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.OrganizationTable,
+			Columns: []string{project.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OrgID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.CreatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.CreatorTable,
+			Columns: []string{project.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.CreatorID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.UpdaterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UpdaterTable,
+			Columns: []string{project.UpdaterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UpdaterID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -468,12 +539,6 @@ func (u *ProjectUpsert) UpdateCreatorID() *ProjectUpsert {
 	return u
 }
 
-// AddCreatorID adds v to the "creator_id" field.
-func (u *ProjectUpsert) AddCreatorID(v int) *ProjectUpsert {
-	u.Add(project.FieldCreatorID, v)
-	return u
-}
-
 // SetUpdaterID sets the "updater_id" field.
 func (u *ProjectUpsert) SetUpdaterID(v int) *ProjectUpsert {
 	u.Set(project.FieldUpdaterID, v)
@@ -486,12 +551,6 @@ func (u *ProjectUpsert) UpdateUpdaterID() *ProjectUpsert {
 	return u
 }
 
-// AddUpdaterID adds v to the "updater_id" field.
-func (u *ProjectUpsert) AddUpdaterID(v int) *ProjectUpsert {
-	u.Add(project.FieldUpdaterID, v)
-	return u
-}
-
 // SetOrgID sets the "org_id" field.
 func (u *ProjectUpsert) SetOrgID(v int) *ProjectUpsert {
 	u.Set(project.FieldOrgID, v)
@@ -501,12 +560,6 @@ func (u *ProjectUpsert) SetOrgID(v int) *ProjectUpsert {
 // UpdateOrgID sets the "org_id" field to the value that was provided on create.
 func (u *ProjectUpsert) UpdateOrgID() *ProjectUpsert {
 	u.SetExcluded(project.FieldOrgID)
-	return u
-}
-
-// AddOrgID adds v to the "org_id" field.
-func (u *ProjectUpsert) AddOrgID(v int) *ProjectUpsert {
-	u.Add(project.FieldOrgID, v)
 	return u
 }
 
@@ -694,13 +747,6 @@ func (u *ProjectUpsertOne) SetCreatorID(v int) *ProjectUpsertOne {
 	})
 }
 
-// AddCreatorID adds v to the "creator_id" field.
-func (u *ProjectUpsertOne) AddCreatorID(v int) *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.AddCreatorID(v)
-	})
-}
-
 // UpdateCreatorID sets the "creator_id" field to the value that was provided on create.
 func (u *ProjectUpsertOne) UpdateCreatorID() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
@@ -715,13 +761,6 @@ func (u *ProjectUpsertOne) SetUpdaterID(v int) *ProjectUpsertOne {
 	})
 }
 
-// AddUpdaterID adds v to the "updater_id" field.
-func (u *ProjectUpsertOne) AddUpdaterID(v int) *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.AddUpdaterID(v)
-	})
-}
-
 // UpdateUpdaterID sets the "updater_id" field to the value that was provided on create.
 func (u *ProjectUpsertOne) UpdateUpdaterID() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
@@ -733,13 +772,6 @@ func (u *ProjectUpsertOne) UpdateUpdaterID() *ProjectUpsertOne {
 func (u *ProjectUpsertOne) SetOrgID(v int) *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.SetOrgID(v)
-	})
-}
-
-// AddOrgID adds v to the "org_id" field.
-func (u *ProjectUpsertOne) AddOrgID(v int) *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.AddOrgID(v)
 	})
 }
 
@@ -1108,13 +1140,6 @@ func (u *ProjectUpsertBulk) SetCreatorID(v int) *ProjectUpsertBulk {
 	})
 }
 
-// AddCreatorID adds v to the "creator_id" field.
-func (u *ProjectUpsertBulk) AddCreatorID(v int) *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.AddCreatorID(v)
-	})
-}
-
 // UpdateCreatorID sets the "creator_id" field to the value that was provided on create.
 func (u *ProjectUpsertBulk) UpdateCreatorID() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
@@ -1129,13 +1154,6 @@ func (u *ProjectUpsertBulk) SetUpdaterID(v int) *ProjectUpsertBulk {
 	})
 }
 
-// AddUpdaterID adds v to the "updater_id" field.
-func (u *ProjectUpsertBulk) AddUpdaterID(v int) *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.AddUpdaterID(v)
-	})
-}
-
 // UpdateUpdaterID sets the "updater_id" field to the value that was provided on create.
 func (u *ProjectUpsertBulk) UpdateUpdaterID() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
@@ -1147,13 +1165,6 @@ func (u *ProjectUpsertBulk) UpdateUpdaterID() *ProjectUpsertBulk {
 func (u *ProjectUpsertBulk) SetOrgID(v int) *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.SetOrgID(v)
-	})
-}
-
-// AddOrgID adds v to the "org_id" field.
-func (u *ProjectUpsertBulk) AddOrgID(v int) *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.AddOrgID(v)
 	})
 }
 

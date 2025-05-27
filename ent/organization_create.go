@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
+	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 )
 
 // OrganizationCreate is the builder for creating a Organization entity.
@@ -180,6 +181,21 @@ func (oc *OrganizationCreate) AddDepartments(d ...*Department) *OrganizationCrea
 		ids[i] = d[i].ID
 	}
 	return oc.AddDepartmentIDs(ids...)
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (oc *OrganizationCreate) AddProjectIDs(ids ...int) *OrganizationCreate {
+	oc.mutation.AddProjectIDs(ids...)
+	return oc
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (oc *OrganizationCreate) AddProjects(p ...*Project) *OrganizationCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return oc.AddProjectIDs(ids...)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -356,6 +372,22 @@ func (oc *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := oc.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ProjectsTable,
+			Columns: []string{organization.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

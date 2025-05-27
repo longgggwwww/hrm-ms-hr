@@ -453,6 +453,52 @@ func HasPositionWith(preds ...predicate.Position) predicate.Employee {
 	})
 }
 
+// HasCreatedProjects applies the HasEdge predicate on the "created_projects" edge.
+func HasCreatedProjects() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CreatedProjectsTable, CreatedProjectsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCreatedProjectsWith applies the HasEdge predicate on the "created_projects" edge with a given conditions (other predicates).
+func HasCreatedProjectsWith(preds ...predicate.Project) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newCreatedProjectsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUpdatedProjects applies the HasEdge predicate on the "updated_projects" edge.
+func HasUpdatedProjects() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UpdatedProjectsTable, UpdatedProjectsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUpdatedProjectsWith applies the HasEdge predicate on the "updated_projects" edge with a given conditions (other predicates).
+func HasUpdatedProjectsWith(preds ...predicate.Project) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newUpdatedProjectsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Employee) predicate.Employee {
 	return predicate.Employee(sql.AndPredicates(predicates...))

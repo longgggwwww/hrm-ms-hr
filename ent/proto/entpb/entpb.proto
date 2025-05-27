@@ -106,6 +106,10 @@ message Employee {
 
   Position position = 10;
 
+  repeated Project created_projects = 11;
+
+  repeated Project updated_projects = 12;
+
   enum Status {
     STATUS_ACTIVE = 0;
 
@@ -427,6 +431,8 @@ message Organization {
   repeated Organization children = 13;
 
   repeated Department departments = 14;
+
+  repeated Project projects = 15;
 }
 
 message CreateOrganizationRequest {
@@ -594,6 +600,12 @@ message Project {
 
   repeated Task tasks = 14;
 
+  Organization organization = 15;
+
+  Employee creator = 16;
+
+  Employee updater = 17;
+
   enum Status {
     STATUS_NOT_STARTED = 0;
 
@@ -674,7 +686,7 @@ message Task {
 
   google.protobuf.Timestamp start_at = 7;
 
-  int64 project_id = 8;
+  google.protobuf.Int64Value project_id = 8;
 
   int64 creator_id = 9;
 

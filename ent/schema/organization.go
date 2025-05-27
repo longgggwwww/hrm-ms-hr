@@ -71,6 +71,8 @@ func (Organization) Edges() []ent.Edge {
 			Annotations(entproto.Field(13)),
 		edge.To("departments", Department.Type).
 			Annotations(entproto.Field(14)),
+		edge.To("projects", Project.Type).
+			Annotations(entproto.Field(15)),
 	}
 }
 

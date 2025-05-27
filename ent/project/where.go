@@ -425,26 +425,6 @@ func CreatorIDNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldCreatorID, vs...))
 }
 
-// CreatorIDGT applies the GT predicate on the "creator_id" field.
-func CreatorIDGT(v int) predicate.Project {
-	return predicate.Project(sql.FieldGT(FieldCreatorID, v))
-}
-
-// CreatorIDGTE applies the GTE predicate on the "creator_id" field.
-func CreatorIDGTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldGTE(FieldCreatorID, v))
-}
-
-// CreatorIDLT applies the LT predicate on the "creator_id" field.
-func CreatorIDLT(v int) predicate.Project {
-	return predicate.Project(sql.FieldLT(FieldCreatorID, v))
-}
-
-// CreatorIDLTE applies the LTE predicate on the "creator_id" field.
-func CreatorIDLTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldLTE(FieldCreatorID, v))
-}
-
 // UpdaterIDEQ applies the EQ predicate on the "updater_id" field.
 func UpdaterIDEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldUpdaterID, v))
@@ -465,26 +445,6 @@ func UpdaterIDNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldUpdaterID, vs...))
 }
 
-// UpdaterIDGT applies the GT predicate on the "updater_id" field.
-func UpdaterIDGT(v int) predicate.Project {
-	return predicate.Project(sql.FieldGT(FieldUpdaterID, v))
-}
-
-// UpdaterIDGTE applies the GTE predicate on the "updater_id" field.
-func UpdaterIDGTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldGTE(FieldUpdaterID, v))
-}
-
-// UpdaterIDLT applies the LT predicate on the "updater_id" field.
-func UpdaterIDLT(v int) predicate.Project {
-	return predicate.Project(sql.FieldLT(FieldUpdaterID, v))
-}
-
-// UpdaterIDLTE applies the LTE predicate on the "updater_id" field.
-func UpdaterIDLTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldLTE(FieldUpdaterID, v))
-}
-
 // OrgIDEQ applies the EQ predicate on the "org_id" field.
 func OrgIDEQ(v int) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldOrgID, v))
@@ -503,26 +463,6 @@ func OrgIDIn(vs ...int) predicate.Project {
 // OrgIDNotIn applies the NotIn predicate on the "org_id" field.
 func OrgIDNotIn(vs ...int) predicate.Project {
 	return predicate.Project(sql.FieldNotIn(FieldOrgID, vs...))
-}
-
-// OrgIDGT applies the GT predicate on the "org_id" field.
-func OrgIDGT(v int) predicate.Project {
-	return predicate.Project(sql.FieldGT(FieldOrgID, v))
-}
-
-// OrgIDGTE applies the GTE predicate on the "org_id" field.
-func OrgIDGTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldGTE(FieldOrgID, v))
-}
-
-// OrgIDLT applies the LT predicate on the "org_id" field.
-func OrgIDLT(v int) predicate.Project {
-	return predicate.Project(sql.FieldLT(FieldOrgID, v))
-}
-
-// OrgIDLTE applies the LTE predicate on the "org_id" field.
-func OrgIDLTE(v int) predicate.Project {
-	return predicate.Project(sql.FieldLTE(FieldOrgID, v))
 }
 
 // ProcessEQ applies the EQ predicate on the "process" field.
@@ -690,6 +630,75 @@ func HasTasks() predicate.Project {
 func HasTasksWith(preds ...predicate.Task) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
 		step := newTasksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOrganization applies the HasEdge predicate on the "organization" edge.
+func HasOrganization() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, OrganizationTable, OrganizationColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOrganizationWith applies the HasEdge predicate on the "organization" edge with a given conditions (other predicates).
+func HasOrganizationWith(preds ...predicate.Organization) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newOrganizationStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCreator applies the HasEdge predicate on the "creator" edge.
+func HasCreator() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCreatorWith applies the HasEdge predicate on the "creator" edge with a given conditions (other predicates).
+func HasCreatorWith(preds ...predicate.Employee) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newCreatorStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUpdater applies the HasEdge predicate on the "updater" edge.
+func HasUpdater() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UpdaterTable, UpdaterColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUpdaterWith applies the HasEdge predicate on the "updater" edge with a given conditions (other predicates).
+func HasUpdaterWith(preds ...predicate.Employee) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newUpdaterStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

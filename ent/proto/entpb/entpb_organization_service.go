@@ -11,6 +11,7 @@ import (
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
 	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
+	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -87,6 +88,12 @@ func toProtoOrganization(e *ent.Organization) (*Organization, error) {
 			Id: id,
 		}
 	}
+	for _, edg := range e.Edges.Projects {
+		id := int64(edg.ID)
+		v.Projects = append(v.Projects, &Project{
+			Id: id,
+		})
+	}
 	return v, nil
 }
 
@@ -149,6 +156,9 @@ func (svc *OrganizationService) Get(ctx context.Context, req *GetOrganizationReq
 			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
+			}).
+			WithProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
 			}).
 			Only(ctx)
 	default:
@@ -213,6 +223,10 @@ func (svc *OrganizationService) Update(ctx context.Context, req *UpdateOrganizat
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())
 		m.SetParentID(organizationParent)
+	}
+	for _, item := range organization.GetProjects() {
+		projects := int(item.GetId())
+		m.AddProjectIDs(projects)
 	}
 
 	res, err := m.Save(ctx)
@@ -292,6 +306,9 @@ func (svc *OrganizationService) List(ctx context.Context, req *ListOrganizationR
 			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
+			}).
+			WithProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
 			}).
 			All(ctx)
 	}
@@ -397,6 +414,10 @@ func (svc *OrganizationService) createBuilder(organization *Organization) (*ent.
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())
 		m.SetParentID(organizationParent)
+	}
+	for _, item := range organization.GetProjects() {
+		projects := int(item.GetId())
+		m.AddProjectIDs(projects)
 	}
 	return m, nil
 }
