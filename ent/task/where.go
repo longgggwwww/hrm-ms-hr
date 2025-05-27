@@ -75,11 +75,6 @@ func Process(v int) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldProcess, v))
 }
 
-// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
-func Status(v bool) predicate.Task {
-	return predicate.Task(sql.FieldEQ(FieldStatus, v))
-}
-
 // StartAt applies equality check predicate on the "start_at" field. It's identical to StartAtEQ.
 func StartAt(v time.Time) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldStartAt, v))
@@ -356,13 +351,23 @@ func ProcessLTE(v int) predicate.Task {
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v bool) predicate.Task {
+func StatusEQ(v Status) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldStatus, v))
 }
 
 // StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v bool) predicate.Task {
+func StatusNEQ(v Status) predicate.Task {
 	return predicate.Task(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldStatus, vs...))
 }
 
 // StartAtEQ applies the EQ predicate on the "start_at" field.
@@ -403,6 +408,16 @@ func StartAtLT(v time.Time) predicate.Task {
 // StartAtLTE applies the LTE predicate on the "start_at" field.
 func StartAtLTE(v time.Time) predicate.Task {
 	return predicate.Task(sql.FieldLTE(FieldStartAt, v))
+}
+
+// StartAtIsNil applies the IsNil predicate on the "start_at" field.
+func StartAtIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldStartAt))
+}
+
+// StartAtNotNil applies the NotNil predicate on the "start_at" field.
+func StartAtNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldStartAt))
 }
 
 // ProjectIDEQ applies the EQ predicate on the "project_id" field.

@@ -35,6 +35,33 @@ func NewTaskService(client *ent.Client) *TaskService {
 	}
 }
 
+var protoIdentNormalizeRegexpTask_Status = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
+
+func protoIdentNormalizeTask_Status(e string) string {
+	return protoIdentNormalizeRegexpTask_Status.ReplaceAllString(e, "_")
+}
+
+func toProtoTask_Status(e task.Status) Task_Status {
+	if v, ok := Task_Status_value[strings.ToUpper("STATUS_"+protoIdentNormalizeTask_Status(string(e)))]; ok {
+		return Task_Status(v)
+	}
+	return Task_Status(0)
+}
+
+func toEntTask_Status(e Task_Status) task.Status {
+	if v, ok := Task_Status_name[int32(e)]; ok {
+		entVal := map[string]string{
+			"STATUS_NOT_RECEIVED": "not_received",
+			"STATUS_RECEIVED":     "received",
+			"STATUS_IN_PROGRESS":  "in_progress",
+			"STATUS_COMPLETED":    "completed",
+			"STATUS_CANCELLED":    "cancelled",
+		}[v]
+		return task.Status(entVal)
+	}
+	return ""
+}
+
 var protoIdentNormalizeRegexpTask_Type = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
 
 func protoIdentNormalizeTask_Type(e string) string {
@@ -82,7 +109,7 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 	v.ProjectId = project
 	start_at := timestamppb.New(e.StartAt)
 	v.StartAt = start_at
-	status := e.Status
+	status := toProtoTask_Status(e.Status)
 	v.Status = status
 	_type := toProtoTask_Type(e.Type)
 	v.Type = _type
@@ -198,9 +225,11 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 		taskProjectID := int(task.GetProjectId().GetValue())
 		m.SetProjectID(taskProjectID)
 	}
-	taskStartAt := runtime.ExtractTime(task.GetStartAt())
-	m.SetStartAt(taskStartAt)
-	taskStatus := task.GetStatus()
+	if task.GetStartAt() != nil {
+		taskStartAt := runtime.ExtractTime(task.GetStartAt())
+		m.SetStartAt(taskStartAt)
+	}
+	taskStatus := toEntTask_Status(task.GetStatus())
 	m.SetStatus(taskStatus)
 	taskType := toEntTask_Type(task.GetType())
 	m.SetType(taskType)
@@ -371,9 +400,11 @@ func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 		taskProjectID := int(task.GetProjectId().GetValue())
 		m.SetProjectID(taskProjectID)
 	}
-	taskStartAt := runtime.ExtractTime(task.GetStartAt())
-	m.SetStartAt(taskStartAt)
-	taskStatus := task.GetStatus()
+	if task.GetStartAt() != nil {
+		taskStartAt := runtime.ExtractTime(task.GetStartAt())
+		m.SetStartAt(taskStartAt)
+	}
+	taskStatus := toEntTask_Status(task.GetStatus())
 	m.SetStatus(taskStatus)
 	taskType := toEntTask_Type(task.GetType())
 	m.SetType(taskType)

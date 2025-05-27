@@ -57,14 +57,30 @@ func (tc *TaskCreate) SetProcess(i int) *TaskCreate {
 }
 
 // SetStatus sets the "status" field.
-func (tc *TaskCreate) SetStatus(b bool) *TaskCreate {
-	tc.mutation.SetStatus(b)
+func (tc *TaskCreate) SetStatus(t task.Status) *TaskCreate {
+	tc.mutation.SetStatus(t)
+	return tc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableStatus(t *task.Status) *TaskCreate {
+	if t != nil {
+		tc.SetStatus(*t)
+	}
 	return tc
 }
 
 // SetStartAt sets the "start_at" field.
 func (tc *TaskCreate) SetStartAt(t time.Time) *TaskCreate {
 	tc.mutation.SetStartAt(t)
+	return tc
+}
+
+// SetNillableStartAt sets the "start_at" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableStartAt(t *time.Time) *TaskCreate {
+	if t != nil {
+		tc.SetStartAt(*t)
+	}
 	return tc
 }
 
@@ -191,6 +207,10 @@ func (tc *TaskCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tc *TaskCreate) defaults() {
+	if _, ok := tc.mutation.Status(); !ok {
+		v := task.DefaultStatus
+		tc.mutation.SetStatus(v)
+	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		v := task.DefaultCreatedAt()
 		tc.mutation.SetCreatedAt(v)
@@ -219,8 +239,10 @@ func (tc *TaskCreate) check() error {
 	if _, ok := tc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Task.status"`)}
 	}
-	if _, ok := tc.mutation.StartAt(); !ok {
-		return &ValidationError{Name: "start_at", err: errors.New(`ent: missing required field "Task.start_at"`)}
+	if v, ok := tc.mutation.Status(); ok {
+		if err := task.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
+		}
 	}
 	if _, ok := tc.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator_id", err: errors.New(`ent: missing required field "Task.creator_id"`)}
@@ -286,7 +308,7 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_node.Process = value
 	}
 	if value, ok := tc.mutation.Status(); ok {
-		_spec.SetField(task.FieldStatus, field.TypeBool, value)
+		_spec.SetField(task.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
 	if value, ok := tc.mutation.StartAt(); ok {
@@ -459,7 +481,7 @@ func (u *TaskUpsert) AddProcess(v int) *TaskUpsert {
 }
 
 // SetStatus sets the "status" field.
-func (u *TaskUpsert) SetStatus(v bool) *TaskUpsert {
+func (u *TaskUpsert) SetStatus(v task.Status) *TaskUpsert {
 	u.Set(task.FieldStatus, v)
 	return u
 }
@@ -479,6 +501,12 @@ func (u *TaskUpsert) SetStartAt(v time.Time) *TaskUpsert {
 // UpdateStartAt sets the "start_at" field to the value that was provided on create.
 func (u *TaskUpsert) UpdateStartAt() *TaskUpsert {
 	u.SetExcluded(task.FieldStartAt)
+	return u
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (u *TaskUpsert) ClearStartAt() *TaskUpsert {
+	u.SetNull(task.FieldStartAt)
 	return u
 }
 
@@ -676,7 +704,7 @@ func (u *TaskUpsertOne) UpdateProcess() *TaskUpsertOne {
 }
 
 // SetStatus sets the "status" field.
-func (u *TaskUpsertOne) SetStatus(v bool) *TaskUpsertOne {
+func (u *TaskUpsertOne) SetStatus(v task.Status) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetStatus(v)
 	})
@@ -700,6 +728,13 @@ func (u *TaskUpsertOne) SetStartAt(v time.Time) *TaskUpsertOne {
 func (u *TaskUpsertOne) UpdateStartAt() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateStartAt()
+	})
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (u *TaskUpsertOne) ClearStartAt() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearStartAt()
 	})
 }
 
@@ -1076,7 +1111,7 @@ func (u *TaskUpsertBulk) UpdateProcess() *TaskUpsertBulk {
 }
 
 // SetStatus sets the "status" field.
-func (u *TaskUpsertBulk) SetStatus(v bool) *TaskUpsertBulk {
+func (u *TaskUpsertBulk) SetStatus(v task.Status) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetStatus(v)
 	})
@@ -1100,6 +1135,13 @@ func (u *TaskUpsertBulk) SetStartAt(v time.Time) *TaskUpsertBulk {
 func (u *TaskUpsertBulk) UpdateStartAt() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateStartAt()
+	})
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (u *TaskUpsertBulk) ClearStartAt() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearStartAt()
 	})
 }
 

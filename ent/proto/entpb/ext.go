@@ -2,6 +2,7 @@ package entpb
 
 import (
 	context "context"
+	"log"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
@@ -15,6 +16,7 @@ type ExtService struct {
 }
 
 func (s *ExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeByUserIdRequest) (*Employee, error) {
+	log.Println("GetEmployeeByUserId called with UserId:", req.UserId)
 	e, err := s.client.Employee.Query().Where(employee.UserID(req.UserId)).WithPosition().Only(ctx)
 	if err != nil {
 		return nil, err

@@ -44,6 +44,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		OrgID       int     `json:"org_id" binding:"required"`
 		Process     *int    `json:"process"`
 		Status      *string `json:"status"`
+		Visibility  *string `json:"visibility"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -92,6 +93,23 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		statusVal = project.StatusNotStarted
 	}
 
+	var visibilityVal project.Visibility
+	if req.Visibility != nil {
+		switch *req.Visibility {
+		case string(project.VisibilityPrivate),
+			string(project.VisibilityPublic),
+			string(project.VisibilityInternal):
+			visibilityVal = project.Visibility(*req.Visibility)
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid visibility value. Valid values: private, public, internal",
+			})
+			return
+		}
+	} else {
+		visibilityVal = project.VisibilityPrivate
+	}
+
 	projectCreate := h.Client.Project.Create().
 		SetName(req.Name).
 		SetCode(req.Code).
@@ -102,7 +120,8 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		SetUpdaterID(userID).
 		SetOrgID(req.OrgID).
 		SetNillableProcess(req.Process).
-		SetStatus(statusVal)
+		SetStatus(statusVal).
+		SetVisibility(visibilityVal)
 
 	row, err := projectCreate.Save(c.Request.Context())
 	if err != nil {
@@ -131,17 +150,18 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 // - name: Filter by project name (contains search)
 // - code: Filter by project code (contains search)
 // - status: Filter by status (not_started, in_progress, completed)
+// - visibility: Filter by visibility (private, public, internal)
 // - org_id: Filter by organization ID
 // - creator_id: Filter by creator ID
 // - process: Filter by process percentage
 // - start_date_from: Filter projects that start from this date (RFC3339 format)
 // - start_date_to: Filter projects that start before this date (RFC3339 format)
-// - order_by: Sort field (id, name, code, start_at, end_at, status, process, org_id, creator_id, created_at, updated_at, tasks_count)
+// - order_by: Sort field (id, name, code, start_at, end_at, status, visibility, process, org_id, creator_id, created_at, updated_at, tasks_count)
 // - order_dir: Sort direction (asc, desc) - default: desc
 // - page: Page number (default: 1)
 // - limit: Items per page (default: 10, max: 100)
 //
-// Example: GET /projects?name=example&status=in_progress&order_by=name&order_dir=asc&page=1&limit=20
+// Example: GET /projects?name=example&status=in_progress&visibility=public&order_by=name&order_dir=asc&page=1&limit=20
 func (h *ProjectHandler) List(c *gin.Context) {
 	query := h.Client.Project.Query().
 		WithTasks().
@@ -169,6 +189,21 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Invalid status value. Valid values: not_started, in_progress, completed",
+			})
+			return
+		}
+	}
+
+	// Filter by visibility
+	if visibility := c.Query("visibility"); visibility != "" {
+		switch visibility {
+		case string(project.VisibilityPrivate),
+			string(project.VisibilityPublic),
+			string(project.VisibilityInternal):
+			query = query.Where(project.VisibilityEQ(project.Visibility(visibility)))
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid visibility value. Valid values: private, public, internal",
 			})
 			return
 		}
@@ -275,6 +310,12 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		} else {
 			orderOption = project.ByStatus(sql.OrderDesc())
 		}
+	case "visibility":
+		if orderDir == "asc" {
+			orderOption = project.ByVisibility()
+		} else {
+			orderOption = project.ByVisibility(sql.OrderDesc())
+		}
 	case "process":
 		if orderDir == "asc" {
 			orderOption = project.ByProcess()
@@ -313,7 +354,7 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		}
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid order_by field. Valid fields: id, name, code, start_at, end_at, status, process, org_id, creator_id, created_at, updated_at, tasks_count",
+			"error": "Invalid order_by field. Valid fields: id, name, code, start_at, end_at, status, visibility, process, org_id, creator_id, created_at, updated_at, tasks_count",
 		})
 		return
 	}
@@ -409,6 +450,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		OrgID       *int    `json:"org_id"`
 		Process     *int    `json:"process"`
 		Status      *string `json:"status"`
+		Visibility  *string `json:"visibility"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -459,6 +501,15 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 			projectUpdate.SetStatus(project.Status(*req.Status))
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value"})
+			return
+		}
+	}
+	if req.Visibility != nil {
+		switch *req.Visibility {
+		case string(project.VisibilityPrivate), string(project.VisibilityPublic), string(project.VisibilityInternal):
+			projectUpdate.SetVisibility(project.Visibility(*req.Visibility))
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid visibility value. Valid values: private, public, internal"})
 			return
 		}
 	}

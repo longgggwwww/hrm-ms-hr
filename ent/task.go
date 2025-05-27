@@ -27,7 +27,7 @@ type Task struct {
 	// Process holds the value of the "process" field.
 	Process int `json:"process,omitempty"`
 	// Status holds the value of the "status" field.
-	Status bool `json:"status,omitempty"`
+	Status task.Status `json:"status,omitempty"`
 	// StartAt holds the value of the "start_at" field.
 	StartAt time.Time `json:"start_at,omitempty"`
 	// ProjectID holds the value of the "project_id" field.
@@ -85,11 +85,9 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldStatus:
-			values[i] = new(sql.NullBool)
 		case task.FieldID, task.FieldProcess, task.FieldProjectID, task.FieldCreatorID, task.FieldUpdaterID:
 			values[i] = new(sql.NullInt64)
-		case task.FieldName, task.FieldCode, task.FieldDescription, task.FieldType:
+		case task.FieldName, task.FieldCode, task.FieldDescription, task.FieldStatus, task.FieldType:
 			values[i] = new(sql.NullString)
 		case task.FieldStartAt, task.FieldCreatedAt, task.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -141,10 +139,10 @@ func (t *Task) assignValues(columns []string, values []any) error {
 				t.Process = int(value.Int64)
 			}
 		case task.FieldStatus:
-			if value, ok := values[i].(*sql.NullBool); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				t.Status = value.Bool
+				t.Status = task.Status(value.String)
 			}
 		case task.FieldStartAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {

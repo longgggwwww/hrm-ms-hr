@@ -594,17 +594,19 @@ message Project {
 
   Status status = 11;
 
-  google.protobuf.Timestamp created_at = 12;
+  Visibility visibility = 12;
 
-  google.protobuf.Timestamp updated_at = 13;
+  google.protobuf.Timestamp created_at = 13;
 
-  repeated Task tasks = 14;
+  google.protobuf.Timestamp updated_at = 14;
 
-  Organization organization = 15;
+  repeated Task tasks = 15;
 
-  Employee creator = 16;
+  Organization organization = 16;
 
-  Employee updater = 17;
+  Employee creator = 17;
+
+  Employee updater = 18;
 
   enum Status {
     STATUS_NOT_STARTED = 0;
@@ -612,6 +614,14 @@ message Project {
     STATUS_IN_PROGRESS = 1;
 
     STATUS_COMPLETED = 2;
+  }
+
+  enum Visibility {
+    VISIBILITY_PRIVATE = 0;
+
+    VISIBILITY_PUBLIC = 1;
+
+    VISIBILITY_INTERNAL = 2;
   }
 }
 
@@ -682,7 +692,7 @@ message Task {
 
   int64 process = 5;
 
-  bool status = 6;
+  Status status = 6;
 
   google.protobuf.Timestamp start_at = 7;
 
@@ -701,6 +711,18 @@ message Task {
   Project project = 14;
 
   repeated Label labels = 15;
+
+  enum Status {
+    STATUS_NOT_RECEIVED = 0;
+
+    STATUS_RECEIVED = 1;
+
+    STATUS_IN_PROGRESS = 2;
+
+    STATUS_COMPLETED = 3;
+
+    STATUS_CANCELLED = 4;
+  }
 
   enum Type {
     TYPE_TASK = 0;

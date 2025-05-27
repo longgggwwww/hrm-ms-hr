@@ -108,6 +108,35 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 )
 
+// Status defines the type for the "status" enum field.
+type Status string
+
+// StatusNotReceived is the default value of the Status enum.
+const DefaultStatus = StatusNotReceived
+
+// Status values.
+const (
+	StatusNotReceived Status = "not_received"
+	StatusReceived    Status = "received"
+	StatusInProgress  Status = "in_progress"
+	StatusCompleted   Status = "completed"
+	StatusCancelled   Status = "cancelled"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusNotReceived, StatusReceived, StatusInProgress, StatusCompleted, StatusCancelled:
+		return nil
+	default:
+		return fmt.Errorf("task: invalid enum value for status field: %q", s)
+	}
+}
+
 // Type defines the type for the "type" enum field.
 type Type string
 

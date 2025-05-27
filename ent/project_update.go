@@ -196,6 +196,20 @@ func (pu *ProjectUpdate) SetNillableStatus(pr *project.Status) *ProjectUpdate {
 	return pu
 }
 
+// SetVisibility sets the "visibility" field.
+func (pu *ProjectUpdate) SetVisibility(pr project.Visibility) *ProjectUpdate {
+	pu.mutation.SetVisibility(pr)
+	return pu
+}
+
+// SetNillableVisibility sets the "visibility" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableVisibility(pr *project.Visibility) *ProjectUpdate {
+	if pr != nil {
+		pu.SetVisibility(*pr)
+	}
+	return pu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (pu *ProjectUpdate) SetUpdatedAt(t time.Time) *ProjectUpdate {
 	pu.mutation.SetUpdatedAt(t)
@@ -325,6 +339,11 @@ func (pu *ProjectUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
 		}
 	}
+	if v, ok := pu.mutation.Visibility(); ok {
+		if err := project.VisibilityValidator(v); err != nil {
+			return &ValidationError{Name: "visibility", err: fmt.Errorf(`ent: validator failed for field "Project.visibility": %w`, err)}
+		}
+	}
 	if pu.mutation.OrganizationCleared() && len(pu.mutation.OrganizationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Project.organization"`)
 	}
@@ -381,6 +400,9 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.Status(); ok {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := pu.mutation.Visibility(); ok {
+		_spec.SetField(project.FieldVisibility, field.TypeEnum, value)
 	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
@@ -702,6 +724,20 @@ func (puo *ProjectUpdateOne) SetNillableStatus(pr *project.Status) *ProjectUpdat
 	return puo
 }
 
+// SetVisibility sets the "visibility" field.
+func (puo *ProjectUpdateOne) SetVisibility(pr project.Visibility) *ProjectUpdateOne {
+	puo.mutation.SetVisibility(pr)
+	return puo
+}
+
+// SetNillableVisibility sets the "visibility" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableVisibility(pr *project.Visibility) *ProjectUpdateOne {
+	if pr != nil {
+		puo.SetVisibility(*pr)
+	}
+	return puo
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (puo *ProjectUpdateOne) SetUpdatedAt(t time.Time) *ProjectUpdateOne {
 	puo.mutation.SetUpdatedAt(t)
@@ -844,6 +880,11 @@ func (puo *ProjectUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
 		}
 	}
+	if v, ok := puo.mutation.Visibility(); ok {
+		if err := project.VisibilityValidator(v); err != nil {
+			return &ValidationError{Name: "visibility", err: fmt.Errorf(`ent: validator failed for field "Project.visibility": %w`, err)}
+		}
+	}
 	if puo.mutation.OrganizationCleared() && len(puo.mutation.OrganizationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Project.organization"`)
 	}
@@ -917,6 +958,9 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	}
 	if value, ok := puo.mutation.Status(); ok {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := puo.mutation.Visibility(); ok {
+		_spec.SetField(project.FieldVisibility, field.TypeEnum, value)
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
