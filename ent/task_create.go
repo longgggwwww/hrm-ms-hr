@@ -74,6 +74,14 @@ func (tc *TaskCreate) SetProjectID(i int) *TaskCreate {
 	return tc
 }
 
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableProjectID(i *int) *TaskCreate {
+	if i != nil {
+		tc.SetProjectID(*i)
+	}
+	return tc
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (tc *TaskCreate) SetCreatorID(i int) *TaskCreate {
 	tc.mutation.SetCreatorID(i)
@@ -214,9 +222,6 @@ func (tc *TaskCreate) check() error {
 	if _, ok := tc.mutation.StartAt(); !ok {
 		return &ValidationError{Name: "start_at", err: errors.New(`ent: missing required field "Task.start_at"`)}
 	}
-	if _, ok := tc.mutation.ProjectID(); !ok {
-		return &ValidationError{Name: "project_id", err: errors.New(`ent: missing required field "Task.project_id"`)}
-	}
 	if _, ok := tc.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator_id", err: errors.New(`ent: missing required field "Task.creator_id"`)}
 	}
@@ -236,9 +241,6 @@ func (tc *TaskCreate) check() error {
 		if err := task.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
 		}
-	}
-	if len(tc.mutation.ProjectIDs()) == 0 {
-		return &ValidationError{Name: "project", err: errors.New(`ent: missing required edge "Task.project"`)}
 	}
 	return nil
 }
@@ -492,6 +494,12 @@ func (u *TaskUpsert) UpdateProjectID() *TaskUpsert {
 	return u
 }
 
+// ClearProjectID clears the value of the "project_id" field.
+func (u *TaskUpsert) ClearProjectID() *TaskUpsert {
+	u.SetNull(task.FieldProjectID)
+	return u
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (u *TaskUpsert) SetCreatorID(v int) *TaskUpsert {
 	u.Set(task.FieldCreatorID, v)
@@ -706,6 +714,13 @@ func (u *TaskUpsertOne) SetProjectID(v int) *TaskUpsertOne {
 func (u *TaskUpsertOne) UpdateProjectID() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateProjectID()
+	})
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *TaskUpsertOne) ClearProjectID() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearProjectID()
 	})
 }
 
@@ -1099,6 +1114,13 @@ func (u *TaskUpsertBulk) SetProjectID(v int) *TaskUpsertBulk {
 func (u *TaskUpsertBulk) UpdateProjectID() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.UpdateProjectID()
+	})
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *TaskUpsertBulk) ClearProjectID() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearProjectID()
 	})
 }
 

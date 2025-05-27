@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
+	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 )
 
 // EmployeeCreate is the builder for creating a Employee entity.
@@ -106,6 +107,36 @@ func (ec *EmployeeCreate) SetNillableUpdatedAt(t *time.Time) *EmployeeCreate {
 // SetPosition sets the "position" edge to the Position entity.
 func (ec *EmployeeCreate) SetPosition(p *Position) *EmployeeCreate {
 	return ec.SetPositionID(p.ID)
+}
+
+// AddCreatedProjectIDs adds the "created_projects" edge to the Project entity by IDs.
+func (ec *EmployeeCreate) AddCreatedProjectIDs(ids ...int) *EmployeeCreate {
+	ec.mutation.AddCreatedProjectIDs(ids...)
+	return ec
+}
+
+// AddCreatedProjects adds the "created_projects" edges to the Project entity.
+func (ec *EmployeeCreate) AddCreatedProjects(p ...*Project) *EmployeeCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return ec.AddCreatedProjectIDs(ids...)
+}
+
+// AddUpdatedProjectIDs adds the "updated_projects" edge to the Project entity by IDs.
+func (ec *EmployeeCreate) AddUpdatedProjectIDs(ids ...int) *EmployeeCreate {
+	ec.mutation.AddUpdatedProjectIDs(ids...)
+	return ec
+}
+
+// AddUpdatedProjects adds the "updated_projects" edges to the Project entity.
+func (ec *EmployeeCreate) AddUpdatedProjects(p ...*Project) *EmployeeCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return ec.AddUpdatedProjectIDs(ids...)
 }
 
 // Mutation returns the EmployeeMutation object of the builder.
@@ -263,6 +294,38 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.PositionID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.CreatedProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.CreatedProjectsTable,
+			Columns: []string{employee.CreatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.UpdatedProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.UpdatedProjectsTable,
+			Columns: []string{employee.UpdatedProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

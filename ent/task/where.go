@@ -425,6 +425,16 @@ func ProjectIDNotIn(vs ...int) predicate.Task {
 	return predicate.Task(sql.FieldNotIn(FieldProjectID, vs...))
 }
 
+// ProjectIDIsNil applies the IsNil predicate on the "project_id" field.
+func ProjectIDIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldProjectID))
+}
+
+// ProjectIDNotNil applies the NotNil predicate on the "project_id" field.
+func ProjectIDNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldProjectID))
+}
+
 // CreatorIDEQ applies the EQ predicate on the "creator_id" field.
 func CreatorIDEQ(v int) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldCreatorID, v))

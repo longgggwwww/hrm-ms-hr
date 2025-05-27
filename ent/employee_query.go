@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -14,16 +15,19 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
+	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 )
 
 // EmployeeQuery is the builder for querying Employee entities.
 type EmployeeQuery struct {
 	config
-	ctx          *QueryContext
-	order        []employee.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.Employee
-	withPosition *PositionQuery
+	ctx                 *QueryContext
+	order               []employee.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Employee
+	withPosition        *PositionQuery
+	withCreatedProjects *ProjectQuery
+	withUpdatedProjects *ProjectQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -75,6 +79,50 @@ func (eq *EmployeeQuery) QueryPosition() *PositionQuery {
 			sqlgraph.From(employee.Table, employee.FieldID, selector),
 			sqlgraph.To(position.Table, position.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, employee.PositionTable, employee.PositionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCreatedProjects chains the current query on the "created_projects" edge.
+func (eq *EmployeeQuery) QueryCreatedProjects() *ProjectQuery {
+	query := (&ProjectClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.CreatedProjectsTable, employee.CreatedProjectsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUpdatedProjects chains the current query on the "updated_projects" edge.
+func (eq *EmployeeQuery) QueryUpdatedProjects() *ProjectQuery {
+	query := (&ProjectClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.UpdatedProjectsTable, employee.UpdatedProjectsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -269,12 +317,14 @@ func (eq *EmployeeQuery) Clone() *EmployeeQuery {
 		return nil
 	}
 	return &EmployeeQuery{
-		config:       eq.config,
-		ctx:          eq.ctx.Clone(),
-		order:        append([]employee.OrderOption{}, eq.order...),
-		inters:       append([]Interceptor{}, eq.inters...),
-		predicates:   append([]predicate.Employee{}, eq.predicates...),
-		withPosition: eq.withPosition.Clone(),
+		config:              eq.config,
+		ctx:                 eq.ctx.Clone(),
+		order:               append([]employee.OrderOption{}, eq.order...),
+		inters:              append([]Interceptor{}, eq.inters...),
+		predicates:          append([]predicate.Employee{}, eq.predicates...),
+		withPosition:        eq.withPosition.Clone(),
+		withCreatedProjects: eq.withCreatedProjects.Clone(),
+		withUpdatedProjects: eq.withUpdatedProjects.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -289,6 +339,28 @@ func (eq *EmployeeQuery) WithPosition(opts ...func(*PositionQuery)) *EmployeeQue
 		opt(query)
 	}
 	eq.withPosition = query
+	return eq
+}
+
+// WithCreatedProjects tells the query-builder to eager-load the nodes that are connected to
+// the "created_projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithCreatedProjects(opts ...func(*ProjectQuery)) *EmployeeQuery {
+	query := (&ProjectClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withCreatedProjects = query
+	return eq
+}
+
+// WithUpdatedProjects tells the query-builder to eager-load the nodes that are connected to
+// the "updated_projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithUpdatedProjects(opts ...func(*ProjectQuery)) *EmployeeQuery {
+	query := (&ProjectClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withUpdatedProjects = query
 	return eq
 }
 
@@ -370,8 +442,10 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	var (
 		nodes       = []*Employee{}
 		_spec       = eq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			eq.withPosition != nil,
+			eq.withCreatedProjects != nil,
+			eq.withUpdatedProjects != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -395,6 +469,20 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	if query := eq.withPosition; query != nil {
 		if err := eq.loadPosition(ctx, query, nodes, nil,
 			func(n *Employee, e *Position) { n.Edges.Position = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withCreatedProjects; query != nil {
+		if err := eq.loadCreatedProjects(ctx, query, nodes,
+			func(n *Employee) { n.Edges.CreatedProjects = []*Project{} },
+			func(n *Employee, e *Project) { n.Edges.CreatedProjects = append(n.Edges.CreatedProjects, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withUpdatedProjects; query != nil {
+		if err := eq.loadUpdatedProjects(ctx, query, nodes,
+			func(n *Employee) { n.Edges.UpdatedProjects = []*Project{} },
+			func(n *Employee, e *Project) { n.Edges.UpdatedProjects = append(n.Edges.UpdatedProjects, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -427,6 +515,66 @@ func (eq *EmployeeQuery) loadPosition(ctx context.Context, query *PositionQuery,
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadCreatedProjects(ctx context.Context, query *ProjectQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Project)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(project.FieldCreatorID)
+	}
+	query.Where(predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.CreatedProjectsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.CreatorID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "creator_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadUpdatedProjects(ctx context.Context, query *ProjectQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Project)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(project.FieldUpdaterID)
+	}
+	query.Where(predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.UpdatedProjectsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UpdaterID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "updater_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

@@ -61,6 +61,10 @@ func (Employee) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Annotations(entproto.Field(10)),
+		edge.To("created_projects", Project.Type).
+			Annotations(entproto.Field(11)),
+		edge.To("updated_projects", Project.Type).
+			Annotations(entproto.Field(12)),
 	}
 }
 

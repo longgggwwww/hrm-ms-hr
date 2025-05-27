@@ -9,6 +9,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 )
 
@@ -51,9 +53,15 @@ type Project struct {
 type ProjectEdges struct {
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
+	// Organization holds the value of the organization edge.
+	Organization *Organization `json:"organization,omitempty"`
+	// Creator holds the value of the creator edge.
+	Creator *Employee `json:"creator,omitempty"`
+	// Updater holds the value of the updater edge.
+	Updater *Employee `json:"updater,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [4]bool
 }
 
 // TasksOrErr returns the Tasks value or an error if the edge
@@ -63,6 +71,39 @@ func (e ProjectEdges) TasksOrErr() ([]*Task, error) {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
+}
+
+// OrganizationOrErr returns the Organization value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProjectEdges) OrganizationOrErr() (*Organization, error) {
+	if e.Organization != nil {
+		return e.Organization, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: organization.Label}
+	}
+	return nil, &NotLoadedError{edge: "organization"}
+}
+
+// CreatorOrErr returns the Creator value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProjectEdges) CreatorOrErr() (*Employee, error) {
+	if e.Creator != nil {
+		return e.Creator, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: employee.Label}
+	}
+	return nil, &NotLoadedError{edge: "creator"}
+}
+
+// UpdaterOrErr returns the Updater value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProjectEdges) UpdaterOrErr() (*Employee, error) {
+	if e.Updater != nil {
+		return e.Updater, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: employee.Label}
+	}
+	return nil, &NotLoadedError{edge: "updater"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -185,6 +226,21 @@ func (pr *Project) Value(name string) (ent.Value, error) {
 // QueryTasks queries the "tasks" edge of the Project entity.
 func (pr *Project) QueryTasks() *TaskQuery {
 	return NewProjectClient(pr.config).QueryTasks(pr)
+}
+
+// QueryOrganization queries the "organization" edge of the Project entity.
+func (pr *Project) QueryOrganization() *OrganizationQuery {
+	return NewProjectClient(pr.config).QueryOrganization(pr)
+}
+
+// QueryCreator queries the "creator" edge of the Project entity.
+func (pr *Project) QueryCreator() *EmployeeQuery {
+	return NewProjectClient(pr.config).QueryCreator(pr)
+}
+
+// QueryUpdater queries the "updater" edge of the Project entity.
+func (pr *Project) QueryUpdater() *EmployeeQuery {
+	return NewProjectClient(pr.config).QueryUpdater(pr)
 }
 
 // Update returns a builder for updating this Project.

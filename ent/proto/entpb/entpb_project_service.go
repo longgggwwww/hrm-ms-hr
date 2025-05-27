@@ -9,6 +9,8 @@ import (
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
 	codes "google.golang.org/grpc/codes"
@@ -66,8 +68,8 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	creator_id := int64(e.CreatorID)
-	v.CreatorId = creator_id
+	creator := int64(e.CreatorID)
+	v.CreatorId = creator
 	description := wrapperspb.String(e.Description)
 	v.Description = description
 	end_at := timestamppb.New(e.EndAt)
@@ -76,8 +78,8 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 	v.Id = id
 	name := e.Name
 	v.Name = name
-	org_id := int64(e.OrgID)
-	v.OrgId = org_id
+	organization := int64(e.OrgID)
+	v.OrgId = organization
 	process := wrapperspb.Int64(int64(e.Process))
 	v.Process = process
 	start_at := timestamppb.New(e.StartAt)
@@ -86,13 +88,31 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 	v.Status = status
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
-	updater_id := int64(e.UpdaterID)
-	v.UpdaterId = updater_id
+	updater := int64(e.UpdaterID)
+	v.UpdaterId = updater
+	if edg := e.Edges.Creator; edg != nil {
+		id := int64(edg.ID)
+		v.Creator = &Employee{
+			Id: id,
+		}
+	}
+	if edg := e.Edges.Organization; edg != nil {
+		id := int64(edg.ID)
+		v.Organization = &Organization{
+			Id: id,
+		}
+	}
 	for _, edg := range e.Edges.Tasks {
 		id := int64(edg.ID)
 		v.Tasks = append(v.Tasks, &Task{
 			Id: id,
 		})
+	}
+	if edg := e.Edges.Updater; edg != nil {
+		id := int64(edg.ID)
+		v.Updater = &Employee{
+			Id: id,
+		}
 	}
 	return v, nil
 }
@@ -148,8 +168,17 @@ func (svc *ProjectService) Get(ctx context.Context, req *GetProjectRequest) (*Pr
 	case GetProjectRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Project.Query().
 			Where(project.ID(id)).
+			WithCreator(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
+			}).
 			WithTasks(func(query *ent.TaskQuery) {
 				query.Select(task.FieldID)
+			}).
+			WithUpdater(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
 			}).
 			Only(ctx)
 	default:
@@ -199,9 +228,21 @@ func (svc *ProjectService) Update(ctx context.Context, req *UpdateProjectRequest
 	m.SetUpdatedAt(projectUpdatedAt)
 	projectUpdaterID := int(project.GetUpdaterId())
 	m.SetUpdaterID(projectUpdaterID)
+	if project.GetCreator() != nil {
+		projectCreator := int(project.GetCreator().GetId())
+		m.SetCreatorID(projectCreator)
+	}
+	if project.GetOrganization() != nil {
+		projectOrganization := int(project.GetOrganization().GetId())
+		m.SetOrganizationID(projectOrganization)
+	}
 	for _, item := range project.GetTasks() {
 		tasks := int(item.GetId())
 		m.AddTaskIDs(tasks)
+	}
+	if project.GetUpdater() != nil {
+		projectUpdater := int(project.GetUpdater().GetId())
+		m.SetUpdaterID(projectUpdater)
 	}
 
 	res, err := m.Save(ctx)
@@ -273,8 +314,17 @@ func (svc *ProjectService) List(ctx context.Context, req *ListProjectRequest) (*
 		entList, err = listQuery.All(ctx)
 	case ListProjectRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithCreator(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
+			}).
 			WithTasks(func(query *ent.TaskQuery) {
 				query.Select(task.FieldID)
+			}).
+			WithUpdater(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
 			}).
 			All(ctx)
 	}
@@ -367,9 +417,21 @@ func (svc *ProjectService) createBuilder(project *Project) (*ent.ProjectCreate, 
 	m.SetUpdatedAt(projectUpdatedAt)
 	projectUpdaterID := int(project.GetUpdaterId())
 	m.SetUpdaterID(projectUpdaterID)
+	if project.GetCreator() != nil {
+		projectCreator := int(project.GetCreator().GetId())
+		m.SetCreatorID(projectCreator)
+	}
+	if project.GetOrganization() != nil {
+		projectOrganization := int(project.GetOrganization().GetId())
+		m.SetOrganizationID(projectOrganization)
+	}
 	for _, item := range project.GetTasks() {
 		tasks := int(item.GetId())
 		m.AddTaskIDs(tasks)
+	}
+	if project.GetUpdater() != nil {
+		projectUpdater := int(project.GetUpdater().GetId())
+		m.SetUpdaterID(projectUpdater)
 	}
 	return m, nil
 }

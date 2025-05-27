@@ -141,6 +141,12 @@ func (tu *TaskUpdate) SetNillableProjectID(i *int) *TaskUpdate {
 	return tu
 }
 
+// ClearProjectID clears the value of the "project_id" field.
+func (tu *TaskUpdate) ClearProjectID() *TaskUpdate {
+	tu.mutation.ClearProjectID()
+	return tu
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (tu *TaskUpdate) SetCreatorID(i int) *TaskUpdate {
 	tu.mutation.ResetCreatorID()
@@ -297,9 +303,6 @@ func (tu *TaskUpdate) check() error {
 		if err := task.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
 		}
-	}
-	if tu.mutation.ProjectCleared() && len(tu.mutation.ProjectIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Task.project"`)
 	}
 	return nil
 }
@@ -563,6 +566,12 @@ func (tuo *TaskUpdateOne) SetNillableProjectID(i *int) *TaskUpdateOne {
 	return tuo
 }
 
+// ClearProjectID clears the value of the "project_id" field.
+func (tuo *TaskUpdateOne) ClearProjectID() *TaskUpdateOne {
+	tuo.mutation.ClearProjectID()
+	return tuo
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (tuo *TaskUpdateOne) SetCreatorID(i int) *TaskUpdateOne {
 	tuo.mutation.ResetCreatorID()
@@ -732,9 +741,6 @@ func (tuo *TaskUpdateOne) check() error {
 		if err := task.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
 		}
-	}
-	if tuo.mutation.ProjectCleared() && len(tuo.mutation.ProjectIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Task.project"`)
 	}
 	return nil
 }

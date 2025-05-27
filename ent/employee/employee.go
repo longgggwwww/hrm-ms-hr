@@ -33,6 +33,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgePosition holds the string denoting the position edge name in mutations.
 	EdgePosition = "position"
+	// EdgeCreatedProjects holds the string denoting the created_projects edge name in mutations.
+	EdgeCreatedProjects = "created_projects"
+	// EdgeUpdatedProjects holds the string denoting the updated_projects edge name in mutations.
+	EdgeUpdatedProjects = "updated_projects"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 	// PositionTable is the table that holds the position relation/edge.
@@ -42,6 +46,20 @@ const (
 	PositionInverseTable = "positions"
 	// PositionColumn is the table column denoting the position relation/edge.
 	PositionColumn = "position_id"
+	// CreatedProjectsTable is the table that holds the created_projects relation/edge.
+	CreatedProjectsTable = "projects"
+	// CreatedProjectsInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	CreatedProjectsInverseTable = "projects"
+	// CreatedProjectsColumn is the table column denoting the created_projects relation/edge.
+	CreatedProjectsColumn = "creator_id"
+	// UpdatedProjectsTable is the table that holds the updated_projects relation/edge.
+	UpdatedProjectsTable = "projects"
+	// UpdatedProjectsInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	UpdatedProjectsInverseTable = "projects"
+	// UpdatedProjectsColumn is the table column denoting the updated_projects relation/edge.
+	UpdatedProjectsColumn = "updater_id"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -158,10 +176,52 @@ func ByPositionField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPositionStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByCreatedProjectsCount orders the results by created_projects count.
+func ByCreatedProjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCreatedProjectsStep(), opts...)
+	}
+}
+
+// ByCreatedProjects orders the results by created_projects terms.
+func ByCreatedProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCreatedProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByUpdatedProjectsCount orders the results by updated_projects count.
+func ByUpdatedProjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUpdatedProjectsStep(), opts...)
+	}
+}
+
+// ByUpdatedProjects orders the results by updated_projects terms.
+func ByUpdatedProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUpdatedProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPositionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PositionInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, PositionTable, PositionColumn),
+	)
+}
+func newCreatedProjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatedProjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CreatedProjectsTable, CreatedProjectsColumn),
+	)
+}
+func newUpdatedProjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UpdatedProjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UpdatedProjectsTable, UpdatedProjectsColumn),
 	)
 }

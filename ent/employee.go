@@ -44,9 +44,13 @@ type Employee struct {
 type EmployeeEdges struct {
 	// Position holds the value of the position edge.
 	Position *Position `json:"position,omitempty"`
+	// CreatedProjects holds the value of the created_projects edge.
+	CreatedProjects []*Project `json:"created_projects,omitempty"`
+	// UpdatedProjects holds the value of the updated_projects edge.
+	UpdatedProjects []*Project `json:"updated_projects,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // PositionOrErr returns the Position value or an error if the edge
@@ -58,6 +62,24 @@ func (e EmployeeEdges) PositionOrErr() (*Position, error) {
 		return nil, &NotFoundError{label: position.Label}
 	}
 	return nil, &NotLoadedError{edge: "position"}
+}
+
+// CreatedProjectsOrErr returns the CreatedProjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) CreatedProjectsOrErr() ([]*Project, error) {
+	if e.loadedTypes[1] {
+		return e.CreatedProjects, nil
+	}
+	return nil, &NotLoadedError{edge: "created_projects"}
+}
+
+// UpdatedProjectsOrErr returns the UpdatedProjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) UpdatedProjectsOrErr() ([]*Project, error) {
+	if e.loadedTypes[2] {
+		return e.UpdatedProjects, nil
+	}
+	return nil, &NotLoadedError{edge: "updated_projects"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -156,6 +178,16 @@ func (e *Employee) Value(name string) (ent.Value, error) {
 // QueryPosition queries the "position" edge of the Employee entity.
 func (e *Employee) QueryPosition() *PositionQuery {
 	return NewEmployeeClient(e.config).QueryPosition(e)
+}
+
+// QueryCreatedProjects queries the "created_projects" edge of the Employee entity.
+func (e *Employee) QueryCreatedProjects() *ProjectQuery {
+	return NewEmployeeClient(e.config).QueryCreatedProjects(e)
+}
+
+// QueryUpdatedProjects queries the "updated_projects" edge of the Employee entity.
+func (e *Employee) QueryUpdatedProjects() *ProjectQuery {
+	return NewEmployeeClient(e.config).QueryUpdatedProjects(e)
 }
 
 // Update returns a builder for updating this Employee.

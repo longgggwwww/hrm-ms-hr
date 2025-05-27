@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -113,7 +115,6 @@ func (pu *ProjectUpdate) ClearEndAt() *ProjectUpdate {
 
 // SetCreatorID sets the "creator_id" field.
 func (pu *ProjectUpdate) SetCreatorID(i int) *ProjectUpdate {
-	pu.mutation.ResetCreatorID()
 	pu.mutation.SetCreatorID(i)
 	return pu
 }
@@ -126,15 +127,8 @@ func (pu *ProjectUpdate) SetNillableCreatorID(i *int) *ProjectUpdate {
 	return pu
 }
 
-// AddCreatorID adds i to the "creator_id" field.
-func (pu *ProjectUpdate) AddCreatorID(i int) *ProjectUpdate {
-	pu.mutation.AddCreatorID(i)
-	return pu
-}
-
 // SetUpdaterID sets the "updater_id" field.
 func (pu *ProjectUpdate) SetUpdaterID(i int) *ProjectUpdate {
-	pu.mutation.ResetUpdaterID()
 	pu.mutation.SetUpdaterID(i)
 	return pu
 }
@@ -147,15 +141,8 @@ func (pu *ProjectUpdate) SetNillableUpdaterID(i *int) *ProjectUpdate {
 	return pu
 }
 
-// AddUpdaterID adds i to the "updater_id" field.
-func (pu *ProjectUpdate) AddUpdaterID(i int) *ProjectUpdate {
-	pu.mutation.AddUpdaterID(i)
-	return pu
-}
-
 // SetOrgID sets the "org_id" field.
 func (pu *ProjectUpdate) SetOrgID(i int) *ProjectUpdate {
-	pu.mutation.ResetOrgID()
 	pu.mutation.SetOrgID(i)
 	return pu
 }
@@ -165,12 +152,6 @@ func (pu *ProjectUpdate) SetNillableOrgID(i *int) *ProjectUpdate {
 	if i != nil {
 		pu.SetOrgID(*i)
 	}
-	return pu
-}
-
-// AddOrgID adds i to the "org_id" field.
-func (pu *ProjectUpdate) AddOrgID(i int) *ProjectUpdate {
-	pu.mutation.AddOrgID(i)
 	return pu
 }
 
@@ -236,6 +217,27 @@ func (pu *ProjectUpdate) AddTasks(t ...*Task) *ProjectUpdate {
 	return pu.AddTaskIDs(ids...)
 }
 
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (pu *ProjectUpdate) SetOrganizationID(id int) *ProjectUpdate {
+	pu.mutation.SetOrganizationID(id)
+	return pu
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (pu *ProjectUpdate) SetOrganization(o *Organization) *ProjectUpdate {
+	return pu.SetOrganizationID(o.ID)
+}
+
+// SetCreator sets the "creator" edge to the Employee entity.
+func (pu *ProjectUpdate) SetCreator(e *Employee) *ProjectUpdate {
+	return pu.SetCreatorID(e.ID)
+}
+
+// SetUpdater sets the "updater" edge to the Employee entity.
+func (pu *ProjectUpdate) SetUpdater(e *Employee) *ProjectUpdate {
+	return pu.SetUpdaterID(e.ID)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -260,6 +262,24 @@ func (pu *ProjectUpdate) RemoveTasks(t ...*Task) *ProjectUpdate {
 		ids[i] = t[i].ID
 	}
 	return pu.RemoveTaskIDs(ids...)
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (pu *ProjectUpdate) ClearOrganization() *ProjectUpdate {
+	pu.mutation.ClearOrganization()
+	return pu
+}
+
+// ClearCreator clears the "creator" edge to the Employee entity.
+func (pu *ProjectUpdate) ClearCreator() *ProjectUpdate {
+	pu.mutation.ClearCreator()
+	return pu
+}
+
+// ClearUpdater clears the "updater" edge to the Employee entity.
+func (pu *ProjectUpdate) ClearUpdater() *ProjectUpdate {
+	pu.mutation.ClearUpdater()
+	return pu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -305,6 +325,15 @@ func (pu *ProjectUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
 		}
 	}
+	if pu.mutation.OrganizationCleared() && len(pu.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Project.organization"`)
+	}
+	if pu.mutation.CreatorCleared() && len(pu.mutation.CreatorIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Project.creator"`)
+	}
+	if pu.mutation.UpdaterCleared() && len(pu.mutation.UpdaterIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Project.updater"`)
+	}
 	return nil
 }
 
@@ -340,24 +369,6 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.EndAtCleared() {
 		_spec.ClearField(project.FieldEndAt, field.TypeTime)
-	}
-	if value, ok := pu.mutation.CreatorID(); ok {
-		_spec.SetField(project.FieldCreatorID, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.AddedCreatorID(); ok {
-		_spec.AddField(project.FieldCreatorID, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.UpdaterID(); ok {
-		_spec.SetField(project.FieldUpdaterID, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.AddedUpdaterID(); ok {
-		_spec.AddField(project.FieldUpdaterID, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.OrgID(); ok {
-		_spec.SetField(project.FieldOrgID, field.TypeInt, value)
-	}
-	if value, ok := pu.mutation.AddedOrgID(); ok {
-		_spec.AddField(project.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := pu.mutation.Process(); ok {
 		_spec.SetField(project.FieldProcess, field.TypeInt, value)
@@ -412,6 +423,93 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.OrganizationTable,
+			Columns: []string{project.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.OrganizationTable,
+			Columns: []string{project.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.CreatorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.CreatorTable,
+			Columns: []string{project.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.CreatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.CreatorTable,
+			Columns: []string{project.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.UpdaterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UpdaterTable,
+			Columns: []string{project.UpdaterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.UpdaterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UpdaterTable,
+			Columns: []string{project.UpdaterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -523,7 +621,6 @@ func (puo *ProjectUpdateOne) ClearEndAt() *ProjectUpdateOne {
 
 // SetCreatorID sets the "creator_id" field.
 func (puo *ProjectUpdateOne) SetCreatorID(i int) *ProjectUpdateOne {
-	puo.mutation.ResetCreatorID()
 	puo.mutation.SetCreatorID(i)
 	return puo
 }
@@ -536,15 +633,8 @@ func (puo *ProjectUpdateOne) SetNillableCreatorID(i *int) *ProjectUpdateOne {
 	return puo
 }
 
-// AddCreatorID adds i to the "creator_id" field.
-func (puo *ProjectUpdateOne) AddCreatorID(i int) *ProjectUpdateOne {
-	puo.mutation.AddCreatorID(i)
-	return puo
-}
-
 // SetUpdaterID sets the "updater_id" field.
 func (puo *ProjectUpdateOne) SetUpdaterID(i int) *ProjectUpdateOne {
-	puo.mutation.ResetUpdaterID()
 	puo.mutation.SetUpdaterID(i)
 	return puo
 }
@@ -557,15 +647,8 @@ func (puo *ProjectUpdateOne) SetNillableUpdaterID(i *int) *ProjectUpdateOne {
 	return puo
 }
 
-// AddUpdaterID adds i to the "updater_id" field.
-func (puo *ProjectUpdateOne) AddUpdaterID(i int) *ProjectUpdateOne {
-	puo.mutation.AddUpdaterID(i)
-	return puo
-}
-
 // SetOrgID sets the "org_id" field.
 func (puo *ProjectUpdateOne) SetOrgID(i int) *ProjectUpdateOne {
-	puo.mutation.ResetOrgID()
 	puo.mutation.SetOrgID(i)
 	return puo
 }
@@ -575,12 +658,6 @@ func (puo *ProjectUpdateOne) SetNillableOrgID(i *int) *ProjectUpdateOne {
 	if i != nil {
 		puo.SetOrgID(*i)
 	}
-	return puo
-}
-
-// AddOrgID adds i to the "org_id" field.
-func (puo *ProjectUpdateOne) AddOrgID(i int) *ProjectUpdateOne {
-	puo.mutation.AddOrgID(i)
 	return puo
 }
 
@@ -646,6 +723,27 @@ func (puo *ProjectUpdateOne) AddTasks(t ...*Task) *ProjectUpdateOne {
 	return puo.AddTaskIDs(ids...)
 }
 
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (puo *ProjectUpdateOne) SetOrganizationID(id int) *ProjectUpdateOne {
+	puo.mutation.SetOrganizationID(id)
+	return puo
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (puo *ProjectUpdateOne) SetOrganization(o *Organization) *ProjectUpdateOne {
+	return puo.SetOrganizationID(o.ID)
+}
+
+// SetCreator sets the "creator" edge to the Employee entity.
+func (puo *ProjectUpdateOne) SetCreator(e *Employee) *ProjectUpdateOne {
+	return puo.SetCreatorID(e.ID)
+}
+
+// SetUpdater sets the "updater" edge to the Employee entity.
+func (puo *ProjectUpdateOne) SetUpdater(e *Employee) *ProjectUpdateOne {
+	return puo.SetUpdaterID(e.ID)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -670,6 +768,24 @@ func (puo *ProjectUpdateOne) RemoveTasks(t ...*Task) *ProjectUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return puo.RemoveTaskIDs(ids...)
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (puo *ProjectUpdateOne) ClearOrganization() *ProjectUpdateOne {
+	puo.mutation.ClearOrganization()
+	return puo
+}
+
+// ClearCreator clears the "creator" edge to the Employee entity.
+func (puo *ProjectUpdateOne) ClearCreator() *ProjectUpdateOne {
+	puo.mutation.ClearCreator()
+	return puo
+}
+
+// ClearUpdater clears the "updater" edge to the Employee entity.
+func (puo *ProjectUpdateOne) ClearUpdater() *ProjectUpdateOne {
+	puo.mutation.ClearUpdater()
+	return puo
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -728,6 +844,15 @@ func (puo *ProjectUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
 		}
 	}
+	if puo.mutation.OrganizationCleared() && len(puo.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Project.organization"`)
+	}
+	if puo.mutation.CreatorCleared() && len(puo.mutation.CreatorIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Project.creator"`)
+	}
+	if puo.mutation.UpdaterCleared() && len(puo.mutation.UpdaterIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Project.updater"`)
+	}
 	return nil
 }
 
@@ -780,24 +905,6 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	}
 	if puo.mutation.EndAtCleared() {
 		_spec.ClearField(project.FieldEndAt, field.TypeTime)
-	}
-	if value, ok := puo.mutation.CreatorID(); ok {
-		_spec.SetField(project.FieldCreatorID, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.AddedCreatorID(); ok {
-		_spec.AddField(project.FieldCreatorID, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.UpdaterID(); ok {
-		_spec.SetField(project.FieldUpdaterID, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.AddedUpdaterID(); ok {
-		_spec.AddField(project.FieldUpdaterID, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.OrgID(); ok {
-		_spec.SetField(project.FieldOrgID, field.TypeInt, value)
-	}
-	if value, ok := puo.mutation.AddedOrgID(); ok {
-		_spec.AddField(project.FieldOrgID, field.TypeInt, value)
 	}
 	if value, ok := puo.mutation.Process(); ok {
 		_spec.SetField(project.FieldProcess, field.TypeInt, value)
@@ -852,6 +959,93 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.OrganizationTable,
+			Columns: []string{project.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.OrganizationTable,
+			Columns: []string{project.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.CreatorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.CreatorTable,
+			Columns: []string{project.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.CreatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.CreatorTable,
+			Columns: []string{project.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.UpdaterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UpdaterTable,
+			Columns: []string{project.UpdaterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.UpdaterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.UpdaterTable,
+			Columns: []string{project.UpdaterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

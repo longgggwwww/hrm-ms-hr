@@ -65,6 +65,24 @@ func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tasks", Task.Type).
 			Annotations(entproto.Field(14)),
+		edge.From("organization", Organization.Type).
+			Ref("projects").
+			Field("org_id").
+			Unique().
+			Required().
+			Annotations(entproto.Field(15)),
+		edge.From("creator", Employee.Type).
+			Ref("created_projects").
+			Field("creator_id").
+			Unique().
+			Required().
+			Annotations(entproto.Field(16)),
+		edge.From("updater", Employee.Type).
+			Ref("updated_projects").
+			Field("updater_id").
+			Unique().
+			Required().
+			Annotations(entproto.Field(17)),
 	}
 }
 
