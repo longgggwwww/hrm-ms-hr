@@ -10,6 +10,7 @@ import (
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
+	label "github.com/longgggwwww/hrm-ms-hr/ent/label"
 	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	codes "google.golang.org/grpc/codes"
@@ -79,6 +80,12 @@ func toProtoOrganization(e *ent.Organization) (*Organization, error) {
 	for _, edg := range e.Edges.Departments {
 		id := int64(edg.ID)
 		v.Departments = append(v.Departments, &Department{
+			Id: id,
+		})
+	}
+	for _, edg := range e.Edges.Labels {
+		id := int64(edg.ID)
+		v.Labels = append(v.Labels, &Label{
 			Id: id,
 		})
 	}
@@ -154,6 +161,9 @@ func (svc *OrganizationService) Get(ctx context.Context, req *GetOrganizationReq
 			WithDepartments(func(query *ent.DepartmentQuery) {
 				query.Select(department.FieldID)
 			}).
+			WithLabels(func(query *ent.LabelQuery) {
+				query.Select(label.FieldID)
+			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
 			}).
@@ -219,6 +229,10 @@ func (svc *OrganizationService) Update(ctx context.Context, req *UpdateOrganizat
 	for _, item := range organization.GetDepartments() {
 		departments := int(item.GetId())
 		m.AddDepartmentIDs(departments)
+	}
+	for _, item := range organization.GetLabels() {
+		labels := int(item.GetId())
+		m.AddLabelIDs(labels)
 	}
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())
@@ -303,6 +317,9 @@ func (svc *OrganizationService) List(ctx context.Context, req *ListOrganizationR
 			}).
 			WithDepartments(func(query *ent.DepartmentQuery) {
 				query.Select(department.FieldID)
+			}).
+			WithLabels(func(query *ent.LabelQuery) {
+				query.Select(label.FieldID)
 			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
@@ -410,6 +427,10 @@ func (svc *OrganizationService) createBuilder(organization *Organization) (*ent.
 	for _, item := range organization.GetDepartments() {
 		departments := int(item.GetId())
 		m.AddDepartmentIDs(departments)
+	}
+	for _, item := range organization.GetLabels() {
+		labels := int(item.GetId())
+		m.AddLabelIDs(labels)
 	}
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())

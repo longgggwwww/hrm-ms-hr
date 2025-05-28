@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
@@ -20,12 +21,13 @@ import (
 // LabelQuery is the builder for querying Label entities.
 type LabelQuery struct {
 	config
-	ctx        *QueryContext
-	order      []label.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Label
-	withTasks  *TaskQuery
-	withFKs    bool
+	ctx              *QueryContext
+	order            []label.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Label
+	withTasks        *TaskQuery
+	withOrganization *OrganizationQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,6 +79,28 @@ func (lq *LabelQuery) QueryTasks() *TaskQuery {
 			sqlgraph.From(label.Table, label.FieldID, selector),
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, label.TasksTable, label.TasksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOrganization chains the current query on the "organization" edge.
+func (lq *LabelQuery) QueryOrganization() *OrganizationQuery {
+	query := (&OrganizationClient{config: lq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(label.Table, label.FieldID, selector),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, label.OrganizationTable, label.OrganizationColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(lq.driver.Dialect(), step)
 		return fromU, nil
@@ -271,12 +295,13 @@ func (lq *LabelQuery) Clone() *LabelQuery {
 		return nil
 	}
 	return &LabelQuery{
-		config:     lq.config,
-		ctx:        lq.ctx.Clone(),
-		order:      append([]label.OrderOption{}, lq.order...),
-		inters:     append([]Interceptor{}, lq.inters...),
-		predicates: append([]predicate.Label{}, lq.predicates...),
-		withTasks:  lq.withTasks.Clone(),
+		config:           lq.config,
+		ctx:              lq.ctx.Clone(),
+		order:            append([]label.OrderOption{}, lq.order...),
+		inters:           append([]Interceptor{}, lq.inters...),
+		predicates:       append([]predicate.Label{}, lq.predicates...),
+		withTasks:        lq.withTasks.Clone(),
+		withOrganization: lq.withOrganization.Clone(),
 		// clone intermediate query.
 		sql:  lq.sql.Clone(),
 		path: lq.path,
@@ -291,6 +316,17 @@ func (lq *LabelQuery) WithTasks(opts ...func(*TaskQuery)) *LabelQuery {
 		opt(query)
 	}
 	lq.withTasks = query
+	return lq
+}
+
+// WithOrganization tells the query-builder to eager-load the nodes that are connected to
+// the "organization" edge. The optional arguments are used to configure the query builder of the edge.
+func (lq *LabelQuery) WithOrganization(opts ...func(*OrganizationQuery)) *LabelQuery {
+	query := (&OrganizationClient{config: lq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	lq.withOrganization = query
 	return lq
 }
 
@@ -373,8 +409,9 @@ func (lq *LabelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Label,
 		nodes       = []*Label{}
 		withFKs     = lq.withFKs
 		_spec       = lq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			lq.withTasks != nil,
+			lq.withOrganization != nil,
 		}
 	)
 	if withFKs {
@@ -402,6 +439,12 @@ func (lq *LabelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Label,
 		if err := lq.loadTasks(ctx, query, nodes,
 			func(n *Label) { n.Edges.Tasks = []*Task{} },
 			func(n *Label, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := lq.withOrganization; query != nil {
+		if err := lq.loadOrganization(ctx, query, nodes, nil,
+			func(n *Label, e *Organization) { n.Edges.Organization = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -439,6 +482,35 @@ func (lq *LabelQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*
 	}
 	return nil
 }
+func (lq *LabelQuery) loadOrganization(ctx context.Context, query *OrganizationQuery, nodes []*Label, init func(*Label), assign func(*Label, *Organization)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Label)
+	for i := range nodes {
+		fk := nodes[i].OrgID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(organization.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "org_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (lq *LabelQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := lq.querySpec()
@@ -464,6 +536,9 @@ func (lq *LabelQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != label.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if lq.withOrganization != nil {
+			_spec.Node.AddColumnOnce(label.FieldOrgID)
 		}
 	}
 	if ps := lq.predicates; len(ps) > 0 {

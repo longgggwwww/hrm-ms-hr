@@ -676,6 +676,29 @@ func HasLabelsWith(preds ...predicate.Label) predicate.Task {
 	})
 }
 
+// HasAssignees applies the HasEdge predicate on the "assignees" edge.
+func HasAssignees() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, AssigneesTable, AssigneesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAssigneesWith applies the HasEdge predicate on the "assignees" edge with a given conditions (other predicates).
+func HasAssigneesWith(preds ...predicate.Employee) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := newAssigneesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Task) predicate.Task {
 	return predicate.Task(sql.AndPredicates(predicates...))

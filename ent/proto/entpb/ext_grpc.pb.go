@@ -27,8 +27,6 @@ const (
 // ExtServiceClient is the client API for ExtService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Service definition
 type ExtServiceClient interface {
 	GetEmployeeByUserId(ctx context.Context, in *GetEmployeeByUserIdRequest, opts ...grpc.CallOption) (*Employee, error)
 	DeleteEmployeeByUserId(ctx context.Context, in *DeleteEmployeeByUserIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -65,8 +63,6 @@ func (c *extServiceClient) DeleteEmployeeByUserId(ctx context.Context, in *Delet
 // ExtServiceServer is the server API for ExtService service.
 // All implementations must embed UnimplementedExtServiceServer
 // for forward compatibility.
-//
-// Service definition
 type ExtServiceServer interface {
 	GetEmployeeByUserId(context.Context, *GetEmployeeByUserIdRequest) (*Employee, error)
 	DeleteEmployeeByUserId(context.Context, *DeleteEmployeeByUserIdRequest) (*emptypb.Empty, error)

@@ -37,6 +37,8 @@ const (
 	EdgeCreatedProjects = "created_projects"
 	// EdgeUpdatedProjects holds the string denoting the updated_projects edge name in mutations.
 	EdgeUpdatedProjects = "updated_projects"
+	// EdgeAssignedTasks holds the string denoting the assigned_tasks edge name in mutations.
+	EdgeAssignedTasks = "assigned_tasks"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 	// PositionTable is the table that holds the position relation/edge.
@@ -60,6 +62,11 @@ const (
 	UpdatedProjectsInverseTable = "projects"
 	// UpdatedProjectsColumn is the table column denoting the updated_projects relation/edge.
 	UpdatedProjectsColumn = "updater_id"
+	// AssignedTasksTable is the table that holds the assigned_tasks relation/edge. The primary key declared below.
+	AssignedTasksTable = "task_assignees"
+	// AssignedTasksInverseTable is the table name for the Task entity.
+	// It exists in this package in order to avoid circular dependency with the "task" package.
+	AssignedTasksInverseTable = "tasks"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -74,6 +81,12 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
+
+var (
+	// AssignedTasksPrimaryKey and AssignedTasksColumn2 are the table columns denoting the
+	// primary key for the assigned_tasks relation (M2M).
+	AssignedTasksPrimaryKey = []string{"task_id", "employee_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -204,6 +217,20 @@ func ByUpdatedProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUpdatedProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAssignedTasksCount orders the results by assigned_tasks count.
+func ByAssignedTasksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAssignedTasksStep(), opts...)
+	}
+}
+
+// ByAssignedTasks orders the results by assigned_tasks terms.
+func ByAssignedTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAssignedTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPositionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -223,5 +250,12 @@ func newUpdatedProjectsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UpdatedProjectsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, UpdatedProjectsTable, UpdatedProjectsColumn),
+	)
+}
+func newAssignedTasksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AssignedTasksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, AssignedTasksTable, AssignedTasksPrimaryKey...),
 	)
 }

@@ -9,6 +9,7 @@ import (
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	label "github.com/longgggwwww/hrm-ms-hr/ent/label"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -117,6 +118,12 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 	v.UpdatedAt = updated_at
 	updater_id := int64(e.UpdaterID)
 	v.UpdaterId = updater_id
+	for _, edg := range e.Edges.Assignees {
+		id := int64(edg.ID)
+		v.Assignees = append(v.Assignees, &Employee{
+			Id: id,
+		})
+	}
 	for _, edg := range e.Edges.Labels {
 		id := int64(edg.ID)
 		v.Labels = append(v.Labels, &Label{
@@ -183,6 +190,9 @@ func (svc *TaskService) Get(ctx context.Context, req *GetTaskRequest) (*Task, er
 	case GetTaskRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Task.Query().
 			Where(task.ID(id)).
+			WithAssignees(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
 			WithLabels(func(query *ent.LabelQuery) {
 				query.Select(label.FieldID)
 			}).
@@ -237,6 +247,10 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 	m.SetUpdatedAt(taskUpdatedAt)
 	taskUpdaterID := int(task.GetUpdaterId())
 	m.SetUpdaterID(taskUpdaterID)
+	for _, item := range task.GetAssignees() {
+		assignees := int(item.GetId())
+		m.AddAssigneeIDs(assignees)
+	}
 	for _, item := range task.GetLabels() {
 		labels := int(item.GetId())
 		m.AddLabelIDs(labels)
@@ -315,6 +329,9 @@ func (svc *TaskService) List(ctx context.Context, req *ListTaskRequest) (*ListTa
 		entList, err = listQuery.All(ctx)
 	case ListTaskRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithAssignees(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
 			WithLabels(func(query *ent.LabelQuery) {
 				query.Select(label.FieldID)
 			}).
@@ -412,6 +429,10 @@ func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 	m.SetUpdatedAt(taskUpdatedAt)
 	taskUpdaterID := int(task.GetUpdaterId())
 	m.SetUpdaterID(taskUpdaterID)
+	for _, item := range task.GetAssignees() {
+		assignees := int(item.GetId())
+		m.AddAssigneeIDs(assignees)
+	}
 	for _, item := range task.GetLabels() {
 		labels := int(item.GetId())
 		m.AddLabelIDs(labels)

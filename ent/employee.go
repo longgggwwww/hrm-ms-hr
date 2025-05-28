@@ -48,9 +48,11 @@ type EmployeeEdges struct {
 	CreatedProjects []*Project `json:"created_projects,omitempty"`
 	// UpdatedProjects holds the value of the updated_projects edge.
 	UpdatedProjects []*Project `json:"updated_projects,omitempty"`
+	// AssignedTasks holds the value of the assigned_tasks edge.
+	AssignedTasks []*Task `json:"assigned_tasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // PositionOrErr returns the Position value or an error if the edge
@@ -80,6 +82,15 @@ func (e EmployeeEdges) UpdatedProjectsOrErr() ([]*Project, error) {
 		return e.UpdatedProjects, nil
 	}
 	return nil, &NotLoadedError{edge: "updated_projects"}
+}
+
+// AssignedTasksOrErr returns the AssignedTasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) AssignedTasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[3] {
+		return e.AssignedTasks, nil
+	}
+	return nil, &NotLoadedError{edge: "assigned_tasks"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -188,6 +199,11 @@ func (e *Employee) QueryCreatedProjects() *ProjectQuery {
 // QueryUpdatedProjects queries the "updated_projects" edge of the Employee entity.
 func (e *Employee) QueryUpdatedProjects() *ProjectQuery {
 	return NewEmployeeClient(e.config).QueryUpdatedProjects(e)
+}
+
+// QueryAssignedTasks queries the "assigned_tasks" edge of the Employee entity.
+func (e *Employee) QueryAssignedTasks() *TaskQuery {
+	return NewEmployeeClient(e.config).QueryAssignedTasks(e)
 }
 
 // Update returns a builder for updating this Employee.

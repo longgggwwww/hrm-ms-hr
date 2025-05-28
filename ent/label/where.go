@@ -70,6 +70,11 @@ func Color(v string) predicate.Label {
 	return predicate.Label(sql.FieldEQ(FieldColor, v))
 }
 
+// OrgID applies equality check predicate on the "org_id" field. It's identical to OrgIDEQ.
+func OrgID(v int) predicate.Label {
+	return predicate.Label(sql.FieldEQ(FieldOrgID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Label {
 	return predicate.Label(sql.FieldEQ(FieldCreatedAt, v))
@@ -285,6 +290,36 @@ func ColorContainsFold(v string) predicate.Label {
 	return predicate.Label(sql.FieldContainsFold(FieldColor, v))
 }
 
+// OrgIDEQ applies the EQ predicate on the "org_id" field.
+func OrgIDEQ(v int) predicate.Label {
+	return predicate.Label(sql.FieldEQ(FieldOrgID, v))
+}
+
+// OrgIDNEQ applies the NEQ predicate on the "org_id" field.
+func OrgIDNEQ(v int) predicate.Label {
+	return predicate.Label(sql.FieldNEQ(FieldOrgID, v))
+}
+
+// OrgIDIn applies the In predicate on the "org_id" field.
+func OrgIDIn(vs ...int) predicate.Label {
+	return predicate.Label(sql.FieldIn(FieldOrgID, vs...))
+}
+
+// OrgIDNotIn applies the NotIn predicate on the "org_id" field.
+func OrgIDNotIn(vs ...int) predicate.Label {
+	return predicate.Label(sql.FieldNotIn(FieldOrgID, vs...))
+}
+
+// OrgIDIsNil applies the IsNil predicate on the "org_id" field.
+func OrgIDIsNil() predicate.Label {
+	return predicate.Label(sql.FieldIsNull(FieldOrgID))
+}
+
+// OrgIDNotNil applies the NotNil predicate on the "org_id" field.
+func OrgIDNotNil() predicate.Label {
+	return predicate.Label(sql.FieldNotNull(FieldOrgID))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Label {
 	return predicate.Label(sql.FieldEQ(FieldCreatedAt, v))
@@ -380,6 +415,29 @@ func HasTasks() predicate.Label {
 func HasTasksWith(preds ...predicate.Task) predicate.Label {
 	return predicate.Label(func(s *sql.Selector) {
 		step := newTasksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOrganization applies the HasEdge predicate on the "organization" edge.
+func HasOrganization() predicate.Label {
+	return predicate.Label(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, OrganizationTable, OrganizationColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOrganizationWith applies the HasEdge predicate on the "organization" edge with a given conditions (other predicates).
+func HasOrganizationWith(preds ...predicate.Organization) predicate.Label {
+	return predicate.Label(func(s *sql.Selector) {
+		step := newOrganizationStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

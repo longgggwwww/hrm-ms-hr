@@ -12,6 +12,7 @@ import (
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
+	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -80,6 +81,12 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v.UpdatedAt = updated_at
 	user_id := wrapperspb.String(e.UserID)
 	v.UserId = user_id
+	for _, edg := range e.Edges.AssignedTasks {
+		id := int64(edg.ID)
+		v.AssignedTasks = append(v.AssignedTasks, &Task{
+			Id: id,
+		})
+	}
 	for _, edg := range e.Edges.CreatedProjects {
 		id := int64(edg.ID)
 		v.CreatedProjects = append(v.CreatedProjects, &Project{
@@ -152,6 +159,9 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 	case GetEmployeeRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Employee.Query().
 			Where(employee.ID(id)).
+			WithAssignedTasks(func(query *ent.TaskQuery) {
+				query.Select(task.FieldID)
+			}).
 			WithCreatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
@@ -196,6 +206,10 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	if employee.GetUserId() != nil {
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
+	}
+	for _, item := range employee.GetAssignedTasks() {
+		assignedtasks := int(item.GetId())
+		m.AddAssignedTaskIDs(assignedtasks)
 	}
 	for _, item := range employee.GetCreatedProjects() {
 		createdprojects := int(item.GetId())
@@ -279,6 +293,9 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 		entList, err = listQuery.All(ctx)
 	case ListEmployeeRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithAssignedTasks(func(query *ent.TaskQuery) {
+				query.Select(task.FieldID)
+			}).
 			WithCreatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
@@ -366,6 +383,10 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	if employee.GetUserId() != nil {
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
+	}
+	for _, item := range employee.GetAssignedTasks() {
+		assignedtasks := int(item.GetId())
+		m.AddAssignedTaskIDs(assignedtasks)
 	}
 	for _, item := range employee.GetCreatedProjects() {
 		createdprojects := int(item.GetId())

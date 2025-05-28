@@ -10,6 +10,7 @@ import (
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	label "github.com/longgggwwww/hrm-ms-hr/ent/label"
+	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -45,8 +46,16 @@ func toProtoLabel(e *ent.Label) (*Label, error) {
 	v.Id = id
 	name := e.Name
 	v.Name = name
+	organization := wrapperspb.Int64(int64(e.OrgID))
+	v.OrgId = organization
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
+	if edg := e.Edges.Organization; edg != nil {
+		id := int64(edg.ID)
+		v.Organization = &Organization{
+			Id: id,
+		}
+	}
 	for _, edg := range e.Edges.Tasks {
 		id := int64(edg.ID)
 		v.Tasks = append(v.Tasks, &Task{
@@ -107,6 +116,9 @@ func (svc *LabelService) Get(ctx context.Context, req *GetLabelRequest) (*Label,
 	case GetLabelRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Label.Query().
 			Where(label.ID(id)).
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
+			}).
 			WithTasks(func(query *ent.TaskQuery) {
 				query.Select(task.FieldID)
 			}).
@@ -138,8 +150,16 @@ func (svc *LabelService) Update(ctx context.Context, req *UpdateLabelRequest) (*
 	}
 	labelName := label.GetName()
 	m.SetName(labelName)
+	if label.GetOrgId() != nil {
+		labelOrgID := int(label.GetOrgId().GetValue())
+		m.SetOrgID(labelOrgID)
+	}
 	labelUpdatedAt := runtime.ExtractTime(label.GetUpdatedAt())
 	m.SetUpdatedAt(labelUpdatedAt)
+	if label.GetOrganization() != nil {
+		labelOrganization := int(label.GetOrganization().GetId())
+		m.SetOrganizationID(labelOrganization)
+	}
 	for _, item := range label.GetTasks() {
 		tasks := int(item.GetId())
 		m.AddTaskIDs(tasks)
@@ -214,6 +234,9 @@ func (svc *LabelService) List(ctx context.Context, req *ListLabelRequest) (*List
 		entList, err = listQuery.All(ctx)
 	case ListLabelRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
+			}).
 			WithTasks(func(query *ent.TaskQuery) {
 				query.Select(task.FieldID)
 			}).
@@ -288,8 +311,16 @@ func (svc *LabelService) createBuilder(label *Label) (*ent.LabelCreate, error) {
 	}
 	labelName := label.GetName()
 	m.SetName(labelName)
+	if label.GetOrgId() != nil {
+		labelOrgID := int(label.GetOrgId().GetValue())
+		m.SetOrgID(labelOrgID)
+	}
 	labelUpdatedAt := runtime.ExtractTime(label.GetUpdatedAt())
 	m.SetUpdatedAt(labelUpdatedAt)
+	if label.GetOrganization() != nil {
+		labelOrganization := int(label.GetOrganization().GetId())
+		m.SetOrganizationID(labelOrganization)
+	}
 	for _, item := range label.GetTasks() {
 		tasks := int(item.GetId())
 		m.AddTaskIDs(tasks)

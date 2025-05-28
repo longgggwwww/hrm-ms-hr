@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -235,6 +236,21 @@ func (tu *TaskUpdate) AddLabels(l ...*Label) *TaskUpdate {
 	return tu.AddLabelIDs(ids...)
 }
 
+// AddAssigneeIDs adds the "assignees" edge to the Employee entity by IDs.
+func (tu *TaskUpdate) AddAssigneeIDs(ids ...int) *TaskUpdate {
+	tu.mutation.AddAssigneeIDs(ids...)
+	return tu
+}
+
+// AddAssignees adds the "assignees" edges to the Employee entity.
+func (tu *TaskUpdate) AddAssignees(e ...*Employee) *TaskUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return tu.AddAssigneeIDs(ids...)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tu *TaskUpdate) Mutation() *TaskMutation {
 	return tu.mutation
@@ -265,6 +281,27 @@ func (tu *TaskUpdate) RemoveLabels(l ...*Label) *TaskUpdate {
 		ids[i] = l[i].ID
 	}
 	return tu.RemoveLabelIDs(ids...)
+}
+
+// ClearAssignees clears all "assignees" edges to the Employee entity.
+func (tu *TaskUpdate) ClearAssignees() *TaskUpdate {
+	tu.mutation.ClearAssignees()
+	return tu
+}
+
+// RemoveAssigneeIDs removes the "assignees" edge to Employee entities by IDs.
+func (tu *TaskUpdate) RemoveAssigneeIDs(ids ...int) *TaskUpdate {
+	tu.mutation.RemoveAssigneeIDs(ids...)
+	return tu
+}
+
+// RemoveAssignees removes "assignees" edges to Employee entities.
+func (tu *TaskUpdate) RemoveAssignees(e ...*Employee) *TaskUpdate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return tu.RemoveAssigneeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -442,6 +479,51 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tu.mutation.AssigneesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.AssigneesTable,
+			Columns: task.AssigneesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedAssigneesIDs(); len(nodes) > 0 && !tu.mutation.AssigneesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.AssigneesTable,
+			Columns: task.AssigneesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.AssigneesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.AssigneesTable,
+			Columns: task.AssigneesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -674,6 +756,21 @@ func (tuo *TaskUpdateOne) AddLabels(l ...*Label) *TaskUpdateOne {
 	return tuo.AddLabelIDs(ids...)
 }
 
+// AddAssigneeIDs adds the "assignees" edge to the Employee entity by IDs.
+func (tuo *TaskUpdateOne) AddAssigneeIDs(ids ...int) *TaskUpdateOne {
+	tuo.mutation.AddAssigneeIDs(ids...)
+	return tuo
+}
+
+// AddAssignees adds the "assignees" edges to the Employee entity.
+func (tuo *TaskUpdateOne) AddAssignees(e ...*Employee) *TaskUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return tuo.AddAssigneeIDs(ids...)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tuo *TaskUpdateOne) Mutation() *TaskMutation {
 	return tuo.mutation
@@ -704,6 +801,27 @@ func (tuo *TaskUpdateOne) RemoveLabels(l ...*Label) *TaskUpdateOne {
 		ids[i] = l[i].ID
 	}
 	return tuo.RemoveLabelIDs(ids...)
+}
+
+// ClearAssignees clears all "assignees" edges to the Employee entity.
+func (tuo *TaskUpdateOne) ClearAssignees() *TaskUpdateOne {
+	tuo.mutation.ClearAssignees()
+	return tuo
+}
+
+// RemoveAssigneeIDs removes the "assignees" edge to Employee entities by IDs.
+func (tuo *TaskUpdateOne) RemoveAssigneeIDs(ids ...int) *TaskUpdateOne {
+	tuo.mutation.RemoveAssigneeIDs(ids...)
+	return tuo
+}
+
+// RemoveAssignees removes "assignees" edges to Employee entities.
+func (tuo *TaskUpdateOne) RemoveAssignees(e ...*Employee) *TaskUpdateOne {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return tuo.RemoveAssigneeIDs(ids...)
 }
 
 // Where appends a list predicates to the TaskUpdate builder.
@@ -911,6 +1029,51 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.AssigneesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.AssigneesTable,
+			Columns: task.AssigneesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedAssigneesIDs(); len(nodes) > 0 && !tuo.mutation.AssigneesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.AssigneesTable,
+			Columns: task.AssigneesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.AssigneesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.AssigneesTable,
+			Columns: task.AssigneesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -21,13 +22,14 @@ import (
 // TaskQuery is the builder for querying Task entities.
 type TaskQuery struct {
 	config
-	ctx         *QueryContext
-	order       []task.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Task
-	withProject *ProjectQuery
-	withLabels  *LabelQuery
-	withFKs     bool
+	ctx           *QueryContext
+	order         []task.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Task
+	withProject   *ProjectQuery
+	withLabels    *LabelQuery
+	withAssignees *EmployeeQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -101,6 +103,28 @@ func (tq *TaskQuery) QueryLabels() *LabelQuery {
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(label.Table, label.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, task.LabelsTable, task.LabelsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAssignees chains the current query on the "assignees" edge.
+func (tq *TaskQuery) QueryAssignees() *EmployeeQuery {
+	query := (&EmployeeClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, task.AssigneesTable, task.AssigneesPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -295,13 +319,14 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		return nil
 	}
 	return &TaskQuery{
-		config:      tq.config,
-		ctx:         tq.ctx.Clone(),
-		order:       append([]task.OrderOption{}, tq.order...),
-		inters:      append([]Interceptor{}, tq.inters...),
-		predicates:  append([]predicate.Task{}, tq.predicates...),
-		withProject: tq.withProject.Clone(),
-		withLabels:  tq.withLabels.Clone(),
+		config:        tq.config,
+		ctx:           tq.ctx.Clone(),
+		order:         append([]task.OrderOption{}, tq.order...),
+		inters:        append([]Interceptor{}, tq.inters...),
+		predicates:    append([]predicate.Task{}, tq.predicates...),
+		withProject:   tq.withProject.Clone(),
+		withLabels:    tq.withLabels.Clone(),
+		withAssignees: tq.withAssignees.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -327,6 +352,17 @@ func (tq *TaskQuery) WithLabels(opts ...func(*LabelQuery)) *TaskQuery {
 		opt(query)
 	}
 	tq.withLabels = query
+	return tq
+}
+
+// WithAssignees tells the query-builder to eager-load the nodes that are connected to
+// the "assignees" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithAssignees(opts ...func(*EmployeeQuery)) *TaskQuery {
+	query := (&EmployeeClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withAssignees = query
 	return tq
 }
 
@@ -409,9 +445,10 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 		nodes       = []*Task{}
 		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			tq.withProject != nil,
 			tq.withLabels != nil,
+			tq.withAssignees != nil,
 		}
 	)
 	if withFKs {
@@ -445,6 +482,13 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 		if err := tq.loadLabels(ctx, query, nodes,
 			func(n *Task) { n.Edges.Labels = []*Label{} },
 			func(n *Task, e *Label) { n.Edges.Labels = append(n.Edges.Labels, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withAssignees; query != nil {
+		if err := tq.loadAssignees(ctx, query, nodes,
+			func(n *Task) { n.Edges.Assignees = []*Employee{} },
+			func(n *Task, e *Employee) { n.Edges.Assignees = append(n.Edges.Assignees, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -508,6 +552,67 @@ func (tq *TaskQuery) loadLabels(ctx context.Context, query *LabelQuery, nodes []
 			return fmt.Errorf(`unexpected referenced foreign-key "task_labels" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (tq *TaskQuery) loadAssignees(ctx context.Context, query *EmployeeQuery, nodes []*Task, init func(*Task), assign func(*Task, *Employee)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Task)
+	nids := make(map[int]map[*Task]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(task.AssigneesTable)
+		s.Join(joinT).On(s.C(employee.FieldID), joinT.C(task.AssigneesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(task.AssigneesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(task.AssigneesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Task]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Employee](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "assignees" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

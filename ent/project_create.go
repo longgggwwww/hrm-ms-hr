@@ -57,6 +57,14 @@ func (pc *ProjectCreate) SetStartAt(t time.Time) *ProjectCreate {
 	return pc
 }
 
+// SetNillableStartAt sets the "start_at" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableStartAt(t *time.Time) *ProjectCreate {
+	if t != nil {
+		pc.SetStartAt(*t)
+	}
+	return pc
+}
+
 // SetEndAt sets the "end_at" field.
 func (pc *ProjectCreate) SetEndAt(t time.Time) *ProjectCreate {
 	pc.mutation.SetEndAt(t)
@@ -255,9 +263,6 @@ func (pc *ProjectCreate) check() error {
 	}
 	if _, ok := pc.mutation.Code(); !ok {
 		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Project.code"`)}
-	}
-	if _, ok := pc.mutation.StartAt(); !ok {
-		return &ValidationError{Name: "start_at", err: errors.New(`ent: missing required field "Project.start_at"`)}
 	}
 	if _, ok := pc.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator_id", err: errors.New(`ent: missing required field "Project.creator_id"`)}
@@ -539,6 +544,12 @@ func (u *ProjectUpsert) UpdateStartAt() *ProjectUpsert {
 	return u
 }
 
+// ClearStartAt clears the value of the "start_at" field.
+func (u *ProjectUpsert) ClearStartAt() *ProjectUpsert {
+	u.SetNull(project.FieldStartAt)
+	return u
+}
+
 // SetEndAt sets the "end_at" field.
 func (u *ProjectUpsert) SetEndAt(v time.Time) *ProjectUpsert {
 	u.Set(project.FieldEndAt, v)
@@ -758,6 +769,13 @@ func (u *ProjectUpsertOne) SetStartAt(v time.Time) *ProjectUpsertOne {
 func (u *ProjectUpsertOne) UpdateStartAt() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateStartAt()
+	})
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (u *ProjectUpsertOne) ClearStartAt() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearStartAt()
 	})
 }
 
@@ -1165,6 +1183,13 @@ func (u *ProjectUpsertBulk) SetStartAt(v time.Time) *ProjectUpsertBulk {
 func (u *ProjectUpsertBulk) UpdateStartAt() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateStartAt()
+	})
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (u *ProjectUpsertBulk) ClearStartAt() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.ClearStartAt()
 	})
 }
 

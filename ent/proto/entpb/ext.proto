@@ -16,7 +16,6 @@ message DeleteEmployeeByUserIdRequest {
   string user_id = 1;
 }
 
-// Service definition
 service ExtService {
   rpc GetEmployeeByUserId (GetEmployeeByUserIdRequest) returns (Employee);
   

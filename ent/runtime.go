@@ -66,11 +66,11 @@ func init() {
 	// label.ColorValidator is a validator for the "color" field. It is called by the builders before save.
 	label.ColorValidator = labelDescColor.Validators[0].(func(string) error)
 	// labelDescCreatedAt is the schema descriptor for created_at field.
-	labelDescCreatedAt := labelFields[3].Descriptor()
+	labelDescCreatedAt := labelFields[4].Descriptor()
 	// label.DefaultCreatedAt holds the default value on creation for the created_at field.
 	label.DefaultCreatedAt = labelDescCreatedAt.Default.(func() time.Time)
 	// labelDescUpdatedAt is the schema descriptor for updated_at field.
-	labelDescUpdatedAt := labelFields[4].Descriptor()
+	labelDescUpdatedAt := labelFields[5].Descriptor()
 	// label.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	label.DefaultUpdatedAt = labelDescUpdatedAt.Default.(func() time.Time)
 	// label.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -149,6 +149,10 @@ func init() {
 	project.UpdateDefaultUpdatedAt = projectDescUpdatedAt.UpdateDefault.(func() time.Time)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
+	// taskDescProcess is the schema descriptor for process field.
+	taskDescProcess := taskFields[3].Descriptor()
+	// task.DefaultProcess holds the default value on creation for the process field.
+	task.DefaultProcess = taskDescProcess.Default.(int)
 	// taskDescCreatedAt is the schema descriptor for created_at field.
 	taskDescCreatedAt := taskFields[9].Descriptor()
 	// task.DefaultCreatedAt holds the default value on creation for the created_at field.

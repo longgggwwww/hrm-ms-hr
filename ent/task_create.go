@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -53,6 +54,14 @@ func (tc *TaskCreate) SetNillableDescription(s *string) *TaskCreate {
 // SetProcess sets the "process" field.
 func (tc *TaskCreate) SetProcess(i int) *TaskCreate {
 	tc.mutation.SetProcess(i)
+	return tc
+}
+
+// SetNillableProcess sets the "process" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableProcess(i *int) *TaskCreate {
+	if i != nil {
+		tc.SetProcess(*i)
+	}
 	return tc
 }
 
@@ -172,6 +181,21 @@ func (tc *TaskCreate) AddLabels(l ...*Label) *TaskCreate {
 	return tc.AddLabelIDs(ids...)
 }
 
+// AddAssigneeIDs adds the "assignees" edge to the Employee entity by IDs.
+func (tc *TaskCreate) AddAssigneeIDs(ids ...int) *TaskCreate {
+	tc.mutation.AddAssigneeIDs(ids...)
+	return tc
+}
+
+// AddAssignees adds the "assignees" edges to the Employee entity.
+func (tc *TaskCreate) AddAssignees(e ...*Employee) *TaskCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return tc.AddAssigneeIDs(ids...)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tc *TaskCreate) Mutation() *TaskMutation {
 	return tc.mutation
@@ -207,6 +231,10 @@ func (tc *TaskCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tc *TaskCreate) defaults() {
+	if _, ok := tc.mutation.Process(); !ok {
+		v := task.DefaultProcess
+		tc.mutation.SetProcess(v)
+	}
 	if _, ok := tc.mutation.Status(); !ok {
 		v := task.DefaultStatus
 		tc.mutation.SetStatus(v)
@@ -361,6 +389,22 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.AssigneesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.AssigneesTable,
+			Columns: task.AssigneesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

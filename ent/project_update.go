@@ -93,6 +93,12 @@ func (pu *ProjectUpdate) SetNillableStartAt(t *time.Time) *ProjectUpdate {
 	return pu
 }
 
+// ClearStartAt clears the value of the "start_at" field.
+func (pu *ProjectUpdate) ClearStartAt() *ProjectUpdate {
+	pu.mutation.ClearStartAt()
+	return pu
+}
+
 // SetEndAt sets the "end_at" field.
 func (pu *ProjectUpdate) SetEndAt(t time.Time) *ProjectUpdate {
 	pu.mutation.SetEndAt(t)
@@ -383,6 +389,9 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.StartAt(); ok {
 		_spec.SetField(project.FieldStartAt, field.TypeTime, value)
 	}
+	if pu.mutation.StartAtCleared() {
+		_spec.ClearField(project.FieldStartAt, field.TypeTime)
+	}
 	if value, ok := pu.mutation.EndAt(); ok {
 		_spec.SetField(project.FieldEndAt, field.TypeTime, value)
 	}
@@ -618,6 +627,12 @@ func (puo *ProjectUpdateOne) SetNillableStartAt(t *time.Time) *ProjectUpdateOne 
 	if t != nil {
 		puo.SetStartAt(*t)
 	}
+	return puo
+}
+
+// ClearStartAt clears the value of the "start_at" field.
+func (puo *ProjectUpdateOne) ClearStartAt() *ProjectUpdateOne {
+	puo.mutation.ClearStartAt()
 	return puo
 }
 
@@ -940,6 +955,9 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	}
 	if value, ok := puo.mutation.StartAt(); ok {
 		_spec.SetField(project.FieldStartAt, field.TypeTime, value)
+	}
+	if puo.mutation.StartAtCleared() {
+		_spec.ClearField(project.FieldStartAt, field.TypeTime)
 	}
 	if value, ok := puo.mutation.EndAt(); ok {
 		_spec.SetField(project.FieldEndAt, field.TypeTime, value)

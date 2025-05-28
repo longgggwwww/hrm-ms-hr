@@ -53,9 +53,11 @@ type OrganizationEdges struct {
 	Departments []*Department `json:"departments,omitempty"`
 	// Projects holds the value of the projects edge.
 	Projects []*Project `json:"projects,omitempty"`
+	// Labels holds the value of the labels edge.
+	Labels []*Label `json:"labels,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ParentOrErr returns the Parent value or an error if the edge
@@ -94,6 +96,15 @@ func (e OrganizationEdges) ProjectsOrErr() ([]*Project, error) {
 		return e.Projects, nil
 	}
 	return nil, &NotLoadedError{edge: "projects"}
+}
+
+// LabelsOrErr returns the Labels value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) LabelsOrErr() ([]*Label, error) {
+	if e.loadedTypes[4] {
+		return e.Labels, nil
+	}
+	return nil, &NotLoadedError{edge: "labels"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -225,6 +236,11 @@ func (o *Organization) QueryDepartments() *DepartmentQuery {
 // QueryProjects queries the "projects" edge of the Organization entity.
 func (o *Organization) QueryProjects() *ProjectQuery {
 	return NewOrganizationClient(o.config).QueryProjects(o)
+}
+
+// QueryLabels queries the "labels" edge of the Organization entity.
+func (o *Organization) QueryLabels() *LabelQuery {
+	return NewOrganizationClient(o.config).QueryLabels(o)
 }
 
 // Update returns a builder for updating this Organization.

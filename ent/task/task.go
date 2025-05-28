@@ -43,6 +43,8 @@ const (
 	EdgeProject = "project"
 	// EdgeLabels holds the string denoting the labels edge name in mutations.
 	EdgeLabels = "labels"
+	// EdgeAssignees holds the string denoting the assignees edge name in mutations.
+	EdgeAssignees = "assignees"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
 	// ProjectTable is the table that holds the project relation/edge.
@@ -59,6 +61,11 @@ const (
 	LabelsInverseTable = "labels"
 	// LabelsColumn is the table column denoting the labels relation/edge.
 	LabelsColumn = "task_labels"
+	// AssigneesTable is the table that holds the assignees relation/edge. The primary key declared below.
+	AssigneesTable = "task_assignees"
+	// AssigneesInverseTable is the table name for the Employee entity.
+	// It exists in this package in order to avoid circular dependency with the "employee" package.
+	AssigneesInverseTable = "employees"
 )
 
 // Columns holds all SQL columns for task fields.
@@ -84,6 +91,12 @@ var ForeignKeys = []string{
 	"label_tasks",
 }
 
+var (
+	// AssigneesPrimaryKey and AssigneesColumn2 are the table columns denoting the
+	// primary key for the assignees relation (M2M).
+	AssigneesPrimaryKey = []string{"task_id", "employee_id"}
+)
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
@@ -100,6 +113,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultProcess holds the default value on creation for the "process" field.
+	DefaultProcess int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -253,6 +268,20 @@ func ByLabels(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLabelsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAssigneesCount orders the results by assignees count.
+func ByAssigneesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAssigneesStep(), opts...)
+	}
+}
+
+// ByAssignees orders the results by assignees terms.
+func ByAssignees(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAssigneesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newProjectStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -265,5 +294,12 @@ func newLabelsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LabelsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LabelsTable, LabelsColumn),
+	)
+}
+func newAssigneesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AssigneesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, AssigneesTable, AssigneesPrimaryKey...),
 	)
 }

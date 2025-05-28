@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 )
 
 // Label is the model entity for the Label schema.
@@ -23,6 +24,8 @@ type Label struct {
 	Description string `json:"description,omitempty"`
 	// Color holds the value of the "color" field.
 	Color string `json:"color,omitempty"`
+	// OrgID holds the value of the "org_id" field.
+	OrgID int `json:"org_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -38,9 +41,11 @@ type Label struct {
 type LabelEdges struct {
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
+	// Organization holds the value of the organization edge.
+	Organization *Organization `json:"organization,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // TasksOrErr returns the Tasks value or an error if the edge
@@ -52,12 +57,23 @@ func (e LabelEdges) TasksOrErr() ([]*Task, error) {
 	return nil, &NotLoadedError{edge: "tasks"}
 }
 
+// OrganizationOrErr returns the Organization value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e LabelEdges) OrganizationOrErr() (*Organization, error) {
+	if e.Organization != nil {
+		return e.Organization, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: organization.Label}
+	}
+	return nil, &NotLoadedError{edge: "organization"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Label) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case label.FieldID:
+		case label.FieldID, label.FieldOrgID:
 			values[i] = new(sql.NullInt64)
 		case label.FieldName, label.FieldDescription, label.FieldColor:
 			values[i] = new(sql.NullString)
@@ -104,6 +120,12 @@ func (l *Label) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				l.Color = value.String
 			}
+		case label.FieldOrgID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field org_id", values[i])
+			} else if value.Valid {
+				l.OrgID = int(value.Int64)
+			}
 		case label.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -141,6 +163,11 @@ func (l *Label) QueryTasks() *TaskQuery {
 	return NewLabelClient(l.config).QueryTasks(l)
 }
 
+// QueryOrganization queries the "organization" edge of the Label entity.
+func (l *Label) QueryOrganization() *OrganizationQuery {
+	return NewLabelClient(l.config).QueryOrganization(l)
+}
+
 // Update returns a builder for updating this Label.
 // Note that you need to call Label.Unwrap() before calling this method if this Label
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -172,6 +199,9 @@ func (l *Label) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("color=")
 	builder.WriteString(l.Color)
+	builder.WriteString(", ")
+	builder.WriteString("org_id=")
+	builder.WriteString(fmt.Sprintf("%v", l.OrgID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(l.CreatedAt.Format(time.ANSIC))

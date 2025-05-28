@@ -72,6 +72,7 @@ var (
 		{Name: "color", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "org_id", Type: field.TypeInt, Nullable: true},
 		{Name: "task_labels", Type: field.TypeInt, Nullable: true},
 	}
 	// LabelsTable holds the schema information for the "labels" table.
@@ -81,10 +82,23 @@ var (
 		PrimaryKey: []*schema.Column{LabelsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "labels_tasks_labels",
+				Symbol:     "labels_organizations_labels",
 				Columns:    []*schema.Column{LabelsColumns[6]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "labels_tasks_labels",
+				Columns:    []*schema.Column{LabelsColumns[7]},
 				RefColumns: []*schema.Column{TasksColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "label_org_id",
+				Unique:  false,
+				Columns: []*schema.Column{LabelsColumns[6]},
 			},
 		},
 	}
@@ -199,7 +213,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "code", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "start_at", Type: field.TypeTime},
+		{Name: "start_at", Type: field.TypeTime, Nullable: true},
 		{Name: "end_at", Type: field.TypeTime, Nullable: true},
 		{Name: "process", Type: field.TypeInt, Nullable: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"not_started", "in_progress", "completed"}, Default: "not_started"},
@@ -240,9 +254,9 @@ var (
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "code", Type: field.TypeString},
+		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "process", Type: field.TypeInt},
+		{Name: "process", Type: field.TypeInt, Default: 0},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"not_received", "received", "in_progress", "completed", "cancelled"}, Default: "not_received"},
 		{Name: "start_at", Type: field.TypeTime, Nullable: true},
 		{Name: "creator_id", Type: field.TypeInt},
@@ -273,6 +287,31 @@ var (
 			},
 		},
 	}
+	// TaskAssigneesColumns holds the columns for the "task_assignees" table.
+	TaskAssigneesColumns = []*schema.Column{
+		{Name: "task_id", Type: field.TypeInt},
+		{Name: "employee_id", Type: field.TypeInt},
+	}
+	// TaskAssigneesTable holds the schema information for the "task_assignees" table.
+	TaskAssigneesTable = &schema.Table{
+		Name:       "task_assignees",
+		Columns:    TaskAssigneesColumns,
+		PrimaryKey: []*schema.Column{TaskAssigneesColumns[0], TaskAssigneesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "task_assignees_task_id",
+				Columns:    []*schema.Column{TaskAssigneesColumns[0]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "task_assignees_employee_id",
+				Columns:    []*schema.Column{TaskAssigneesColumns[1]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		DepartmentsTable,
@@ -284,13 +323,15 @@ var (
 		PositionsTable,
 		ProjectsTable,
 		TasksTable,
+		TaskAssigneesTable,
 	}
 )
 
 func init() {
 	DepartmentsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
-	LabelsTable.ForeignKeys[0].RefTable = TasksTable
+	LabelsTable.ForeignKeys[0].RefTable = OrganizationsTable
+	LabelsTable.ForeignKeys[1].RefTable = TasksTable
 	LeaveRequestsTable.ForeignKeys[0].RefTable = LeaveApprovalsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	PositionsTable.ForeignKeys[0].RefTable = DepartmentsTable
@@ -300,4 +341,6 @@ func init() {
 	ProjectsTable.ForeignKeys[2].RefTable = OrganizationsTable
 	TasksTable.ForeignKeys[0].RefTable = LabelsTable
 	TasksTable.ForeignKeys[1].RefTable = ProjectsTable
+	TaskAssigneesTable.ForeignKeys[0].RefTable = TasksTable
+	TaskAssigneesTable.ForeignKeys[1].RefTable = EmployeesTable
 }

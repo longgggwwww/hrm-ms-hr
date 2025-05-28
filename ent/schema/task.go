@@ -21,11 +21,13 @@ func (Task) Fields() []ent.Field {
 		field.String("name").
 			Annotations(entproto.Field(2)),
 		field.String("code").
+			Unique().
 			Annotations(entproto.Field(3)),
 		field.String("description").
 			Optional().
 			Annotations(entproto.Field(4)),
 		field.Int("process").
+			Default(0).
 			Annotations(entproto.Field(5)),
 		field.Enum("status").
 			Values("not_received", "received", "in_progress", "completed", "cancelled").
@@ -42,26 +44,29 @@ func (Task) Fields() []ent.Field {
 		field.Time("start_at").
 			Optional().
 			Annotations(entproto.Field(7)),
-		field.Int("project_id").
+		field.Time("due_date").
 			Optional().
 			Annotations(entproto.Field(8)),
-		field.Int("creator_id").
+		field.Int("project_id").
+			Optional().
 			Annotations(entproto.Field(9)),
-		field.Int("updater_id").
+		field.Int("creator_id").
 			Annotations(entproto.Field(10)),
+		field.Int("updater_id").
+			Annotations(entproto.Field(11)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
-			Annotations(entproto.Field(11)),
+			Annotations(entproto.Field(12)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
-			Annotations(entproto.Field(12)),
+			Annotations(entproto.Field(13)),
 		field.Enum("type").
 			Values("task", "feature", "bug", "another").
 			Default("task").
 			Annotations(
-				entproto.Field(13),
+				entproto.Field(14),
 				entproto.Enum(map[string]int32{
 					"task":    0,
 					"feature": 1,
@@ -78,9 +83,11 @@ func (Task) Edges() []ent.Edge {
 			Ref("tasks").
 			Field("project_id").
 			Unique().
-			Annotations(entproto.Field(14)),
+			Annotations(entproto.Field(15)),
 		edge.To("labels", Label.Type).
-			Annotations(entproto.Field(15)), // Thêm edge tới label
+			Annotations(entproto.Field(16)), // Thêm edge tới label
+		edge.To("assignees", Employee.Type).
+			Annotations(entproto.Field(17)), // Edge many-to-many với Employee
 	}
 }
 

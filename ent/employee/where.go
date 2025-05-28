@@ -499,6 +499,29 @@ func HasUpdatedProjectsWith(preds ...predicate.Project) predicate.Employee {
 	})
 }
 
+// HasAssignedTasks applies the HasEdge predicate on the "assigned_tasks" edge.
+func HasAssignedTasks() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, AssignedTasksTable, AssignedTasksPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAssignedTasksWith applies the HasEdge predicate on the "assigned_tasks" edge with a given conditions (other predicates).
+func HasAssignedTasksWith(preds ...predicate.Task) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newAssignedTasksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Employee) predicate.Employee {
 	return predicate.Employee(sql.AndPredicates(predicates...))

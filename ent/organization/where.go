@@ -812,6 +812,29 @@ func HasProjectsWith(preds ...predicate.Project) predicate.Organization {
 	})
 }
 
+// HasLabels applies the HasEdge predicate on the "labels" edge.
+func HasLabels() predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LabelsTable, LabelsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLabelsWith applies the HasEdge predicate on the "labels" edge with a given conditions (other predicates).
+func HasLabelsWith(preds ...predicate.Label) predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := newLabelsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Organization) predicate.Organization {
 	return predicate.Organization(sql.AndPredicates(predicates...))

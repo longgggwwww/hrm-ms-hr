@@ -26,6 +26,7 @@ func (Project) Fields() []ent.Field {
 			Optional().
 			Annotations(entproto.Field(4)),
 		field.Time("start_at").
+			Optional().
 			Annotations(entproto.Field(5)),
 		field.Time("end_at").
 			Optional().

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -248,6 +249,21 @@ func (ou *OrganizationUpdate) AddProjects(p ...*Project) *OrganizationUpdate {
 	return ou.AddProjectIDs(ids...)
 }
 
+// AddLabelIDs adds the "labels" edge to the Label entity by IDs.
+func (ou *OrganizationUpdate) AddLabelIDs(ids ...int) *OrganizationUpdate {
+	ou.mutation.AddLabelIDs(ids...)
+	return ou
+}
+
+// AddLabels adds the "labels" edges to the Label entity.
+func (ou *OrganizationUpdate) AddLabels(l ...*Label) *OrganizationUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ou.AddLabelIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (ou *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return ou.mutation
@@ -320,6 +336,27 @@ func (ou *OrganizationUpdate) RemoveProjects(p ...*Project) *OrganizationUpdate 
 		ids[i] = p[i].ID
 	}
 	return ou.RemoveProjectIDs(ids...)
+}
+
+// ClearLabels clears all "labels" edges to the Label entity.
+func (ou *OrganizationUpdate) ClearLabels() *OrganizationUpdate {
+	ou.mutation.ClearLabels()
+	return ou
+}
+
+// RemoveLabelIDs removes the "labels" edge to Label entities by IDs.
+func (ou *OrganizationUpdate) RemoveLabelIDs(ids ...int) *OrganizationUpdate {
+	ou.mutation.RemoveLabelIDs(ids...)
+	return ou
+}
+
+// RemoveLabels removes "labels" edges to Label entities.
+func (ou *OrganizationUpdate) RemoveLabels(l ...*Label) *OrganizationUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ou.RemoveLabelIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -591,6 +628,51 @@ func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ou.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LabelsTable,
+			Columns: []string{organization.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.RemovedLabelsIDs(); len(nodes) > 0 && !ou.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LabelsTable,
+			Columns: []string{organization.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.LabelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LabelsTable,
+			Columns: []string{organization.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{organization.Label}
@@ -829,6 +911,21 @@ func (ouo *OrganizationUpdateOne) AddProjects(p ...*Project) *OrganizationUpdate
 	return ouo.AddProjectIDs(ids...)
 }
 
+// AddLabelIDs adds the "labels" edge to the Label entity by IDs.
+func (ouo *OrganizationUpdateOne) AddLabelIDs(ids ...int) *OrganizationUpdateOne {
+	ouo.mutation.AddLabelIDs(ids...)
+	return ouo
+}
+
+// AddLabels adds the "labels" edges to the Label entity.
+func (ouo *OrganizationUpdateOne) AddLabels(l ...*Label) *OrganizationUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ouo.AddLabelIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (ouo *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return ouo.mutation
@@ -901,6 +998,27 @@ func (ouo *OrganizationUpdateOne) RemoveProjects(p ...*Project) *OrganizationUpd
 		ids[i] = p[i].ID
 	}
 	return ouo.RemoveProjectIDs(ids...)
+}
+
+// ClearLabels clears all "labels" edges to the Label entity.
+func (ouo *OrganizationUpdateOne) ClearLabels() *OrganizationUpdateOne {
+	ouo.mutation.ClearLabels()
+	return ouo
+}
+
+// RemoveLabelIDs removes the "labels" edge to Label entities by IDs.
+func (ouo *OrganizationUpdateOne) RemoveLabelIDs(ids ...int) *OrganizationUpdateOne {
+	ouo.mutation.RemoveLabelIDs(ids...)
+	return ouo
+}
+
+// RemoveLabels removes "labels" edges to Label entities.
+func (ouo *OrganizationUpdateOne) RemoveLabels(l ...*Label) *OrganizationUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ouo.RemoveLabelIDs(ids...)
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
@@ -1195,6 +1313,51 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ouo.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LabelsTable,
+			Columns: []string{organization.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.RemovedLabelsIDs(); len(nodes) > 0 && !ouo.mutation.LabelsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LabelsTable,
+			Columns: []string{organization.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.LabelsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LabelsTable,
+			Columns: []string{organization.LabelsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

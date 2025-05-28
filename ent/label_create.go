@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
 
@@ -46,6 +47,20 @@ func (lc *LabelCreate) SetNillableDescription(s *string) *LabelCreate {
 // SetColor sets the "color" field.
 func (lc *LabelCreate) SetColor(s string) *LabelCreate {
 	lc.mutation.SetColor(s)
+	return lc
+}
+
+// SetOrgID sets the "org_id" field.
+func (lc *LabelCreate) SetOrgID(i int) *LabelCreate {
+	lc.mutation.SetOrgID(i)
+	return lc
+}
+
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (lc *LabelCreate) SetNillableOrgID(i *int) *LabelCreate {
+	if i != nil {
+		lc.SetOrgID(*i)
+	}
 	return lc
 }
 
@@ -90,6 +105,25 @@ func (lc *LabelCreate) AddTasks(t ...*Task) *LabelCreate {
 		ids[i] = t[i].ID
 	}
 	return lc.AddTaskIDs(ids...)
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (lc *LabelCreate) SetOrganizationID(id int) *LabelCreate {
+	lc.mutation.SetOrganizationID(id)
+	return lc
+}
+
+// SetNillableOrganizationID sets the "organization" edge to the Organization entity by ID if the given value is not nil.
+func (lc *LabelCreate) SetNillableOrganizationID(id *int) *LabelCreate {
+	if id != nil {
+		lc = lc.SetOrganizationID(*id)
+	}
+	return lc
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (lc *LabelCreate) SetOrganization(o *Organization) *LabelCreate {
+	return lc.SetOrganizationID(o.ID)
 }
 
 // Mutation returns the LabelMutation object of the builder.
@@ -224,6 +258,23 @@ func (lc *LabelCreate) createSpec() (*Label, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := lc.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   label.OrganizationTable,
+			Columns: []string{label.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OrgID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -315,6 +366,24 @@ func (u *LabelUpsert) SetColor(v string) *LabelUpsert {
 // UpdateColor sets the "color" field to the value that was provided on create.
 func (u *LabelUpsert) UpdateColor() *LabelUpsert {
 	u.SetExcluded(label.FieldColor)
+	return u
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *LabelUpsert) SetOrgID(v int) *LabelUpsert {
+	u.Set(label.FieldOrgID, v)
+	return u
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *LabelUpsert) UpdateOrgID() *LabelUpsert {
+	u.SetExcluded(label.FieldOrgID)
+	return u
+}
+
+// ClearOrgID clears the value of the "org_id" field.
+func (u *LabelUpsert) ClearOrgID() *LabelUpsert {
+	u.SetNull(label.FieldOrgID)
 	return u
 }
 
@@ -421,6 +490,27 @@ func (u *LabelUpsertOne) SetColor(v string) *LabelUpsertOne {
 func (u *LabelUpsertOne) UpdateColor() *LabelUpsertOne {
 	return u.Update(func(s *LabelUpsert) {
 		s.UpdateColor()
+	})
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *LabelUpsertOne) SetOrgID(v int) *LabelUpsertOne {
+	return u.Update(func(s *LabelUpsert) {
+		s.SetOrgID(v)
+	})
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *LabelUpsertOne) UpdateOrgID() *LabelUpsertOne {
+	return u.Update(func(s *LabelUpsert) {
+		s.UpdateOrgID()
+	})
+}
+
+// ClearOrgID clears the value of the "org_id" field.
+func (u *LabelUpsertOne) ClearOrgID() *LabelUpsertOne {
+	return u.Update(func(s *LabelUpsert) {
+		s.ClearOrgID()
 	})
 }
 
@@ -695,6 +785,27 @@ func (u *LabelUpsertBulk) SetColor(v string) *LabelUpsertBulk {
 func (u *LabelUpsertBulk) UpdateColor() *LabelUpsertBulk {
 	return u.Update(func(s *LabelUpsert) {
 		s.UpdateColor()
+	})
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *LabelUpsertBulk) SetOrgID(v int) *LabelUpsertBulk {
+	return u.Update(func(s *LabelUpsert) {
+		s.SetOrgID(v)
+	})
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *LabelUpsertBulk) UpdateOrgID() *LabelUpsertBulk {
+	return u.Update(func(s *LabelUpsert) {
+		s.UpdateOrgID()
+	})
+}
+
+// ClearOrgID clears the value of the "org_id" field.
+func (u *LabelUpsertBulk) ClearOrgID() *LabelUpsertBulk {
+	return u.Update(func(s *LabelUpsert) {
+		s.ClearOrgID()
 	})
 }
 

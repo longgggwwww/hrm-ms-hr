@@ -355,6 +355,16 @@ func StartAtLTE(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldStartAt, v))
 }
 
+// StartAtIsNil applies the IsNil predicate on the "start_at" field.
+func StartAtIsNil() predicate.Project {
+	return predicate.Project(sql.FieldIsNull(FieldStartAt))
+}
+
+// StartAtNotNil applies the NotNil predicate on the "start_at" field.
+func StartAtNotNil() predicate.Project {
+	return predicate.Project(sql.FieldNotNull(FieldStartAt))
+}
+
 // EndAtEQ applies the EQ predicate on the "end_at" field.
 func EndAtEQ(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldEndAt, v))

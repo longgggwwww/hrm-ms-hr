@@ -15,6 +15,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
+	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
 
 // EmployeeUpdate is the builder for updating Employee entities.
@@ -168,6 +169,21 @@ func (eu *EmployeeUpdate) AddUpdatedProjects(p ...*Project) *EmployeeUpdate {
 	return eu.AddUpdatedProjectIDs(ids...)
 }
 
+// AddAssignedTaskIDs adds the "assigned_tasks" edge to the Task entity by IDs.
+func (eu *EmployeeUpdate) AddAssignedTaskIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.AddAssignedTaskIDs(ids...)
+	return eu
+}
+
+// AddAssignedTasks adds the "assigned_tasks" edges to the Task entity.
+func (eu *EmployeeUpdate) AddAssignedTasks(t ...*Task) *EmployeeUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return eu.AddAssignedTaskIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (eu *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return eu.mutation
@@ -219,6 +235,27 @@ func (eu *EmployeeUpdate) RemoveUpdatedProjects(p ...*Project) *EmployeeUpdate {
 		ids[i] = p[i].ID
 	}
 	return eu.RemoveUpdatedProjectIDs(ids...)
+}
+
+// ClearAssignedTasks clears all "assigned_tasks" edges to the Task entity.
+func (eu *EmployeeUpdate) ClearAssignedTasks() *EmployeeUpdate {
+	eu.mutation.ClearAssignedTasks()
+	return eu
+}
+
+// RemoveAssignedTaskIDs removes the "assigned_tasks" edge to Task entities by IDs.
+func (eu *EmployeeUpdate) RemoveAssignedTaskIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.RemoveAssignedTaskIDs(ids...)
+	return eu
+}
+
+// RemoveAssignedTasks removes "assigned_tasks" edges to Task entities.
+func (eu *EmployeeUpdate) RemoveAssignedTasks(t ...*Task) *EmployeeUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return eu.RemoveAssignedTaskIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -430,6 +467,51 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.AssignedTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.AssignedTasksTable,
+			Columns: employee.AssignedTasksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedAssignedTasksIDs(); len(nodes) > 0 && !eu.mutation.AssignedTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.AssignedTasksTable,
+			Columns: employee.AssignedTasksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.AssignedTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.AssignedTasksTable,
+			Columns: employee.AssignedTasksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{employee.Label}
@@ -588,6 +670,21 @@ func (euo *EmployeeUpdateOne) AddUpdatedProjects(p ...*Project) *EmployeeUpdateO
 	return euo.AddUpdatedProjectIDs(ids...)
 }
 
+// AddAssignedTaskIDs adds the "assigned_tasks" edge to the Task entity by IDs.
+func (euo *EmployeeUpdateOne) AddAssignedTaskIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.AddAssignedTaskIDs(ids...)
+	return euo
+}
+
+// AddAssignedTasks adds the "assigned_tasks" edges to the Task entity.
+func (euo *EmployeeUpdateOne) AddAssignedTasks(t ...*Task) *EmployeeUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return euo.AddAssignedTaskIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (euo *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return euo.mutation
@@ -639,6 +736,27 @@ func (euo *EmployeeUpdateOne) RemoveUpdatedProjects(p ...*Project) *EmployeeUpda
 		ids[i] = p[i].ID
 	}
 	return euo.RemoveUpdatedProjectIDs(ids...)
+}
+
+// ClearAssignedTasks clears all "assigned_tasks" edges to the Task entity.
+func (euo *EmployeeUpdateOne) ClearAssignedTasks() *EmployeeUpdateOne {
+	euo.mutation.ClearAssignedTasks()
+	return euo
+}
+
+// RemoveAssignedTaskIDs removes the "assigned_tasks" edge to Task entities by IDs.
+func (euo *EmployeeUpdateOne) RemoveAssignedTaskIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.RemoveAssignedTaskIDs(ids...)
+	return euo
+}
+
+// RemoveAssignedTasks removes "assigned_tasks" edges to Task entities.
+func (euo *EmployeeUpdateOne) RemoveAssignedTasks(t ...*Task) *EmployeeUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return euo.RemoveAssignedTaskIDs(ids...)
 }
 
 // Where appends a list predicates to the EmployeeUpdate builder.
@@ -873,6 +991,51 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.AssignedTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.AssignedTasksTable,
+			Columns: employee.AssignedTasksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedAssignedTasksIDs(); len(nodes) > 0 && !euo.mutation.AssignedTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.AssignedTasksTable,
+			Columns: employee.AssignedTasksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.AssignedTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.AssignedTasksTable,
+			Columns: employee.AssignedTasksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

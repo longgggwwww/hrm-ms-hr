@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
@@ -77,6 +78,26 @@ func (lu *LabelUpdate) SetNillableColor(s *string) *LabelUpdate {
 	return lu
 }
 
+// SetOrgID sets the "org_id" field.
+func (lu *LabelUpdate) SetOrgID(i int) *LabelUpdate {
+	lu.mutation.SetOrgID(i)
+	return lu
+}
+
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (lu *LabelUpdate) SetNillableOrgID(i *int) *LabelUpdate {
+	if i != nil {
+		lu.SetOrgID(*i)
+	}
+	return lu
+}
+
+// ClearOrgID clears the value of the "org_id" field.
+func (lu *LabelUpdate) ClearOrgID() *LabelUpdate {
+	lu.mutation.ClearOrgID()
+	return lu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (lu *LabelUpdate) SetUpdatedAt(t time.Time) *LabelUpdate {
 	lu.mutation.SetUpdatedAt(t)
@@ -96,6 +117,25 @@ func (lu *LabelUpdate) AddTasks(t ...*Task) *LabelUpdate {
 		ids[i] = t[i].ID
 	}
 	return lu.AddTaskIDs(ids...)
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (lu *LabelUpdate) SetOrganizationID(id int) *LabelUpdate {
+	lu.mutation.SetOrganizationID(id)
+	return lu
+}
+
+// SetNillableOrganizationID sets the "organization" edge to the Organization entity by ID if the given value is not nil.
+func (lu *LabelUpdate) SetNillableOrganizationID(id *int) *LabelUpdate {
+	if id != nil {
+		lu = lu.SetOrganizationID(*id)
+	}
+	return lu
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (lu *LabelUpdate) SetOrganization(o *Organization) *LabelUpdate {
+	return lu.SetOrganizationID(o.ID)
 }
 
 // Mutation returns the LabelMutation object of the builder.
@@ -122,6 +162,12 @@ func (lu *LabelUpdate) RemoveTasks(t ...*Task) *LabelUpdate {
 		ids[i] = t[i].ID
 	}
 	return lu.RemoveTaskIDs(ids...)
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (lu *LabelUpdate) ClearOrganization() *LabelUpdate {
+	lu.mutation.ClearOrganization()
+	return lu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -247,6 +293,35 @@ func (lu *LabelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if lu.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   label.OrganizationTable,
+			Columns: []string{label.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lu.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   label.OrganizationTable,
+			Columns: []string{label.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{label.Label}
@@ -315,6 +390,26 @@ func (luo *LabelUpdateOne) SetNillableColor(s *string) *LabelUpdateOne {
 	return luo
 }
 
+// SetOrgID sets the "org_id" field.
+func (luo *LabelUpdateOne) SetOrgID(i int) *LabelUpdateOne {
+	luo.mutation.SetOrgID(i)
+	return luo
+}
+
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (luo *LabelUpdateOne) SetNillableOrgID(i *int) *LabelUpdateOne {
+	if i != nil {
+		luo.SetOrgID(*i)
+	}
+	return luo
+}
+
+// ClearOrgID clears the value of the "org_id" field.
+func (luo *LabelUpdateOne) ClearOrgID() *LabelUpdateOne {
+	luo.mutation.ClearOrgID()
+	return luo
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (luo *LabelUpdateOne) SetUpdatedAt(t time.Time) *LabelUpdateOne {
 	luo.mutation.SetUpdatedAt(t)
@@ -334,6 +429,25 @@ func (luo *LabelUpdateOne) AddTasks(t ...*Task) *LabelUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return luo.AddTaskIDs(ids...)
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (luo *LabelUpdateOne) SetOrganizationID(id int) *LabelUpdateOne {
+	luo.mutation.SetOrganizationID(id)
+	return luo
+}
+
+// SetNillableOrganizationID sets the "organization" edge to the Organization entity by ID if the given value is not nil.
+func (luo *LabelUpdateOne) SetNillableOrganizationID(id *int) *LabelUpdateOne {
+	if id != nil {
+		luo = luo.SetOrganizationID(*id)
+	}
+	return luo
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (luo *LabelUpdateOne) SetOrganization(o *Organization) *LabelUpdateOne {
+	return luo.SetOrganizationID(o.ID)
 }
 
 // Mutation returns the LabelMutation object of the builder.
@@ -360,6 +474,12 @@ func (luo *LabelUpdateOne) RemoveTasks(t ...*Task) *LabelUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return luo.RemoveTaskIDs(ids...)
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (luo *LabelUpdateOne) ClearOrganization() *LabelUpdateOne {
+	luo.mutation.ClearOrganization()
+	return luo
 }
 
 // Where appends a list predicates to the LabelUpdate builder.
@@ -508,6 +628,35 @@ func (luo *LabelUpdateOne) sqlSave(ctx context.Context) (_node *Label, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if luo.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   label.OrganizationTable,
+			Columns: []string{label.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := luo.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   label.OrganizationTable,
+			Columns: []string{label.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

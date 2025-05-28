@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -29,6 +30,7 @@ type OrganizationQuery struct {
 	withChildren    *OrganizationQuery
 	withDepartments *DepartmentQuery
 	withProjects    *ProjectQuery
+	withLabels      *LabelQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -146,6 +148,28 @@ func (oq *OrganizationQuery) QueryProjects() *ProjectQuery {
 			sqlgraph.From(organization.Table, organization.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, organization.ProjectsTable, organization.ProjectsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLabels chains the current query on the "labels" edge.
+func (oq *OrganizationQuery) QueryLabels() *LabelQuery {
+	query := (&LabelClient{config: oq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, selector),
+			sqlgraph.To(label.Table, label.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.LabelsTable, organization.LabelsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(oq.driver.Dialect(), step)
 		return fromU, nil
@@ -349,6 +373,7 @@ func (oq *OrganizationQuery) Clone() *OrganizationQuery {
 		withChildren:    oq.withChildren.Clone(),
 		withDepartments: oq.withDepartments.Clone(),
 		withProjects:    oq.withProjects.Clone(),
+		withLabels:      oq.withLabels.Clone(),
 		// clone intermediate query.
 		sql:  oq.sql.Clone(),
 		path: oq.path,
@@ -396,6 +421,17 @@ func (oq *OrganizationQuery) WithProjects(opts ...func(*ProjectQuery)) *Organiza
 		opt(query)
 	}
 	oq.withProjects = query
+	return oq
+}
+
+// WithLabels tells the query-builder to eager-load the nodes that are connected to
+// the "labels" edge. The optional arguments are used to configure the query builder of the edge.
+func (oq *OrganizationQuery) WithLabels(opts ...func(*LabelQuery)) *OrganizationQuery {
+	query := (&LabelClient{config: oq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oq.withLabels = query
 	return oq
 }
 
@@ -477,11 +513,12 @@ func (oq *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*Organization{}
 		_spec       = oq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			oq.withParent != nil,
 			oq.withChildren != nil,
 			oq.withDepartments != nil,
 			oq.withProjects != nil,
+			oq.withLabels != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -526,6 +563,13 @@ func (oq *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		if err := oq.loadProjects(ctx, query, nodes,
 			func(n *Organization) { n.Edges.Projects = []*Project{} },
 			func(n *Organization, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := oq.withLabels; query != nil {
+		if err := oq.loadLabels(ctx, query, nodes,
+			func(n *Organization) { n.Edges.Labels = []*Label{} },
+			func(n *Organization, e *Label) { n.Edges.Labels = append(n.Edges.Labels, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -642,6 +686,37 @@ func (oq *OrganizationQuery) loadProjects(ctx context.Context, query *ProjectQue
 	}
 	query.Where(predicate.Project(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(organization.ProjectsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.OrgID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "org_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (oq *OrganizationQuery) loadLabels(ctx context.Context, query *LabelQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *Label)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Organization)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(label.FieldOrgID)
+	}
+	query.Where(predicate.Label(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(organization.LabelsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

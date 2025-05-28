@@ -110,6 +110,8 @@ message Employee {
 
   repeated Project updated_projects = 12;
 
+  repeated Task assigned_tasks = 13;
+
   enum Status {
     STATUS_ACTIVE = 0;
 
@@ -182,11 +184,15 @@ message Label {
 
   string color = 4;
 
-  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Int64Value org_id = 5;
 
-  google.protobuf.Timestamp updated_at = 6;
+  google.protobuf.Timestamp created_at = 6;
 
-  repeated Task tasks = 7;
+  google.protobuf.Timestamp updated_at = 7;
+
+  repeated Task tasks = 8;
+
+  Organization organization = 9;
 }
 
 message CreateLabelRequest {
@@ -433,6 +439,8 @@ message Organization {
   repeated Department departments = 14;
 
   repeated Project projects = 15;
+
+  repeated Label labels = 16;
 }
 
 message CreateOrganizationRequest {
@@ -711,6 +719,8 @@ message Task {
   Project project = 14;
 
   repeated Label labels = 15;
+
+  repeated Employee assignees = 16;
 
   enum Status {
     STATUS_NOT_RECEIVED = 0;

@@ -247,8 +247,10 @@ func (svc *ProjectService) Update(ctx context.Context, req *UpdateProjectRequest
 		projectProcess := int(project.GetProcess().GetValue())
 		m.SetProcess(projectProcess)
 	}
-	projectStartAt := runtime.ExtractTime(project.GetStartAt())
-	m.SetStartAt(projectStartAt)
+	if project.GetStartAt() != nil {
+		projectStartAt := runtime.ExtractTime(project.GetStartAt())
+		m.SetStartAt(projectStartAt)
+	}
 	projectStatus := toEntProject_Status(project.GetStatus())
 	m.SetStatus(projectStatus)
 	projectUpdatedAt := runtime.ExtractTime(project.GetUpdatedAt())
@@ -438,8 +440,10 @@ func (svc *ProjectService) createBuilder(project *Project) (*ent.ProjectCreate, 
 		projectProcess := int(project.GetProcess().GetValue())
 		m.SetProcess(projectProcess)
 	}
-	projectStartAt := runtime.ExtractTime(project.GetStartAt())
-	m.SetStartAt(projectStartAt)
+	if project.GetStartAt() != nil {
+		projectStartAt := runtime.ExtractTime(project.GetStartAt())
+		m.SetStartAt(projectStartAt)
+	}
 	projectStatus := toEntProject_Status(project.GetStatus())
 	m.SetStatus(projectStatus)
 	projectUpdatedAt := runtime.ExtractTime(project.GetUpdatedAt())

@@ -55,9 +55,11 @@ type TaskEdges struct {
 	Project *Project `json:"project,omitempty"`
 	// Labels holds the value of the labels edge.
 	Labels []*Label `json:"labels,omitempty"`
+	// Assignees holds the value of the assignees edge.
+	Assignees []*Employee `json:"assignees,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -78,6 +80,15 @@ func (e TaskEdges) LabelsOrErr() ([]*Label, error) {
 		return e.Labels, nil
 	}
 	return nil, &NotLoadedError{edge: "labels"}
+}
+
+// AssigneesOrErr returns the Assignees value or an error if the edge
+// was not loaded in eager-loading.
+func (e TaskEdges) AssigneesOrErr() ([]*Employee, error) {
+	if e.loadedTypes[2] {
+		return e.Assignees, nil
+	}
+	return nil, &NotLoadedError{edge: "assignees"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -214,6 +225,11 @@ func (t *Task) QueryProject() *ProjectQuery {
 // QueryLabels queries the "labels" edge of the Task entity.
 func (t *Task) QueryLabels() *LabelQuery {
 	return NewTaskClient(t.config).QueryLabels(t)
+}
+
+// QueryAssignees queries the "assignees" edge of the Task entity.
+func (t *Task) QueryAssignees() *EmployeeQuery {
+	return NewTaskClient(t.config).QueryAssignees(t)
 }
 
 // Update returns a builder for updating this Task.
