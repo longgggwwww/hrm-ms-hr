@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 )
 
 // LeaveApproval is the model entity for the LeaveApproval schema.
@@ -19,11 +21,51 @@ type LeaveApproval struct {
 	ID int `json:"id,omitempty"`
 	// Comment holds the value of the "comment" field.
 	Comment *string `json:"comment,omitempty"`
+	// LeaveRequestID holds the value of the "leave_request_id" field.
+	LeaveRequestID int `json:"leave_request_id,omitempty"`
+	// ReviewerID holds the value of the "reviewer_id" field.
+	ReviewerID int `json:"reviewer_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the LeaveApprovalQuery when eager-loading is set.
+	Edges        LeaveApprovalEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// LeaveApprovalEdges holds the relations/edges for other nodes in the graph.
+type LeaveApprovalEdges struct {
+	// LeaveRequest holds the value of the leave_request edge.
+	LeaveRequest *LeaveRequest `json:"leave_request,omitempty"`
+	// Reviewer holds the value of the reviewer edge.
+	Reviewer *Employee `json:"reviewer,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// LeaveRequestOrErr returns the LeaveRequest value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e LeaveApprovalEdges) LeaveRequestOrErr() (*LeaveRequest, error) {
+	if e.LeaveRequest != nil {
+		return e.LeaveRequest, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: leaverequest.Label}
+	}
+	return nil, &NotLoadedError{edge: "leave_request"}
+}
+
+// ReviewerOrErr returns the Reviewer value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e LeaveApprovalEdges) ReviewerOrErr() (*Employee, error) {
+	if e.Reviewer != nil {
+		return e.Reviewer, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: employee.Label}
+	}
+	return nil, &NotLoadedError{edge: "reviewer"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -31,7 +73,7 @@ func (*LeaveApproval) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case leaveapproval.FieldID:
+		case leaveapproval.FieldID, leaveapproval.FieldLeaveRequestID, leaveapproval.FieldReviewerID:
 			values[i] = new(sql.NullInt64)
 		case leaveapproval.FieldComment:
 			values[i] = new(sql.NullString)
@@ -65,6 +107,18 @@ func (la *LeaveApproval) assignValues(columns []string, values []any) error {
 				la.Comment = new(string)
 				*la.Comment = value.String
 			}
+		case leaveapproval.FieldLeaveRequestID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field leave_request_id", values[i])
+			} else if value.Valid {
+				la.LeaveRequestID = int(value.Int64)
+			}
+		case leaveapproval.FieldReviewerID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field reviewer_id", values[i])
+			} else if value.Valid {
+				la.ReviewerID = int(value.Int64)
+			}
 		case leaveapproval.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -88,6 +142,16 @@ func (la *LeaveApproval) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (la *LeaveApproval) Value(name string) (ent.Value, error) {
 	return la.selectValues.Get(name)
+}
+
+// QueryLeaveRequest queries the "leave_request" edge of the LeaveApproval entity.
+func (la *LeaveApproval) QueryLeaveRequest() *LeaveRequestQuery {
+	return NewLeaveApprovalClient(la.config).QueryLeaveRequest(la)
+}
+
+// QueryReviewer queries the "reviewer" edge of the LeaveApproval entity.
+func (la *LeaveApproval) QueryReviewer() *EmployeeQuery {
+	return NewLeaveApprovalClient(la.config).QueryReviewer(la)
 }
 
 // Update returns a builder for updating this LeaveApproval.
@@ -117,6 +181,12 @@ func (la *LeaveApproval) String() string {
 		builder.WriteString("comment=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("leave_request_id=")
+	builder.WriteString(fmt.Sprintf("%v", la.LeaveRequestID))
+	builder.WriteString(", ")
+	builder.WriteString("reviewer_id=")
+	builder.WriteString(fmt.Sprintf("%v", la.ReviewerID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(la.CreatedAt.Format(time.ANSIC))

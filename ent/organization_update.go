@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -264,6 +265,21 @@ func (ou *OrganizationUpdate) AddLabels(l ...*Label) *OrganizationUpdate {
 	return ou.AddLabelIDs(ids...)
 }
 
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (ou *OrganizationUpdate) AddLeaveRequestIDs(ids ...int) *OrganizationUpdate {
+	ou.mutation.AddLeaveRequestIDs(ids...)
+	return ou
+}
+
+// AddLeaveRequests adds the "leave_requests" edges to the LeaveRequest entity.
+func (ou *OrganizationUpdate) AddLeaveRequests(l ...*LeaveRequest) *OrganizationUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ou.AddLeaveRequestIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (ou *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return ou.mutation
@@ -357,6 +373,27 @@ func (ou *OrganizationUpdate) RemoveLabels(l ...*Label) *OrganizationUpdate {
 		ids[i] = l[i].ID
 	}
 	return ou.RemoveLabelIDs(ids...)
+}
+
+// ClearLeaveRequests clears all "leave_requests" edges to the LeaveRequest entity.
+func (ou *OrganizationUpdate) ClearLeaveRequests() *OrganizationUpdate {
+	ou.mutation.ClearLeaveRequests()
+	return ou
+}
+
+// RemoveLeaveRequestIDs removes the "leave_requests" edge to LeaveRequest entities by IDs.
+func (ou *OrganizationUpdate) RemoveLeaveRequestIDs(ids ...int) *OrganizationUpdate {
+	ou.mutation.RemoveLeaveRequestIDs(ids...)
+	return ou
+}
+
+// RemoveLeaveRequests removes "leave_requests" edges to LeaveRequest entities.
+func (ou *OrganizationUpdate) RemoveLeaveRequests(l ...*LeaveRequest) *OrganizationUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ou.RemoveLeaveRequestIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -673,6 +710,51 @@ func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ou.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LeaveRequestsTable,
+			Columns: []string{organization.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.RemovedLeaveRequestsIDs(); len(nodes) > 0 && !ou.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LeaveRequestsTable,
+			Columns: []string{organization.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.LeaveRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LeaveRequestsTable,
+			Columns: []string{organization.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{organization.Label}
@@ -926,6 +1008,21 @@ func (ouo *OrganizationUpdateOne) AddLabels(l ...*Label) *OrganizationUpdateOne 
 	return ouo.AddLabelIDs(ids...)
 }
 
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (ouo *OrganizationUpdateOne) AddLeaveRequestIDs(ids ...int) *OrganizationUpdateOne {
+	ouo.mutation.AddLeaveRequestIDs(ids...)
+	return ouo
+}
+
+// AddLeaveRequests adds the "leave_requests" edges to the LeaveRequest entity.
+func (ouo *OrganizationUpdateOne) AddLeaveRequests(l ...*LeaveRequest) *OrganizationUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ouo.AddLeaveRequestIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (ouo *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return ouo.mutation
@@ -1019,6 +1116,27 @@ func (ouo *OrganizationUpdateOne) RemoveLabels(l ...*Label) *OrganizationUpdateO
 		ids[i] = l[i].ID
 	}
 	return ouo.RemoveLabelIDs(ids...)
+}
+
+// ClearLeaveRequests clears all "leave_requests" edges to the LeaveRequest entity.
+func (ouo *OrganizationUpdateOne) ClearLeaveRequests() *OrganizationUpdateOne {
+	ouo.mutation.ClearLeaveRequests()
+	return ouo
+}
+
+// RemoveLeaveRequestIDs removes the "leave_requests" edge to LeaveRequest entities by IDs.
+func (ouo *OrganizationUpdateOne) RemoveLeaveRequestIDs(ids ...int) *OrganizationUpdateOne {
+	ouo.mutation.RemoveLeaveRequestIDs(ids...)
+	return ouo
+}
+
+// RemoveLeaveRequests removes "leave_requests" edges to LeaveRequest entities.
+func (ouo *OrganizationUpdateOne) RemoveLeaveRequests(l ...*LeaveRequest) *OrganizationUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ouo.RemoveLeaveRequestIDs(ids...)
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
@@ -1358,6 +1476,51 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ouo.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LeaveRequestsTable,
+			Columns: []string{organization.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.RemovedLeaveRequestsIDs(); len(nodes) > 0 && !ouo.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LeaveRequestsTable,
+			Columns: []string{organization.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.LeaveRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LeaveRequestsTable,
+			Columns: []string{organization.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

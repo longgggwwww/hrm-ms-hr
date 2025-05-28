@@ -10,6 +10,8 @@ import (
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	leaveapproval "github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	leaverequest "github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -93,6 +95,18 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 			Id: id,
 		})
 	}
+	for _, edg := range e.Edges.LeaveApproves {
+		id := int64(edg.ID)
+		v.LeaveApproves = append(v.LeaveApproves, &LeaveApproval{
+			Id: id,
+		})
+	}
+	for _, edg := range e.Edges.LeaveRequests {
+		id := int64(edg.ID)
+		v.LeaveRequests = append(v.LeaveRequests, &LeaveRequest{
+			Id: id,
+		})
+	}
 	if edg := e.Edges.Position; edg != nil {
 		id := int64(edg.ID)
 		v.Position = &Position{
@@ -165,6 +179,12 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 			WithCreatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
+			WithLeaveApproves(func(query *ent.LeaveApprovalQuery) {
+				query.Select(leaveapproval.FieldID)
+			}).
+			WithLeaveRequests(func(query *ent.LeaveRequestQuery) {
+				query.Select(leaverequest.FieldID)
+			}).
 			WithPosition(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
@@ -214,6 +234,14 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	for _, item := range employee.GetCreatedProjects() {
 		createdprojects := int(item.GetId())
 		m.AddCreatedProjectIDs(createdprojects)
+	}
+	for _, item := range employee.GetLeaveApproves() {
+		leaveapproves := int(item.GetId())
+		m.AddLeaveApprofeIDs(leaveapproves)
+	}
+	for _, item := range employee.GetLeaveRequests() {
+		leaverequests := int(item.GetId())
+		m.AddLeaveRequestIDs(leaverequests)
 	}
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())
@@ -298,6 +326,12 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 			}).
 			WithCreatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
+			}).
+			WithLeaveApproves(func(query *ent.LeaveApprovalQuery) {
+				query.Select(leaveapproval.FieldID)
+			}).
+			WithLeaveRequests(func(query *ent.LeaveRequestQuery) {
+				query.Select(leaverequest.FieldID)
 			}).
 			WithPosition(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
@@ -391,6 +425,14 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	for _, item := range employee.GetCreatedProjects() {
 		createdprojects := int(item.GetId())
 		m.AddCreatedProjectIDs(createdprojects)
+	}
+	for _, item := range employee.GetLeaveApproves() {
+		leaveapproves := int(item.GetId())
+		m.AddLeaveApprofeIDs(leaveapproves)
+	}
+	for _, item := range employee.GetLeaveRequests() {
+		leaverequests := int(item.GetId())
+		m.AddLeaveRequestIDs(leaverequests)
 	}
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())

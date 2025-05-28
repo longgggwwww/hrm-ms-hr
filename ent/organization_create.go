@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 )
@@ -212,6 +213,21 @@ func (oc *OrganizationCreate) AddLabels(l ...*Label) *OrganizationCreate {
 		ids[i] = l[i].ID
 	}
 	return oc.AddLabelIDs(ids...)
+}
+
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (oc *OrganizationCreate) AddLeaveRequestIDs(ids ...int) *OrganizationCreate {
+	oc.mutation.AddLeaveRequestIDs(ids...)
+	return oc
+}
+
+// AddLeaveRequests adds the "leave_requests" edges to the LeaveRequest entity.
+func (oc *OrganizationCreate) AddLeaveRequests(l ...*LeaveRequest) *OrganizationCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return oc.AddLeaveRequestIDs(ids...)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -420,6 +436,22 @@ func (oc *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(label.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := oc.mutation.LeaveRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.LeaveRequestsTable,
+			Columns: []string{organization.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

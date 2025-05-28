@@ -108,12 +108,28 @@ var (
 		{Name: "comment", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "reviewer_id", Type: field.TypeInt},
+		{Name: "leave_request_id", Type: field.TypeInt},
 	}
 	// LeaveApprovalsTable holds the schema information for the "leave_approvals" table.
 	LeaveApprovalsTable = &schema.Table{
 		Name:       "leave_approvals",
 		Columns:    LeaveApprovalsColumns,
 		PrimaryKey: []*schema.Column{LeaveApprovalsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "leave_approvals_employees_leave_approves",
+				Columns:    []*schema.Column{LeaveApprovalsColumns[4]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "leave_approvals_leave_requests_leave_approves",
+				Columns:    []*schema.Column{LeaveApprovalsColumns[5]},
+				RefColumns: []*schema.Column{LeaveRequestsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// LeaveRequestsColumns holds the columns for the "leave_requests" table.
 	LeaveRequestsColumns = []*schema.Column{
@@ -126,7 +142,8 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "rejected", "approved"}, Default: "pending"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "leave_request_leaveapprove", Type: field.TypeInt, Nullable: true},
+		{Name: "employee_id", Type: field.TypeInt},
+		{Name: "org_id", Type: field.TypeInt},
 	}
 	// LeaveRequestsTable holds the schema information for the "leave_requests" table.
 	LeaveRequestsTable = &schema.Table{
@@ -135,10 +152,16 @@ var (
 		PrimaryKey: []*schema.Column{LeaveRequestsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "leave_requests_leave_approvals_leaveapprove",
+				Symbol:     "leave_requests_employees_leave_requests",
 				Columns:    []*schema.Column{LeaveRequestsColumns[9]},
-				RefColumns: []*schema.Column{LeaveApprovalsColumns[0]},
-				OnDelete:   schema.SetNull,
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "leave_requests_organizations_leave_requests",
+				Columns:    []*schema.Column{LeaveRequestsColumns[10]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -259,6 +282,7 @@ var (
 		{Name: "process", Type: field.TypeInt, Default: 0},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"not_received", "received", "in_progress", "completed", "cancelled"}, Default: "not_received"},
 		{Name: "start_at", Type: field.TypeTime, Nullable: true},
+		{Name: "due_date", Type: field.TypeTime, Nullable: true},
 		{Name: "creator_id", Type: field.TypeInt},
 		{Name: "updater_id", Type: field.TypeInt},
 		{Name: "created_at", Type: field.TypeTime},
@@ -275,13 +299,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "tasks_labels_tasks",
-				Columns:    []*schema.Column{TasksColumns[12]},
+				Columns:    []*schema.Column{TasksColumns[13]},
 				RefColumns: []*schema.Column{LabelsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "tasks_projects_tasks",
-				Columns:    []*schema.Column{TasksColumns[13]},
+				Columns:    []*schema.Column{TasksColumns[14]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -332,7 +356,10 @@ func init() {
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
 	LabelsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	LabelsTable.ForeignKeys[1].RefTable = TasksTable
-	LeaveRequestsTable.ForeignKeys[0].RefTable = LeaveApprovalsTable
+	LeaveApprovalsTable.ForeignKeys[0].RefTable = EmployeesTable
+	LeaveApprovalsTable.ForeignKeys[1].RefTable = LeaveRequestsTable
+	LeaveRequestsTable.ForeignKeys[0].RefTable = EmployeesTable
+	LeaveRequestsTable.ForeignKeys[1].RefTable = OrganizationsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	PositionsTable.ForeignKeys[0].RefTable = DepartmentsTable
 	PositionsTable.ForeignKeys[1].RefTable = PositionsTable

@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
@@ -153,6 +155,36 @@ func (ec *EmployeeCreate) AddAssignedTasks(t ...*Task) *EmployeeCreate {
 		ids[i] = t[i].ID
 	}
 	return ec.AddAssignedTaskIDs(ids...)
+}
+
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (ec *EmployeeCreate) AddLeaveApprofeIDs(ids ...int) *EmployeeCreate {
+	ec.mutation.AddLeaveApprofeIDs(ids...)
+	return ec
+}
+
+// AddLeaveApproves adds the "leave_approves" edges to the LeaveApproval entity.
+func (ec *EmployeeCreate) AddLeaveApproves(l ...*LeaveApproval) *EmployeeCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ec.AddLeaveApprofeIDs(ids...)
+}
+
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (ec *EmployeeCreate) AddLeaveRequestIDs(ids ...int) *EmployeeCreate {
+	ec.mutation.AddLeaveRequestIDs(ids...)
+	return ec
+}
+
+// AddLeaveRequests adds the "leave_requests" edges to the LeaveRequest entity.
+func (ec *EmployeeCreate) AddLeaveRequests(l ...*LeaveRequest) *EmployeeCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return ec.AddLeaveRequestIDs(ids...)
 }
 
 // Mutation returns the EmployeeMutation object of the builder.
@@ -353,6 +385,38 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.LeaveApprovesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveApprovesTable,
+			Columns: []string{employee.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.LeaveRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveRequestsTable,
+			Columns: []string{employee.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -93,6 +93,20 @@ func (tc *TaskCreate) SetNillableStartAt(t *time.Time) *TaskCreate {
 	return tc
 }
 
+// SetDueDate sets the "due_date" field.
+func (tc *TaskCreate) SetDueDate(t time.Time) *TaskCreate {
+	tc.mutation.SetDueDate(t)
+	return tc
+}
+
+// SetNillableDueDate sets the "due_date" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableDueDate(t *time.Time) *TaskCreate {
+	if t != nil {
+		tc.SetDueDate(*t)
+	}
+	return tc
+}
+
 // SetProjectID sets the "project_id" field.
 func (tc *TaskCreate) SetProjectID(i int) *TaskCreate {
 	tc.mutation.SetProjectID(i)
@@ -343,6 +357,10 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldStartAt, field.TypeTime, value)
 		_node.StartAt = value
 	}
+	if value, ok := tc.mutation.DueDate(); ok {
+		_spec.SetField(task.FieldDueDate, field.TypeTime, value)
+		_node.DueDate = value
+	}
 	if value, ok := tc.mutation.CreatorID(); ok {
 		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)
 		_node.CreatorID = value
@@ -551,6 +569,24 @@ func (u *TaskUpsert) UpdateStartAt() *TaskUpsert {
 // ClearStartAt clears the value of the "start_at" field.
 func (u *TaskUpsert) ClearStartAt() *TaskUpsert {
 	u.SetNull(task.FieldStartAt)
+	return u
+}
+
+// SetDueDate sets the "due_date" field.
+func (u *TaskUpsert) SetDueDate(v time.Time) *TaskUpsert {
+	u.Set(task.FieldDueDate, v)
+	return u
+}
+
+// UpdateDueDate sets the "due_date" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateDueDate() *TaskUpsert {
+	u.SetExcluded(task.FieldDueDate)
+	return u
+}
+
+// ClearDueDate clears the value of the "due_date" field.
+func (u *TaskUpsert) ClearDueDate() *TaskUpsert {
+	u.SetNull(task.FieldDueDate)
 	return u
 }
 
@@ -779,6 +815,27 @@ func (u *TaskUpsertOne) UpdateStartAt() *TaskUpsertOne {
 func (u *TaskUpsertOne) ClearStartAt() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearStartAt()
+	})
+}
+
+// SetDueDate sets the "due_date" field.
+func (u *TaskUpsertOne) SetDueDate(v time.Time) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDueDate(v)
+	})
+}
+
+// UpdateDueDate sets the "due_date" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateDueDate() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDueDate()
+	})
+}
+
+// ClearDueDate clears the value of the "due_date" field.
+func (u *TaskUpsertOne) ClearDueDate() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDueDate()
 	})
 }
 
@@ -1186,6 +1243,27 @@ func (u *TaskUpsertBulk) UpdateStartAt() *TaskUpsertBulk {
 func (u *TaskUpsertBulk) ClearStartAt() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearStartAt()
+	})
+}
+
+// SetDueDate sets the "due_date" field.
+func (u *TaskUpsertBulk) SetDueDate(v time.Time) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDueDate(v)
+	})
+}
+
+// UpdateDueDate sets the "due_date" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateDueDate() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDueDate()
+	})
+}
+
+// ClearDueDate clears the value of the "due_date" field.
+func (u *TaskUpsertBulk) ClearDueDate() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDueDate()
 	})
 }
 

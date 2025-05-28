@@ -27,6 +27,8 @@ const (
 	FieldStatus = "status"
 	// FieldStartAt holds the string denoting the start_at field in the database.
 	FieldStartAt = "start_at"
+	// FieldDueDate holds the string denoting the due_date field in the database.
+	FieldDueDate = "due_date"
 	// FieldProjectID holds the string denoting the project_id field in the database.
 	FieldProjectID = "project_id"
 	// FieldCreatorID holds the string denoting the creator_id field in the database.
@@ -77,6 +79,7 @@ var Columns = []string{
 	FieldProcess,
 	FieldStatus,
 	FieldStartAt,
+	FieldDueDate,
 	FieldProjectID,
 	FieldCreatorID,
 	FieldUpdaterID,
@@ -216,6 +219,11 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 // ByStartAt orders the results by the start_at field.
 func ByStartAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStartAt, opts...).ToFunc()
+}
+
+// ByDueDate orders the results by the due_date field.
+func ByDueDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDueDate, opts...).ToFunc()
 }
 
 // ByProjectID orders the results by the project_id field.

@@ -11,7 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 )
 
 // LeaveApprovalCreate is the builder for creating a LeaveApproval entity.
@@ -33,6 +35,18 @@ func (lac *LeaveApprovalCreate) SetNillableComment(s *string) *LeaveApprovalCrea
 	if s != nil {
 		lac.SetComment(*s)
 	}
+	return lac
+}
+
+// SetLeaveRequestID sets the "leave_request_id" field.
+func (lac *LeaveApprovalCreate) SetLeaveRequestID(i int) *LeaveApprovalCreate {
+	lac.mutation.SetLeaveRequestID(i)
+	return lac
+}
+
+// SetReviewerID sets the "reviewer_id" field.
+func (lac *LeaveApprovalCreate) SetReviewerID(i int) *LeaveApprovalCreate {
+	lac.mutation.SetReviewerID(i)
 	return lac
 }
 
@@ -62,6 +76,16 @@ func (lac *LeaveApprovalCreate) SetNillableUpdatedAt(t *time.Time) *LeaveApprova
 		lac.SetUpdatedAt(*t)
 	}
 	return lac
+}
+
+// SetLeaveRequest sets the "leave_request" edge to the LeaveRequest entity.
+func (lac *LeaveApprovalCreate) SetLeaveRequest(l *LeaveRequest) *LeaveApprovalCreate {
+	return lac.SetLeaveRequestID(l.ID)
+}
+
+// SetReviewer sets the "reviewer" edge to the Employee entity.
+func (lac *LeaveApprovalCreate) SetReviewer(e *Employee) *LeaveApprovalCreate {
+	return lac.SetReviewerID(e.ID)
 }
 
 // Mutation returns the LeaveApprovalMutation object of the builder.
@@ -111,11 +135,23 @@ func (lac *LeaveApprovalCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (lac *LeaveApprovalCreate) check() error {
+	if _, ok := lac.mutation.LeaveRequestID(); !ok {
+		return &ValidationError{Name: "leave_request_id", err: errors.New(`ent: missing required field "LeaveApproval.leave_request_id"`)}
+	}
+	if _, ok := lac.mutation.ReviewerID(); !ok {
+		return &ValidationError{Name: "reviewer_id", err: errors.New(`ent: missing required field "LeaveApproval.reviewer_id"`)}
+	}
 	if _, ok := lac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "LeaveApproval.created_at"`)}
 	}
 	if _, ok := lac.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "LeaveApproval.updated_at"`)}
+	}
+	if len(lac.mutation.LeaveRequestIDs()) == 0 {
+		return &ValidationError{Name: "leave_request", err: errors.New(`ent: missing required edge "LeaveApproval.leave_request"`)}
+	}
+	if len(lac.mutation.ReviewerIDs()) == 0 {
+		return &ValidationError{Name: "reviewer", err: errors.New(`ent: missing required edge "LeaveApproval.reviewer"`)}
 	}
 	return nil
 }
@@ -155,6 +191,40 @@ func (lac *LeaveApprovalCreate) createSpec() (*LeaveApproval, *sqlgraph.CreateSp
 	if value, ok := lac.mutation.UpdatedAt(); ok {
 		_spec.SetField(leaveapproval.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := lac.mutation.LeaveRequestIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.LeaveRequestTable,
+			Columns: []string{leaveapproval.LeaveRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.LeaveRequestID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := lac.mutation.ReviewerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.ReviewerTable,
+			Columns: []string{leaveapproval.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ReviewerID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
@@ -223,6 +293,30 @@ func (u *LeaveApprovalUpsert) UpdateComment() *LeaveApprovalUpsert {
 // ClearComment clears the value of the "comment" field.
 func (u *LeaveApprovalUpsert) ClearComment() *LeaveApprovalUpsert {
 	u.SetNull(leaveapproval.FieldComment)
+	return u
+}
+
+// SetLeaveRequestID sets the "leave_request_id" field.
+func (u *LeaveApprovalUpsert) SetLeaveRequestID(v int) *LeaveApprovalUpsert {
+	u.Set(leaveapproval.FieldLeaveRequestID, v)
+	return u
+}
+
+// UpdateLeaveRequestID sets the "leave_request_id" field to the value that was provided on create.
+func (u *LeaveApprovalUpsert) UpdateLeaveRequestID() *LeaveApprovalUpsert {
+	u.SetExcluded(leaveapproval.FieldLeaveRequestID)
+	return u
+}
+
+// SetReviewerID sets the "reviewer_id" field.
+func (u *LeaveApprovalUpsert) SetReviewerID(v int) *LeaveApprovalUpsert {
+	u.Set(leaveapproval.FieldReviewerID, v)
+	return u
+}
+
+// UpdateReviewerID sets the "reviewer_id" field to the value that was provided on create.
+func (u *LeaveApprovalUpsert) UpdateReviewerID() *LeaveApprovalUpsert {
+	u.SetExcluded(leaveapproval.FieldReviewerID)
 	return u
 }
 
@@ -308,6 +402,34 @@ func (u *LeaveApprovalUpsertOne) UpdateComment() *LeaveApprovalUpsertOne {
 func (u *LeaveApprovalUpsertOne) ClearComment() *LeaveApprovalUpsertOne {
 	return u.Update(func(s *LeaveApprovalUpsert) {
 		s.ClearComment()
+	})
+}
+
+// SetLeaveRequestID sets the "leave_request_id" field.
+func (u *LeaveApprovalUpsertOne) SetLeaveRequestID(v int) *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetLeaveRequestID(v)
+	})
+}
+
+// UpdateLeaveRequestID sets the "leave_request_id" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertOne) UpdateLeaveRequestID() *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateLeaveRequestID()
+	})
+}
+
+// SetReviewerID sets the "reviewer_id" field.
+func (u *LeaveApprovalUpsertOne) SetReviewerID(v int) *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetReviewerID(v)
+	})
+}
+
+// UpdateReviewerID sets the "reviewer_id" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertOne) UpdateReviewerID() *LeaveApprovalUpsertOne {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateReviewerID()
 	})
 }
 
@@ -561,6 +683,34 @@ func (u *LeaveApprovalUpsertBulk) UpdateComment() *LeaveApprovalUpsertBulk {
 func (u *LeaveApprovalUpsertBulk) ClearComment() *LeaveApprovalUpsertBulk {
 	return u.Update(func(s *LeaveApprovalUpsert) {
 		s.ClearComment()
+	})
+}
+
+// SetLeaveRequestID sets the "leave_request_id" field.
+func (u *LeaveApprovalUpsertBulk) SetLeaveRequestID(v int) *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetLeaveRequestID(v)
+	})
+}
+
+// UpdateLeaveRequestID sets the "leave_request_id" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertBulk) UpdateLeaveRequestID() *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateLeaveRequestID()
+	})
+}
+
+// SetReviewerID sets the "reviewer_id" field.
+func (u *LeaveApprovalUpsertBulk) SetReviewerID(v int) *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.SetReviewerID(v)
+	})
+}
+
+// UpdateReviewerID sets the "reviewer_id" field to the value that was provided on create.
+func (u *LeaveApprovalUpsertBulk) UpdateReviewerID() *LeaveApprovalUpsertBulk {
+	return u.Update(func(s *LeaveApprovalUpsert) {
+		s.UpdateReviewerID()
 	})
 }
 

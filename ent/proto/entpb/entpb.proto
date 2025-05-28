@@ -112,6 +112,10 @@ message Employee {
 
   repeated Task assigned_tasks = 13;
 
+  repeated LeaveApproval leave_approves = 14;
+
+  repeated LeaveRequest leave_requests = 15;
+
   enum Status {
     STATUS_ACTIVE = 0;
 
@@ -256,9 +260,17 @@ message LeaveApproval {
 
   google.protobuf.StringValue comment = 2;
 
-  google.protobuf.Timestamp created_at = 3;
+  int64 leave_request_id = 3;
 
-  google.protobuf.Timestamp updated_at = 4;
+  int64 reviewer_id = 4;
+
+  google.protobuf.Timestamp created_at = 5;
+
+  google.protobuf.Timestamp updated_at = 6;
+
+  LeaveRequest leave_request = 7;
+
+  Employee reviewer = 8;
 }
 
 message CreateLeaveApprovalRequest {
@@ -332,11 +344,19 @@ message LeaveRequest {
 
   Status status = 7;
 
-  google.protobuf.Timestamp created_at = 8;
+  int64 org_id = 8;
 
-  google.protobuf.Timestamp updated_at = 9;
+  int64 employee_id = 9;
 
-  LeaveApproval leaveapprove = 10;
+  google.protobuf.Timestamp created_at = 10;
+
+  google.protobuf.Timestamp updated_at = 11;
+
+  repeated LeaveApproval leave_approves = 12;
+
+  Employee applicant = 13;
+
+  Organization organization = 14;
 
   enum Type {
     TYPE_ANNUAL = 0;
@@ -441,6 +461,8 @@ message Organization {
   repeated Project projects = 15;
 
   repeated Label labels = 16;
+
+  repeated LeaveRequest leave_requests = 17;
 }
 
 message CreateOrganizationRequest {
@@ -704,23 +726,25 @@ message Task {
 
   google.protobuf.Timestamp start_at = 7;
 
-  google.protobuf.Int64Value project_id = 8;
+  google.protobuf.Timestamp due_date = 8;
 
-  int64 creator_id = 9;
+  google.protobuf.Int64Value project_id = 9;
 
-  int64 updater_id = 10;
+  int64 creator_id = 10;
 
-  google.protobuf.Timestamp created_at = 11;
+  int64 updater_id = 11;
 
-  google.protobuf.Timestamp updated_at = 12;
+  google.protobuf.Timestamp created_at = 12;
 
-  Type type = 13;
+  google.protobuf.Timestamp updated_at = 13;
 
-  Project project = 14;
+  Type type = 14;
 
-  repeated Label labels = 15;
+  Project project = 15;
 
-  repeated Employee assignees = 16;
+  repeated Label labels = 16;
+
+  repeated Employee assignees = 17;
 
   enum Status {
     STATUS_NOT_RECEIVED = 0;

@@ -11,17 +11,21 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
 // LeaveApprovalQuery is the builder for querying LeaveApproval entities.
 type LeaveApprovalQuery struct {
 	config
-	ctx        *QueryContext
-	order      []leaveapproval.OrderOption
-	inters     []Interceptor
-	predicates []predicate.LeaveApproval
+	ctx              *QueryContext
+	order            []leaveapproval.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.LeaveApproval
+	withLeaveRequest *LeaveRequestQuery
+	withReviewer     *EmployeeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +60,50 @@ func (laq *LeaveApprovalQuery) Unique(unique bool) *LeaveApprovalQuery {
 func (laq *LeaveApprovalQuery) Order(o ...leaveapproval.OrderOption) *LeaveApprovalQuery {
 	laq.order = append(laq.order, o...)
 	return laq
+}
+
+// QueryLeaveRequest chains the current query on the "leave_request" edge.
+func (laq *LeaveApprovalQuery) QueryLeaveRequest() *LeaveRequestQuery {
+	query := (&LeaveRequestClient{config: laq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := laq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := laq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaveapproval.Table, leaveapproval.FieldID, selector),
+			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaveapproval.LeaveRequestTable, leaveapproval.LeaveRequestColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(laq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReviewer chains the current query on the "reviewer" edge.
+func (laq *LeaveApprovalQuery) QueryReviewer() *EmployeeQuery {
+	query := (&EmployeeClient{config: laq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := laq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := laq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaveapproval.Table, leaveapproval.FieldID, selector),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaveapproval.ReviewerTable, leaveapproval.ReviewerColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(laq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first LeaveApproval entity from the query.
@@ -245,15 +293,39 @@ func (laq *LeaveApprovalQuery) Clone() *LeaveApprovalQuery {
 		return nil
 	}
 	return &LeaveApprovalQuery{
-		config:     laq.config,
-		ctx:        laq.ctx.Clone(),
-		order:      append([]leaveapproval.OrderOption{}, laq.order...),
-		inters:     append([]Interceptor{}, laq.inters...),
-		predicates: append([]predicate.LeaveApproval{}, laq.predicates...),
+		config:           laq.config,
+		ctx:              laq.ctx.Clone(),
+		order:            append([]leaveapproval.OrderOption{}, laq.order...),
+		inters:           append([]Interceptor{}, laq.inters...),
+		predicates:       append([]predicate.LeaveApproval{}, laq.predicates...),
+		withLeaveRequest: laq.withLeaveRequest.Clone(),
+		withReviewer:     laq.withReviewer.Clone(),
 		// clone intermediate query.
 		sql:  laq.sql.Clone(),
 		path: laq.path,
 	}
+}
+
+// WithLeaveRequest tells the query-builder to eager-load the nodes that are connected to
+// the "leave_request" edge. The optional arguments are used to configure the query builder of the edge.
+func (laq *LeaveApprovalQuery) WithLeaveRequest(opts ...func(*LeaveRequestQuery)) *LeaveApprovalQuery {
+	query := (&LeaveRequestClient{config: laq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	laq.withLeaveRequest = query
+	return laq
+}
+
+// WithReviewer tells the query-builder to eager-load the nodes that are connected to
+// the "reviewer" edge. The optional arguments are used to configure the query builder of the edge.
+func (laq *LeaveApprovalQuery) WithReviewer(opts ...func(*EmployeeQuery)) *LeaveApprovalQuery {
+	query := (&EmployeeClient{config: laq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	laq.withReviewer = query
+	return laq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,8 +404,12 @@ func (laq *LeaveApprovalQuery) prepareQuery(ctx context.Context) error {
 
 func (laq *LeaveApprovalQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LeaveApproval, error) {
 	var (
-		nodes = []*LeaveApproval{}
-		_spec = laq.querySpec()
+		nodes       = []*LeaveApproval{}
+		_spec       = laq.querySpec()
+		loadedTypes = [2]bool{
+			laq.withLeaveRequest != nil,
+			laq.withReviewer != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*LeaveApproval).scanValues(nil, columns)
@@ -341,6 +417,7 @@ func (laq *LeaveApprovalQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &LeaveApproval{config: laq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +429,78 @@ func (laq *LeaveApprovalQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := laq.withLeaveRequest; query != nil {
+		if err := laq.loadLeaveRequest(ctx, query, nodes, nil,
+			func(n *LeaveApproval, e *LeaveRequest) { n.Edges.LeaveRequest = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := laq.withReviewer; query != nil {
+		if err := laq.loadReviewer(ctx, query, nodes, nil,
+			func(n *LeaveApproval, e *Employee) { n.Edges.Reviewer = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (laq *LeaveApprovalQuery) loadLeaveRequest(ctx context.Context, query *LeaveRequestQuery, nodes []*LeaveApproval, init func(*LeaveApproval), assign func(*LeaveApproval, *LeaveRequest)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*LeaveApproval)
+	for i := range nodes {
+		fk := nodes[i].LeaveRequestID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(leaverequest.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "leave_request_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (laq *LeaveApprovalQuery) loadReviewer(ctx context.Context, query *EmployeeQuery, nodes []*LeaveApproval, init func(*LeaveApproval), assign func(*LeaveApproval, *Employee)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*LeaveApproval)
+	for i := range nodes {
+		fk := nodes[i].ReviewerID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(employee.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "reviewer_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (laq *LeaveApprovalQuery) sqlCount(ctx context.Context) (int, error) {
@@ -379,6 +527,12 @@ func (laq *LeaveApprovalQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != leaveapproval.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if laq.withLeaveRequest != nil {
+			_spec.Node.AddColumnOnce(leaveapproval.FieldLeaveRequestID)
+		}
+		if laq.withReviewer != nil {
+			_spec.Node.AddColumnOnce(leaveapproval.FieldReviewerID)
 		}
 	}
 	if ps := laq.predicates; len(ps) > 0 {

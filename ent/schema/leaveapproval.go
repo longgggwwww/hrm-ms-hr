@@ -6,6 +6,7 @@ import (
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -20,12 +21,16 @@ func (LeaveApproval) Fields() []ent.Field {
 		field.String("comment").
 			Annotations(entproto.Field(2)).
 			Optional().
-      Nillable(),
+			Nillable(),
+		field.Int("leave_request_id").
+			Annotations(entproto.Field(3)),
+		field.Int("reviewer_id").
+			Annotations(entproto.Field(4)),
 		field.Time("created_at").
-			Annotations(entproto.Field(3)).
+			Annotations(entproto.Field(5)).
 			Default(time.Now),
 		field.Time("updated_at").
-			Annotations(entproto.Field(4)).
+			Annotations(entproto.Field(6)).
 			Default(time.Now).
 			UpdateDefault(time.Now),
 	}
@@ -33,7 +38,20 @@ func (LeaveApproval) Fields() []ent.Field {
 
 // Edges of the LeaveApproval.
 func (LeaveApproval) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("leave_request", LeaveRequest.Type).
+			Ref("leave_approves").
+			Field("leave_request_id").
+			Required().
+			Annotations(entproto.Field(7)).
+			Unique(),
+		edge.From("reviewer", Employee.Type).
+			Ref("leave_approves").
+			Field("reviewer_id").
+			Required().
+			Annotations(entproto.Field(8)).
+			Unique(),
+	}
 }
 
 func (LeaveApproval) Annotations() []schema.Annotation {

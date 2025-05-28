@@ -134,6 +134,26 @@ func (tu *TaskUpdate) ClearStartAt() *TaskUpdate {
 	return tu
 }
 
+// SetDueDate sets the "due_date" field.
+func (tu *TaskUpdate) SetDueDate(t time.Time) *TaskUpdate {
+	tu.mutation.SetDueDate(t)
+	return tu
+}
+
+// SetNillableDueDate sets the "due_date" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableDueDate(t *time.Time) *TaskUpdate {
+	if t != nil {
+		tu.SetDueDate(*t)
+	}
+	return tu
+}
+
+// ClearDueDate clears the value of the "due_date" field.
+func (tu *TaskUpdate) ClearDueDate() *TaskUpdate {
+	tu.mutation.ClearDueDate()
+	return tu
+}
+
 // SetProjectID sets the "project_id" field.
 func (tu *TaskUpdate) SetProjectID(i int) *TaskUpdate {
 	tu.mutation.SetProjectID(i)
@@ -394,6 +414,12 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if tu.mutation.StartAtCleared() {
 		_spec.ClearField(task.FieldStartAt, field.TypeTime)
 	}
+	if value, ok := tu.mutation.DueDate(); ok {
+		_spec.SetField(task.FieldDueDate, field.TypeTime, value)
+	}
+	if tu.mutation.DueDateCleared() {
+		_spec.ClearField(task.FieldDueDate, field.TypeTime)
+	}
 	if value, ok := tu.mutation.CreatorID(); ok {
 		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)
 	}
@@ -651,6 +677,26 @@ func (tuo *TaskUpdateOne) SetNillableStartAt(t *time.Time) *TaskUpdateOne {
 // ClearStartAt clears the value of the "start_at" field.
 func (tuo *TaskUpdateOne) ClearStartAt() *TaskUpdateOne {
 	tuo.mutation.ClearStartAt()
+	return tuo
+}
+
+// SetDueDate sets the "due_date" field.
+func (tuo *TaskUpdateOne) SetDueDate(t time.Time) *TaskUpdateOne {
+	tuo.mutation.SetDueDate(t)
+	return tuo
+}
+
+// SetNillableDueDate sets the "due_date" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableDueDate(t *time.Time) *TaskUpdateOne {
+	if t != nil {
+		tuo.SetDueDate(*t)
+	}
+	return tuo
+}
+
+// ClearDueDate clears the value of the "due_date" field.
+func (tuo *TaskUpdateOne) ClearDueDate() *TaskUpdateOne {
+	tuo.mutation.ClearDueDate()
 	return tuo
 }
 
@@ -943,6 +989,12 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 	}
 	if tuo.mutation.StartAtCleared() {
 		_spec.ClearField(task.FieldStartAt, field.TypeTime)
+	}
+	if value, ok := tuo.mutation.DueDate(); ok {
+		_spec.SetField(task.FieldDueDate, field.TypeTime, value)
+	}
+	if tuo.mutation.DueDateCleared() {
+		_spec.ClearField(task.FieldDueDate, field.TypeTime)
 	}
 	if value, ok := tuo.mutation.CreatorID(); ok {
 		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)

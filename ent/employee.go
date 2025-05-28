@@ -50,9 +50,13 @@ type EmployeeEdges struct {
 	UpdatedProjects []*Project `json:"updated_projects,omitempty"`
 	// AssignedTasks holds the value of the assigned_tasks edge.
 	AssignedTasks []*Task `json:"assigned_tasks,omitempty"`
+	// LeaveApproves holds the value of the leave_approves edge.
+	LeaveApproves []*LeaveApproval `json:"leave_approves,omitempty"`
+	// LeaveRequests holds the value of the leave_requests edge.
+	LeaveRequests []*LeaveRequest `json:"leave_requests,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // PositionOrErr returns the Position value or an error if the edge
@@ -91,6 +95,24 @@ func (e EmployeeEdges) AssignedTasksOrErr() ([]*Task, error) {
 		return e.AssignedTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "assigned_tasks"}
+}
+
+// LeaveApprovesOrErr returns the LeaveApproves value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) LeaveApprovesOrErr() ([]*LeaveApproval, error) {
+	if e.loadedTypes[4] {
+		return e.LeaveApproves, nil
+	}
+	return nil, &NotLoadedError{edge: "leave_approves"}
+}
+
+// LeaveRequestsOrErr returns the LeaveRequests value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) LeaveRequestsOrErr() ([]*LeaveRequest, error) {
+	if e.loadedTypes[5] {
+		return e.LeaveRequests, nil
+	}
+	return nil, &NotLoadedError{edge: "leave_requests"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -204,6 +226,16 @@ func (e *Employee) QueryUpdatedProjects() *ProjectQuery {
 // QueryAssignedTasks queries the "assigned_tasks" edge of the Employee entity.
 func (e *Employee) QueryAssignedTasks() *TaskQuery {
 	return NewEmployeeClient(e.config).QueryAssignedTasks(e)
+}
+
+// QueryLeaveApproves queries the "leave_approves" edge of the Employee entity.
+func (e *Employee) QueryLeaveApproves() *LeaveApprovalQuery {
+	return NewEmployeeClient(e.config).QueryLeaveApproves(e)
+}
+
+// QueryLeaveRequests queries the "leave_requests" edge of the Employee entity.
+func (e *Employee) QueryLeaveRequests() *LeaveRequestQuery {
+	return NewEmployeeClient(e.config).QueryLeaveRequests(e)
 }
 
 // Update returns a builder for updating this Employee.

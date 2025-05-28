@@ -11,7 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
@@ -48,6 +50,34 @@ func (lau *LeaveApprovalUpdate) ClearComment() *LeaveApprovalUpdate {
 	return lau
 }
 
+// SetLeaveRequestID sets the "leave_request_id" field.
+func (lau *LeaveApprovalUpdate) SetLeaveRequestID(i int) *LeaveApprovalUpdate {
+	lau.mutation.SetLeaveRequestID(i)
+	return lau
+}
+
+// SetNillableLeaveRequestID sets the "leave_request_id" field if the given value is not nil.
+func (lau *LeaveApprovalUpdate) SetNillableLeaveRequestID(i *int) *LeaveApprovalUpdate {
+	if i != nil {
+		lau.SetLeaveRequestID(*i)
+	}
+	return lau
+}
+
+// SetReviewerID sets the "reviewer_id" field.
+func (lau *LeaveApprovalUpdate) SetReviewerID(i int) *LeaveApprovalUpdate {
+	lau.mutation.SetReviewerID(i)
+	return lau
+}
+
+// SetNillableReviewerID sets the "reviewer_id" field if the given value is not nil.
+func (lau *LeaveApprovalUpdate) SetNillableReviewerID(i *int) *LeaveApprovalUpdate {
+	if i != nil {
+		lau.SetReviewerID(*i)
+	}
+	return lau
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (lau *LeaveApprovalUpdate) SetCreatedAt(t time.Time) *LeaveApprovalUpdate {
 	lau.mutation.SetCreatedAt(t)
@@ -68,9 +98,31 @@ func (lau *LeaveApprovalUpdate) SetUpdatedAt(t time.Time) *LeaveApprovalUpdate {
 	return lau
 }
 
+// SetLeaveRequest sets the "leave_request" edge to the LeaveRequest entity.
+func (lau *LeaveApprovalUpdate) SetLeaveRequest(l *LeaveRequest) *LeaveApprovalUpdate {
+	return lau.SetLeaveRequestID(l.ID)
+}
+
+// SetReviewer sets the "reviewer" edge to the Employee entity.
+func (lau *LeaveApprovalUpdate) SetReviewer(e *Employee) *LeaveApprovalUpdate {
+	return lau.SetReviewerID(e.ID)
+}
+
 // Mutation returns the LeaveApprovalMutation object of the builder.
 func (lau *LeaveApprovalUpdate) Mutation() *LeaveApprovalMutation {
 	return lau.mutation
+}
+
+// ClearLeaveRequest clears the "leave_request" edge to the LeaveRequest entity.
+func (lau *LeaveApprovalUpdate) ClearLeaveRequest() *LeaveApprovalUpdate {
+	lau.mutation.ClearLeaveRequest()
+	return lau
+}
+
+// ClearReviewer clears the "reviewer" edge to the Employee entity.
+func (lau *LeaveApprovalUpdate) ClearReviewer() *LeaveApprovalUpdate {
+	lau.mutation.ClearReviewer()
+	return lau
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -109,7 +161,21 @@ func (lau *LeaveApprovalUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (lau *LeaveApprovalUpdate) check() error {
+	if lau.mutation.LeaveRequestCleared() && len(lau.mutation.LeaveRequestIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveApproval.leave_request"`)
+	}
+	if lau.mutation.ReviewerCleared() && len(lau.mutation.ReviewerIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveApproval.reviewer"`)
+	}
+	return nil
+}
+
 func (lau *LeaveApprovalUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := lau.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(leaveapproval.Table, leaveapproval.Columns, sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt))
 	if ps := lau.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -129,6 +195,64 @@ func (lau *LeaveApprovalUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if value, ok := lau.mutation.UpdatedAt(); ok {
 		_spec.SetField(leaveapproval.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if lau.mutation.LeaveRequestCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.LeaveRequestTable,
+			Columns: []string{leaveapproval.LeaveRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lau.mutation.LeaveRequestIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.LeaveRequestTable,
+			Columns: []string{leaveapproval.LeaveRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lau.mutation.ReviewerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.ReviewerTable,
+			Columns: []string{leaveapproval.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lau.mutation.ReviewerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.ReviewerTable,
+			Columns: []string{leaveapproval.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lau.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -170,6 +294,34 @@ func (lauo *LeaveApprovalUpdateOne) ClearComment() *LeaveApprovalUpdateOne {
 	return lauo
 }
 
+// SetLeaveRequestID sets the "leave_request_id" field.
+func (lauo *LeaveApprovalUpdateOne) SetLeaveRequestID(i int) *LeaveApprovalUpdateOne {
+	lauo.mutation.SetLeaveRequestID(i)
+	return lauo
+}
+
+// SetNillableLeaveRequestID sets the "leave_request_id" field if the given value is not nil.
+func (lauo *LeaveApprovalUpdateOne) SetNillableLeaveRequestID(i *int) *LeaveApprovalUpdateOne {
+	if i != nil {
+		lauo.SetLeaveRequestID(*i)
+	}
+	return lauo
+}
+
+// SetReviewerID sets the "reviewer_id" field.
+func (lauo *LeaveApprovalUpdateOne) SetReviewerID(i int) *LeaveApprovalUpdateOne {
+	lauo.mutation.SetReviewerID(i)
+	return lauo
+}
+
+// SetNillableReviewerID sets the "reviewer_id" field if the given value is not nil.
+func (lauo *LeaveApprovalUpdateOne) SetNillableReviewerID(i *int) *LeaveApprovalUpdateOne {
+	if i != nil {
+		lauo.SetReviewerID(*i)
+	}
+	return lauo
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (lauo *LeaveApprovalUpdateOne) SetCreatedAt(t time.Time) *LeaveApprovalUpdateOne {
 	lauo.mutation.SetCreatedAt(t)
@@ -190,9 +342,31 @@ func (lauo *LeaveApprovalUpdateOne) SetUpdatedAt(t time.Time) *LeaveApprovalUpda
 	return lauo
 }
 
+// SetLeaveRequest sets the "leave_request" edge to the LeaveRequest entity.
+func (lauo *LeaveApprovalUpdateOne) SetLeaveRequest(l *LeaveRequest) *LeaveApprovalUpdateOne {
+	return lauo.SetLeaveRequestID(l.ID)
+}
+
+// SetReviewer sets the "reviewer" edge to the Employee entity.
+func (lauo *LeaveApprovalUpdateOne) SetReviewer(e *Employee) *LeaveApprovalUpdateOne {
+	return lauo.SetReviewerID(e.ID)
+}
+
 // Mutation returns the LeaveApprovalMutation object of the builder.
 func (lauo *LeaveApprovalUpdateOne) Mutation() *LeaveApprovalMutation {
 	return lauo.mutation
+}
+
+// ClearLeaveRequest clears the "leave_request" edge to the LeaveRequest entity.
+func (lauo *LeaveApprovalUpdateOne) ClearLeaveRequest() *LeaveApprovalUpdateOne {
+	lauo.mutation.ClearLeaveRequest()
+	return lauo
+}
+
+// ClearReviewer clears the "reviewer" edge to the Employee entity.
+func (lauo *LeaveApprovalUpdateOne) ClearReviewer() *LeaveApprovalUpdateOne {
+	lauo.mutation.ClearReviewer()
+	return lauo
 }
 
 // Where appends a list predicates to the LeaveApprovalUpdate builder.
@@ -244,7 +418,21 @@ func (lauo *LeaveApprovalUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (lauo *LeaveApprovalUpdateOne) check() error {
+	if lauo.mutation.LeaveRequestCleared() && len(lauo.mutation.LeaveRequestIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveApproval.leave_request"`)
+	}
+	if lauo.mutation.ReviewerCleared() && len(lauo.mutation.ReviewerIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveApproval.reviewer"`)
+	}
+	return nil
+}
+
 func (lauo *LeaveApprovalUpdateOne) sqlSave(ctx context.Context) (_node *LeaveApproval, err error) {
+	if err := lauo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(leaveapproval.Table, leaveapproval.Columns, sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt))
 	id, ok := lauo.mutation.ID()
 	if !ok {
@@ -281,6 +469,64 @@ func (lauo *LeaveApprovalUpdateOne) sqlSave(ctx context.Context) (_node *LeaveAp
 	}
 	if value, ok := lauo.mutation.UpdatedAt(); ok {
 		_spec.SetField(leaveapproval.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if lauo.mutation.LeaveRequestCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.LeaveRequestTable,
+			Columns: []string{leaveapproval.LeaveRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lauo.mutation.LeaveRequestIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.LeaveRequestTable,
+			Columns: []string{leaveapproval.LeaveRequestColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lauo.mutation.ReviewerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.ReviewerTable,
+			Columns: []string{leaveapproval.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lauo.mutation.ReviewerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaveapproval.ReviewerTable,
+			Columns: []string{leaveapproval.ReviewerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &LeaveApproval{config: lauo.config}
 	_spec.Assign = _node.assignValues

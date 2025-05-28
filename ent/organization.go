@@ -55,9 +55,11 @@ type OrganizationEdges struct {
 	Projects []*Project `json:"projects,omitempty"`
 	// Labels holds the value of the labels edge.
 	Labels []*Label `json:"labels,omitempty"`
+	// LeaveRequests holds the value of the leave_requests edge.
+	LeaveRequests []*LeaveRequest `json:"leave_requests,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // ParentOrErr returns the Parent value or an error if the edge
@@ -105,6 +107,15 @@ func (e OrganizationEdges) LabelsOrErr() ([]*Label, error) {
 		return e.Labels, nil
 	}
 	return nil, &NotLoadedError{edge: "labels"}
+}
+
+// LeaveRequestsOrErr returns the LeaveRequests value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) LeaveRequestsOrErr() ([]*LeaveRequest, error) {
+	if e.loadedTypes[5] {
+		return e.LeaveRequests, nil
+	}
+	return nil, &NotLoadedError{edge: "leave_requests"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -241,6 +252,11 @@ func (o *Organization) QueryProjects() *ProjectQuery {
 // QueryLabels queries the "labels" edge of the Organization entity.
 func (o *Organization) QueryLabels() *LabelQuery {
 	return NewOrganizationClient(o.config).QueryLabels(o)
+}
+
+// QueryLeaveRequests queries the "leave_requests" edge of the Organization entity.
+func (o *Organization) QueryLeaveRequests() *LeaveRequestQuery {
+	return NewOrganizationClient(o.config).QueryLeaveRequests(o)
 }
 
 // Update returns a builder for updating this Organization.

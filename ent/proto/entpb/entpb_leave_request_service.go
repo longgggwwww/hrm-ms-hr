@@ -9,8 +9,10 @@ import (
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	leaveapproval "github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	leaverequest "github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -88,10 +90,14 @@ func toProtoLeaveRequest(e *ent.LeaveRequest) (*LeaveRequest, error) {
 	v := &LeaveRequest{}
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
+	applicant := int64(e.EmployeeID)
+	v.EmployeeId = applicant
 	end_at := timestamppb.New(e.EndAt)
 	v.EndAt = end_at
 	id := int64(e.ID)
 	v.Id = id
+	organization := int64(e.OrgID)
+	v.OrgId = organization
 	if e.Reason != nil {
 		reason := wrapperspb.String(*e.Reason)
 		v.Reason = reason
@@ -106,9 +112,21 @@ func toProtoLeaveRequest(e *ent.LeaveRequest) (*LeaveRequest, error) {
 	v.Type = _type
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
-	if edg := e.Edges.Leaveapprove; edg != nil {
+	if edg := e.Edges.Applicant; edg != nil {
 		id := int64(edg.ID)
-		v.Leaveapprove = &LeaveApproval{
+		v.Applicant = &Employee{
+			Id: id,
+		}
+	}
+	for _, edg := range e.Edges.LeaveApproves {
+		id := int64(edg.ID)
+		v.LeaveApproves = append(v.LeaveApproves, &LeaveApproval{
+			Id: id,
+		})
+	}
+	if edg := e.Edges.Organization; edg != nil {
+		id := int64(edg.ID)
+		v.Organization = &Organization{
 			Id: id,
 		}
 	}
@@ -166,8 +184,14 @@ func (svc *LeaveRequestService) Get(ctx context.Context, req *GetLeaveRequestReq
 	case GetLeaveRequestRequest_WITH_EDGE_IDS:
 		get, err = svc.client.LeaveRequest.Query().
 			Where(leaverequest.ID(id)).
-			WithLeaveapprove(func(query *ent.LeaveApprovalQuery) {
+			WithApplicant(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
+			WithLeaveApproves(func(query *ent.LeaveApprovalQuery) {
 				query.Select(leaveapproval.FieldID)
+			}).
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
 			}).
 			Only(ctx)
 	default:
@@ -191,8 +215,12 @@ func (svc *LeaveRequestService) Update(ctx context.Context, req *UpdateLeaveRequ
 	m := svc.client.LeaveRequest.UpdateOneID(leaverequestID)
 	leaverequestCreatedAt := runtime.ExtractTime(leaverequest.GetCreatedAt())
 	m.SetCreatedAt(leaverequestCreatedAt)
+	leaverequestEmployeeID := int(leaverequest.GetEmployeeId())
+	m.SetEmployeeID(leaverequestEmployeeID)
 	leaverequestEndAt := runtime.ExtractTime(leaverequest.GetEndAt())
 	m.SetEndAt(leaverequestEndAt)
+	leaverequestOrgID := int(leaverequest.GetOrgId())
+	m.SetOrgID(leaverequestOrgID)
 	if leaverequest.GetReason() != nil {
 		leaverequestReason := leaverequest.GetReason().GetValue()
 		m.SetReason(leaverequestReason)
@@ -207,9 +235,17 @@ func (svc *LeaveRequestService) Update(ctx context.Context, req *UpdateLeaveRequ
 	m.SetType(leaverequestType)
 	leaverequestUpdatedAt := runtime.ExtractTime(leaverequest.GetUpdatedAt())
 	m.SetUpdatedAt(leaverequestUpdatedAt)
-	if leaverequest.GetLeaveapprove() != nil {
-		leaverequestLeaveapprove := int(leaverequest.GetLeaveapprove().GetId())
-		m.SetLeaveapproveID(leaverequestLeaveapprove)
+	if leaverequest.GetApplicant() != nil {
+		leaverequestApplicant := int(leaverequest.GetApplicant().GetId())
+		m.SetApplicantID(leaverequestApplicant)
+	}
+	for _, item := range leaverequest.GetLeaveApproves() {
+		leaveapproves := int(item.GetId())
+		m.AddLeaveApprofeIDs(leaveapproves)
+	}
+	if leaverequest.GetOrganization() != nil {
+		leaverequestOrganization := int(leaverequest.GetOrganization().GetId())
+		m.SetOrganizationID(leaverequestOrganization)
 	}
 
 	res, err := m.Save(ctx)
@@ -281,8 +317,14 @@ func (svc *LeaveRequestService) List(ctx context.Context, req *ListLeaveRequestR
 		entList, err = listQuery.All(ctx)
 	case ListLeaveRequestRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
-			WithLeaveapprove(func(query *ent.LeaveApprovalQuery) {
+			WithApplicant(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
+			WithLeaveApproves(func(query *ent.LeaveApprovalQuery) {
 				query.Select(leaveapproval.FieldID)
+			}).
+			WithOrganization(func(query *ent.OrganizationQuery) {
+				query.Select(organization.FieldID)
 			}).
 			All(ctx)
 	}
@@ -347,8 +389,12 @@ func (svc *LeaveRequestService) createBuilder(leaverequest *LeaveRequest) (*ent.
 	m := svc.client.LeaveRequest.Create()
 	leaverequestCreatedAt := runtime.ExtractTime(leaverequest.GetCreatedAt())
 	m.SetCreatedAt(leaverequestCreatedAt)
+	leaverequestEmployeeID := int(leaverequest.GetEmployeeId())
+	m.SetEmployeeID(leaverequestEmployeeID)
 	leaverequestEndAt := runtime.ExtractTime(leaverequest.GetEndAt())
 	m.SetEndAt(leaverequestEndAt)
+	leaverequestOrgID := int(leaverequest.GetOrgId())
+	m.SetOrgID(leaverequestOrgID)
 	if leaverequest.GetReason() != nil {
 		leaverequestReason := leaverequest.GetReason().GetValue()
 		m.SetReason(leaverequestReason)
@@ -363,9 +409,17 @@ func (svc *LeaveRequestService) createBuilder(leaverequest *LeaveRequest) (*ent.
 	m.SetType(leaverequestType)
 	leaverequestUpdatedAt := runtime.ExtractTime(leaverequest.GetUpdatedAt())
 	m.SetUpdatedAt(leaverequestUpdatedAt)
-	if leaverequest.GetLeaveapprove() != nil {
-		leaverequestLeaveapprove := int(leaverequest.GetLeaveapprove().GetId())
-		m.SetLeaveapproveID(leaverequestLeaveapprove)
+	if leaverequest.GetApplicant() != nil {
+		leaverequestApplicant := int(leaverequest.GetApplicant().GetId())
+		m.SetApplicantID(leaverequestApplicant)
+	}
+	for _, item := range leaverequest.GetLeaveApproves() {
+		leaveapproves := int(item.GetId())
+		m.AddLeaveApprofeIDs(leaveapproves)
+	}
+	if leaverequest.GetOrganization() != nil {
+		leaverequestOrganization := int(leaverequest.GetOrganization().GetId())
+		m.SetOrganizationID(leaverequestOrganization)
 	}
 	return m, nil
 }

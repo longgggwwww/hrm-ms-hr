@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -30,6 +32,8 @@ type EmployeeQuery struct {
 	withCreatedProjects *ProjectQuery
 	withUpdatedProjects *ProjectQuery
 	withAssignedTasks   *TaskQuery
+	withLeaveApproves   *LeaveApprovalQuery
+	withLeaveRequests   *LeaveRequestQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -147,6 +151,50 @@ func (eq *EmployeeQuery) QueryAssignedTasks() *TaskQuery {
 			sqlgraph.From(employee.Table, employee.FieldID, selector),
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, employee.AssignedTasksTable, employee.AssignedTasksPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLeaveApproves chains the current query on the "leave_approves" edge.
+func (eq *EmployeeQuery) QueryLeaveApproves() *LeaveApprovalQuery {
+	query := (&LeaveApprovalClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(leaveapproval.Table, leaveapproval.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.LeaveApprovesTable, employee.LeaveApprovesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLeaveRequests chains the current query on the "leave_requests" edge.
+func (eq *EmployeeQuery) QueryLeaveRequests() *LeaveRequestQuery {
+	query := (&LeaveRequestClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.LeaveRequestsTable, employee.LeaveRequestsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -350,6 +398,8 @@ func (eq *EmployeeQuery) Clone() *EmployeeQuery {
 		withCreatedProjects: eq.withCreatedProjects.Clone(),
 		withUpdatedProjects: eq.withUpdatedProjects.Clone(),
 		withAssignedTasks:   eq.withAssignedTasks.Clone(),
+		withLeaveApproves:   eq.withLeaveApproves.Clone(),
+		withLeaveRequests:   eq.withLeaveRequests.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -397,6 +447,28 @@ func (eq *EmployeeQuery) WithAssignedTasks(opts ...func(*TaskQuery)) *EmployeeQu
 		opt(query)
 	}
 	eq.withAssignedTasks = query
+	return eq
+}
+
+// WithLeaveApproves tells the query-builder to eager-load the nodes that are connected to
+// the "leave_approves" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithLeaveApproves(opts ...func(*LeaveApprovalQuery)) *EmployeeQuery {
+	query := (&LeaveApprovalClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withLeaveApproves = query
+	return eq
+}
+
+// WithLeaveRequests tells the query-builder to eager-load the nodes that are connected to
+// the "leave_requests" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithLeaveRequests(opts ...func(*LeaveRequestQuery)) *EmployeeQuery {
+	query := (&LeaveRequestClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withLeaveRequests = query
 	return eq
 }
 
@@ -478,11 +550,13 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	var (
 		nodes       = []*Employee{}
 		_spec       = eq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [6]bool{
 			eq.withPosition != nil,
 			eq.withCreatedProjects != nil,
 			eq.withUpdatedProjects != nil,
 			eq.withAssignedTasks != nil,
+			eq.withLeaveApproves != nil,
+			eq.withLeaveRequests != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -527,6 +601,20 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 		if err := eq.loadAssignedTasks(ctx, query, nodes,
 			func(n *Employee) { n.Edges.AssignedTasks = []*Task{} },
 			func(n *Employee, e *Task) { n.Edges.AssignedTasks = append(n.Edges.AssignedTasks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withLeaveApproves; query != nil {
+		if err := eq.loadLeaveApproves(ctx, query, nodes,
+			func(n *Employee) { n.Edges.LeaveApproves = []*LeaveApproval{} },
+			func(n *Employee, e *LeaveApproval) { n.Edges.LeaveApproves = append(n.Edges.LeaveApproves, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withLeaveRequests; query != nil {
+		if err := eq.loadLeaveRequests(ctx, query, nodes,
+			func(n *Employee) { n.Edges.LeaveRequests = []*LeaveRequest{} },
+			func(n *Employee, e *LeaveRequest) { n.Edges.LeaveRequests = append(n.Edges.LeaveRequests, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -680,6 +768,66 @@ func (eq *EmployeeQuery) loadAssignedTasks(ctx context.Context, query *TaskQuery
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadLeaveApproves(ctx context.Context, query *LeaveApprovalQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *LeaveApproval)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(leaveapproval.FieldReviewerID)
+	}
+	query.Where(predicate.LeaveApproval(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.LeaveApprovesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ReviewerID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "reviewer_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadLeaveRequests(ctx context.Context, query *LeaveRequestQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *LeaveRequest)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(leaverequest.FieldEmployeeID)
+	}
+	query.Where(predicate.LeaveRequest(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.LeaveRequestsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EmployeeID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "employee_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

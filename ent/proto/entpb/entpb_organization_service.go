@@ -11,6 +11,7 @@ import (
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
 	label "github.com/longgggwwww/hrm-ms-hr/ent/label"
+	leaverequest "github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	codes "google.golang.org/grpc/codes"
@@ -89,6 +90,12 @@ func toProtoOrganization(e *ent.Organization) (*Organization, error) {
 			Id: id,
 		})
 	}
+	for _, edg := range e.Edges.LeaveRequests {
+		id := int64(edg.ID)
+		v.LeaveRequests = append(v.LeaveRequests, &LeaveRequest{
+			Id: id,
+		})
+	}
 	if edg := e.Edges.Parent; edg != nil {
 		id := int64(edg.ID)
 		v.Parent = &Organization{
@@ -164,6 +171,9 @@ func (svc *OrganizationService) Get(ctx context.Context, req *GetOrganizationReq
 			WithLabels(func(query *ent.LabelQuery) {
 				query.Select(label.FieldID)
 			}).
+			WithLeaveRequests(func(query *ent.LeaveRequestQuery) {
+				query.Select(leaverequest.FieldID)
+			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
 			}).
@@ -233,6 +243,10 @@ func (svc *OrganizationService) Update(ctx context.Context, req *UpdateOrganizat
 	for _, item := range organization.GetLabels() {
 		labels := int(item.GetId())
 		m.AddLabelIDs(labels)
+	}
+	for _, item := range organization.GetLeaveRequests() {
+		leaverequests := int(item.GetId())
+		m.AddLeaveRequestIDs(leaverequests)
 	}
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())
@@ -320,6 +334,9 @@ func (svc *OrganizationService) List(ctx context.Context, req *ListOrganizationR
 			}).
 			WithLabels(func(query *ent.LabelQuery) {
 				query.Select(label.FieldID)
+			}).
+			WithLeaveRequests(func(query *ent.LeaveRequestQuery) {
+				query.Select(leaverequest.FieldID)
 			}).
 			WithParent(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
@@ -431,6 +448,10 @@ func (svc *OrganizationService) createBuilder(organization *Organization) (*ent.
 	for _, item := range organization.GetLabels() {
 		labels := int(item.GetId())
 		m.AddLabelIDs(labels)
+	}
+	for _, item := range organization.GetLeaveRequests() {
+		leaverequests := int(item.GetId())
+		m.AddLeaveRequestIDs(leaverequests)
 	}
 	if organization.GetParent() != nil {
 		organizationParent := int(organization.GetParent().GetId())

@@ -75,6 +75,16 @@ func Reason(v string) predicate.LeaveRequest {
 	return predicate.LeaveRequest(sql.FieldEQ(FieldReason, v))
 }
 
+// OrgID applies equality check predicate on the "org_id" field. It's identical to OrgIDEQ.
+func OrgID(v int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldEQ(FieldOrgID, v))
+}
+
+// EmployeeID applies equality check predicate on the "employee_id" field. It's identical to EmployeeIDEQ.
+func EmployeeID(v int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldEQ(FieldEmployeeID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.LeaveRequest {
 	return predicate.LeaveRequest(sql.FieldEQ(FieldCreatedAt, v))
@@ -320,6 +330,46 @@ func StatusNotIn(vs ...Status) predicate.LeaveRequest {
 	return predicate.LeaveRequest(sql.FieldNotIn(FieldStatus, vs...))
 }
 
+// OrgIDEQ applies the EQ predicate on the "org_id" field.
+func OrgIDEQ(v int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldEQ(FieldOrgID, v))
+}
+
+// OrgIDNEQ applies the NEQ predicate on the "org_id" field.
+func OrgIDNEQ(v int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldNEQ(FieldOrgID, v))
+}
+
+// OrgIDIn applies the In predicate on the "org_id" field.
+func OrgIDIn(vs ...int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldIn(FieldOrgID, vs...))
+}
+
+// OrgIDNotIn applies the NotIn predicate on the "org_id" field.
+func OrgIDNotIn(vs ...int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldNotIn(FieldOrgID, vs...))
+}
+
+// EmployeeIDEQ applies the EQ predicate on the "employee_id" field.
+func EmployeeIDEQ(v int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldEQ(FieldEmployeeID, v))
+}
+
+// EmployeeIDNEQ applies the NEQ predicate on the "employee_id" field.
+func EmployeeIDNEQ(v int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldNEQ(FieldEmployeeID, v))
+}
+
+// EmployeeIDIn applies the In predicate on the "employee_id" field.
+func EmployeeIDIn(vs ...int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldIn(FieldEmployeeID, vs...))
+}
+
+// EmployeeIDNotIn applies the NotIn predicate on the "employee_id" field.
+func EmployeeIDNotIn(vs ...int) predicate.LeaveRequest {
+	return predicate.LeaveRequest(sql.FieldNotIn(FieldEmployeeID, vs...))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.LeaveRequest {
 	return predicate.LeaveRequest(sql.FieldEQ(FieldCreatedAt, v))
@@ -400,21 +450,67 @@ func UpdatedAtLTE(v time.Time) predicate.LeaveRequest {
 	return predicate.LeaveRequest(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// HasLeaveapprove applies the HasEdge predicate on the "leaveapprove" edge.
-func HasLeaveapprove() predicate.LeaveRequest {
+// HasLeaveApproves applies the HasEdge predicate on the "leave_approves" edge.
+func HasLeaveApproves() predicate.LeaveRequest {
 	return predicate.LeaveRequest(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, LeaveapproveTable, LeaveapproveColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, LeaveApprovesTable, LeaveApprovesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasLeaveapproveWith applies the HasEdge predicate on the "leaveapprove" edge with a given conditions (other predicates).
-func HasLeaveapproveWith(preds ...predicate.LeaveApproval) predicate.LeaveRequest {
+// HasLeaveApprovesWith applies the HasEdge predicate on the "leave_approves" edge with a given conditions (other predicates).
+func HasLeaveApprovesWith(preds ...predicate.LeaveApproval) predicate.LeaveRequest {
 	return predicate.LeaveRequest(func(s *sql.Selector) {
-		step := newLeaveapproveStep()
+		step := newLeaveApprovesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasApplicant applies the HasEdge predicate on the "applicant" edge.
+func HasApplicant() predicate.LeaveRequest {
+	return predicate.LeaveRequest(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ApplicantTable, ApplicantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasApplicantWith applies the HasEdge predicate on the "applicant" edge with a given conditions (other predicates).
+func HasApplicantWith(preds ...predicate.Employee) predicate.LeaveRequest {
+	return predicate.LeaveRequest(func(s *sql.Selector) {
+		step := newApplicantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOrganization applies the HasEdge predicate on the "organization" edge.
+func HasOrganization() predicate.LeaveRequest {
+	return predicate.LeaveRequest(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, OrganizationTable, OrganizationColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOrganizationWith applies the HasEdge predicate on the "organization" edge with a given conditions (other predicates).
+func HasOrganizationWith(preds ...predicate.Organization) predicate.LeaveRequest {
+	return predicate.LeaveRequest(func(s *sql.Selector) {
+		step := newOrganizationStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

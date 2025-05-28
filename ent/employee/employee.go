@@ -39,6 +39,10 @@ const (
 	EdgeUpdatedProjects = "updated_projects"
 	// EdgeAssignedTasks holds the string denoting the assigned_tasks edge name in mutations.
 	EdgeAssignedTasks = "assigned_tasks"
+	// EdgeLeaveApproves holds the string denoting the leave_approves edge name in mutations.
+	EdgeLeaveApproves = "leave_approves"
+	// EdgeLeaveRequests holds the string denoting the leave_requests edge name in mutations.
+	EdgeLeaveRequests = "leave_requests"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 	// PositionTable is the table that holds the position relation/edge.
@@ -67,6 +71,20 @@ const (
 	// AssignedTasksInverseTable is the table name for the Task entity.
 	// It exists in this package in order to avoid circular dependency with the "task" package.
 	AssignedTasksInverseTable = "tasks"
+	// LeaveApprovesTable is the table that holds the leave_approves relation/edge.
+	LeaveApprovesTable = "leave_approvals"
+	// LeaveApprovesInverseTable is the table name for the LeaveApproval entity.
+	// It exists in this package in order to avoid circular dependency with the "leaveapproval" package.
+	LeaveApprovesInverseTable = "leave_approvals"
+	// LeaveApprovesColumn is the table column denoting the leave_approves relation/edge.
+	LeaveApprovesColumn = "reviewer_id"
+	// LeaveRequestsTable is the table that holds the leave_requests relation/edge.
+	LeaveRequestsTable = "leave_requests"
+	// LeaveRequestsInverseTable is the table name for the LeaveRequest entity.
+	// It exists in this package in order to avoid circular dependency with the "leaverequest" package.
+	LeaveRequestsInverseTable = "leave_requests"
+	// LeaveRequestsColumn is the table column denoting the leave_requests relation/edge.
+	LeaveRequestsColumn = "employee_id"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -231,6 +249,34 @@ func ByAssignedTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAssignedTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByLeaveApprovesCount orders the results by leave_approves count.
+func ByLeaveApprovesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLeaveApprovesStep(), opts...)
+	}
+}
+
+// ByLeaveApproves orders the results by leave_approves terms.
+func ByLeaveApproves(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLeaveApprovesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByLeaveRequestsCount orders the results by leave_requests count.
+func ByLeaveRequestsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLeaveRequestsStep(), opts...)
+	}
+}
+
+// ByLeaveRequests orders the results by leave_requests terms.
+func ByLeaveRequests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLeaveRequestsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPositionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -257,5 +303,19 @@ func newAssignedTasksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AssignedTasksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, AssignedTasksTable, AssignedTasksPrimaryKey...),
+	)
+}
+func newLeaveApprovesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LeaveApprovesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LeaveApprovesTable, LeaveApprovesColumn),
+	)
+}
+func newLeaveRequestsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LeaveRequestsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LeaveRequestsTable, LeaveRequestsColumn),
 	)
 }

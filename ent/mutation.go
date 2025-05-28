@@ -766,6 +766,12 @@ type EmployeeMutation struct {
 	assigned_tasks          map[int]struct{}
 	removedassigned_tasks   map[int]struct{}
 	clearedassigned_tasks   bool
+	leave_approves          map[int]struct{}
+	removedleave_approves   map[int]struct{}
+	clearedleave_approves   bool
+	leave_requests          map[int]struct{}
+	removedleave_requests   map[int]struct{}
+	clearedleave_requests   bool
 	done                    bool
 	oldValue                func(context.Context) (*Employee, error)
 	predicates              []predicate.Employee
@@ -1379,6 +1385,114 @@ func (m *EmployeeMutation) ResetAssignedTasks() {
 	m.removedassigned_tasks = nil
 }
 
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by ids.
+func (m *EmployeeMutation) AddLeaveApprofeIDs(ids ...int) {
+	if m.leave_approves == nil {
+		m.leave_approves = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.leave_approves[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLeaveApproves clears the "leave_approves" edge to the LeaveApproval entity.
+func (m *EmployeeMutation) ClearLeaveApproves() {
+	m.clearedleave_approves = true
+}
+
+// LeaveApprovesCleared reports if the "leave_approves" edge to the LeaveApproval entity was cleared.
+func (m *EmployeeMutation) LeaveApprovesCleared() bool {
+	return m.clearedleave_approves
+}
+
+// RemoveLeaveApprofeIDs removes the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (m *EmployeeMutation) RemoveLeaveApprofeIDs(ids ...int) {
+	if m.removedleave_approves == nil {
+		m.removedleave_approves = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.leave_approves, ids[i])
+		m.removedleave_approves[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLeaveApproves returns the removed IDs of the "leave_approves" edge to the LeaveApproval entity.
+func (m *EmployeeMutation) RemovedLeaveApprovesIDs() (ids []int) {
+	for id := range m.removedleave_approves {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LeaveApprovesIDs returns the "leave_approves" edge IDs in the mutation.
+func (m *EmployeeMutation) LeaveApprovesIDs() (ids []int) {
+	for id := range m.leave_approves {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLeaveApproves resets all changes to the "leave_approves" edge.
+func (m *EmployeeMutation) ResetLeaveApproves() {
+	m.leave_approves = nil
+	m.clearedleave_approves = false
+	m.removedleave_approves = nil
+}
+
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by ids.
+func (m *EmployeeMutation) AddLeaveRequestIDs(ids ...int) {
+	if m.leave_requests == nil {
+		m.leave_requests = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.leave_requests[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLeaveRequests clears the "leave_requests" edge to the LeaveRequest entity.
+func (m *EmployeeMutation) ClearLeaveRequests() {
+	m.clearedleave_requests = true
+}
+
+// LeaveRequestsCleared reports if the "leave_requests" edge to the LeaveRequest entity was cleared.
+func (m *EmployeeMutation) LeaveRequestsCleared() bool {
+	return m.clearedleave_requests
+}
+
+// RemoveLeaveRequestIDs removes the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (m *EmployeeMutation) RemoveLeaveRequestIDs(ids ...int) {
+	if m.removedleave_requests == nil {
+		m.removedleave_requests = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.leave_requests, ids[i])
+		m.removedleave_requests[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLeaveRequests returns the removed IDs of the "leave_requests" edge to the LeaveRequest entity.
+func (m *EmployeeMutation) RemovedLeaveRequestsIDs() (ids []int) {
+	for id := range m.removedleave_requests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LeaveRequestsIDs returns the "leave_requests" edge IDs in the mutation.
+func (m *EmployeeMutation) LeaveRequestsIDs() (ids []int) {
+	for id := range m.leave_requests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLeaveRequests resets all changes to the "leave_requests" edge.
+func (m *EmployeeMutation) ResetLeaveRequests() {
+	m.leave_requests = nil
+	m.clearedleave_requests = false
+	m.removedleave_requests = nil
+}
+
 // Where appends a list predicates to the EmployeeMutation builder.
 func (m *EmployeeMutation) Where(ps ...predicate.Employee) {
 	m.predicates = append(m.predicates, ps...)
@@ -1655,7 +1769,7 @@ func (m *EmployeeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EmployeeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.position != nil {
 		edges = append(edges, employee.EdgePosition)
 	}
@@ -1667,6 +1781,12 @@ func (m *EmployeeMutation) AddedEdges() []string {
 	}
 	if m.assigned_tasks != nil {
 		edges = append(edges, employee.EdgeAssignedTasks)
+	}
+	if m.leave_approves != nil {
+		edges = append(edges, employee.EdgeLeaveApproves)
+	}
+	if m.leave_requests != nil {
+		edges = append(edges, employee.EdgeLeaveRequests)
 	}
 	return edges
 }
@@ -1697,13 +1817,25 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeLeaveApproves:
+		ids := make([]ent.Value, 0, len(m.leave_approves))
+		for id := range m.leave_approves {
+			ids = append(ids, id)
+		}
+		return ids
+	case employee.EdgeLeaveRequests:
+		ids := make([]ent.Value, 0, len(m.leave_requests))
+		for id := range m.leave_requests {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EmployeeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.removedcreated_projects != nil {
 		edges = append(edges, employee.EdgeCreatedProjects)
 	}
@@ -1712,6 +1844,12 @@ func (m *EmployeeMutation) RemovedEdges() []string {
 	}
 	if m.removedassigned_tasks != nil {
 		edges = append(edges, employee.EdgeAssignedTasks)
+	}
+	if m.removedleave_approves != nil {
+		edges = append(edges, employee.EdgeLeaveApproves)
+	}
+	if m.removedleave_requests != nil {
+		edges = append(edges, employee.EdgeLeaveRequests)
 	}
 	return edges
 }
@@ -1738,13 +1876,25 @@ func (m *EmployeeMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeLeaveApproves:
+		ids := make([]ent.Value, 0, len(m.removedleave_approves))
+		for id := range m.removedleave_approves {
+			ids = append(ids, id)
+		}
+		return ids
+	case employee.EdgeLeaveRequests:
+		ids := make([]ent.Value, 0, len(m.removedleave_requests))
+		for id := range m.removedleave_requests {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EmployeeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.clearedposition {
 		edges = append(edges, employee.EdgePosition)
 	}
@@ -1756,6 +1906,12 @@ func (m *EmployeeMutation) ClearedEdges() []string {
 	}
 	if m.clearedassigned_tasks {
 		edges = append(edges, employee.EdgeAssignedTasks)
+	}
+	if m.clearedleave_approves {
+		edges = append(edges, employee.EdgeLeaveApproves)
+	}
+	if m.clearedleave_requests {
+		edges = append(edges, employee.EdgeLeaveRequests)
 	}
 	return edges
 }
@@ -1772,6 +1928,10 @@ func (m *EmployeeMutation) EdgeCleared(name string) bool {
 		return m.clearedupdated_projects
 	case employee.EdgeAssignedTasks:
 		return m.clearedassigned_tasks
+	case employee.EdgeLeaveApproves:
+		return m.clearedleave_approves
+	case employee.EdgeLeaveRequests:
+		return m.clearedleave_requests
 	}
 	return false
 }
@@ -1802,6 +1962,12 @@ func (m *EmployeeMutation) ResetEdge(name string) error {
 		return nil
 	case employee.EdgeAssignedTasks:
 		m.ResetAssignedTasks()
+		return nil
+	case employee.EdgeLeaveApproves:
+		m.ResetLeaveApproves()
+		return nil
+	case employee.EdgeLeaveRequests:
+		m.ResetLeaveRequests()
 		return nil
 	}
 	return fmt.Errorf("unknown Employee edge %s", name)
@@ -2602,16 +2768,20 @@ func (m *LabelMutation) ResetEdge(name string) error {
 // LeaveApprovalMutation represents an operation that mutates the LeaveApproval nodes in the graph.
 type LeaveApprovalMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	comment       *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*LeaveApproval, error)
-	predicates    []predicate.LeaveApproval
+	op                   Op
+	typ                  string
+	id                   *int
+	comment              *string
+	created_at           *time.Time
+	updated_at           *time.Time
+	clearedFields        map[string]struct{}
+	leave_request        *int
+	clearedleave_request bool
+	reviewer             *int
+	clearedreviewer      bool
+	done                 bool
+	oldValue             func(context.Context) (*LeaveApproval, error)
+	predicates           []predicate.LeaveApproval
 }
 
 var _ ent.Mutation = (*LeaveApprovalMutation)(nil)
@@ -2761,6 +2931,78 @@ func (m *LeaveApprovalMutation) ResetComment() {
 	delete(m.clearedFields, leaveapproval.FieldComment)
 }
 
+// SetLeaveRequestID sets the "leave_request_id" field.
+func (m *LeaveApprovalMutation) SetLeaveRequestID(i int) {
+	m.leave_request = &i
+}
+
+// LeaveRequestID returns the value of the "leave_request_id" field in the mutation.
+func (m *LeaveApprovalMutation) LeaveRequestID() (r int, exists bool) {
+	v := m.leave_request
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLeaveRequestID returns the old "leave_request_id" field's value of the LeaveApproval entity.
+// If the LeaveApproval object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LeaveApprovalMutation) OldLeaveRequestID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLeaveRequestID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLeaveRequestID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLeaveRequestID: %w", err)
+	}
+	return oldValue.LeaveRequestID, nil
+}
+
+// ResetLeaveRequestID resets all changes to the "leave_request_id" field.
+func (m *LeaveApprovalMutation) ResetLeaveRequestID() {
+	m.leave_request = nil
+}
+
+// SetReviewerID sets the "reviewer_id" field.
+func (m *LeaveApprovalMutation) SetReviewerID(i int) {
+	m.reviewer = &i
+}
+
+// ReviewerID returns the value of the "reviewer_id" field in the mutation.
+func (m *LeaveApprovalMutation) ReviewerID() (r int, exists bool) {
+	v := m.reviewer
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReviewerID returns the old "reviewer_id" field's value of the LeaveApproval entity.
+// If the LeaveApproval object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LeaveApprovalMutation) OldReviewerID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReviewerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReviewerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReviewerID: %w", err)
+	}
+	return oldValue.ReviewerID, nil
+}
+
+// ResetReviewerID resets all changes to the "reviewer_id" field.
+func (m *LeaveApprovalMutation) ResetReviewerID() {
+	m.reviewer = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *LeaveApprovalMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2833,6 +3075,60 @@ func (m *LeaveApprovalMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// ClearLeaveRequest clears the "leave_request" edge to the LeaveRequest entity.
+func (m *LeaveApprovalMutation) ClearLeaveRequest() {
+	m.clearedleave_request = true
+	m.clearedFields[leaveapproval.FieldLeaveRequestID] = struct{}{}
+}
+
+// LeaveRequestCleared reports if the "leave_request" edge to the LeaveRequest entity was cleared.
+func (m *LeaveApprovalMutation) LeaveRequestCleared() bool {
+	return m.clearedleave_request
+}
+
+// LeaveRequestIDs returns the "leave_request" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// LeaveRequestID instead. It exists only for internal usage by the builders.
+func (m *LeaveApprovalMutation) LeaveRequestIDs() (ids []int) {
+	if id := m.leave_request; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetLeaveRequest resets all changes to the "leave_request" edge.
+func (m *LeaveApprovalMutation) ResetLeaveRequest() {
+	m.leave_request = nil
+	m.clearedleave_request = false
+}
+
+// ClearReviewer clears the "reviewer" edge to the Employee entity.
+func (m *LeaveApprovalMutation) ClearReviewer() {
+	m.clearedreviewer = true
+	m.clearedFields[leaveapproval.FieldReviewerID] = struct{}{}
+}
+
+// ReviewerCleared reports if the "reviewer" edge to the Employee entity was cleared.
+func (m *LeaveApprovalMutation) ReviewerCleared() bool {
+	return m.clearedreviewer
+}
+
+// ReviewerIDs returns the "reviewer" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ReviewerID instead. It exists only for internal usage by the builders.
+func (m *LeaveApprovalMutation) ReviewerIDs() (ids []int) {
+	if id := m.reviewer; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetReviewer resets all changes to the "reviewer" edge.
+func (m *LeaveApprovalMutation) ResetReviewer() {
+	m.reviewer = nil
+	m.clearedreviewer = false
+}
+
 // Where appends a list predicates to the LeaveApprovalMutation builder.
 func (m *LeaveApprovalMutation) Where(ps ...predicate.LeaveApproval) {
 	m.predicates = append(m.predicates, ps...)
@@ -2867,9 +3163,15 @@ func (m *LeaveApprovalMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LeaveApprovalMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.comment != nil {
 		fields = append(fields, leaveapproval.FieldComment)
+	}
+	if m.leave_request != nil {
+		fields = append(fields, leaveapproval.FieldLeaveRequestID)
+	}
+	if m.reviewer != nil {
+		fields = append(fields, leaveapproval.FieldReviewerID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, leaveapproval.FieldCreatedAt)
@@ -2887,6 +3189,10 @@ func (m *LeaveApprovalMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case leaveapproval.FieldComment:
 		return m.Comment()
+	case leaveapproval.FieldLeaveRequestID:
+		return m.LeaveRequestID()
+	case leaveapproval.FieldReviewerID:
+		return m.ReviewerID()
 	case leaveapproval.FieldCreatedAt:
 		return m.CreatedAt()
 	case leaveapproval.FieldUpdatedAt:
@@ -2902,6 +3208,10 @@ func (m *LeaveApprovalMutation) OldField(ctx context.Context, name string) (ent.
 	switch name {
 	case leaveapproval.FieldComment:
 		return m.OldComment(ctx)
+	case leaveapproval.FieldLeaveRequestID:
+		return m.OldLeaveRequestID(ctx)
+	case leaveapproval.FieldReviewerID:
+		return m.OldReviewerID(ctx)
 	case leaveapproval.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case leaveapproval.FieldUpdatedAt:
@@ -2921,6 +3231,20 @@ func (m *LeaveApprovalMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetComment(v)
+		return nil
+	case leaveapproval.FieldLeaveRequestID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLeaveRequestID(v)
+		return nil
+	case leaveapproval.FieldReviewerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReviewerID(v)
 		return nil
 	case leaveapproval.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -2943,13 +3267,16 @@ func (m *LeaveApprovalMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *LeaveApprovalMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *LeaveApprovalMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -2997,6 +3324,12 @@ func (m *LeaveApprovalMutation) ResetField(name string) error {
 	case leaveapproval.FieldComment:
 		m.ResetComment()
 		return nil
+	case leaveapproval.FieldLeaveRequestID:
+		m.ResetLeaveRequestID()
+		return nil
+	case leaveapproval.FieldReviewerID:
+		m.ResetReviewerID()
+		return nil
 	case leaveapproval.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -3009,19 +3342,35 @@ func (m *LeaveApprovalMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LeaveApprovalMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.leave_request != nil {
+		edges = append(edges, leaveapproval.EdgeLeaveRequest)
+	}
+	if m.reviewer != nil {
+		edges = append(edges, leaveapproval.EdgeReviewer)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *LeaveApprovalMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case leaveapproval.EdgeLeaveRequest:
+		if id := m.leave_request; id != nil {
+			return []ent.Value{*id}
+		}
+	case leaveapproval.EdgeReviewer:
+		if id := m.reviewer; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LeaveApprovalMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -3033,49 +3382,82 @@ func (m *LeaveApprovalMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LeaveApprovalMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.clearedleave_request {
+		edges = append(edges, leaveapproval.EdgeLeaveRequest)
+	}
+	if m.clearedreviewer {
+		edges = append(edges, leaveapproval.EdgeReviewer)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *LeaveApprovalMutation) EdgeCleared(name string) bool {
+	switch name {
+	case leaveapproval.EdgeLeaveRequest:
+		return m.clearedleave_request
+	case leaveapproval.EdgeReviewer:
+		return m.clearedreviewer
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *LeaveApprovalMutation) ClearEdge(name string) error {
+	switch name {
+	case leaveapproval.EdgeLeaveRequest:
+		m.ClearLeaveRequest()
+		return nil
+	case leaveapproval.EdgeReviewer:
+		m.ClearReviewer()
+		return nil
+	}
 	return fmt.Errorf("unknown LeaveApproval unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *LeaveApprovalMutation) ResetEdge(name string) error {
+	switch name {
+	case leaveapproval.EdgeLeaveRequest:
+		m.ResetLeaveRequest()
+		return nil
+	case leaveapproval.EdgeReviewer:
+		m.ResetReviewer()
+		return nil
+	}
 	return fmt.Errorf("unknown LeaveApproval edge %s", name)
 }
 
 // LeaveRequestMutation represents an operation that mutates the LeaveRequest nodes in the graph.
 type LeaveRequestMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *int
-	total_days          *float64
-	addtotal_days       *float64
-	start_at            *time.Time
-	end_at              *time.Time
-	reason              *string
-	_type               *leaverequest.Type
-	status              *leaverequest.Status
-	created_at          *time.Time
-	updated_at          *time.Time
-	clearedFields       map[string]struct{}
-	leaveapprove        *int
-	clearedleaveapprove bool
-	done                bool
-	oldValue            func(context.Context) (*LeaveRequest, error)
-	predicates          []predicate.LeaveRequest
+	op                    Op
+	typ                   string
+	id                    *int
+	total_days            *float64
+	addtotal_days         *float64
+	start_at              *time.Time
+	end_at                *time.Time
+	reason                *string
+	_type                 *leaverequest.Type
+	status                *leaverequest.Status
+	created_at            *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	leave_approves        map[int]struct{}
+	removedleave_approves map[int]struct{}
+	clearedleave_approves bool
+	applicant             *int
+	clearedapplicant      bool
+	organization          *int
+	clearedorganization   bool
+	done                  bool
+	oldValue              func(context.Context) (*LeaveRequest, error)
+	predicates            []predicate.LeaveRequest
 }
 
 var _ ent.Mutation = (*LeaveRequestMutation)(nil)
@@ -3425,6 +3807,78 @@ func (m *LeaveRequestMutation) ResetStatus() {
 	m.status = nil
 }
 
+// SetOrgID sets the "org_id" field.
+func (m *LeaveRequestMutation) SetOrgID(i int) {
+	m.organization = &i
+}
+
+// OrgID returns the value of the "org_id" field in the mutation.
+func (m *LeaveRequestMutation) OrgID() (r int, exists bool) {
+	v := m.organization
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrgID returns the old "org_id" field's value of the LeaveRequest entity.
+// If the LeaveRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LeaveRequestMutation) OldOrgID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrgID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrgID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrgID: %w", err)
+	}
+	return oldValue.OrgID, nil
+}
+
+// ResetOrgID resets all changes to the "org_id" field.
+func (m *LeaveRequestMutation) ResetOrgID() {
+	m.organization = nil
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (m *LeaveRequestMutation) SetEmployeeID(i int) {
+	m.applicant = &i
+}
+
+// EmployeeID returns the value of the "employee_id" field in the mutation.
+func (m *LeaveRequestMutation) EmployeeID() (r int, exists bool) {
+	v := m.applicant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmployeeID returns the old "employee_id" field's value of the LeaveRequest entity.
+// If the LeaveRequest object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LeaveRequestMutation) OldEmployeeID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmployeeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmployeeID: %w", err)
+	}
+	return oldValue.EmployeeID, nil
+}
+
+// ResetEmployeeID resets all changes to the "employee_id" field.
+func (m *LeaveRequestMutation) ResetEmployeeID() {
+	m.applicant = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *LeaveRequestMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -3497,43 +3951,138 @@ func (m *LeaveRequestMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetLeaveapproveID sets the "leaveapprove" edge to the LeaveApproval entity by id.
-func (m *LeaveRequestMutation) SetLeaveapproveID(id int) {
-	m.leaveapprove = &id
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by ids.
+func (m *LeaveRequestMutation) AddLeaveApprofeIDs(ids ...int) {
+	if m.leave_approves == nil {
+		m.leave_approves = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.leave_approves[ids[i]] = struct{}{}
+	}
 }
 
-// ClearLeaveapprove clears the "leaveapprove" edge to the LeaveApproval entity.
-func (m *LeaveRequestMutation) ClearLeaveapprove() {
-	m.clearedleaveapprove = true
+// ClearLeaveApproves clears the "leave_approves" edge to the LeaveApproval entity.
+func (m *LeaveRequestMutation) ClearLeaveApproves() {
+	m.clearedleave_approves = true
 }
 
-// LeaveapproveCleared reports if the "leaveapprove" edge to the LeaveApproval entity was cleared.
-func (m *LeaveRequestMutation) LeaveapproveCleared() bool {
-	return m.clearedleaveapprove
+// LeaveApprovesCleared reports if the "leave_approves" edge to the LeaveApproval entity was cleared.
+func (m *LeaveRequestMutation) LeaveApprovesCleared() bool {
+	return m.clearedleave_approves
 }
 
-// LeaveapproveID returns the "leaveapprove" edge ID in the mutation.
-func (m *LeaveRequestMutation) LeaveapproveID() (id int, exists bool) {
-	if m.leaveapprove != nil {
-		return *m.leaveapprove, true
+// RemoveLeaveApprofeIDs removes the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (m *LeaveRequestMutation) RemoveLeaveApprofeIDs(ids ...int) {
+	if m.removedleave_approves == nil {
+		m.removedleave_approves = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.leave_approves, ids[i])
+		m.removedleave_approves[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLeaveApproves returns the removed IDs of the "leave_approves" edge to the LeaveApproval entity.
+func (m *LeaveRequestMutation) RemovedLeaveApprovesIDs() (ids []int) {
+	for id := range m.removedleave_approves {
+		ids = append(ids, id)
 	}
 	return
 }
 
-// LeaveapproveIDs returns the "leaveapprove" edge IDs in the mutation.
+// LeaveApprovesIDs returns the "leave_approves" edge IDs in the mutation.
+func (m *LeaveRequestMutation) LeaveApprovesIDs() (ids []int) {
+	for id := range m.leave_approves {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLeaveApproves resets all changes to the "leave_approves" edge.
+func (m *LeaveRequestMutation) ResetLeaveApproves() {
+	m.leave_approves = nil
+	m.clearedleave_approves = false
+	m.removedleave_approves = nil
+}
+
+// SetApplicantID sets the "applicant" edge to the Employee entity by id.
+func (m *LeaveRequestMutation) SetApplicantID(id int) {
+	m.applicant = &id
+}
+
+// ClearApplicant clears the "applicant" edge to the Employee entity.
+func (m *LeaveRequestMutation) ClearApplicant() {
+	m.clearedapplicant = true
+	m.clearedFields[leaverequest.FieldEmployeeID] = struct{}{}
+}
+
+// ApplicantCleared reports if the "applicant" edge to the Employee entity was cleared.
+func (m *LeaveRequestMutation) ApplicantCleared() bool {
+	return m.clearedapplicant
+}
+
+// ApplicantID returns the "applicant" edge ID in the mutation.
+func (m *LeaveRequestMutation) ApplicantID() (id int, exists bool) {
+	if m.applicant != nil {
+		return *m.applicant, true
+	}
+	return
+}
+
+// ApplicantIDs returns the "applicant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// LeaveapproveID instead. It exists only for internal usage by the builders.
-func (m *LeaveRequestMutation) LeaveapproveIDs() (ids []int) {
-	if id := m.leaveapprove; id != nil {
+// ApplicantID instead. It exists only for internal usage by the builders.
+func (m *LeaveRequestMutation) ApplicantIDs() (ids []int) {
+	if id := m.applicant; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetLeaveapprove resets all changes to the "leaveapprove" edge.
-func (m *LeaveRequestMutation) ResetLeaveapprove() {
-	m.leaveapprove = nil
-	m.clearedleaveapprove = false
+// ResetApplicant resets all changes to the "applicant" edge.
+func (m *LeaveRequestMutation) ResetApplicant() {
+	m.applicant = nil
+	m.clearedapplicant = false
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by id.
+func (m *LeaveRequestMutation) SetOrganizationID(id int) {
+	m.organization = &id
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (m *LeaveRequestMutation) ClearOrganization() {
+	m.clearedorganization = true
+	m.clearedFields[leaverequest.FieldOrgID] = struct{}{}
+}
+
+// OrganizationCleared reports if the "organization" edge to the Organization entity was cleared.
+func (m *LeaveRequestMutation) OrganizationCleared() bool {
+	return m.clearedorganization
+}
+
+// OrganizationID returns the "organization" edge ID in the mutation.
+func (m *LeaveRequestMutation) OrganizationID() (id int, exists bool) {
+	if m.organization != nil {
+		return *m.organization, true
+	}
+	return
+}
+
+// OrganizationIDs returns the "organization" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OrganizationID instead. It exists only for internal usage by the builders.
+func (m *LeaveRequestMutation) OrganizationIDs() (ids []int) {
+	if id := m.organization; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOrganization resets all changes to the "organization" edge.
+func (m *LeaveRequestMutation) ResetOrganization() {
+	m.organization = nil
+	m.clearedorganization = false
 }
 
 // Where appends a list predicates to the LeaveRequestMutation builder.
@@ -3570,7 +4119,7 @@ func (m *LeaveRequestMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LeaveRequestMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.total_days != nil {
 		fields = append(fields, leaverequest.FieldTotalDays)
 	}
@@ -3588,6 +4137,12 @@ func (m *LeaveRequestMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, leaverequest.FieldStatus)
+	}
+	if m.organization != nil {
+		fields = append(fields, leaverequest.FieldOrgID)
+	}
+	if m.applicant != nil {
+		fields = append(fields, leaverequest.FieldEmployeeID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, leaverequest.FieldCreatedAt)
@@ -3615,6 +4170,10 @@ func (m *LeaveRequestMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case leaverequest.FieldStatus:
 		return m.Status()
+	case leaverequest.FieldOrgID:
+		return m.OrgID()
+	case leaverequest.FieldEmployeeID:
+		return m.EmployeeID()
 	case leaverequest.FieldCreatedAt:
 		return m.CreatedAt()
 	case leaverequest.FieldUpdatedAt:
@@ -3640,6 +4199,10 @@ func (m *LeaveRequestMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldType(ctx)
 	case leaverequest.FieldStatus:
 		return m.OldStatus(ctx)
+	case leaverequest.FieldOrgID:
+		return m.OldOrgID(ctx)
+	case leaverequest.FieldEmployeeID:
+		return m.OldEmployeeID(ctx)
 	case leaverequest.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case leaverequest.FieldUpdatedAt:
@@ -3694,6 +4257,20 @@ func (m *LeaveRequestMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case leaverequest.FieldOrgID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrgID(v)
+		return nil
+	case leaverequest.FieldEmployeeID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmployeeID(v)
 		return nil
 	case leaverequest.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -3800,6 +4377,12 @@ func (m *LeaveRequestMutation) ResetField(name string) error {
 	case leaverequest.FieldStatus:
 		m.ResetStatus()
 		return nil
+	case leaverequest.FieldOrgID:
+		m.ResetOrgID()
+		return nil
+	case leaverequest.FieldEmployeeID:
+		m.ResetEmployeeID()
+		return nil
 	case leaverequest.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -3812,9 +4395,15 @@ func (m *LeaveRequestMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LeaveRequestMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.leaveapprove != nil {
-		edges = append(edges, leaverequest.EdgeLeaveapprove)
+	edges := make([]string, 0, 3)
+	if m.leave_approves != nil {
+		edges = append(edges, leaverequest.EdgeLeaveApproves)
+	}
+	if m.applicant != nil {
+		edges = append(edges, leaverequest.EdgeApplicant)
+	}
+	if m.organization != nil {
+		edges = append(edges, leaverequest.EdgeOrganization)
 	}
 	return edges
 }
@@ -3823,8 +4412,18 @@ func (m *LeaveRequestMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *LeaveRequestMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case leaverequest.EdgeLeaveapprove:
-		if id := m.leaveapprove; id != nil {
+	case leaverequest.EdgeLeaveApproves:
+		ids := make([]ent.Value, 0, len(m.leave_approves))
+		for id := range m.leave_approves {
+			ids = append(ids, id)
+		}
+		return ids
+	case leaverequest.EdgeApplicant:
+		if id := m.applicant; id != nil {
+			return []ent.Value{*id}
+		}
+	case leaverequest.EdgeOrganization:
+		if id := m.organization; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -3833,21 +4432,38 @@ func (m *LeaveRequestMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LeaveRequestMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
+	if m.removedleave_approves != nil {
+		edges = append(edges, leaverequest.EdgeLeaveApproves)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *LeaveRequestMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case leaverequest.EdgeLeaveApproves:
+		ids := make([]ent.Value, 0, len(m.removedleave_approves))
+		for id := range m.removedleave_approves {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LeaveRequestMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedleaveapprove {
-		edges = append(edges, leaverequest.EdgeLeaveapprove)
+	edges := make([]string, 0, 3)
+	if m.clearedleave_approves {
+		edges = append(edges, leaverequest.EdgeLeaveApproves)
+	}
+	if m.clearedapplicant {
+		edges = append(edges, leaverequest.EdgeApplicant)
+	}
+	if m.clearedorganization {
+		edges = append(edges, leaverequest.EdgeOrganization)
 	}
 	return edges
 }
@@ -3856,8 +4472,12 @@ func (m *LeaveRequestMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *LeaveRequestMutation) EdgeCleared(name string) bool {
 	switch name {
-	case leaverequest.EdgeLeaveapprove:
-		return m.clearedleaveapprove
+	case leaverequest.EdgeLeaveApproves:
+		return m.clearedleave_approves
+	case leaverequest.EdgeApplicant:
+		return m.clearedapplicant
+	case leaverequest.EdgeOrganization:
+		return m.clearedorganization
 	}
 	return false
 }
@@ -3866,8 +4486,11 @@ func (m *LeaveRequestMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *LeaveRequestMutation) ClearEdge(name string) error {
 	switch name {
-	case leaverequest.EdgeLeaveapprove:
-		m.ClearLeaveapprove()
+	case leaverequest.EdgeApplicant:
+		m.ClearApplicant()
+		return nil
+	case leaverequest.EdgeOrganization:
+		m.ClearOrganization()
 		return nil
 	}
 	return fmt.Errorf("unknown LeaveRequest unique edge %s", name)
@@ -3877,8 +4500,14 @@ func (m *LeaveRequestMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *LeaveRequestMutation) ResetEdge(name string) error {
 	switch name {
-	case leaverequest.EdgeLeaveapprove:
-		m.ResetLeaveapprove()
+	case leaverequest.EdgeLeaveApproves:
+		m.ResetLeaveApproves()
+		return nil
+	case leaverequest.EdgeApplicant:
+		m.ResetApplicant()
+		return nil
+	case leaverequest.EdgeOrganization:
+		m.ResetOrganization()
 		return nil
 	}
 	return fmt.Errorf("unknown LeaveRequest edge %s", name)
@@ -3887,36 +4516,39 @@ func (m *LeaveRequestMutation) ResetEdge(name string) error {
 // OrganizationMutation represents an operation that mutates the Organization nodes in the graph.
 type OrganizationMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int
-	name               *string
-	code               *string
-	logo_url           *string
-	address            *string
-	phone              *string
-	email              *string
-	website            *string
-	created_at         *time.Time
-	updated_at         *time.Time
-	clearedFields      map[string]struct{}
-	parent             *int
-	clearedparent      bool
-	children           map[int]struct{}
-	removedchildren    map[int]struct{}
-	clearedchildren    bool
-	departments        map[int]struct{}
-	removeddepartments map[int]struct{}
-	cleareddepartments bool
-	projects           map[int]struct{}
-	removedprojects    map[int]struct{}
-	clearedprojects    bool
-	labels             map[int]struct{}
-	removedlabels      map[int]struct{}
-	clearedlabels      bool
-	done               bool
-	oldValue           func(context.Context) (*Organization, error)
-	predicates         []predicate.Organization
+	op                    Op
+	typ                   string
+	id                    *int
+	name                  *string
+	code                  *string
+	logo_url              *string
+	address               *string
+	phone                 *string
+	email                 *string
+	website               *string
+	created_at            *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	parent                *int
+	clearedparent         bool
+	children              map[int]struct{}
+	removedchildren       map[int]struct{}
+	clearedchildren       bool
+	departments           map[int]struct{}
+	removeddepartments    map[int]struct{}
+	cleareddepartments    bool
+	projects              map[int]struct{}
+	removedprojects       map[int]struct{}
+	clearedprojects       bool
+	labels                map[int]struct{}
+	removedlabels         map[int]struct{}
+	clearedlabels         bool
+	leave_requests        map[int]struct{}
+	removedleave_requests map[int]struct{}
+	clearedleave_requests bool
+	done                  bool
+	oldValue              func(context.Context) (*Organization, error)
+	predicates            []predicate.Organization
 }
 
 var _ ent.Mutation = (*OrganizationMutation)(nil)
@@ -4698,6 +5330,60 @@ func (m *OrganizationMutation) ResetLabels() {
 	m.removedlabels = nil
 }
 
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by ids.
+func (m *OrganizationMutation) AddLeaveRequestIDs(ids ...int) {
+	if m.leave_requests == nil {
+		m.leave_requests = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.leave_requests[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLeaveRequests clears the "leave_requests" edge to the LeaveRequest entity.
+func (m *OrganizationMutation) ClearLeaveRequests() {
+	m.clearedleave_requests = true
+}
+
+// LeaveRequestsCleared reports if the "leave_requests" edge to the LeaveRequest entity was cleared.
+func (m *OrganizationMutation) LeaveRequestsCleared() bool {
+	return m.clearedleave_requests
+}
+
+// RemoveLeaveRequestIDs removes the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (m *OrganizationMutation) RemoveLeaveRequestIDs(ids ...int) {
+	if m.removedleave_requests == nil {
+		m.removedleave_requests = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.leave_requests, ids[i])
+		m.removedleave_requests[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLeaveRequests returns the removed IDs of the "leave_requests" edge to the LeaveRequest entity.
+func (m *OrganizationMutation) RemovedLeaveRequestsIDs() (ids []int) {
+	for id := range m.removedleave_requests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LeaveRequestsIDs returns the "leave_requests" edge IDs in the mutation.
+func (m *OrganizationMutation) LeaveRequestsIDs() (ids []int) {
+	for id := range m.leave_requests {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLeaveRequests resets all changes to the "leave_requests" edge.
+func (m *OrganizationMutation) ResetLeaveRequests() {
+	m.leave_requests = nil
+	m.clearedleave_requests = false
+	m.removedleave_requests = nil
+}
+
 // Where appends a list predicates to the OrganizationMutation builder.
 func (m *OrganizationMutation) Where(ps ...predicate.Organization) {
 	m.predicates = append(m.predicates, ps...)
@@ -5026,7 +5712,7 @@ func (m *OrganizationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OrganizationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.parent != nil {
 		edges = append(edges, organization.EdgeParent)
 	}
@@ -5041,6 +5727,9 @@ func (m *OrganizationMutation) AddedEdges() []string {
 	}
 	if m.labels != nil {
 		edges = append(edges, organization.EdgeLabels)
+	}
+	if m.leave_requests != nil {
+		edges = append(edges, organization.EdgeLeaveRequests)
 	}
 	return edges
 }
@@ -5077,13 +5766,19 @@ func (m *OrganizationMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case organization.EdgeLeaveRequests:
+		ids := make([]ent.Value, 0, len(m.leave_requests))
+		for id := range m.leave_requests {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OrganizationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedchildren != nil {
 		edges = append(edges, organization.EdgeChildren)
 	}
@@ -5095,6 +5790,9 @@ func (m *OrganizationMutation) RemovedEdges() []string {
 	}
 	if m.removedlabels != nil {
 		edges = append(edges, organization.EdgeLabels)
+	}
+	if m.removedleave_requests != nil {
+		edges = append(edges, organization.EdgeLeaveRequests)
 	}
 	return edges
 }
@@ -5127,13 +5825,19 @@ func (m *OrganizationMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case organization.EdgeLeaveRequests:
+		ids := make([]ent.Value, 0, len(m.removedleave_requests))
+		for id := range m.removedleave_requests {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OrganizationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedparent {
 		edges = append(edges, organization.EdgeParent)
 	}
@@ -5148,6 +5852,9 @@ func (m *OrganizationMutation) ClearedEdges() []string {
 	}
 	if m.clearedlabels {
 		edges = append(edges, organization.EdgeLabels)
+	}
+	if m.clearedleave_requests {
+		edges = append(edges, organization.EdgeLeaveRequests)
 	}
 	return edges
 }
@@ -5166,6 +5873,8 @@ func (m *OrganizationMutation) EdgeCleared(name string) bool {
 		return m.clearedprojects
 	case organization.EdgeLabels:
 		return m.clearedlabels
+	case organization.EdgeLeaveRequests:
+		return m.clearedleave_requests
 	}
 	return false
 }
@@ -5199,6 +5908,9 @@ func (m *OrganizationMutation) ResetEdge(name string) error {
 		return nil
 	case organization.EdgeLabels:
 		m.ResetLabels()
+		return nil
+	case organization.EdgeLeaveRequests:
+		m.ResetLeaveRequests()
 		return nil
 	}
 	return fmt.Errorf("unknown Organization edge %s", name)
@@ -7453,6 +8165,7 @@ type TaskMutation struct {
 	addprocess       *int
 	status           *task.Status
 	start_at         *time.Time
+	due_date         *time.Time
 	creator_id       *int
 	addcreator_id    *int
 	updater_id       *int
@@ -7832,6 +8545,55 @@ func (m *TaskMutation) StartAtCleared() bool {
 func (m *TaskMutation) ResetStartAt() {
 	m.start_at = nil
 	delete(m.clearedFields, task.FieldStartAt)
+}
+
+// SetDueDate sets the "due_date" field.
+func (m *TaskMutation) SetDueDate(t time.Time) {
+	m.due_date = &t
+}
+
+// DueDate returns the value of the "due_date" field in the mutation.
+func (m *TaskMutation) DueDate() (r time.Time, exists bool) {
+	v := m.due_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDueDate returns the old "due_date" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldDueDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDueDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDueDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDueDate: %w", err)
+	}
+	return oldValue.DueDate, nil
+}
+
+// ClearDueDate clears the value of the "due_date" field.
+func (m *TaskMutation) ClearDueDate() {
+	m.due_date = nil
+	m.clearedFields[task.FieldDueDate] = struct{}{}
+}
+
+// DueDateCleared returns if the "due_date" field was cleared in this mutation.
+func (m *TaskMutation) DueDateCleared() bool {
+	_, ok := m.clearedFields[task.FieldDueDate]
+	return ok
+}
+
+// ResetDueDate resets all changes to the "due_date" field.
+func (m *TaskMutation) ResetDueDate() {
+	m.due_date = nil
+	delete(m.clearedFields, task.FieldDueDate)
 }
 
 // SetProjectID sets the "project_id" field.
@@ -8272,7 +9034,7 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.name != nil {
 		fields = append(fields, task.FieldName)
 	}
@@ -8290,6 +9052,9 @@ func (m *TaskMutation) Fields() []string {
 	}
 	if m.start_at != nil {
 		fields = append(fields, task.FieldStartAt)
+	}
+	if m.due_date != nil {
+		fields = append(fields, task.FieldDueDate)
 	}
 	if m.project != nil {
 		fields = append(fields, task.FieldProjectID)
@@ -8329,6 +9094,8 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.Status()
 	case task.FieldStartAt:
 		return m.StartAt()
+	case task.FieldDueDate:
+		return m.DueDate()
 	case task.FieldProjectID:
 		return m.ProjectID()
 	case task.FieldCreatorID:
@@ -8362,6 +9129,8 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldStatus(ctx)
 	case task.FieldStartAt:
 		return m.OldStartAt(ctx)
+	case task.FieldDueDate:
+		return m.OldDueDate(ctx)
 	case task.FieldProjectID:
 		return m.OldProjectID(ctx)
 	case task.FieldCreatorID:
@@ -8424,6 +9193,13 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStartAt(v)
+		return nil
+	case task.FieldDueDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDueDate(v)
 		return nil
 	case task.FieldProjectID:
 		v, ok := value.(int)
@@ -8542,6 +9318,9 @@ func (m *TaskMutation) ClearedFields() []string {
 	if m.FieldCleared(task.FieldStartAt) {
 		fields = append(fields, task.FieldStartAt)
 	}
+	if m.FieldCleared(task.FieldDueDate) {
+		fields = append(fields, task.FieldDueDate)
+	}
 	if m.FieldCleared(task.FieldProjectID) {
 		fields = append(fields, task.FieldProjectID)
 	}
@@ -8564,6 +9343,9 @@ func (m *TaskMutation) ClearField(name string) error {
 		return nil
 	case task.FieldStartAt:
 		m.ClearStartAt()
+		return nil
+	case task.FieldDueDate:
+		m.ClearDueDate()
 		return nil
 	case task.FieldProjectID:
 		m.ClearProjectID()
@@ -8593,6 +9375,9 @@ func (m *TaskMutation) ResetField(name string) error {
 		return nil
 	case task.FieldStartAt:
 		m.ResetStartAt()
+		return nil
+	case task.FieldDueDate:
+		m.ResetDueDate()
 		return nil
 	case task.FieldProjectID:
 		m.ResetProjectID()

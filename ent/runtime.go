@@ -78,11 +78,11 @@ func init() {
 	leaveapprovalFields := schema.LeaveApproval{}.Fields()
 	_ = leaveapprovalFields
 	// leaveapprovalDescCreatedAt is the schema descriptor for created_at field.
-	leaveapprovalDescCreatedAt := leaveapprovalFields[1].Descriptor()
+	leaveapprovalDescCreatedAt := leaveapprovalFields[3].Descriptor()
 	// leaveapproval.DefaultCreatedAt holds the default value on creation for the created_at field.
 	leaveapproval.DefaultCreatedAt = leaveapprovalDescCreatedAt.Default.(func() time.Time)
 	// leaveapprovalDescUpdatedAt is the schema descriptor for updated_at field.
-	leaveapprovalDescUpdatedAt := leaveapprovalFields[2].Descriptor()
+	leaveapprovalDescUpdatedAt := leaveapprovalFields[4].Descriptor()
 	// leaveapproval.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	leaveapproval.DefaultUpdatedAt = leaveapprovalDescUpdatedAt.Default.(func() time.Time)
 	// leaveapproval.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -90,11 +90,11 @@ func init() {
 	leaverequestFields := schema.LeaveRequest{}.Fields()
 	_ = leaverequestFields
 	// leaverequestDescCreatedAt is the schema descriptor for created_at field.
-	leaverequestDescCreatedAt := leaverequestFields[6].Descriptor()
+	leaverequestDescCreatedAt := leaverequestFields[8].Descriptor()
 	// leaverequest.DefaultCreatedAt holds the default value on creation for the created_at field.
 	leaverequest.DefaultCreatedAt = leaverequestDescCreatedAt.Default.(func() time.Time)
 	// leaverequestDescUpdatedAt is the schema descriptor for updated_at field.
-	leaverequestDescUpdatedAt := leaverequestFields[7].Descriptor()
+	leaverequestDescUpdatedAt := leaverequestFields[9].Descriptor()
 	// leaverequest.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	leaverequest.DefaultUpdatedAt = leaverequestDescUpdatedAt.Default.(func() time.Time)
 	// leaverequest.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -154,11 +154,11 @@ func init() {
 	// task.DefaultProcess holds the default value on creation for the process field.
 	task.DefaultProcess = taskDescProcess.Default.(int)
 	// taskDescCreatedAt is the schema descriptor for created_at field.
-	taskDescCreatedAt := taskFields[9].Descriptor()
+	taskDescCreatedAt := taskFields[10].Descriptor()
 	// task.DefaultCreatedAt holds the default value on creation for the created_at field.
 	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
 	// taskDescUpdatedAt is the schema descriptor for updated_at field.
-	taskDescUpdatedAt := taskFields[10].Descriptor()
+	taskDescUpdatedAt := taskFields[11].Descriptor()
 	// task.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
 	// task.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

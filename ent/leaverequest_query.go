@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,20 +12,23 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
 // LeaveRequestQuery is the builder for querying LeaveRequest entities.
 type LeaveRequestQuery struct {
 	config
-	ctx              *QueryContext
-	order            []leaverequest.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.LeaveRequest
-	withLeaveapprove *LeaveApprovalQuery
-	withFKs          bool
+	ctx               *QueryContext
+	order             []leaverequest.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.LeaveRequest
+	withLeaveApproves *LeaveApprovalQuery
+	withApplicant     *EmployeeQuery
+	withOrganization  *OrganizationQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,8 +65,8 @@ func (lrq *LeaveRequestQuery) Order(o ...leaverequest.OrderOption) *LeaveRequest
 	return lrq
 }
 
-// QueryLeaveapprove chains the current query on the "leaveapprove" edge.
-func (lrq *LeaveRequestQuery) QueryLeaveapprove() *LeaveApprovalQuery {
+// QueryLeaveApproves chains the current query on the "leave_approves" edge.
+func (lrq *LeaveRequestQuery) QueryLeaveApproves() *LeaveApprovalQuery {
 	query := (&LeaveApprovalClient{config: lrq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := lrq.prepareQuery(ctx); err != nil {
@@ -75,7 +79,51 @@ func (lrq *LeaveRequestQuery) QueryLeaveapprove() *LeaveApprovalQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(leaverequest.Table, leaverequest.FieldID, selector),
 			sqlgraph.To(leaveapproval.Table, leaveapproval.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, leaverequest.LeaveapproveTable, leaverequest.LeaveapproveColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, leaverequest.LeaveApprovesTable, leaverequest.LeaveApprovesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lrq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryApplicant chains the current query on the "applicant" edge.
+func (lrq *LeaveRequestQuery) QueryApplicant() *EmployeeQuery {
+	query := (&EmployeeClient{config: lrq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lrq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lrq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaverequest.Table, leaverequest.FieldID, selector),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaverequest.ApplicantTable, leaverequest.ApplicantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lrq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOrganization chains the current query on the "organization" edge.
+func (lrq *LeaveRequestQuery) QueryOrganization() *OrganizationQuery {
+	query := (&OrganizationClient{config: lrq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lrq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lrq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaverequest.Table, leaverequest.FieldID, selector),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaverequest.OrganizationTable, leaverequest.OrganizationColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(lrq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,26 +318,50 @@ func (lrq *LeaveRequestQuery) Clone() *LeaveRequestQuery {
 		return nil
 	}
 	return &LeaveRequestQuery{
-		config:           lrq.config,
-		ctx:              lrq.ctx.Clone(),
-		order:            append([]leaverequest.OrderOption{}, lrq.order...),
-		inters:           append([]Interceptor{}, lrq.inters...),
-		predicates:       append([]predicate.LeaveRequest{}, lrq.predicates...),
-		withLeaveapprove: lrq.withLeaveapprove.Clone(),
+		config:            lrq.config,
+		ctx:               lrq.ctx.Clone(),
+		order:             append([]leaverequest.OrderOption{}, lrq.order...),
+		inters:            append([]Interceptor{}, lrq.inters...),
+		predicates:        append([]predicate.LeaveRequest{}, lrq.predicates...),
+		withLeaveApproves: lrq.withLeaveApproves.Clone(),
+		withApplicant:     lrq.withApplicant.Clone(),
+		withOrganization:  lrq.withOrganization.Clone(),
 		// clone intermediate query.
 		sql:  lrq.sql.Clone(),
 		path: lrq.path,
 	}
 }
 
-// WithLeaveapprove tells the query-builder to eager-load the nodes that are connected to
-// the "leaveapprove" edge. The optional arguments are used to configure the query builder of the edge.
-func (lrq *LeaveRequestQuery) WithLeaveapprove(opts ...func(*LeaveApprovalQuery)) *LeaveRequestQuery {
+// WithLeaveApproves tells the query-builder to eager-load the nodes that are connected to
+// the "leave_approves" edge. The optional arguments are used to configure the query builder of the edge.
+func (lrq *LeaveRequestQuery) WithLeaveApproves(opts ...func(*LeaveApprovalQuery)) *LeaveRequestQuery {
 	query := (&LeaveApprovalClient{config: lrq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	lrq.withLeaveapprove = query
+	lrq.withLeaveApproves = query
+	return lrq
+}
+
+// WithApplicant tells the query-builder to eager-load the nodes that are connected to
+// the "applicant" edge. The optional arguments are used to configure the query builder of the edge.
+func (lrq *LeaveRequestQuery) WithApplicant(opts ...func(*EmployeeQuery)) *LeaveRequestQuery {
+	query := (&EmployeeClient{config: lrq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	lrq.withApplicant = query
+	return lrq
+}
+
+// WithOrganization tells the query-builder to eager-load the nodes that are connected to
+// the "organization" edge. The optional arguments are used to configure the query builder of the edge.
+func (lrq *LeaveRequestQuery) WithOrganization(opts ...func(*OrganizationQuery)) *LeaveRequestQuery {
+	query := (&OrganizationClient{config: lrq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	lrq.withOrganization = query
 	return lrq
 }
 
@@ -370,18 +442,13 @@ func (lrq *LeaveRequestQuery) prepareQuery(ctx context.Context) error {
 func (lrq *LeaveRequestQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*LeaveRequest, error) {
 	var (
 		nodes       = []*LeaveRequest{}
-		withFKs     = lrq.withFKs
 		_spec       = lrq.querySpec()
-		loadedTypes = [1]bool{
-			lrq.withLeaveapprove != nil,
+		loadedTypes = [3]bool{
+			lrq.withLeaveApproves != nil,
+			lrq.withApplicant != nil,
+			lrq.withOrganization != nil,
 		}
 	)
-	if lrq.withLeaveapprove != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, leaverequest.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*LeaveRequest).scanValues(nil, columns)
 	}
@@ -400,23 +467,63 @@ func (lrq *LeaveRequestQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := lrq.withLeaveapprove; query != nil {
-		if err := lrq.loadLeaveapprove(ctx, query, nodes, nil,
-			func(n *LeaveRequest, e *LeaveApproval) { n.Edges.Leaveapprove = e }); err != nil {
+	if query := lrq.withLeaveApproves; query != nil {
+		if err := lrq.loadLeaveApproves(ctx, query, nodes,
+			func(n *LeaveRequest) { n.Edges.LeaveApproves = []*LeaveApproval{} },
+			func(n *LeaveRequest, e *LeaveApproval) { n.Edges.LeaveApproves = append(n.Edges.LeaveApproves, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := lrq.withApplicant; query != nil {
+		if err := lrq.loadApplicant(ctx, query, nodes, nil,
+			func(n *LeaveRequest, e *Employee) { n.Edges.Applicant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := lrq.withOrganization; query != nil {
+		if err := lrq.loadOrganization(ctx, query, nodes, nil,
+			func(n *LeaveRequest, e *Organization) { n.Edges.Organization = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (lrq *LeaveRequestQuery) loadLeaveapprove(ctx context.Context, query *LeaveApprovalQuery, nodes []*LeaveRequest, init func(*LeaveRequest), assign func(*LeaveRequest, *LeaveApproval)) error {
+func (lrq *LeaveRequestQuery) loadLeaveApproves(ctx context.Context, query *LeaveApprovalQuery, nodes []*LeaveRequest, init func(*LeaveRequest), assign func(*LeaveRequest, *LeaveApproval)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*LeaveRequest)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(leaveapproval.FieldLeaveRequestID)
+	}
+	query.Where(predicate.LeaveApproval(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(leaverequest.LeaveApprovesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.LeaveRequestID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "leave_request_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (lrq *LeaveRequestQuery) loadApplicant(ctx context.Context, query *EmployeeQuery, nodes []*LeaveRequest, init func(*LeaveRequest), assign func(*LeaveRequest, *Employee)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*LeaveRequest)
 	for i := range nodes {
-		if nodes[i].leave_request_leaveapprove == nil {
-			continue
-		}
-		fk := *nodes[i].leave_request_leaveapprove
+		fk := nodes[i].EmployeeID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -425,7 +532,7 @@ func (lrq *LeaveRequestQuery) loadLeaveapprove(ctx context.Context, query *Leave
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(leaveapproval.IDIn(ids...))
+	query.Where(employee.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -433,7 +540,36 @@ func (lrq *LeaveRequestQuery) loadLeaveapprove(ctx context.Context, query *Leave
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "leave_request_leaveapprove" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "employee_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (lrq *LeaveRequestQuery) loadOrganization(ctx context.Context, query *OrganizationQuery, nodes []*LeaveRequest, init func(*LeaveRequest), assign func(*LeaveRequest, *Organization)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*LeaveRequest)
+	for i := range nodes {
+		fk := nodes[i].OrgID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(organization.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "org_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -466,6 +602,12 @@ func (lrq *LeaveRequestQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != leaverequest.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if lrq.withApplicant != nil {
+			_spec.Node.AddColumnOnce(leaverequest.FieldEmployeeID)
+		}
+		if lrq.withOrganization != nil {
+			_spec.Node.AddColumnOnce(leaverequest.FieldOrgID)
 		}
 	}
 	if ps := lrq.predicates; len(ps) > 0 {

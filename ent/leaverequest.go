@@ -9,8 +9,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 )
 
 // LeaveRequest is the model entity for the LeaveRequest schema.
@@ -30,35 +31,62 @@ type LeaveRequest struct {
 	Type leaverequest.Type `json:"type,omitempty"`
 	// Status holds the value of the "status" field.
 	Status leaverequest.Status `json:"status,omitempty"`
+	// OrgID holds the value of the "org_id" field.
+	OrgID int `json:"org_id,omitempty"`
+	// EmployeeID holds the value of the "employee_id" field.
+	EmployeeID int `json:"employee_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LeaveRequestQuery when eager-loading is set.
-	Edges                      LeaveRequestEdges `json:"edges"`
-	leave_request_leaveapprove *int
-	selectValues               sql.SelectValues
+	Edges        LeaveRequestEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // LeaveRequestEdges holds the relations/edges for other nodes in the graph.
 type LeaveRequestEdges struct {
-	// Leaveapprove holds the value of the leaveapprove edge.
-	Leaveapprove *LeaveApproval `json:"leaveapprove,omitempty"`
+	// LeaveApproves holds the value of the leave_approves edge.
+	LeaveApproves []*LeaveApproval `json:"leave_approves,omitempty"`
+	// Applicant holds the value of the applicant edge.
+	Applicant *Employee `json:"applicant,omitempty"`
+	// Organization holds the value of the organization edge.
+	Organization *Organization `json:"organization,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
-// LeaveapproveOrErr returns the Leaveapprove value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e LeaveRequestEdges) LeaveapproveOrErr() (*LeaveApproval, error) {
-	if e.Leaveapprove != nil {
-		return e.Leaveapprove, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: leaveapproval.Label}
+// LeaveApprovesOrErr returns the LeaveApproves value or an error if the edge
+// was not loaded in eager-loading.
+func (e LeaveRequestEdges) LeaveApprovesOrErr() ([]*LeaveApproval, error) {
+	if e.loadedTypes[0] {
+		return e.LeaveApproves, nil
 	}
-	return nil, &NotLoadedError{edge: "leaveapprove"}
+	return nil, &NotLoadedError{edge: "leave_approves"}
+}
+
+// ApplicantOrErr returns the Applicant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e LeaveRequestEdges) ApplicantOrErr() (*Employee, error) {
+	if e.Applicant != nil {
+		return e.Applicant, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: employee.Label}
+	}
+	return nil, &NotLoadedError{edge: "applicant"}
+}
+
+// OrganizationOrErr returns the Organization value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e LeaveRequestEdges) OrganizationOrErr() (*Organization, error) {
+	if e.Organization != nil {
+		return e.Organization, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: organization.Label}
+	}
+	return nil, &NotLoadedError{edge: "organization"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -68,14 +96,12 @@ func (*LeaveRequest) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case leaverequest.FieldTotalDays:
 			values[i] = new(sql.NullFloat64)
-		case leaverequest.FieldID:
+		case leaverequest.FieldID, leaverequest.FieldOrgID, leaverequest.FieldEmployeeID:
 			values[i] = new(sql.NullInt64)
 		case leaverequest.FieldReason, leaverequest.FieldType, leaverequest.FieldStatus:
 			values[i] = new(sql.NullString)
 		case leaverequest.FieldStartAt, leaverequest.FieldEndAt, leaverequest.FieldCreatedAt, leaverequest.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case leaverequest.ForeignKeys[0]: // leave_request_leaveapprove
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -134,6 +160,18 @@ func (lr *LeaveRequest) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				lr.Status = leaverequest.Status(value.String)
 			}
+		case leaverequest.FieldOrgID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field org_id", values[i])
+			} else if value.Valid {
+				lr.OrgID = int(value.Int64)
+			}
+		case leaverequest.FieldEmployeeID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field employee_id", values[i])
+			} else if value.Valid {
+				lr.EmployeeID = int(value.Int64)
+			}
 		case leaverequest.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -145,13 +183,6 @@ func (lr *LeaveRequest) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				lr.UpdatedAt = value.Time
-			}
-		case leaverequest.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field leave_request_leaveapprove", value)
-			} else if value.Valid {
-				lr.leave_request_leaveapprove = new(int)
-				*lr.leave_request_leaveapprove = int(value.Int64)
 			}
 		default:
 			lr.selectValues.Set(columns[i], values[i])
@@ -166,9 +197,19 @@ func (lr *LeaveRequest) Value(name string) (ent.Value, error) {
 	return lr.selectValues.Get(name)
 }
 
-// QueryLeaveapprove queries the "leaveapprove" edge of the LeaveRequest entity.
-func (lr *LeaveRequest) QueryLeaveapprove() *LeaveApprovalQuery {
-	return NewLeaveRequestClient(lr.config).QueryLeaveapprove(lr)
+// QueryLeaveApproves queries the "leave_approves" edge of the LeaveRequest entity.
+func (lr *LeaveRequest) QueryLeaveApproves() *LeaveApprovalQuery {
+	return NewLeaveRequestClient(lr.config).QueryLeaveApproves(lr)
+}
+
+// QueryApplicant queries the "applicant" edge of the LeaveRequest entity.
+func (lr *LeaveRequest) QueryApplicant() *EmployeeQuery {
+	return NewLeaveRequestClient(lr.config).QueryApplicant(lr)
+}
+
+// QueryOrganization queries the "organization" edge of the LeaveRequest entity.
+func (lr *LeaveRequest) QueryOrganization() *OrganizationQuery {
+	return NewLeaveRequestClient(lr.config).QueryOrganization(lr)
 }
 
 // Update returns a builder for updating this LeaveRequest.
@@ -213,6 +254,12 @@ func (lr *LeaveRequest) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", lr.Status))
+	builder.WriteString(", ")
+	builder.WriteString("org_id=")
+	builder.WriteString(fmt.Sprintf("%v", lr.OrgID))
+	builder.WriteString(", ")
+	builder.WriteString("employee_id=")
+	builder.WriteString(fmt.Sprintf("%v", lr.EmployeeID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(lr.CreatedAt.Format(time.ANSIC))

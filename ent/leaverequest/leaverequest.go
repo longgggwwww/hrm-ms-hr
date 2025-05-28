@@ -27,21 +27,43 @@ const (
 	FieldType = "type"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldOrgID holds the string denoting the org_id field in the database.
+	FieldOrgID = "org_id"
+	// FieldEmployeeID holds the string denoting the employee_id field in the database.
+	FieldEmployeeID = "employee_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeLeaveapprove holds the string denoting the leaveapprove edge name in mutations.
-	EdgeLeaveapprove = "leaveapprove"
+	// EdgeLeaveApproves holds the string denoting the leave_approves edge name in mutations.
+	EdgeLeaveApproves = "leave_approves"
+	// EdgeApplicant holds the string denoting the applicant edge name in mutations.
+	EdgeApplicant = "applicant"
+	// EdgeOrganization holds the string denoting the organization edge name in mutations.
+	EdgeOrganization = "organization"
 	// Table holds the table name of the leaverequest in the database.
 	Table = "leave_requests"
-	// LeaveapproveTable is the table that holds the leaveapprove relation/edge.
-	LeaveapproveTable = "leave_requests"
-	// LeaveapproveInverseTable is the table name for the LeaveApproval entity.
+	// LeaveApprovesTable is the table that holds the leave_approves relation/edge.
+	LeaveApprovesTable = "leave_approvals"
+	// LeaveApprovesInverseTable is the table name for the LeaveApproval entity.
 	// It exists in this package in order to avoid circular dependency with the "leaveapproval" package.
-	LeaveapproveInverseTable = "leave_approvals"
-	// LeaveapproveColumn is the table column denoting the leaveapprove relation/edge.
-	LeaveapproveColumn = "leave_request_leaveapprove"
+	LeaveApprovesInverseTable = "leave_approvals"
+	// LeaveApprovesColumn is the table column denoting the leave_approves relation/edge.
+	LeaveApprovesColumn = "leave_request_id"
+	// ApplicantTable is the table that holds the applicant relation/edge.
+	ApplicantTable = "leave_requests"
+	// ApplicantInverseTable is the table name for the Employee entity.
+	// It exists in this package in order to avoid circular dependency with the "employee" package.
+	ApplicantInverseTable = "employees"
+	// ApplicantColumn is the table column denoting the applicant relation/edge.
+	ApplicantColumn = "employee_id"
+	// OrganizationTable is the table that holds the organization relation/edge.
+	OrganizationTable = "leave_requests"
+	// OrganizationInverseTable is the table name for the Organization entity.
+	// It exists in this package in order to avoid circular dependency with the "organization" package.
+	OrganizationInverseTable = "organizations"
+	// OrganizationColumn is the table column denoting the organization relation/edge.
+	OrganizationColumn = "org_id"
 )
 
 // Columns holds all SQL columns for leaverequest fields.
@@ -53,25 +75,16 @@ var Columns = []string{
 	FieldReason,
 	FieldType,
 	FieldStatus,
+	FieldOrgID,
+	FieldEmployeeID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "leave_requests"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"leave_request_leaveapprove",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -178,6 +191,16 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
+// ByOrgID orders the results by the org_id field.
+func ByOrgID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOrgID, opts...).ToFunc()
+}
+
+// ByEmployeeID orders the results by the employee_id field.
+func ByEmployeeID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmployeeID, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -188,16 +211,51 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByLeaveapproveField orders the results by leaveapprove field.
-func ByLeaveapproveField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByLeaveApprovesCount orders the results by leave_approves count.
+func ByLeaveApprovesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newLeaveapproveStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newLeaveApprovesStep(), opts...)
 	}
 }
-func newLeaveapproveStep() *sqlgraph.Step {
+
+// ByLeaveApproves orders the results by leave_approves terms.
+func ByLeaveApproves(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLeaveApprovesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByApplicantField orders the results by applicant field.
+func ByApplicantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newApplicantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByOrganizationField orders the results by organization field.
+func ByOrganizationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOrganizationStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newLeaveApprovesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(LeaveapproveInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, LeaveapproveTable, LeaveapproveColumn),
+		sqlgraph.To(LeaveApprovesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LeaveApprovesTable, LeaveApprovesColumn),
+	)
+}
+func newApplicantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ApplicantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ApplicantTable, ApplicantColumn),
+	)
+}
+func newOrganizationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OrganizationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, OrganizationTable, OrganizationColumn),
 	)
 }

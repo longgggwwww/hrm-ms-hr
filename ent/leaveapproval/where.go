@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
@@ -57,6 +58,16 @@ func IDLTE(id int) predicate.LeaveApproval {
 // Comment applies equality check predicate on the "comment" field. It's identical to CommentEQ.
 func Comment(v string) predicate.LeaveApproval {
 	return predicate.LeaveApproval(sql.FieldEQ(FieldComment, v))
+}
+
+// LeaveRequestID applies equality check predicate on the "leave_request_id" field. It's identical to LeaveRequestIDEQ.
+func LeaveRequestID(v int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldEQ(FieldLeaveRequestID, v))
+}
+
+// ReviewerID applies equality check predicate on the "reviewer_id" field. It's identical to ReviewerIDEQ.
+func ReviewerID(v int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldEQ(FieldReviewerID, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -144,6 +155,46 @@ func CommentContainsFold(v string) predicate.LeaveApproval {
 	return predicate.LeaveApproval(sql.FieldContainsFold(FieldComment, v))
 }
 
+// LeaveRequestIDEQ applies the EQ predicate on the "leave_request_id" field.
+func LeaveRequestIDEQ(v int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldEQ(FieldLeaveRequestID, v))
+}
+
+// LeaveRequestIDNEQ applies the NEQ predicate on the "leave_request_id" field.
+func LeaveRequestIDNEQ(v int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldNEQ(FieldLeaveRequestID, v))
+}
+
+// LeaveRequestIDIn applies the In predicate on the "leave_request_id" field.
+func LeaveRequestIDIn(vs ...int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldIn(FieldLeaveRequestID, vs...))
+}
+
+// LeaveRequestIDNotIn applies the NotIn predicate on the "leave_request_id" field.
+func LeaveRequestIDNotIn(vs ...int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldNotIn(FieldLeaveRequestID, vs...))
+}
+
+// ReviewerIDEQ applies the EQ predicate on the "reviewer_id" field.
+func ReviewerIDEQ(v int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldEQ(FieldReviewerID, v))
+}
+
+// ReviewerIDNEQ applies the NEQ predicate on the "reviewer_id" field.
+func ReviewerIDNEQ(v int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldNEQ(FieldReviewerID, v))
+}
+
+// ReviewerIDIn applies the In predicate on the "reviewer_id" field.
+func ReviewerIDIn(vs ...int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldIn(FieldReviewerID, vs...))
+}
+
+// ReviewerIDNotIn applies the NotIn predicate on the "reviewer_id" field.
+func ReviewerIDNotIn(vs ...int) predicate.LeaveApproval {
+	return predicate.LeaveApproval(sql.FieldNotIn(FieldReviewerID, vs...))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.LeaveApproval {
 	return predicate.LeaveApproval(sql.FieldEQ(FieldCreatedAt, v))
@@ -222,6 +273,52 @@ func UpdatedAtLT(v time.Time) predicate.LeaveApproval {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.LeaveApproval {
 	return predicate.LeaveApproval(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasLeaveRequest applies the HasEdge predicate on the "leave_request" edge.
+func HasLeaveRequest() predicate.LeaveApproval {
+	return predicate.LeaveApproval(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, LeaveRequestTable, LeaveRequestColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLeaveRequestWith applies the HasEdge predicate on the "leave_request" edge with a given conditions (other predicates).
+func HasLeaveRequestWith(preds ...predicate.LeaveRequest) predicate.LeaveApproval {
+	return predicate.LeaveApproval(func(s *sql.Selector) {
+		step := newLeaveRequestStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasReviewer applies the HasEdge predicate on the "reviewer" edge.
+func HasReviewer() predicate.LeaveApproval {
+	return predicate.LeaveApproval(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ReviewerTable, ReviewerColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReviewerWith applies the HasEdge predicate on the "reviewer" edge with a given conditions (other predicates).
+func HasReviewerWith(preds ...predicate.Employee) predicate.LeaveApproval {
+	return predicate.LeaveApproval(func(s *sql.Selector) {
+		step := newReviewerStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

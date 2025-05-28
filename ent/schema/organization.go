@@ -75,6 +75,8 @@ func (Organization) Edges() []ent.Edge {
 			Annotations(entproto.Field(15)),
 		edge.To("labels", Label.Type).
 			Annotations(entproto.Field(16)),
+		edge.To("leave_requests", LeaveRequest.Type).
+			Annotations(entproto.Field(17)),
 	}
 }
 

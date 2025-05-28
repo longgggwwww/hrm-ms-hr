@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -22,15 +23,16 @@ import (
 // OrganizationQuery is the builder for querying Organization entities.
 type OrganizationQuery struct {
 	config
-	ctx             *QueryContext
-	order           []organization.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Organization
-	withParent      *OrganizationQuery
-	withChildren    *OrganizationQuery
-	withDepartments *DepartmentQuery
-	withProjects    *ProjectQuery
-	withLabels      *LabelQuery
+	ctx               *QueryContext
+	order             []organization.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.Organization
+	withParent        *OrganizationQuery
+	withChildren      *OrganizationQuery
+	withDepartments   *DepartmentQuery
+	withProjects      *ProjectQuery
+	withLabels        *LabelQuery
+	withLeaveRequests *LeaveRequestQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -170,6 +172,28 @@ func (oq *OrganizationQuery) QueryLabels() *LabelQuery {
 			sqlgraph.From(organization.Table, organization.FieldID, selector),
 			sqlgraph.To(label.Table, label.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, organization.LabelsTable, organization.LabelsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLeaveRequests chains the current query on the "leave_requests" edge.
+func (oq *OrganizationQuery) QueryLeaveRequests() *LeaveRequestQuery {
+	query := (&LeaveRequestClient{config: oq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, selector),
+			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.LeaveRequestsTable, organization.LeaveRequestsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(oq.driver.Dialect(), step)
 		return fromU, nil
@@ -364,16 +388,17 @@ func (oq *OrganizationQuery) Clone() *OrganizationQuery {
 		return nil
 	}
 	return &OrganizationQuery{
-		config:          oq.config,
-		ctx:             oq.ctx.Clone(),
-		order:           append([]organization.OrderOption{}, oq.order...),
-		inters:          append([]Interceptor{}, oq.inters...),
-		predicates:      append([]predicate.Organization{}, oq.predicates...),
-		withParent:      oq.withParent.Clone(),
-		withChildren:    oq.withChildren.Clone(),
-		withDepartments: oq.withDepartments.Clone(),
-		withProjects:    oq.withProjects.Clone(),
-		withLabels:      oq.withLabels.Clone(),
+		config:            oq.config,
+		ctx:               oq.ctx.Clone(),
+		order:             append([]organization.OrderOption{}, oq.order...),
+		inters:            append([]Interceptor{}, oq.inters...),
+		predicates:        append([]predicate.Organization{}, oq.predicates...),
+		withParent:        oq.withParent.Clone(),
+		withChildren:      oq.withChildren.Clone(),
+		withDepartments:   oq.withDepartments.Clone(),
+		withProjects:      oq.withProjects.Clone(),
+		withLabels:        oq.withLabels.Clone(),
+		withLeaveRequests: oq.withLeaveRequests.Clone(),
 		// clone intermediate query.
 		sql:  oq.sql.Clone(),
 		path: oq.path,
@@ -432,6 +457,17 @@ func (oq *OrganizationQuery) WithLabels(opts ...func(*LabelQuery)) *Organization
 		opt(query)
 	}
 	oq.withLabels = query
+	return oq
+}
+
+// WithLeaveRequests tells the query-builder to eager-load the nodes that are connected to
+// the "leave_requests" edge. The optional arguments are used to configure the query builder of the edge.
+func (oq *OrganizationQuery) WithLeaveRequests(opts ...func(*LeaveRequestQuery)) *OrganizationQuery {
+	query := (&LeaveRequestClient{config: oq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oq.withLeaveRequests = query
 	return oq
 }
 
@@ -513,12 +549,13 @@ func (oq *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*Organization{}
 		_spec       = oq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			oq.withParent != nil,
 			oq.withChildren != nil,
 			oq.withDepartments != nil,
 			oq.withProjects != nil,
 			oq.withLabels != nil,
+			oq.withLeaveRequests != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -570,6 +607,13 @@ func (oq *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		if err := oq.loadLabels(ctx, query, nodes,
 			func(n *Organization) { n.Edges.Labels = []*Label{} },
 			func(n *Organization, e *Label) { n.Edges.Labels = append(n.Edges.Labels, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := oq.withLeaveRequests; query != nil {
+		if err := oq.loadLeaveRequests(ctx, query, nodes,
+			func(n *Organization) { n.Edges.LeaveRequests = []*LeaveRequest{} },
+			func(n *Organization, e *LeaveRequest) { n.Edges.LeaveRequests = append(n.Edges.LeaveRequests, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -717,6 +761,36 @@ func (oq *OrganizationQuery) loadLabels(ctx context.Context, query *LabelQuery, 
 	}
 	query.Where(predicate.Label(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(organization.LabelsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.OrgID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "org_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (oq *OrganizationQuery) loadLeaveRequests(ctx context.Context, query *LeaveRequestQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *LeaveRequest)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Organization)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(leaverequest.FieldOrgID)
+	}
+	query.Where(predicate.LeaveRequest(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(organization.LeaveRequestsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

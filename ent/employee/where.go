@@ -522,6 +522,52 @@ func HasAssignedTasksWith(preds ...predicate.Task) predicate.Employee {
 	})
 }
 
+// HasLeaveApproves applies the HasEdge predicate on the "leave_approves" edge.
+func HasLeaveApproves() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LeaveApprovesTable, LeaveApprovesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLeaveApprovesWith applies the HasEdge predicate on the "leave_approves" edge with a given conditions (other predicates).
+func HasLeaveApprovesWith(preds ...predicate.LeaveApproval) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newLeaveApprovesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLeaveRequests applies the HasEdge predicate on the "leave_requests" edge.
+func HasLeaveRequests() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LeaveRequestsTable, LeaveRequestsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLeaveRequestsWith applies the HasEdge predicate on the "leave_requests" edge with a given conditions (other predicates).
+func HasLeaveRequestsWith(preds ...predicate.LeaveRequest) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newLeaveRequestsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Employee) predicate.Employee {
 	return predicate.Employee(sql.AndPredicates(predicates...))

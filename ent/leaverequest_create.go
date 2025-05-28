@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 )
 
 // LeaveRequestCreate is the builder for creating a LeaveRequest entity.
@@ -83,6 +85,18 @@ func (lrc *LeaveRequestCreate) SetNillableStatus(l *leaverequest.Status) *LeaveR
 	return lrc
 }
 
+// SetOrgID sets the "org_id" field.
+func (lrc *LeaveRequestCreate) SetOrgID(i int) *LeaveRequestCreate {
+	lrc.mutation.SetOrgID(i)
+	return lrc
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (lrc *LeaveRequestCreate) SetEmployeeID(i int) *LeaveRequestCreate {
+	lrc.mutation.SetEmployeeID(i)
+	return lrc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (lrc *LeaveRequestCreate) SetCreatedAt(t time.Time) *LeaveRequestCreate {
 	lrc.mutation.SetCreatedAt(t)
@@ -111,23 +125,41 @@ func (lrc *LeaveRequestCreate) SetNillableUpdatedAt(t *time.Time) *LeaveRequestC
 	return lrc
 }
 
-// SetLeaveapproveID sets the "leaveapprove" edge to the LeaveApproval entity by ID.
-func (lrc *LeaveRequestCreate) SetLeaveapproveID(id int) *LeaveRequestCreate {
-	lrc.mutation.SetLeaveapproveID(id)
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (lrc *LeaveRequestCreate) AddLeaveApprofeIDs(ids ...int) *LeaveRequestCreate {
+	lrc.mutation.AddLeaveApprofeIDs(ids...)
 	return lrc
 }
 
-// SetNillableLeaveapproveID sets the "leaveapprove" edge to the LeaveApproval entity by ID if the given value is not nil.
-func (lrc *LeaveRequestCreate) SetNillableLeaveapproveID(id *int) *LeaveRequestCreate {
-	if id != nil {
-		lrc = lrc.SetLeaveapproveID(*id)
+// AddLeaveApproves adds the "leave_approves" edges to the LeaveApproval entity.
+func (lrc *LeaveRequestCreate) AddLeaveApproves(l ...*LeaveApproval) *LeaveRequestCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
+	return lrc.AddLeaveApprofeIDs(ids...)
+}
+
+// SetApplicantID sets the "applicant" edge to the Employee entity by ID.
+func (lrc *LeaveRequestCreate) SetApplicantID(id int) *LeaveRequestCreate {
+	lrc.mutation.SetApplicantID(id)
 	return lrc
 }
 
-// SetLeaveapprove sets the "leaveapprove" edge to the LeaveApproval entity.
-func (lrc *LeaveRequestCreate) SetLeaveapprove(l *LeaveApproval) *LeaveRequestCreate {
-	return lrc.SetLeaveapproveID(l.ID)
+// SetApplicant sets the "applicant" edge to the Employee entity.
+func (lrc *LeaveRequestCreate) SetApplicant(e *Employee) *LeaveRequestCreate {
+	return lrc.SetApplicantID(e.ID)
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (lrc *LeaveRequestCreate) SetOrganizationID(id int) *LeaveRequestCreate {
+	lrc.mutation.SetOrganizationID(id)
+	return lrc
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (lrc *LeaveRequestCreate) SetOrganization(o *Organization) *LeaveRequestCreate {
+	return lrc.SetOrganizationID(o.ID)
 }
 
 // Mutation returns the LeaveRequestMutation object of the builder.
@@ -210,11 +242,23 @@ func (lrc *LeaveRequestCreate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "LeaveRequest.status": %w`, err)}
 		}
 	}
+	if _, ok := lrc.mutation.OrgID(); !ok {
+		return &ValidationError{Name: "org_id", err: errors.New(`ent: missing required field "LeaveRequest.org_id"`)}
+	}
+	if _, ok := lrc.mutation.EmployeeID(); !ok {
+		return &ValidationError{Name: "employee_id", err: errors.New(`ent: missing required field "LeaveRequest.employee_id"`)}
+	}
 	if _, ok := lrc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "LeaveRequest.created_at"`)}
 	}
 	if _, ok := lrc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "LeaveRequest.updated_at"`)}
+	}
+	if len(lrc.mutation.ApplicantIDs()) == 0 {
+		return &ValidationError{Name: "applicant", err: errors.New(`ent: missing required edge "LeaveRequest.applicant"`)}
+	}
+	if len(lrc.mutation.OrganizationIDs()) == 0 {
+		return &ValidationError{Name: "organization", err: errors.New(`ent: missing required edge "LeaveRequest.organization"`)}
 	}
 	return nil
 }
@@ -275,12 +319,12 @@ func (lrc *LeaveRequestCreate) createSpec() (*LeaveRequest, *sqlgraph.CreateSpec
 		_spec.SetField(leaverequest.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := lrc.mutation.LeaveapproveIDs(); len(nodes) > 0 {
+	if nodes := lrc.mutation.LeaveApprovesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   leaverequest.LeaveapproveTable,
-			Columns: []string{leaverequest.LeaveapproveColumn},
+			Table:   leaverequest.LeaveApprovesTable,
+			Columns: []string{leaverequest.LeaveApprovesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
@@ -289,7 +333,40 @@ func (lrc *LeaveRequestCreate) createSpec() (*LeaveRequest, *sqlgraph.CreateSpec
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.leave_request_leaveapprove = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := lrc.mutation.ApplicantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.ApplicantTable,
+			Columns: []string{leaverequest.ApplicantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.EmployeeID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := lrc.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.OrganizationTable,
+			Columns: []string{leaverequest.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OrgID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -425,6 +502,30 @@ func (u *LeaveRequestUpsert) SetStatus(v leaverequest.Status) *LeaveRequestUpser
 // UpdateStatus sets the "status" field to the value that was provided on create.
 func (u *LeaveRequestUpsert) UpdateStatus() *LeaveRequestUpsert {
 	u.SetExcluded(leaverequest.FieldStatus)
+	return u
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *LeaveRequestUpsert) SetOrgID(v int) *LeaveRequestUpsert {
+	u.Set(leaverequest.FieldOrgID, v)
+	return u
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *LeaveRequestUpsert) UpdateOrgID() *LeaveRequestUpsert {
+	u.SetExcluded(leaverequest.FieldOrgID)
+	return u
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (u *LeaveRequestUpsert) SetEmployeeID(v int) *LeaveRequestUpsert {
+	u.Set(leaverequest.FieldEmployeeID, v)
+	return u
+}
+
+// UpdateEmployeeID sets the "employee_id" field to the value that was provided on create.
+func (u *LeaveRequestUpsert) UpdateEmployeeID() *LeaveRequestUpsert {
+	u.SetExcluded(leaverequest.FieldEmployeeID)
 	return u
 }
 
@@ -587,6 +688,34 @@ func (u *LeaveRequestUpsertOne) SetStatus(v leaverequest.Status) *LeaveRequestUp
 func (u *LeaveRequestUpsertOne) UpdateStatus() *LeaveRequestUpsertOne {
 	return u.Update(func(s *LeaveRequestUpsert) {
 		s.UpdateStatus()
+	})
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *LeaveRequestUpsertOne) SetOrgID(v int) *LeaveRequestUpsertOne {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.SetOrgID(v)
+	})
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *LeaveRequestUpsertOne) UpdateOrgID() *LeaveRequestUpsertOne {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.UpdateOrgID()
+	})
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (u *LeaveRequestUpsertOne) SetEmployeeID(v int) *LeaveRequestUpsertOne {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.SetEmployeeID(v)
+	})
+}
+
+// UpdateEmployeeID sets the "employee_id" field to the value that was provided on create.
+func (u *LeaveRequestUpsertOne) UpdateEmployeeID() *LeaveRequestUpsertOne {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.UpdateEmployeeID()
 	})
 }
 
@@ -917,6 +1046,34 @@ func (u *LeaveRequestUpsertBulk) SetStatus(v leaverequest.Status) *LeaveRequestU
 func (u *LeaveRequestUpsertBulk) UpdateStatus() *LeaveRequestUpsertBulk {
 	return u.Update(func(s *LeaveRequestUpsert) {
 		s.UpdateStatus()
+	})
+}
+
+// SetOrgID sets the "org_id" field.
+func (u *LeaveRequestUpsertBulk) SetOrgID(v int) *LeaveRequestUpsertBulk {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.SetOrgID(v)
+	})
+}
+
+// UpdateOrgID sets the "org_id" field to the value that was provided on create.
+func (u *LeaveRequestUpsertBulk) UpdateOrgID() *LeaveRequestUpsertBulk {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.UpdateOrgID()
+	})
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (u *LeaveRequestUpsertBulk) SetEmployeeID(v int) *LeaveRequestUpsertBulk {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.SetEmployeeID(v)
+	})
+}
+
+// UpdateEmployeeID sets the "employee_id" field to the value that was provided on create.
+func (u *LeaveRequestUpsertBulk) UpdateEmployeeID() *LeaveRequestUpsertBulk {
+	return u.Update(func(s *LeaveRequestUpsert) {
+		s.UpdateEmployeeID()
 	})
 }
 

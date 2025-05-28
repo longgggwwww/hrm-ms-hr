@@ -44,6 +44,8 @@ const (
 	EdgeProjects = "projects"
 	// EdgeLabels holds the string denoting the labels edge name in mutations.
 	EdgeLabels = "labels"
+	// EdgeLeaveRequests holds the string denoting the leave_requests edge name in mutations.
+	EdgeLeaveRequests = "leave_requests"
 	// Table holds the table name of the organization in the database.
 	Table = "organizations"
 	// ParentTable is the table that holds the parent relation/edge.
@@ -75,6 +77,13 @@ const (
 	LabelsInverseTable = "labels"
 	// LabelsColumn is the table column denoting the labels relation/edge.
 	LabelsColumn = "org_id"
+	// LeaveRequestsTable is the table that holds the leave_requests relation/edge.
+	LeaveRequestsTable = "leave_requests"
+	// LeaveRequestsInverseTable is the table name for the LeaveRequest entity.
+	// It exists in this package in order to avoid circular dependency with the "leaverequest" package.
+	LeaveRequestsInverseTable = "leave_requests"
+	// LeaveRequestsColumn is the table column denoting the leave_requests relation/edge.
+	LeaveRequestsColumn = "org_id"
 )
 
 // Columns holds all SQL columns for organization fields.
@@ -235,6 +244,20 @@ func ByLabels(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLabelsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByLeaveRequestsCount orders the results by leave_requests count.
+func ByLeaveRequestsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLeaveRequestsStep(), opts...)
+	}
+}
+
+// ByLeaveRequests orders the results by leave_requests terms.
+func ByLeaveRequests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLeaveRequestsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newParentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -268,5 +291,12 @@ func newLabelsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LabelsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LabelsTable, LabelsColumn),
+	)
+}
+func newLeaveRequestsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LeaveRequestsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LeaveRequestsTable, LeaveRequestsColumn),
 	)
 }

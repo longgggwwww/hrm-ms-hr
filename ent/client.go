@@ -608,6 +608,38 @@ func (c *EmployeeClient) QueryAssignedTasks(e *Employee) *TaskQuery {
 	return query
 }
 
+// QueryLeaveApproves queries the leave_approves edge of a Employee.
+func (c *EmployeeClient) QueryLeaveApproves(e *Employee) *LeaveApprovalQuery {
+	query := (&LeaveApprovalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(leaveapproval.Table, leaveapproval.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.LeaveApprovesTable, employee.LeaveApprovesColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLeaveRequests queries the leave_requests edge of a Employee.
+func (c *EmployeeClient) QueryLeaveRequests(e *Employee) *LeaveRequestQuery {
+	query := (&LeaveRequestClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.LeaveRequestsTable, employee.LeaveRequestsColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *EmployeeClient) Hooks() []Hook {
 	return c.hooks.Employee
@@ -906,6 +938,38 @@ func (c *LeaveApprovalClient) GetX(ctx context.Context, id int) *LeaveApproval {
 	return obj
 }
 
+// QueryLeaveRequest queries the leave_request edge of a LeaveApproval.
+func (c *LeaveApprovalClient) QueryLeaveRequest(la *LeaveApproval) *LeaveRequestQuery {
+	query := (&LeaveRequestClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := la.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaveapproval.Table, leaveapproval.FieldID, id),
+			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaveapproval.LeaveRequestTable, leaveapproval.LeaveRequestColumn),
+		)
+		fromV = sqlgraph.Neighbors(la.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReviewer queries the reviewer edge of a LeaveApproval.
+func (c *LeaveApprovalClient) QueryReviewer(la *LeaveApproval) *EmployeeQuery {
+	query := (&EmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := la.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaveapproval.Table, leaveapproval.FieldID, id),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaveapproval.ReviewerTable, leaveapproval.ReviewerColumn),
+		)
+		fromV = sqlgraph.Neighbors(la.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *LeaveApprovalClient) Hooks() []Hook {
 	return c.hooks.LeaveApproval
@@ -1039,15 +1103,47 @@ func (c *LeaveRequestClient) GetX(ctx context.Context, id int) *LeaveRequest {
 	return obj
 }
 
-// QueryLeaveapprove queries the leaveapprove edge of a LeaveRequest.
-func (c *LeaveRequestClient) QueryLeaveapprove(lr *LeaveRequest) *LeaveApprovalQuery {
+// QueryLeaveApproves queries the leave_approves edge of a LeaveRequest.
+func (c *LeaveRequestClient) QueryLeaveApproves(lr *LeaveRequest) *LeaveApprovalQuery {
 	query := (&LeaveApprovalClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := lr.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(leaverequest.Table, leaverequest.FieldID, id),
 			sqlgraph.To(leaveapproval.Table, leaveapproval.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, leaverequest.LeaveapproveTable, leaverequest.LeaveapproveColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, leaverequest.LeaveApprovesTable, leaverequest.LeaveApprovesColumn),
+		)
+		fromV = sqlgraph.Neighbors(lr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryApplicant queries the applicant edge of a LeaveRequest.
+func (c *LeaveRequestClient) QueryApplicant(lr *LeaveRequest) *EmployeeQuery {
+	query := (&EmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaverequest.Table, leaverequest.FieldID, id),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaverequest.ApplicantTable, leaverequest.ApplicantColumn),
+		)
+		fromV = sqlgraph.Neighbors(lr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOrganization queries the organization edge of a LeaveRequest.
+func (c *LeaveRequestClient) QueryOrganization(lr *LeaveRequest) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(leaverequest.Table, leaverequest.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, leaverequest.OrganizationTable, leaverequest.OrganizationColumn),
 		)
 		fromV = sqlgraph.Neighbors(lr.driver.Dialect(), step)
 		return fromV, nil
@@ -1261,6 +1357,22 @@ func (c *OrganizationClient) QueryLabels(o *Organization) *LabelQuery {
 			sqlgraph.From(organization.Table, organization.FieldID, id),
 			sqlgraph.To(label.Table, label.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, organization.LabelsTable, organization.LabelsColumn),
+		)
+		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLeaveRequests queries the leave_requests edge of a Organization.
+func (c *OrganizationClient) QueryLeaveRequests(o *Organization) *LeaveRequestQuery {
+	query := (&LeaveRequestClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := o.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.LeaveRequestsTable, organization.LeaveRequestsColumn),
 		)
 		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
 		return fromV, nil

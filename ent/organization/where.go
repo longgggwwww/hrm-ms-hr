@@ -835,6 +835,29 @@ func HasLabelsWith(preds ...predicate.Label) predicate.Organization {
 	})
 }
 
+// HasLeaveRequests applies the HasEdge predicate on the "leave_requests" edge.
+func HasLeaveRequests() predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, LeaveRequestsTable, LeaveRequestsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLeaveRequestsWith applies the HasEdge predicate on the "leave_requests" edge with a given conditions (other predicates).
+func HasLeaveRequestsWith(preds ...predicate.LeaveRequest) predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := newLeaveRequestsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Organization) predicate.Organization {
 	return predicate.Organization(sql.AndPredicates(predicates...))

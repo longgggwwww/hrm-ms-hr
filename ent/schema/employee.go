@@ -67,7 +67,11 @@ func (Employee) Edges() []ent.Edge {
 			Annotations(entproto.Field(12)),
 		edge.From("assigned_tasks", Task.Type).
 			Ref("assignees").
-			Annotations(entproto.Field(13)), // Edge many-to-many với Task
+			Annotations(entproto.Field(13)),
+		edge.To("leave_approves", LeaveApproval.Type).
+			Annotations(entproto.Field(14)),
+		edge.To("leave_requests", LeaveRequest.Type).
+			Annotations(entproto.Field(15)),
 	}
 }
 

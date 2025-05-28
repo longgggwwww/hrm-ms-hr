@@ -9,7 +9,9 @@ import (
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	leaveapproval "github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	leaverequest "github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -42,8 +44,24 @@ func toProtoLeaveApproval(e *ent.LeaveApproval) (*LeaveApproval, error) {
 	v.CreatedAt = created_at
 	id := int64(e.ID)
 	v.Id = id
+	leave_request := int64(e.LeaveRequestID)
+	v.LeaveRequestId = leave_request
+	reviewer := int64(e.ReviewerID)
+	v.ReviewerId = reviewer
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
+	if edg := e.Edges.LeaveRequest; edg != nil {
+		id := int64(edg.ID)
+		v.LeaveRequest = &LeaveRequest{
+			Id: id,
+		}
+	}
+	if edg := e.Edges.Reviewer; edg != nil {
+		id := int64(edg.ID)
+		v.Reviewer = &Employee{
+			Id: id,
+		}
+	}
 	return v, nil
 }
 
@@ -98,6 +116,12 @@ func (svc *LeaveApprovalService) Get(ctx context.Context, req *GetLeaveApprovalR
 	case GetLeaveApprovalRequest_WITH_EDGE_IDS:
 		get, err = svc.client.LeaveApproval.Query().
 			Where(leaveapproval.ID(id)).
+			WithLeaveRequest(func(query *ent.LeaveRequestQuery) {
+				query.Select(leaverequest.FieldID)
+			}).
+			WithReviewer(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -124,8 +148,20 @@ func (svc *LeaveApprovalService) Update(ctx context.Context, req *UpdateLeaveApp
 	}
 	leaveapprovalCreatedAt := runtime.ExtractTime(leaveapproval.GetCreatedAt())
 	m.SetCreatedAt(leaveapprovalCreatedAt)
+	leaveapprovalLeaveRequestID := int(leaveapproval.GetLeaveRequestId())
+	m.SetLeaveRequestID(leaveapprovalLeaveRequestID)
+	leaveapprovalReviewerID := int(leaveapproval.GetReviewerId())
+	m.SetReviewerID(leaveapprovalReviewerID)
 	leaveapprovalUpdatedAt := runtime.ExtractTime(leaveapproval.GetUpdatedAt())
 	m.SetUpdatedAt(leaveapprovalUpdatedAt)
+	if leaveapproval.GetLeaveRequest() != nil {
+		leaveapprovalLeaveRequest := int(leaveapproval.GetLeaveRequest().GetId())
+		m.SetLeaveRequestID(leaveapprovalLeaveRequest)
+	}
+	if leaveapproval.GetReviewer() != nil {
+		leaveapprovalReviewer := int(leaveapproval.GetReviewer().GetId())
+		m.SetReviewerID(leaveapprovalReviewer)
+	}
 
 	res, err := m.Save(ctx)
 	switch {
@@ -196,6 +232,12 @@ func (svc *LeaveApprovalService) List(ctx context.Context, req *ListLeaveApprova
 		entList, err = listQuery.All(ctx)
 	case ListLeaveApprovalRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithLeaveRequest(func(query *ent.LeaveRequestQuery) {
+				query.Select(leaverequest.FieldID)
+			}).
+			WithReviewer(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
 			All(ctx)
 	}
 	switch {
@@ -263,7 +305,19 @@ func (svc *LeaveApprovalService) createBuilder(leaveapproval *LeaveApproval) (*e
 	}
 	leaveapprovalCreatedAt := runtime.ExtractTime(leaveapproval.GetCreatedAt())
 	m.SetCreatedAt(leaveapprovalCreatedAt)
+	leaveapprovalLeaveRequestID := int(leaveapproval.GetLeaveRequestId())
+	m.SetLeaveRequestID(leaveapprovalLeaveRequestID)
+	leaveapprovalReviewerID := int(leaveapproval.GetReviewerId())
+	m.SetReviewerID(leaveapprovalReviewerID)
 	leaveapprovalUpdatedAt := runtime.ExtractTime(leaveapproval.GetUpdatedAt())
 	m.SetUpdatedAt(leaveapprovalUpdatedAt)
+	if leaveapproval.GetLeaveRequest() != nil {
+		leaveapprovalLeaveRequest := int(leaveapproval.GetLeaveRequest().GetId())
+		m.SetLeaveRequestID(leaveapprovalLeaveRequest)
+	}
+	if leaveapproval.GetReviewer() != nil {
+		leaveapprovalReviewer := int(leaveapproval.GetReviewer().GetId())
+		m.SetReviewerID(leaveapprovalReviewer)
+	}
 	return m, nil
 }

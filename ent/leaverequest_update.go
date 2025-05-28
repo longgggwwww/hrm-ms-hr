@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
+	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 )
 
@@ -126,6 +128,34 @@ func (lru *LeaveRequestUpdate) SetNillableStatus(l *leaverequest.Status) *LeaveR
 	return lru
 }
 
+// SetOrgID sets the "org_id" field.
+func (lru *LeaveRequestUpdate) SetOrgID(i int) *LeaveRequestUpdate {
+	lru.mutation.SetOrgID(i)
+	return lru
+}
+
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (lru *LeaveRequestUpdate) SetNillableOrgID(i *int) *LeaveRequestUpdate {
+	if i != nil {
+		lru.SetOrgID(*i)
+	}
+	return lru
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (lru *LeaveRequestUpdate) SetEmployeeID(i int) *LeaveRequestUpdate {
+	lru.mutation.SetEmployeeID(i)
+	return lru
+}
+
+// SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
+func (lru *LeaveRequestUpdate) SetNillableEmployeeID(i *int) *LeaveRequestUpdate {
+	if i != nil {
+		lru.SetEmployeeID(*i)
+	}
+	return lru
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (lru *LeaveRequestUpdate) SetCreatedAt(t time.Time) *LeaveRequestUpdate {
 	lru.mutation.SetCreatedAt(t)
@@ -146,23 +176,41 @@ func (lru *LeaveRequestUpdate) SetUpdatedAt(t time.Time) *LeaveRequestUpdate {
 	return lru
 }
 
-// SetLeaveapproveID sets the "leaveapprove" edge to the LeaveApproval entity by ID.
-func (lru *LeaveRequestUpdate) SetLeaveapproveID(id int) *LeaveRequestUpdate {
-	lru.mutation.SetLeaveapproveID(id)
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (lru *LeaveRequestUpdate) AddLeaveApprofeIDs(ids ...int) *LeaveRequestUpdate {
+	lru.mutation.AddLeaveApprofeIDs(ids...)
 	return lru
 }
 
-// SetNillableLeaveapproveID sets the "leaveapprove" edge to the LeaveApproval entity by ID if the given value is not nil.
-func (lru *LeaveRequestUpdate) SetNillableLeaveapproveID(id *int) *LeaveRequestUpdate {
-	if id != nil {
-		lru = lru.SetLeaveapproveID(*id)
+// AddLeaveApproves adds the "leave_approves" edges to the LeaveApproval entity.
+func (lru *LeaveRequestUpdate) AddLeaveApproves(l ...*LeaveApproval) *LeaveRequestUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
+	return lru.AddLeaveApprofeIDs(ids...)
+}
+
+// SetApplicantID sets the "applicant" edge to the Employee entity by ID.
+func (lru *LeaveRequestUpdate) SetApplicantID(id int) *LeaveRequestUpdate {
+	lru.mutation.SetApplicantID(id)
 	return lru
 }
 
-// SetLeaveapprove sets the "leaveapprove" edge to the LeaveApproval entity.
-func (lru *LeaveRequestUpdate) SetLeaveapprove(l *LeaveApproval) *LeaveRequestUpdate {
-	return lru.SetLeaveapproveID(l.ID)
+// SetApplicant sets the "applicant" edge to the Employee entity.
+func (lru *LeaveRequestUpdate) SetApplicant(e *Employee) *LeaveRequestUpdate {
+	return lru.SetApplicantID(e.ID)
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (lru *LeaveRequestUpdate) SetOrganizationID(id int) *LeaveRequestUpdate {
+	lru.mutation.SetOrganizationID(id)
+	return lru
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (lru *LeaveRequestUpdate) SetOrganization(o *Organization) *LeaveRequestUpdate {
+	return lru.SetOrganizationID(o.ID)
 }
 
 // Mutation returns the LeaveRequestMutation object of the builder.
@@ -170,9 +218,36 @@ func (lru *LeaveRequestUpdate) Mutation() *LeaveRequestMutation {
 	return lru.mutation
 }
 
-// ClearLeaveapprove clears the "leaveapprove" edge to the LeaveApproval entity.
-func (lru *LeaveRequestUpdate) ClearLeaveapprove() *LeaveRequestUpdate {
-	lru.mutation.ClearLeaveapprove()
+// ClearLeaveApproves clears all "leave_approves" edges to the LeaveApproval entity.
+func (lru *LeaveRequestUpdate) ClearLeaveApproves() *LeaveRequestUpdate {
+	lru.mutation.ClearLeaveApproves()
+	return lru
+}
+
+// RemoveLeaveApprofeIDs removes the "leave_approves" edge to LeaveApproval entities by IDs.
+func (lru *LeaveRequestUpdate) RemoveLeaveApprofeIDs(ids ...int) *LeaveRequestUpdate {
+	lru.mutation.RemoveLeaveApprofeIDs(ids...)
+	return lru
+}
+
+// RemoveLeaveApproves removes "leave_approves" edges to LeaveApproval entities.
+func (lru *LeaveRequestUpdate) RemoveLeaveApproves(l ...*LeaveApproval) *LeaveRequestUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return lru.RemoveLeaveApprofeIDs(ids...)
+}
+
+// ClearApplicant clears the "applicant" edge to the Employee entity.
+func (lru *LeaveRequestUpdate) ClearApplicant() *LeaveRequestUpdate {
+	lru.mutation.ClearApplicant()
+	return lru
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (lru *LeaveRequestUpdate) ClearOrganization() *LeaveRequestUpdate {
+	lru.mutation.ClearOrganization()
 	return lru
 }
 
@@ -224,6 +299,12 @@ func (lru *LeaveRequestUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "LeaveRequest.status": %w`, err)}
 		}
 	}
+	if lru.mutation.ApplicantCleared() && len(lru.mutation.ApplicantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveRequest.applicant"`)
+	}
+	if lru.mutation.OrganizationCleared() && len(lru.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveRequest.organization"`)
+	}
 	return nil
 }
 
@@ -269,12 +350,12 @@ func (lru *LeaveRequestUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lru.mutation.UpdatedAt(); ok {
 		_spec.SetField(leaverequest.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if lru.mutation.LeaveapproveCleared() {
+	if lru.mutation.LeaveApprovesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   leaverequest.LeaveapproveTable,
-			Columns: []string{leaverequest.LeaveapproveColumn},
+			Table:   leaverequest.LeaveApprovesTable,
+			Columns: []string{leaverequest.LeaveApprovesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
@@ -282,15 +363,89 @@ func (lru *LeaveRequestUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := lru.mutation.LeaveapproveIDs(); len(nodes) > 0 {
+	if nodes := lru.mutation.RemovedLeaveApprovesIDs(); len(nodes) > 0 && !lru.mutation.LeaveApprovesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   leaverequest.LeaveapproveTable,
-			Columns: []string{leaverequest.LeaveapproveColumn},
+			Table:   leaverequest.LeaveApprovesTable,
+			Columns: []string{leaverequest.LeaveApprovesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lru.mutation.LeaveApprovesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   leaverequest.LeaveApprovesTable,
+			Columns: []string{leaverequest.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lru.mutation.ApplicantCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.ApplicantTable,
+			Columns: []string{leaverequest.ApplicantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lru.mutation.ApplicantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.ApplicantTable,
+			Columns: []string{leaverequest.ApplicantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lru.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.OrganizationTable,
+			Columns: []string{leaverequest.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lru.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.OrganizationTable,
+			Columns: []string{leaverequest.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -415,6 +570,34 @@ func (lruo *LeaveRequestUpdateOne) SetNillableStatus(l *leaverequest.Status) *Le
 	return lruo
 }
 
+// SetOrgID sets the "org_id" field.
+func (lruo *LeaveRequestUpdateOne) SetOrgID(i int) *LeaveRequestUpdateOne {
+	lruo.mutation.SetOrgID(i)
+	return lruo
+}
+
+// SetNillableOrgID sets the "org_id" field if the given value is not nil.
+func (lruo *LeaveRequestUpdateOne) SetNillableOrgID(i *int) *LeaveRequestUpdateOne {
+	if i != nil {
+		lruo.SetOrgID(*i)
+	}
+	return lruo
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (lruo *LeaveRequestUpdateOne) SetEmployeeID(i int) *LeaveRequestUpdateOne {
+	lruo.mutation.SetEmployeeID(i)
+	return lruo
+}
+
+// SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
+func (lruo *LeaveRequestUpdateOne) SetNillableEmployeeID(i *int) *LeaveRequestUpdateOne {
+	if i != nil {
+		lruo.SetEmployeeID(*i)
+	}
+	return lruo
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (lruo *LeaveRequestUpdateOne) SetCreatedAt(t time.Time) *LeaveRequestUpdateOne {
 	lruo.mutation.SetCreatedAt(t)
@@ -435,23 +618,41 @@ func (lruo *LeaveRequestUpdateOne) SetUpdatedAt(t time.Time) *LeaveRequestUpdate
 	return lruo
 }
 
-// SetLeaveapproveID sets the "leaveapprove" edge to the LeaveApproval entity by ID.
-func (lruo *LeaveRequestUpdateOne) SetLeaveapproveID(id int) *LeaveRequestUpdateOne {
-	lruo.mutation.SetLeaveapproveID(id)
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (lruo *LeaveRequestUpdateOne) AddLeaveApprofeIDs(ids ...int) *LeaveRequestUpdateOne {
+	lruo.mutation.AddLeaveApprofeIDs(ids...)
 	return lruo
 }
 
-// SetNillableLeaveapproveID sets the "leaveapprove" edge to the LeaveApproval entity by ID if the given value is not nil.
-func (lruo *LeaveRequestUpdateOne) SetNillableLeaveapproveID(id *int) *LeaveRequestUpdateOne {
-	if id != nil {
-		lruo = lruo.SetLeaveapproveID(*id)
+// AddLeaveApproves adds the "leave_approves" edges to the LeaveApproval entity.
+func (lruo *LeaveRequestUpdateOne) AddLeaveApproves(l ...*LeaveApproval) *LeaveRequestUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
 	}
+	return lruo.AddLeaveApprofeIDs(ids...)
+}
+
+// SetApplicantID sets the "applicant" edge to the Employee entity by ID.
+func (lruo *LeaveRequestUpdateOne) SetApplicantID(id int) *LeaveRequestUpdateOne {
+	lruo.mutation.SetApplicantID(id)
 	return lruo
 }
 
-// SetLeaveapprove sets the "leaveapprove" edge to the LeaveApproval entity.
-func (lruo *LeaveRequestUpdateOne) SetLeaveapprove(l *LeaveApproval) *LeaveRequestUpdateOne {
-	return lruo.SetLeaveapproveID(l.ID)
+// SetApplicant sets the "applicant" edge to the Employee entity.
+func (lruo *LeaveRequestUpdateOne) SetApplicant(e *Employee) *LeaveRequestUpdateOne {
+	return lruo.SetApplicantID(e.ID)
+}
+
+// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
+func (lruo *LeaveRequestUpdateOne) SetOrganizationID(id int) *LeaveRequestUpdateOne {
+	lruo.mutation.SetOrganizationID(id)
+	return lruo
+}
+
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (lruo *LeaveRequestUpdateOne) SetOrganization(o *Organization) *LeaveRequestUpdateOne {
+	return lruo.SetOrganizationID(o.ID)
 }
 
 // Mutation returns the LeaveRequestMutation object of the builder.
@@ -459,9 +660,36 @@ func (lruo *LeaveRequestUpdateOne) Mutation() *LeaveRequestMutation {
 	return lruo.mutation
 }
 
-// ClearLeaveapprove clears the "leaveapprove" edge to the LeaveApproval entity.
-func (lruo *LeaveRequestUpdateOne) ClearLeaveapprove() *LeaveRequestUpdateOne {
-	lruo.mutation.ClearLeaveapprove()
+// ClearLeaveApproves clears all "leave_approves" edges to the LeaveApproval entity.
+func (lruo *LeaveRequestUpdateOne) ClearLeaveApproves() *LeaveRequestUpdateOne {
+	lruo.mutation.ClearLeaveApproves()
+	return lruo
+}
+
+// RemoveLeaveApprofeIDs removes the "leave_approves" edge to LeaveApproval entities by IDs.
+func (lruo *LeaveRequestUpdateOne) RemoveLeaveApprofeIDs(ids ...int) *LeaveRequestUpdateOne {
+	lruo.mutation.RemoveLeaveApprofeIDs(ids...)
+	return lruo
+}
+
+// RemoveLeaveApproves removes "leave_approves" edges to LeaveApproval entities.
+func (lruo *LeaveRequestUpdateOne) RemoveLeaveApproves(l ...*LeaveApproval) *LeaveRequestUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return lruo.RemoveLeaveApprofeIDs(ids...)
+}
+
+// ClearApplicant clears the "applicant" edge to the Employee entity.
+func (lruo *LeaveRequestUpdateOne) ClearApplicant() *LeaveRequestUpdateOne {
+	lruo.mutation.ClearApplicant()
+	return lruo
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (lruo *LeaveRequestUpdateOne) ClearOrganization() *LeaveRequestUpdateOne {
+	lruo.mutation.ClearOrganization()
 	return lruo
 }
 
@@ -526,6 +754,12 @@ func (lruo *LeaveRequestUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "LeaveRequest.status": %w`, err)}
 		}
 	}
+	if lruo.mutation.ApplicantCleared() && len(lruo.mutation.ApplicantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveRequest.applicant"`)
+	}
+	if lruo.mutation.OrganizationCleared() && len(lruo.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "LeaveRequest.organization"`)
+	}
 	return nil
 }
 
@@ -588,12 +822,12 @@ func (lruo *LeaveRequestUpdateOne) sqlSave(ctx context.Context) (_node *LeaveReq
 	if value, ok := lruo.mutation.UpdatedAt(); ok {
 		_spec.SetField(leaverequest.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if lruo.mutation.LeaveapproveCleared() {
+	if lruo.mutation.LeaveApprovesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   leaverequest.LeaveapproveTable,
-			Columns: []string{leaverequest.LeaveapproveColumn},
+			Table:   leaverequest.LeaveApprovesTable,
+			Columns: []string{leaverequest.LeaveApprovesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
@@ -601,15 +835,89 @@ func (lruo *LeaveRequestUpdateOne) sqlSave(ctx context.Context) (_node *LeaveReq
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := lruo.mutation.LeaveapproveIDs(); len(nodes) > 0 {
+	if nodes := lruo.mutation.RemovedLeaveApprovesIDs(); len(nodes) > 0 && !lruo.mutation.LeaveApprovesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   leaverequest.LeaveapproveTable,
-			Columns: []string{leaverequest.LeaveapproveColumn},
+			Table:   leaverequest.LeaveApprovesTable,
+			Columns: []string{leaverequest.LeaveApprovesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lruo.mutation.LeaveApprovesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   leaverequest.LeaveApprovesTable,
+			Columns: []string{leaverequest.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lruo.mutation.ApplicantCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.ApplicantTable,
+			Columns: []string{leaverequest.ApplicantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lruo.mutation.ApplicantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.ApplicantTable,
+			Columns: []string{leaverequest.ApplicantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if lruo.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.OrganizationTable,
+			Columns: []string{leaverequest.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lruo.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   leaverequest.OrganizationTable,
+			Columns: []string{leaverequest.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

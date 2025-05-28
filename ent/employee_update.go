@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
+	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -184,6 +186,36 @@ func (eu *EmployeeUpdate) AddAssignedTasks(t ...*Task) *EmployeeUpdate {
 	return eu.AddAssignedTaskIDs(ids...)
 }
 
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (eu *EmployeeUpdate) AddLeaveApprofeIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.AddLeaveApprofeIDs(ids...)
+	return eu
+}
+
+// AddLeaveApproves adds the "leave_approves" edges to the LeaveApproval entity.
+func (eu *EmployeeUpdate) AddLeaveApproves(l ...*LeaveApproval) *EmployeeUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return eu.AddLeaveApprofeIDs(ids...)
+}
+
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (eu *EmployeeUpdate) AddLeaveRequestIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.AddLeaveRequestIDs(ids...)
+	return eu
+}
+
+// AddLeaveRequests adds the "leave_requests" edges to the LeaveRequest entity.
+func (eu *EmployeeUpdate) AddLeaveRequests(l ...*LeaveRequest) *EmployeeUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return eu.AddLeaveRequestIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (eu *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return eu.mutation
@@ -256,6 +288,48 @@ func (eu *EmployeeUpdate) RemoveAssignedTasks(t ...*Task) *EmployeeUpdate {
 		ids[i] = t[i].ID
 	}
 	return eu.RemoveAssignedTaskIDs(ids...)
+}
+
+// ClearLeaveApproves clears all "leave_approves" edges to the LeaveApproval entity.
+func (eu *EmployeeUpdate) ClearLeaveApproves() *EmployeeUpdate {
+	eu.mutation.ClearLeaveApproves()
+	return eu
+}
+
+// RemoveLeaveApprofeIDs removes the "leave_approves" edge to LeaveApproval entities by IDs.
+func (eu *EmployeeUpdate) RemoveLeaveApprofeIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.RemoveLeaveApprofeIDs(ids...)
+	return eu
+}
+
+// RemoveLeaveApproves removes "leave_approves" edges to LeaveApproval entities.
+func (eu *EmployeeUpdate) RemoveLeaveApproves(l ...*LeaveApproval) *EmployeeUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return eu.RemoveLeaveApprofeIDs(ids...)
+}
+
+// ClearLeaveRequests clears all "leave_requests" edges to the LeaveRequest entity.
+func (eu *EmployeeUpdate) ClearLeaveRequests() *EmployeeUpdate {
+	eu.mutation.ClearLeaveRequests()
+	return eu
+}
+
+// RemoveLeaveRequestIDs removes the "leave_requests" edge to LeaveRequest entities by IDs.
+func (eu *EmployeeUpdate) RemoveLeaveRequestIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.RemoveLeaveRequestIDs(ids...)
+	return eu
+}
+
+// RemoveLeaveRequests removes "leave_requests" edges to LeaveRequest entities.
+func (eu *EmployeeUpdate) RemoveLeaveRequests(l ...*LeaveRequest) *EmployeeUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return eu.RemoveLeaveRequestIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -512,6 +586,96 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.LeaveApprovesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveApprovesTable,
+			Columns: []string{employee.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedLeaveApprovesIDs(); len(nodes) > 0 && !eu.mutation.LeaveApprovesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveApprovesTable,
+			Columns: []string{employee.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.LeaveApprovesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveApprovesTable,
+			Columns: []string{employee.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveRequestsTable,
+			Columns: []string{employee.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedLeaveRequestsIDs(); len(nodes) > 0 && !eu.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveRequestsTable,
+			Columns: []string{employee.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.LeaveRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveRequestsTable,
+			Columns: []string{employee.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{employee.Label}
@@ -685,6 +849,36 @@ func (euo *EmployeeUpdateOne) AddAssignedTasks(t ...*Task) *EmployeeUpdateOne {
 	return euo.AddAssignedTaskIDs(ids...)
 }
 
+// AddLeaveApprofeIDs adds the "leave_approves" edge to the LeaveApproval entity by IDs.
+func (euo *EmployeeUpdateOne) AddLeaveApprofeIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.AddLeaveApprofeIDs(ids...)
+	return euo
+}
+
+// AddLeaveApproves adds the "leave_approves" edges to the LeaveApproval entity.
+func (euo *EmployeeUpdateOne) AddLeaveApproves(l ...*LeaveApproval) *EmployeeUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return euo.AddLeaveApprofeIDs(ids...)
+}
+
+// AddLeaveRequestIDs adds the "leave_requests" edge to the LeaveRequest entity by IDs.
+func (euo *EmployeeUpdateOne) AddLeaveRequestIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.AddLeaveRequestIDs(ids...)
+	return euo
+}
+
+// AddLeaveRequests adds the "leave_requests" edges to the LeaveRequest entity.
+func (euo *EmployeeUpdateOne) AddLeaveRequests(l ...*LeaveRequest) *EmployeeUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return euo.AddLeaveRequestIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (euo *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return euo.mutation
@@ -757,6 +951,48 @@ func (euo *EmployeeUpdateOne) RemoveAssignedTasks(t ...*Task) *EmployeeUpdateOne
 		ids[i] = t[i].ID
 	}
 	return euo.RemoveAssignedTaskIDs(ids...)
+}
+
+// ClearLeaveApproves clears all "leave_approves" edges to the LeaveApproval entity.
+func (euo *EmployeeUpdateOne) ClearLeaveApproves() *EmployeeUpdateOne {
+	euo.mutation.ClearLeaveApproves()
+	return euo
+}
+
+// RemoveLeaveApprofeIDs removes the "leave_approves" edge to LeaveApproval entities by IDs.
+func (euo *EmployeeUpdateOne) RemoveLeaveApprofeIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.RemoveLeaveApprofeIDs(ids...)
+	return euo
+}
+
+// RemoveLeaveApproves removes "leave_approves" edges to LeaveApproval entities.
+func (euo *EmployeeUpdateOne) RemoveLeaveApproves(l ...*LeaveApproval) *EmployeeUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return euo.RemoveLeaveApprofeIDs(ids...)
+}
+
+// ClearLeaveRequests clears all "leave_requests" edges to the LeaveRequest entity.
+func (euo *EmployeeUpdateOne) ClearLeaveRequests() *EmployeeUpdateOne {
+	euo.mutation.ClearLeaveRequests()
+	return euo
+}
+
+// RemoveLeaveRequestIDs removes the "leave_requests" edge to LeaveRequest entities by IDs.
+func (euo *EmployeeUpdateOne) RemoveLeaveRequestIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.RemoveLeaveRequestIDs(ids...)
+	return euo
+}
+
+// RemoveLeaveRequests removes "leave_requests" edges to LeaveRequest entities.
+func (euo *EmployeeUpdateOne) RemoveLeaveRequests(l ...*LeaveRequest) *EmployeeUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return euo.RemoveLeaveRequestIDs(ids...)
 }
 
 // Where appends a list predicates to the EmployeeUpdate builder.
@@ -1036,6 +1272,96 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.LeaveApprovesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveApprovesTable,
+			Columns: []string{employee.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedLeaveApprovesIDs(); len(nodes) > 0 && !euo.mutation.LeaveApprovesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveApprovesTable,
+			Columns: []string{employee.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.LeaveApprovesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveApprovesTable,
+			Columns: []string{employee.LeaveApprovesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaveapproval.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveRequestsTable,
+			Columns: []string{employee.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedLeaveRequestsIDs(); len(nodes) > 0 && !euo.mutation.LeaveRequestsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveRequestsTable,
+			Columns: []string{employee.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.LeaveRequestsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.LeaveRequestsTable,
+			Columns: []string{employee.LeaveRequestsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -100,6 +100,8 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 	v.CreatorId = creator_id
 	description := wrapperspb.String(e.Description)
 	v.Description = description
+	due_date := timestamppb.New(e.DueDate)
+	v.DueDate = due_date
 	id := int64(e.ID)
 	v.Id = id
 	name := e.Name
@@ -226,6 +228,10 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 	if task.GetDescription() != nil {
 		taskDescription := task.GetDescription().GetValue()
 		m.SetDescription(taskDescription)
+	}
+	if task.GetDueDate() != nil {
+		taskDueDate := runtime.ExtractTime(task.GetDueDate())
+		m.SetDueDate(taskDueDate)
 	}
 	taskName := task.GetName()
 	m.SetName(taskName)
@@ -408,6 +414,10 @@ func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 	if task.GetDescription() != nil {
 		taskDescription := task.GetDescription().GetValue()
 		m.SetDescription(taskDescription)
+	}
+	if task.GetDueDate() != nil {
+		taskDueDate := runtime.ExtractTime(task.GetDueDate())
+		m.SetDueDate(taskDueDate)
 	}
 	taskName := task.GetName()
 	m.SetName(taskName)

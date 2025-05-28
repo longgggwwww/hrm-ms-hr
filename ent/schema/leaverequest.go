@@ -27,16 +27,16 @@ func (LeaveRequest) Fields() []ent.Field {
 		field.String("reason").
 			Annotations(entproto.Field(5)).
 			Optional().
-      Nillable(),
+			Nillable(),
 		field.Enum("type").
 			Values("annual", "unpaid").
 			Default("annual").
 			Annotations(
-					entproto.Field(6),
-					entproto.Enum(map[string]int32{
-							"annual": 0,
-							"unpaid": 1,
-					}),
+				entproto.Field(6),
+				entproto.Enum(map[string]int32{
+					"annual": 0,
+					"unpaid": 1,
+				}),
 			),
 		field.Enum("status").
 			Values("pending", "rejected", "approved").
@@ -49,11 +49,15 @@ func (LeaveRequest) Fields() []ent.Field {
 					"approved": 2,
 				}),
 			),
+		field.Int("org_id").
+			Annotations(entproto.Field(8)),
+		field.Int("employee_id").
+			Annotations(entproto.Field(9)),
 		field.Time("created_at").
-			Annotations(entproto.Field(8)).
+			Annotations(entproto.Field(10)).
 			Default(time.Now),
 		field.Time("updated_at").
-			Annotations(entproto.Field(9)).
+			Annotations(entproto.Field(11)).
 			Default(time.Now).
 			UpdateDefault(time.Now),
 	}
@@ -61,13 +65,23 @@ func (LeaveRequest) Fields() []ent.Field {
 
 // Edges of the LeaveRequest.
 func (LeaveRequest) Edges() []ent.Edge {
-	 return []ent.Edge{
-        edge.To("leaveapprove", LeaveApproval.Type).
-            Unique().
-						Annotations(entproto.Field(10)),
-    }
+	return []ent.Edge{
+		edge.To("leave_approves", LeaveApproval.Type).
+			Annotations(entproto.Field(12)),
+		edge.From("applicant", Employee.Type).
+			Ref("leave_requests").
+			Field("employee_id").
+			Required().
+			Annotations(entproto.Field(13)).
+			Unique(),
+		edge.From("organization", Organization.Type).
+			Ref("leave_requests").
+			Field("org_id").
+			Required().
+			Annotations(entproto.Field(14)).
+			Unique(),
+	}
 }
-
 
 func (LeaveRequest) Annotations() []schema.Annotation {
 	return []schema.Annotation{
