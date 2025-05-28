@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	userPb "github.com/huynhthanhthao/hrm_user_service/generated"
+	userPb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"

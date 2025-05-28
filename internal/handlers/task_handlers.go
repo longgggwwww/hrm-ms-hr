@@ -8,6 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -38,12 +40,12 @@ func (h *TaskHandler) Create(c *gin.Context) {
 	var req struct {
 		Name        string  `json:"name" binding:"required"`
 		Code        string  `json:"code" binding:"required"`
-		Description *string `json:"description"`
-		Process     *int    `json:"process"`
-		Status      *string `json:"status"`
-		StartAt     *string `json:"start_at"`
-		ProjectID   *int    `json:"project_id"`
 		Type        *string `json:"type"`
+		StartAt     *string `json:"start_at"`
+		DueDate     *string `json:"due_date"`
+		ProjectID   *int    `json:"project_id"`
+		LabelIDs    []int   `json:"label_ids"`
+		AssigneeIDs []int   `json:"assignee_ids"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -70,24 +72,17 @@ func (h *TaskHandler) Create(c *gin.Context) {
 		startAtPtr = &startAt
 	}
 
-	// Validate and set status
-	var statusVal task.Status
-	if req.Status != nil {
-		switch *req.Status {
-		case string(task.StatusNotReceived),
-			string(task.StatusReceived),
-			string(task.StatusInProgress),
-			string(task.StatusCompleted),
-			string(task.StatusCancelled):
-			statusVal = task.Status(*req.Status)
-		default:
+	// Parse due_date if provided
+	var dueDatePtr *time.Time
+	if req.DueDate != nil {
+		dueDate, err := time.Parse(time.RFC3339, *req.DueDate)
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid status value. Valid values: not_received, received, in_progress, completed, cancelled",
+				"error": "Invalid due_date format, must be RFC3339",
 			})
 			return
 		}
-	} else {
-		statusVal = task.StatusNotReceived
+		dueDatePtr = &dueDate
 	}
 
 	// Validate and set type
@@ -109,23 +104,90 @@ func (h *TaskHandler) Create(c *gin.Context) {
 		typeVal = task.TypeTask
 	}
 
-	// Set default process if not provided
-	if req.Process == nil {
-		defaultProcess := 0
-		req.Process = &defaultProcess
-	}
-
+	// Create task with basic fields
 	taskCreate := h.Client.Task.Create().
 		SetName(req.Name).
 		SetCode(req.Code).
-		SetNillableDescription(req.Description).
-		SetProcess(*req.Process).
-		SetStatus(statusVal).
+		SetType(typeVal).
 		SetNillableStartAt(startAtPtr).
+		SetNillableDueDate(dueDatePtr).
 		SetNillableProjectID(req.ProjectID).
 		SetCreatorID(userID).
-		SetUpdaterID(userID).
-		SetType(typeVal)
+		SetUpdaterID(userID)
+
+	// Validate and add labels if provided
+	if len(req.LabelIDs) > 0 {
+		// Check if all label IDs exist in the label table
+		existingLabels, err := h.Client.Label.Query().
+			Where(label.IDIn(req.LabelIDs...)).
+			Select(label.FieldID).
+			All(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to validate label IDs"})
+			return
+		}
+
+		// Create map of existing label IDs for validation
+		existingIDs := make(map[int]bool)
+		for _, lbl := range existingLabels {
+			existingIDs[lbl.ID] = true
+		}
+
+		// Check if all requested label IDs exist
+		var invalidIDs []int
+		for _, id := range req.LabelIDs {
+			if !existingIDs[id] {
+				invalidIDs = append(invalidIDs, id)
+			}
+		}
+
+		if len(invalidIDs) > 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":       "Some label IDs do not exist",
+				"invalid_ids": invalidIDs,
+			})
+			return
+		}
+
+		taskCreate = taskCreate.AddLabelIDs(req.LabelIDs...)
+	}
+
+	// Validate and add assignees if provided
+	if len(req.AssigneeIDs) > 0 {
+		// Check if all assignee IDs exist in the employee table
+		existingEmployees, err := h.Client.Employee.Query().
+			Where(employee.IDIn(req.AssigneeIDs...)).
+			Select(employee.FieldID).
+			All(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to validate assignee IDs"})
+			return
+		}
+
+		// Create map of existing employee IDs for validation
+		existingIDs := make(map[int]bool)
+		for _, emp := range existingEmployees {
+			existingIDs[emp.ID] = true
+		}
+
+		// Check if all requested assignee IDs exist
+		var invalidIDs []int
+		for _, id := range req.AssigneeIDs {
+			if !existingIDs[id] {
+				invalidIDs = append(invalidIDs, id)
+			}
+		}
+
+		if len(invalidIDs) > 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":       "Some assignee IDs do not exist",
+				"invalid_ids": invalidIDs,
+			})
+			return
+		}
+
+		taskCreate = taskCreate.AddAssigneeIDs(req.AssigneeIDs...)
+	}
 
 	row, err := taskCreate.Save(c.Request.Context())
 	if err != nil {
@@ -138,6 +200,7 @@ func (h *TaskHandler) Create(c *gin.Context) {
 		Where(task.ID(row.ID)).
 		WithProject().
 		WithLabels().
+		WithAssignees().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusCreated, row)
@@ -158,7 +221,9 @@ func (h *TaskHandler) Create(c *gin.Context) {
 // - process: Filter by process percentage
 // - start_date_from: Filter tasks that start from this date (RFC3339 format)
 // - start_date_to: Filter tasks that start before this date (RFC3339 format)
-// - order_by: Sort field (id, name, code, status, type, process, project_id, creator_id, start_at, created_at, updated_at)
+// - due_date_from: Filter tasks with due date from this date (RFC3339 format)
+// - due_date_to: Filter tasks with due date before this date (RFC3339 format)
+// - order_by: Sort field (id, name, code, status, type, process, project_id, creator_id, start_at, due_date, created_at, updated_at)
 // - order_dir: Sort direction (asc, desc) - default: desc
 // - page: Page number (default: 1)
 // - limit: Items per page (default: 10, max: 100)
@@ -167,7 +232,8 @@ func (h *TaskHandler) Create(c *gin.Context) {
 func (h *TaskHandler) List(c *gin.Context) {
 	query := h.Client.Task.Query().
 		WithProject().
-		WithLabels()
+		WithLabels().
+		WithAssignees()
 
 	// Filter by name
 	if name := c.Query("name"); name != "" {
@@ -271,6 +337,29 @@ func (h *TaskHandler) List(c *gin.Context) {
 		query = query.Where(task.StartAtLTE(startDate))
 	}
 
+	// Due date range filtering
+	if dueDateStr := c.Query("due_date_from"); dueDateStr != "" {
+		dueDate, err := time.Parse(time.RFC3339, dueDateStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid due_date_from format, must be RFC3339",
+			})
+			return
+		}
+		query = query.Where(task.DueDateGTE(dueDate))
+	}
+
+	if dueDateStr := c.Query("due_date_to"); dueDateStr != "" {
+		dueDate, err := time.Parse(time.RFC3339, dueDateStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid due_date_to format, must be RFC3339",
+			})
+			return
+		}
+		query = query.Where(task.DueDateLTE(dueDate))
+	}
+
 	// Order by field and direction
 	orderBy := c.DefaultQuery("order_by", "created_at")
 	orderDir := c.DefaultQuery("order_dir", "desc")
@@ -331,6 +420,12 @@ func (h *TaskHandler) List(c *gin.Context) {
 		} else {
 			orderOption = task.ByStartAt(sql.OrderDesc())
 		}
+	case "due_date":
+		if orderDir == "asc" {
+			orderOption = task.ByDueDate()
+		} else {
+			orderOption = task.ByDueDate(sql.OrderDesc())
+		}
 	case "created_at":
 		if orderDir == "asc" {
 			orderOption = task.ByCreatedAt()
@@ -345,7 +440,7 @@ func (h *TaskHandler) List(c *gin.Context) {
 		}
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid order_by field. Valid fields: id, name, code, status, type, process, project_id, creator_id, start_at, created_at, updated_at",
+			"error": "Invalid order_by field. Valid fields: id, name, code, status, type, process, project_id, creator_id, start_at, due_date, created_at, updated_at",
 		})
 		return
 	}
@@ -413,6 +508,7 @@ func (h *TaskHandler) Get(c *gin.Context) {
 		Where(task.ID(id)).
 		WithProject().
 		WithLabels().
+		WithAssignees().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
@@ -431,14 +527,15 @@ func (h *TaskHandler) Update(c *gin.Context) {
 	var req struct {
 		Name        *string `json:"name"`
 		Code        *string `json:"code"`
-		Description *string `json:"description"`
-		Process     *int    `json:"process"`
-		Status      *string `json:"status"`
-		StartAt     *string `json:"start_at"`
-		ProjectID   *int    `json:"project_id"`
-		CreatorID   *int    `json:"creator_id"`
-		UpdaterID   *int    `json:"updater_id"`
 		Type        *string `json:"type"`
+		StartAt     *string `json:"start_at"`
+		DueDate     *string `json:"due_date"`
+		ProjectID   *int    `json:"project_id"`
+		LabelIDs    []int   `json:"label_ids"`
+		AssigneeIDs []int   `json:"assignee_ids"`
+		Status      *string `json:"status"`
+		Process     *int    `json:"process"`
+		Description *string `json:"description"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -446,6 +543,7 @@ func (h *TaskHandler) Update(c *gin.Context) {
 	}
 
 	taskUpdate := h.Client.Task.UpdateOneID(id)
+
 	if req.Name != nil {
 		taskUpdate.SetName(*req.Name)
 	}
@@ -466,14 +564,16 @@ func (h *TaskHandler) Update(c *gin.Context) {
 		}
 		taskUpdate.SetStartAt(startAt)
 	}
+	if req.DueDate != nil {
+		dueDate, err := time.Parse(time.RFC3339, *req.DueDate)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid due_date format, must be RFC3339"})
+			return
+		}
+		taskUpdate.SetDueDate(dueDate)
+	}
 	if req.ProjectID != nil {
 		taskUpdate.SetProjectID(*req.ProjectID)
-	}
-	if req.CreatorID != nil {
-		taskUpdate.SetCreatorID(*req.CreatorID)
-	}
-	if req.UpdaterID != nil {
-		taskUpdate.SetUpdaterID(*req.UpdaterID)
 	}
 	if req.Status != nil {
 		switch *req.Status {
@@ -505,6 +605,57 @@ func (h *TaskHandler) Update(c *gin.Context) {
 		}
 	}
 
+	// Handle label assignments
+	if req.LabelIDs != nil {
+		// Clear existing labels and add new ones
+		taskUpdate.ClearLabels()
+		if len(req.LabelIDs) > 0 {
+			taskUpdate.AddLabelIDs(req.LabelIDs...)
+		}
+	}
+
+	// Handle assignee assignments
+	if req.AssigneeIDs != nil {
+		// Clear existing assignees first
+		taskUpdate.ClearAssignees()
+
+		if len(req.AssigneeIDs) > 0 {
+			// Validate that all assignee IDs exist in the employee table
+			existingEmployees, err := h.Client.Employee.Query().
+				Where(employee.IDIn(req.AssigneeIDs...)).
+				Select(employee.FieldID).
+				All(c.Request.Context())
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to validate assignee IDs"})
+				return
+			}
+
+			// Create map of existing employee IDs for validation
+			existingIDs := make(map[int]bool)
+			for _, emp := range existingEmployees {
+				existingIDs[emp.ID] = true
+			}
+
+			// Check if all requested assignee IDs exist
+			var invalidIDs []int
+			for _, id := range req.AssigneeIDs {
+				if !existingIDs[id] {
+					invalidIDs = append(invalidIDs, id)
+				}
+			}
+
+			if len(invalidIDs) > 0 {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error":       "Some assignee IDs do not exist",
+					"invalid_ids": invalidIDs,
+				})
+				return
+			}
+
+			taskUpdate.AddAssigneeIDs(req.AssigneeIDs...)
+		}
+	}
+
 	_, err = taskUpdate.Save(c.Request.Context())
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -520,6 +671,7 @@ func (h *TaskHandler) Update(c *gin.Context) {
 		Where(task.ID(id)).
 		WithProject().
 		WithLabels().
+		WithAssignees().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"id": id})

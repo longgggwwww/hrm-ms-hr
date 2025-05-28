@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	pb "github.com/huynhthanhthao/hrm_user_service/generated"
+	pb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"

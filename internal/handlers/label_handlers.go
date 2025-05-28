@@ -134,7 +134,19 @@ func (h *LabelHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create label"})
 		return
 	}
-	c.JSON(http.StatusCreated, labelObj)
+
+	// Fetch the created label with edge relationships
+	createdLabel, err := h.Client.Label.Query().
+		Where(label.ID(labelObj.ID)).
+		WithTasks().
+		WithOrganization().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch created label"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, createdLabel)
 }
 
 func (h *LabelHandler) CreateBulk(c *gin.Context) {
@@ -179,7 +191,23 @@ func (h *LabelHandler) CreateBulk(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, labels)
+	// Fetch the created labels with edge relationships
+	labelIDs := make([]int, len(labels))
+	for i, lbl := range labels {
+		labelIDs[i] = lbl.ID
+	}
+
+	createdLabels, err := h.Client.Label.Query().
+		Where(label.IDIn(labelIDs...)).
+		WithTasks().
+		WithOrganization().
+		All(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch created labels"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, createdLabels)
 }
 
 func (h *LabelHandler) Update(c *gin.Context) {
@@ -219,7 +247,19 @@ func (h *LabelHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update label"})
 		return
 	}
-	c.JSON(http.StatusOK, labelObj)
+
+	// Fetch the updated label with edge relationships
+	updatedLabel, err := h.Client.Label.Query().
+		Where(label.ID(labelObj.ID)).
+		WithTasks().
+		WithOrganization().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch updated label"})
+		return
+	}
+
+	c.JSON(http.StatusOK, updatedLabel)
 }
 
 func (h *LabelHandler) Delete(c *gin.Context) {

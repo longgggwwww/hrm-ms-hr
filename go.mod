@@ -6,9 +6,9 @@ require (
 	entgo.io/contrib v0.6.0
 	entgo.io/ent v0.14.4
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/huynhthanhthao/hrm_user_service v0.0.0-20250521151230-7721cd256819
+	github.com/huynhthanhthao/hrm_user_service v0.0.0-20250527162739-72de7950d0ab
 	github.com/lib/pq v1.10.9
-	google.golang.org/grpc v1.72.1
+	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/ugorji/go/codec v1.2.12 // indirect
+	github.com/ugorji/go/codec v1.2.14 // indirect
 	golang.org/x/arch v0.17.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 )

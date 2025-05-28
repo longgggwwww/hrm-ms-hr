@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	userpb "github.com/huynhthanhthao/hrm_user_service/generated"
+	userpb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"

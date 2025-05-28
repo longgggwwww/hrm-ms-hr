@@ -3,7 +3,7 @@ package grpc_clients
 import (
 	"log"
 
-	pb "github.com/huynhthanhthao/hrm_user_service/generated"
+	pb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
