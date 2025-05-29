@@ -1,0 +1,21 @@
+name,description,color,org_code
+Lỗi,Có gì đó không hoạt động,#d73a4a,iit-jsc
+Tài liệu,Cải tiến hoặc bổ sung tài liệu,#0075ca,iit-jsc
+Trùng lặp,Vấn đề hoặc yêu cầu kéo này đã tồn tại,#cfd3d7,iit-jsc
+Cải tiến,Tính năng mới hoặc yêu cầu,#a2eeef,iit-jsc
+Vấn đề cho người mới,Phù hợp cho người mới bắt đầu,#7057ff,iit-jsc
+Cần hỗ trợ,Cần sự chú ý thêm,#008672,iit-jsc
+Không hợp lệ,Điều này có vẻ không đúng,#e4e669,iit-jsc
+Câu hỏi,Yêu cầu thông tin thêm,#d876e3,iit-jsc
+Không sửa chữa,Sẽ không được xử lý,#ffffff,iit-jsc
+Ưu tiên cao,Vấn đề ưu tiên cao,#b60205,iit-jsc
+Ưu tiên trung bình,Vấn đề ưu tiên trung bình,#fbca04,iit-jsc
+Ưu tiên thấp,Vấn đề ưu tiên thấp,#0e8a16,iit-jsc
+Trạng thái đang thực hiện,Hiện đang được thực hiện,#1d76db,iit-jsc
+Trạng thái bị chặn,Không thể tiếp tục cho đến khi giải quyết phụ thuộc,#e11d21,iit-jsc
+Trạng thái xem xét,Sẵn sàng để xem xét,#6f42c1,iit-jsc
+Loại tính năng,Triển khai tính năng mới,#84b6eb,iit-jsc
+Loại sửa lỗi,Triển khai sửa lỗi,#fc2929,iit-jsc
+Loại bảo trì,Bảo trì mã và tái cấu trúc,#fef2c0,iit-jsc
+Backend,Vấn đề liên quan đến backend,#0052cc,iit-jsc
+Frontend,Vấn đề liên quan đến frontend,#1f77b4,iit-jsc

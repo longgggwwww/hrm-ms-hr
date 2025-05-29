@@ -244,10 +244,10 @@ func (lc *LabelCreate) createSpec() (*Label, *sqlgraph.CreateSpec) {
 	}
 	if nodes := lc.mutation.TasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   label.TasksTable,
-			Columns: []string{label.TasksColumn},
+			Columns: label.TasksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),

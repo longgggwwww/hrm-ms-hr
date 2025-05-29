@@ -56,13 +56,11 @@ const (
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_id"
-	// LabelsTable is the table that holds the labels relation/edge.
-	LabelsTable = "labels"
+	// LabelsTable is the table that holds the labels relation/edge. The primary key declared below.
+	LabelsTable = "task_labels"
 	// LabelsInverseTable is the table name for the Label entity.
 	// It exists in this package in order to avoid circular dependency with the "label" package.
 	LabelsInverseTable = "labels"
-	// LabelsColumn is the table column denoting the labels relation/edge.
-	LabelsColumn = "task_labels"
 	// AssigneesTable is the table that holds the assignees relation/edge. The primary key declared below.
 	AssigneesTable = "task_assignees"
 	// AssigneesInverseTable is the table name for the Employee entity.
@@ -88,13 +86,10 @@ var Columns = []string{
 	FieldType,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "tasks"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"label_tasks",
-}
-
 var (
+	// LabelsPrimaryKey and LabelsColumn2 are the table columns denoting the
+	// primary key for the labels relation (M2M).
+	LabelsPrimaryKey = []string{"task_id", "label_id"}
 	// AssigneesPrimaryKey and AssigneesColumn2 are the table columns denoting the
 	// primary key for the assignees relation (M2M).
 	AssigneesPrimaryKey = []string{"task_id", "employee_id"}
@@ -104,11 +99,6 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -301,7 +291,7 @@ func newLabelsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LabelsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, LabelsTable, LabelsColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, LabelsTable, LabelsPrimaryKey...),
 	)
 }
 func newAssigneesStep() *sqlgraph.Step {

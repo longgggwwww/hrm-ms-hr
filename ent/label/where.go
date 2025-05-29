@@ -405,7 +405,7 @@ func HasTasks() predicate.Label {
 	return predicate.Label(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, TasksTable, TasksPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

@@ -33,6 +33,8 @@ func (h *TaskHandler) RegisterRoutes(r *gin.Engine) {
 		tasks.PATCH(":id", h.Update)
 		tasks.DELETE(":id", h.Delete)
 		tasks.DELETE("", h.BulkDelete)
+		tasks.PATCH(":id/receive", h.ReceiveTask)
+		tasks.PATCH(":id/progress", h.UpdateProgress)
 	}
 }
 
@@ -789,4 +791,230 @@ func (h *TaskHandler) BulkDelete(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, response)
 	}
+}
+
+// ReceiveTask allows an assigned employee to receive/accept a task.
+// Only employees who are assigned to the task can receive it.
+// This changes the task status from "not_received" to "received".
+func (h *TaskHandler) ReceiveTask(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
+		return
+	}
+
+	// Extract user ID from JWT token
+	userID, err := utils.ExtractUserIDFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get the task with assignees to check if user is assigned
+	taskEntity, err := h.Client.Task.Query().
+		Where(task.ID(id)).
+		WithAssignees().
+		Only(c.Request.Context())
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+			return
+		}
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if the current user is assigned to this task
+	isAssigned := false
+	for _, assignee := range taskEntity.Edges.Assignees {
+		if assignee.ID == userID {
+			isAssigned = true
+			break
+		}
+	}
+
+	if !isAssigned {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not assigned to this task"})
+		return
+	}
+
+	// Check if task is in the correct status to be received
+	if taskEntity.Status != task.StatusNotReceived {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":          "Task can only be received when status is 'not_received'",
+			"current_status": string(taskEntity.Status),
+		})
+		return
+	}
+
+	// Update task status to "received"
+	updatedTask, err := h.Client.Task.UpdateOneID(id).
+		SetStatus(task.StatusReceived).
+		SetUpdaterID(userID).
+		Save(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get the updated task with all edges
+	taskWithEdges, err := h.Client.Task.Query().
+		Where(task.IDEQ(updatedTask.ID)).
+		WithProject().
+		WithLabels().
+		WithAssignees().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusOK, updatedTask)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Task received successfully",
+		"task":    taskWithEdges,
+	})
+}
+
+// UpdateProgress allows an assigned employee to update task status and progress.
+// Only employees who are assigned to the task can update its progress.
+//
+// Request body:
+//
+//	{
+//	  "status": "in_progress|completed|cancelled", // optional
+//	  "process": 50 // optional, percentage (0-100)
+//	}
+func (h *TaskHandler) UpdateProgress(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
+		return
+	}
+
+	// Extract user ID from JWT token
+	userID, err := utils.ExtractUserIDFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	var req struct {
+		Status  *string `json:"status"`
+		Process *int    `json:"process"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate at least one field is provided
+	if req.Status == nil && req.Process == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "At least one field (status or process) must be provided",
+		})
+		return
+	}
+
+	// Get the task with assignees to check if user is assigned
+	taskEntity, err := h.Client.Task.Query().
+		Where(task.ID(id)).
+		WithAssignees().
+		Only(c.Request.Context())
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+			return
+		}
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if the current user is assigned to this task
+	isAssigned := false
+	for _, assignee := range taskEntity.Edges.Assignees {
+		if assignee.ID == userID {
+			isAssigned = true
+			break
+		}
+	}
+
+	if !isAssigned {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not assigned to this task"})
+		return
+	}
+
+	// Check if task is in a valid status for progress updates
+	if taskEntity.Status == task.StatusNotReceived {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":          "Task must be received before updating progress",
+			"current_status": string(taskEntity.Status),
+		})
+		return
+	}
+
+	if taskEntity.Status == task.StatusCompleted || taskEntity.Status == task.StatusCancelled {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":          "Cannot update progress for completed or cancelled tasks",
+			"current_status": string(taskEntity.Status),
+		})
+		return
+	}
+
+	taskUpdate := h.Client.Task.UpdateOneID(id).SetUpdaterID(userID)
+
+	// Validate and set status if provided
+	if req.Status != nil {
+		switch *req.Status {
+		case string(task.StatusInProgress),
+			string(task.StatusCompleted),
+			string(task.StatusCancelled):
+			taskUpdate.SetStatus(task.Status(*req.Status))
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid status value. Valid values for progress update: in_progress, completed, cancelled",
+			})
+			return
+		}
+	}
+
+	// Validate and set process if provided
+	if req.Process != nil {
+		if *req.Process < 0 || *req.Process > 100 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Process must be between 0 and 100",
+			})
+			return
+		}
+		taskUpdate.SetProcess(*req.Process)
+
+		// Auto-update status based on process
+		if *req.Process == 100 && req.Status == nil {
+			taskUpdate.SetStatus(task.StatusCompleted)
+		} else if *req.Process > 0 && *req.Process < 100 && req.Status == nil && taskEntity.Status == task.StatusReceived {
+			taskUpdate.SetStatus(task.StatusInProgress)
+		}
+	}
+
+	updatedTask, err := taskUpdate.Save(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get the updated task with all edges
+	taskWithEdges, err := h.Client.Task.Query().
+		Where(task.IDEQ(updatedTask.ID)).
+		WithProject().
+		WithLabels().
+		WithAssignees().
+		Only(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusOK, updatedTask)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Task progress updated successfully",
+		"task":    taskWithEdges,
+	})
 }

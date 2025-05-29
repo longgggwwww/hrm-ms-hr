@@ -781,7 +781,7 @@ func (c *LabelClient) QueryTasks(l *Label) *TaskQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(label.Table, label.FieldID, id),
 			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, label.TasksTable, label.TasksColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, label.TasksTable, label.TasksPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(l.driver.Dialect(), step)
 		return fromV, nil
@@ -1931,7 +1931,7 @@ func (c *TaskClient) QueryLabels(t *Task) *LabelQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(label.Table, label.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, task.LabelsTable, task.LabelsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, task.LabelsTable, task.LabelsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

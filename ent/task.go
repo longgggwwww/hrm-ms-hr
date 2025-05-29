@@ -47,7 +47,6 @@ type Task struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
 	Edges        TaskEdges `json:"edges"`
-	label_tasks  *int
 	selectValues sql.SelectValues
 }
 
@@ -104,8 +103,6 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case task.FieldStartAt, task.FieldDueDate, task.FieldCreatedAt, task.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case task.ForeignKeys[0]: // label_tasks
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -204,13 +201,6 @@ func (t *Task) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
 				t.Type = task.Type(value.String)
-			}
-		case task.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field label_tasks", value)
-			} else if value.Valid {
-				t.label_tasks = new(int)
-				*t.label_tasks = int(value.Int64)
 			}
 		default:
 			t.selectValues.Set(columns[i], values[i])

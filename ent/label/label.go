@@ -32,13 +32,11 @@ const (
 	EdgeOrganization = "organization"
 	// Table holds the table name of the label in the database.
 	Table = "labels"
-	// TasksTable is the table that holds the tasks relation/edge.
-	TasksTable = "tasks"
+	// TasksTable is the table that holds the tasks relation/edge. The primary key declared below.
+	TasksTable = "task_labels"
 	// TasksInverseTable is the table name for the Task entity.
 	// It exists in this package in order to avoid circular dependency with the "task" package.
 	TasksInverseTable = "tasks"
-	// TasksColumn is the table column denoting the tasks relation/edge.
-	TasksColumn = "label_tasks"
 	// OrganizationTable is the table that holds the organization relation/edge.
 	OrganizationTable = "labels"
 	// OrganizationInverseTable is the table name for the Organization entity.
@@ -59,21 +57,16 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "labels"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"task_labels",
-}
+var (
+	// TasksPrimaryKey and TasksColumn2 are the table columns denoting the
+	// primary key for the tasks relation (M2M).
+	TasksPrimaryKey = []string{"task_id", "label_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -155,7 +148,7 @@ func newTasksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TasksInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
+		sqlgraph.Edge(sqlgraph.M2M, true, TasksTable, TasksPrimaryKey...),
 	)
 }
 func newOrganizationStep() *sqlgraph.Step {

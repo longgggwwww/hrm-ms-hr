@@ -33,7 +33,6 @@ type Label struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LabelQuery when eager-loading is set.
 	Edges        LabelEdges `json:"edges"`
-	task_labels  *int
 	selectValues sql.SelectValues
 }
 
@@ -79,8 +78,6 @@ func (*Label) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case label.FieldCreatedAt, label.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case label.ForeignKeys[0]: // task_labels
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -137,13 +134,6 @@ func (l *Label) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				l.UpdatedAt = value.Time
-			}
-		case label.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field task_labels", value)
-			} else if value.Valid {
-				l.task_labels = new(int)
-				*l.task_labels = int(value.Int64)
 			}
 		default:
 			l.selectValues.Set(columns[i], values[i])

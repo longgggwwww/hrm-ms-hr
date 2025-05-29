@@ -73,7 +73,6 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "org_id", Type: field.TypeInt, Nullable: true},
-		{Name: "task_labels", Type: field.TypeInt, Nullable: true},
 	}
 	// LabelsTable holds the schema information for the "labels" table.
 	LabelsTable = &schema.Table{
@@ -85,12 +84,6 @@ var (
 				Symbol:     "labels_organizations_labels",
 				Columns:    []*schema.Column{LabelsColumns[6]},
 				RefColumns: []*schema.Column{OrganizationsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "labels_tasks_labels",
-				Columns:    []*schema.Column{LabelsColumns[7]},
-				RefColumns: []*schema.Column{TasksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -288,7 +281,6 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"task", "feature", "bug", "another"}, Default: "task"},
-		{Name: "label_tasks", Type: field.TypeInt, Nullable: true},
 		{Name: "project_id", Type: field.TypeInt, Nullable: true},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
@@ -298,16 +290,35 @@ var (
 		PrimaryKey: []*schema.Column{TasksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "tasks_labels_tasks",
-				Columns:    []*schema.Column{TasksColumns[13]},
-				RefColumns: []*schema.Column{LabelsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "tasks_projects_tasks",
-				Columns:    []*schema.Column{TasksColumns[14]},
+				Columns:    []*schema.Column{TasksColumns[13]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// TaskLabelsColumns holds the columns for the "task_labels" table.
+	TaskLabelsColumns = []*schema.Column{
+		{Name: "task_id", Type: field.TypeInt},
+		{Name: "label_id", Type: field.TypeInt},
+	}
+	// TaskLabelsTable holds the schema information for the "task_labels" table.
+	TaskLabelsTable = &schema.Table{
+		Name:       "task_labels",
+		Columns:    TaskLabelsColumns,
+		PrimaryKey: []*schema.Column{TaskLabelsColumns[0], TaskLabelsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "task_labels_task_id",
+				Columns:    []*schema.Column{TaskLabelsColumns[0]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "task_labels_label_id",
+				Columns:    []*schema.Column{TaskLabelsColumns[1]},
+				RefColumns: []*schema.Column{LabelsColumns[0]},
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -347,6 +358,7 @@ var (
 		PositionsTable,
 		ProjectsTable,
 		TasksTable,
+		TaskLabelsTable,
 		TaskAssigneesTable,
 	}
 )
@@ -355,7 +367,6 @@ func init() {
 	DepartmentsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
 	LabelsTable.ForeignKeys[0].RefTable = OrganizationsTable
-	LabelsTable.ForeignKeys[1].RefTable = TasksTable
 	LeaveApprovalsTable.ForeignKeys[0].RefTable = EmployeesTable
 	LeaveApprovalsTable.ForeignKeys[1].RefTable = LeaveRequestsTable
 	LeaveRequestsTable.ForeignKeys[0].RefTable = EmployeesTable
@@ -366,8 +377,9 @@ func init() {
 	ProjectsTable.ForeignKeys[0].RefTable = EmployeesTable
 	ProjectsTable.ForeignKeys[1].RefTable = EmployeesTable
 	ProjectsTable.ForeignKeys[2].RefTable = OrganizationsTable
-	TasksTable.ForeignKeys[0].RefTable = LabelsTable
-	TasksTable.ForeignKeys[1].RefTable = ProjectsTable
+	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
+	TaskLabelsTable.ForeignKeys[0].RefTable = TasksTable
+	TaskLabelsTable.ForeignKeys[1].RefTable = LabelsTable
 	TaskAssigneesTable.ForeignKeys[0].RefTable = TasksTable
 	TaskAssigneesTable.ForeignKeys[1].RefTable = EmployeesTable
 }

@@ -250,10 +250,10 @@ func (lu *LabelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if lu.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   label.TasksTable,
-			Columns: []string{label.TasksColumn},
+			Columns: label.TasksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
@@ -263,10 +263,10 @@ func (lu *LabelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := lu.mutation.RemovedTasksIDs(); len(nodes) > 0 && !lu.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   label.TasksTable,
-			Columns: []string{label.TasksColumn},
+			Columns: label.TasksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
@@ -279,10 +279,10 @@ func (lu *LabelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := lu.mutation.TasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   label.TasksTable,
-			Columns: []string{label.TasksColumn},
+			Columns: label.TasksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
@@ -592,10 +592,10 @@ func (luo *LabelUpdateOne) sqlSave(ctx context.Context) (_node *Label, err error
 	}
 	if luo.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   label.TasksTable,
-			Columns: []string{label.TasksColumn},
+			Columns: label.TasksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
@@ -605,10 +605,10 @@ func (luo *LabelUpdateOne) sqlSave(ctx context.Context) (_node *Label, err error
 	}
 	if nodes := luo.mutation.RemovedTasksIDs(); len(nodes) > 0 && !luo.mutation.TasksCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   label.TasksTable,
-			Columns: []string{label.TasksColumn},
+			Columns: label.TasksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
@@ -621,10 +621,10 @@ func (luo *LabelUpdateOne) sqlSave(ctx context.Context) (_node *Label, err error
 	}
 	if nodes := luo.mutation.TasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   label.TasksTable,
-			Columns: []string{label.TasksColumn},
+			Columns: label.TasksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),

@@ -49,6 +49,7 @@ func runSeeders(ctx context.Context, client *ent.Client) error {
 		{"Organization", seeds.SeedOrganizations},
 		{"Department", seeds.SeedDepartments},
 		{"Position", seeds.SeedPositions},
+		{"Label", seeds.SeedLabels},
 	}
 
 	for _, seeder := range seeders {

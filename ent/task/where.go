@@ -713,7 +713,7 @@ func HasLabels() predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LabelsTable, LabelsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, LabelsTable, LabelsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

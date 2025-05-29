@@ -45,7 +45,8 @@ func (Label) Fields() []ent.Field {
 // Edges of the Label.
 func (Label) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tasks", Task.Type).
+		edge.From("tasks", Task.Type).
+			Ref("labels").
 			Annotations(entproto.Field(8)),
 		edge.From("organization", Organization.Type).
 			Ref("labels").

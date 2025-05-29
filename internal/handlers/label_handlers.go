@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -27,7 +28,7 @@ func (h *LabelHandler) RegisterRoutes(r *gin.Engine) {
 	labels := r.Group("labels")
 	{
 		labels.POST("", h.Create)
-		labels.POST("batch", h.CreateBulk)
+		labels.POST("bulk", h.CreateBulk)
 		labels.GET("", h.List)
 		labels.GET(":id", h.Get)
 		labels.PATCH(":id", h.Update)
@@ -89,23 +90,35 @@ func (h *LabelHandler) List(c *gin.Context) {
 }
 
 func (h *LabelHandler) Get(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error": "Invalid label ID",
 		})
 		return
 	}
-	lbl, err := h.Client.Label.Query().
+
+	labelObj, err := h.Client.Label.Query().
 		Where(label.ID(id)).
 		WithTasks().
 		WithOrganization().
 		Only(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		if ent.IsNotFound(err) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Label not found",
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to fetch label",
+			})
+			log.Println("Error fetching label:", err)
+		}
 		return
 	}
-	c.JSON(http.StatusOK, lbl)
+
+	c.JSON(http.StatusOK, labelObj)
 }
 
 func (h *LabelHandler) Create(c *gin.Context) {
@@ -335,8 +348,26 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 		return
 	}
 
-	// Get total count for pagination info
-	total, err := h.Client.Label.Query().Count(c.Request.Context())
+	// Get total count for pagination info with same filters
+	countQuery := h.Client.Label.Query()
+
+	// Apply the same filters as the main query
+	if name := c.Query("name"); name != "" {
+		countQuery = countQuery.Where(label.NameContains(name))
+	}
+	if description := c.Query("description"); description != "" {
+		countQuery = countQuery.Where(label.DescriptionContains(description))
+	}
+	if color := c.Query("color"); color != "" {
+		countQuery = countQuery.Where(label.ColorEQ(color))
+	}
+	if orgIDStr := c.Query("org_id"); orgIDStr != "" {
+		if orgID, err := strconv.Atoi(orgIDStr); err == nil {
+			countQuery = countQuery.Where(label.OrgIDEQ(orgID))
+		}
+	}
+
+	total, err := countQuery.Count(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{
 			"error": err.Error(),
