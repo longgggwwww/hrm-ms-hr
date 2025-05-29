@@ -55,11 +55,12 @@ func (h *TaskHandler) Create(c *gin.Context) {
 	}
 
 	// Extract user ID from JWT token
-	userID, err := utils.ExtractUserIDFromToken(c)
+	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+	userID := ids["user_id"]
 
 	// Parse start_at if provided
 	var startAtPtr *time.Time
@@ -804,11 +805,12 @@ func (h *TaskHandler) ReceiveTask(c *gin.Context) {
 	}
 
 	// Extract user ID from JWT token
-	userID, err := utils.ExtractUserIDFromToken(c)
+	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+	userID := ids["user_id"]
 
 	// Get the task with assignees to check if user is assigned
 	taskEntity, err := h.Client.Task.Query().
@@ -892,11 +894,12 @@ func (h *TaskHandler) UpdateProgress(c *gin.Context) {
 	}
 
 	// Extract user ID from JWT token
-	userID, err := utils.ExtractUserIDFromToken(c)
+	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+	userID := ids["user_id"]
 
 	var req struct {
 		Status  *string `json:"status"`

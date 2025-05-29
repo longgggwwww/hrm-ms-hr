@@ -52,11 +52,12 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 	}
 
 	// Extract user ID from JWT token
-	userID, err := utils.ExtractUserIDFromToken(c)
+	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+	userID := ids["user_id"]
 
 	startAt, err := time.Parse(time.RFC3339, req.StartAt)
 	if err != nil {

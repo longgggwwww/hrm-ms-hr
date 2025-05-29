@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Add an option for migration name
 migration_name=$1
