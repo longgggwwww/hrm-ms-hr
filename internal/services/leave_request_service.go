@@ -188,9 +188,6 @@ func RejectByEmployee(ctx context.Context, client *ent.Client, id int, employeeI
 		Save(ctx)
 }
 
-// ServiceError dùng để trả lỗi kèm http status cho handler
-// Handler sẽ dùng utils.RespondWithError để trả về client
-
 type ServiceError struct {
 	Status int
 	Msg    string

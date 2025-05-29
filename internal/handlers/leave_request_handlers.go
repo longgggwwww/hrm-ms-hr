@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
-	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -64,8 +63,8 @@ func (h *LeaveRequestHandler) GetEmployee(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "#1 GetEmployee: invalid leave request ID"})
 		return
 	}
-	leaveRequest, err := h.Client.LeaveRequest.Query().Where(leaverequest.ID(id), leaverequest.EmployeeIDEQ(employeeID)).Only(c.Request.Context())
-	if err != nil {
+	leaveRequest, err := services.GetLeaveRequest(c.Request.Context(), h.Client, id)
+	if err != nil || leaveRequest.Edges.Applicant == nil || leaveRequest.Edges.Applicant.ID != employeeID {
 		c.JSON(http.StatusNotFound, gin.H{"error": "#2 GetEmployee: Leave request not found or not owned by employee"})
 		return
 	}
