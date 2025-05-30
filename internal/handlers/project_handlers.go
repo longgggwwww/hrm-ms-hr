@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -39,30 +40,33 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		Name        string  `json:"name" binding:"required"`
 		Code        string  `json:"code" binding:"required"`
 		Description *string `json:"description"`
-		StartAt     string  `json:"start_at" binding:"required"`
+		StartAt     *string `json:"start_at"`
 		EndAt       *string `json:"end_at"`
-		OrgID       int     `json:"org_id" binding:"required"`
-		Process     *int    `json:"process"`
-		Status      *string `json:"status"`
 		Visibility  *string `json:"visibility"`
+		MemberIDs   []int   `json:"member_ids"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Extract user ID from JWT token
+	// Extract org ID and employee ID from JWT token
 	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	userID := ids["user_id"]
+	orgID := ids["org_id"]
+	employeeID := ids["employee_id"]
 
-	startAt, err := time.Parse(time.RFC3339, req.StartAt)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_at format, must be RFC3339"})
-		return
+	var startAtPtr *time.Time
+	if req.StartAt != nil {
+		startAt, err := time.Parse(time.RFC3339, *req.StartAt)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_at format, must be RFC3339"})
+			return
+		}
+		startAtPtr = &startAt
 	}
 
 	var endAtPtr *time.Time
@@ -75,23 +79,6 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 			return
 		}
 		endAtPtr = &endAt
-	}
-
-	var statusVal project.Status
-	if req.Status != nil {
-		switch *req.Status {
-		case string(project.StatusNotStarted),
-			string(project.StatusInProgress),
-			string(project.StatusCompleted):
-			statusVal = project.Status(*req.Status)
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid status value",
-			})
-			return
-		}
-	} else {
-		statusVal = project.StatusNotStarted
 	}
 
 	var visibilityVal project.Visibility
@@ -111,18 +98,59 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		visibilityVal = project.VisibilityPrivate
 	}
 
+	// Prepare all member IDs (current employee + provided member IDs)
+	allMemberIDs := []int{}
+
+	// Add current employee ID from token
+	if employeeID > 0 {
+		allMemberIDs = append(allMemberIDs, employeeID)
+	}
+
+	// Add provided member IDs (avoid duplicates)
+	memberIDSet := make(map[int]bool)
+	memberIDSet[employeeID] = true // Mark current employee as already added
+
+	for _, memberID := range req.MemberIDs {
+		if !memberIDSet[memberID] {
+			allMemberIDs = append(allMemberIDs, memberID)
+			memberIDSet[memberID] = true
+		}
+	}
+
+	// Validate all member IDs if there are any
+	if len(allMemberIDs) > 0 {
+		// Check if all member IDs exist and belong to the same organization
+		memberCount, err := h.Client.Employee.Query().
+			Where(employee.IDIn(allMemberIDs...)).
+			Where(employee.OrgID(orgID)).
+			Count(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate member IDs"})
+			return
+		}
+		if memberCount != len(allMemberIDs) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "One or more member IDs are invalid or do not belong to your organization",
+			})
+			return
+		}
+	}
+
 	projectCreate := h.Client.Project.Create().
 		SetName(req.Name).
 		SetCode(req.Code).
 		SetNillableDescription(req.Description).
-		SetStartAt(startAt).
+		SetNillableStartAt(startAtPtr).
 		SetNillableEndAt(endAtPtr).
-		SetCreatorID(userID).
-		SetUpdaterID(userID).
-		SetOrgID(req.OrgID).
-		SetNillableProcess(req.Process).
-		SetStatus(statusVal).
+		SetCreatorID(employeeID).
+		SetUpdaterID(employeeID).
+		SetOrgID(orgID).
 		SetVisibility(visibilityVal)
+
+	// Add member IDs if there are any
+	if len(allMemberIDs) > 0 {
+		projectCreate = projectCreate.AddMemberIDs(allMemberIDs...)
+	}
 
 	row, err := projectCreate.Save(c.Request.Context())
 	if err != nil {
@@ -137,6 +165,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
+		WithMembers().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusCreated, row)
@@ -168,7 +197,8 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		WithTasks().
 		WithOrganization().
 		WithCreator().
-		WithUpdater()
+		WithUpdater().
+		WithMembers()
 
 	// Filter by name
 	if name := c.Query("name"); name != "" {
@@ -425,6 +455,7 @@ func (h *ProjectHandler) Get(c *gin.Context) {
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
+		WithMembers().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
@@ -532,6 +563,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
+		WithMembers().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"id": id})

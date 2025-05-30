@@ -94,6 +94,8 @@ func (Project) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Annotations(entproto.Field(18)),
+		edge.To("members", Employee.Type).
+			Annotations(entproto.Field(19)),
 	}
 }
 

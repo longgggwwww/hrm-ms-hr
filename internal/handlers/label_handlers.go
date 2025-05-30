@@ -12,6 +12,8 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type LabelHandler struct {
@@ -42,7 +44,6 @@ func (h *LabelHandler) RegisterRoutes(r *gin.Engine) {
 // - name: Filter by label name (contains search)
 // - description: Filter by description (contains search)
 // - color: Filter by exact color match
-// - org_id: Filter by organization ID
 // - order_by: Sort field (id, name, description, color, org_id, created_at, updated_at) - default: created_at
 // - order_dir: Sort direction (asc, desc) - default: desc
 // - page: Page number for offset pagination (default: 1)
@@ -54,27 +55,41 @@ func (h *LabelHandler) RegisterRoutes(r *gin.Engine) {
 // Examples:
 // - Offset pagination: GET /labels?name=urgent&order_by=name&order_dir=asc&page=1&limit=20
 // - Cursor pagination: GET /labels?pagination_type=cursor&cursor_limit=10&cursor=eyJpZCI6MTB9
-// - Filter by org: GET /labels?org_id=1&order_by=name
+// - Filter by org: Labels are automatically filtered by org_id from JWT token
 func (h *LabelHandler) List(c *gin.Context) {
-	query := h.Client.Label.Query().WithTasks().WithOrganization()
+	// Extract org_id from JWT token
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Failed to extract org_id from token: " + err.Error(),
+		})
+		return
+	}
+
+	orgID, ok := tokenData["org_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "org_id not found in token",
+		})
+		return
+	}
+
+	query := h.Client.Label.Query()
+
+	// Filter by org_id from token
+	query = query.Where(label.OrgIDEQ(orgID))
 
 	// Filtering
 	if name := c.Query("name"); name != "" {
-		query = query.Where(label.NameContains(name))
+		query = query.Where(label.NameContainsFold(name))
 	}
 
 	if description := c.Query("description"); description != "" {
-		query = query.Where(label.DescriptionContains(description))
+		query = query.Where(label.DescriptionContainsFold(description))
 	}
 
 	if color := c.Query("color"); color != "" {
 		query = query.Where(label.ColorEQ(color))
-	}
-
-	if orgIDStr := c.Query("org_id"); orgIDStr != "" {
-		if orgID, err := strconv.Atoi(orgIDStr); err == nil {
-			query = query.Where(label.OrgIDEQ(orgID))
-		}
 	}
 
 	// Determine pagination type
@@ -102,7 +117,6 @@ func (h *LabelHandler) Get(c *gin.Context) {
 	labelObj, err := h.Client.Label.Query().
 		Where(label.ID(id)).
 		WithTasks().
-		WithOrganization().
 		Only(c.Request.Context())
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -126,21 +140,35 @@ func (h *LabelHandler) Create(c *gin.Context) {
 		Name        string `json:"name" binding:"required"`
 		Description string `json:"description"`
 		Color       string `json:"color" binding:"required"`
-		OrgID       *int   `json:"org_id"`
 	}
 	var input LabelInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Extract org_id from JWT token
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Failed to extract org_id from token: " + err.Error(),
+		})
+		return
+	}
+
+	orgID, ok := tokenData["org_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "org_id not found in token",
+		})
+		return
+	}
+
 	create := h.Client.Label.Create().
 		SetName(input.Name).
 		SetDescription(input.Description).
-		SetColor(input.Color)
-
-	if input.OrgID != nil {
-		create = create.SetOrgID(*input.OrgID)
-	}
+		SetColor(input.Color).
+		SetOrgID(orgID)
 
 	labelObj, err := create.Save(c.Request.Context())
 	if err != nil {
@@ -167,7 +195,6 @@ func (h *LabelHandler) CreateBulk(c *gin.Context) {
 		Name        string `json:"name" binding:"required"`
 		Description string `json:"description"`
 		Color       string `json:"color" binding:"required"`
-		OrgID       *int   `json:"org_id"`
 	}
 
 	var req struct {
@@ -184,16 +211,30 @@ func (h *LabelHandler) CreateBulk(c *gin.Context) {
 		return
 	}
 
+	// Extract org_id from JWT token
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Failed to extract org_id from token: " + err.Error(),
+		})
+		return
+	}
+
+	orgID, ok := tokenData["org_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "org_id not found in token",
+		})
+		return
+	}
+
 	bulk := make([]*ent.LabelCreate, len(req.Labels))
 	for i, labelInput := range req.Labels {
 		create := h.Client.Label.Create().
 			SetName(labelInput.Name).
 			SetDescription(labelInput.Description).
-			SetColor(labelInput.Color)
-
-		if labelInput.OrgID != nil {
-			create = create.SetOrgID(*labelInput.OrgID)
-		}
+			SetColor(labelInput.Color).
+			SetOrgID(orgID)
 
 		bulk[i] = create
 	}
@@ -316,6 +357,23 @@ func (h *LabelHandler) DeleteBulk(c *gin.Context) {
 
 // listWithOffsetPagination handles traditional offset-based pagination
 func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.LabelQuery) {
+	// Extract org_id from JWT token for count query
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Failed to extract org_id from token: " + err.Error(),
+		})
+		return
+	}
+
+	orgID, ok := tokenData["org_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "org_id not found in token",
+		})
+		return
+	}
+
 	// Apply ordering
 	orderOption := h.getOrderOption(c)
 	if orderOption == nil {
@@ -351,20 +409,18 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 	// Get total count for pagination info with same filters
 	countQuery := h.Client.Label.Query()
 
+	// Apply org_id filter from token
+	countQuery = countQuery.Where(label.OrgIDEQ(orgID))
+
 	// Apply the same filters as the main query
 	if name := c.Query("name"); name != "" {
-		countQuery = countQuery.Where(label.NameContains(name))
+		countQuery = countQuery.Where(label.NameContainsFold(name))
 	}
 	if description := c.Query("description"); description != "" {
-		countQuery = countQuery.Where(label.DescriptionContains(description))
+		countQuery = countQuery.Where(label.DescriptionContainsFold(description))
 	}
 	if color := c.Query("color"); color != "" {
 		countQuery = countQuery.Where(label.ColorEQ(color))
-	}
-	if orgIDStr := c.Query("org_id"); orgIDStr != "" {
-		if orgID, err := strconv.Atoi(orgIDStr); err == nil {
-			countQuery = countQuery.Where(label.OrgIDEQ(orgID))
-		}
 	}
 
 	total, err := countQuery.Count(c.Request.Context())
@@ -377,8 +433,17 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 
 	totalPages := (total + limit - 1) / limit
 
+	// Add task counts to labels
+	labelsWithTaskCount, err := h.addTaskCountsToLabels(c, labels)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to add task counts",
+		})
+		return
+	}
+
 	response := gin.H{
-		"data": labels,
+		"data": labelsWithTaskCount,
 		"pagination": gin.H{
 			"type":         "offset",
 			"current_page": page,
@@ -447,8 +512,17 @@ func (h *LabelHandler) listWithCursorPagination(c *gin.Context, query *ent.Label
 		nextCursor = &cursorStr
 	}
 
+	// Add task counts to labels
+	labelsWithTaskCount, err := h.addTaskCountsToLabels(c, labels)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to add task counts",
+		})
+		return
+	}
+
 	response := gin.H{
-		"data": labels,
+		"data": labelsWithTaskCount,
 		"pagination": gin.H{
 			"type":        "cursor",
 			"per_page":    limit,
@@ -535,4 +609,35 @@ func (h *LabelHandler) decodeCursor(cursor string) (map[string]interface{}, erro
 	var result map[string]interface{}
 	err = json.Unmarshal(data, &result)
 	return result, err
+}
+
+// addTaskCountsToLabels adds task_count field to each label
+func (h *LabelHandler) addTaskCountsToLabels(c *gin.Context, labels []*ent.Label) ([]map[string]interface{}, error) {
+	result := make([]map[string]interface{}, len(labels))
+
+	for i, labelEntity := range labels {
+		// Count tasks for this label
+		taskCount, err := h.Client.Task.Query().
+			Where(task.HasLabelsWith(label.IDEQ(labelEntity.ID))).
+			Count(c.Request.Context())
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert label to map and add task_count
+		labelMap := map[string]interface{}{
+			"id":          labelEntity.ID,
+			"name":        labelEntity.Name,
+			"description": labelEntity.Description,
+			"color":       labelEntity.Color,
+			"org_id":      labelEntity.OrgID,
+			"created_at":  labelEntity.CreatedAt,
+			"updated_at":  labelEntity.UpdatedAt,
+			"task_count":  taskCount,
+		}
+
+		result[i] = labelMap
+	}
+
+	return result, nil
 }

@@ -297,6 +297,67 @@ var (
 			},
 		},
 	}
+	// TaskReportsColumns holds the columns for the "task_reports" table.
+	TaskReportsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "title", Type: field.TypeString},
+		{Name: "content", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"not_received", "received", "in_progress", "completed", "cancelled"}},
+		{Name: "progress_percentage", Type: field.TypeInt, Default: 0},
+		{Name: "reported_at", Type: field.TypeTime},
+		{Name: "issues_encountered", Type: field.TypeString, Nullable: true},
+		{Name: "next_steps", Type: field.TypeString, Nullable: true},
+		{Name: "estimated_completion", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "reporter_id", Type: field.TypeInt},
+		{Name: "task_id", Type: field.TypeInt},
+	}
+	// TaskReportsTable holds the schema information for the "task_reports" table.
+	TaskReportsTable = &schema.Table{
+		Name:       "task_reports",
+		Columns:    TaskReportsColumns,
+		PrimaryKey: []*schema.Column{TaskReportsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "task_reports_employees_task_reports",
+				Columns:    []*schema.Column{TaskReportsColumns[11]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "task_reports_tasks_reports",
+				Columns:    []*schema.Column{TaskReportsColumns[12]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ProjectMembersColumns holds the columns for the "project_members" table.
+	ProjectMembersColumns = []*schema.Column{
+		{Name: "project_id", Type: field.TypeInt},
+		{Name: "employee_id", Type: field.TypeInt},
+	}
+	// ProjectMembersTable holds the schema information for the "project_members" table.
+	ProjectMembersTable = &schema.Table{
+		Name:       "project_members",
+		Columns:    ProjectMembersColumns,
+		PrimaryKey: []*schema.Column{ProjectMembersColumns[0], ProjectMembersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_members_project_id",
+				Columns:    []*schema.Column{ProjectMembersColumns[0]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "project_members_employee_id",
+				Columns:    []*schema.Column{ProjectMembersColumns[1]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TaskLabelsColumns holds the columns for the "task_labels" table.
 	TaskLabelsColumns = []*schema.Column{
 		{Name: "task_id", Type: field.TypeInt},
@@ -358,6 +419,8 @@ var (
 		PositionsTable,
 		ProjectsTable,
 		TasksTable,
+		TaskReportsTable,
+		ProjectMembersTable,
 		TaskLabelsTable,
 		TaskAssigneesTable,
 	}
@@ -378,6 +441,10 @@ func init() {
 	ProjectsTable.ForeignKeys[1].RefTable = EmployeesTable
 	ProjectsTable.ForeignKeys[2].RefTable = OrganizationsTable
 	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
+	TaskReportsTable.ForeignKeys[0].RefTable = EmployeesTable
+	TaskReportsTable.ForeignKeys[1].RefTable = TasksTable
+	ProjectMembersTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectMembersTable.ForeignKeys[1].RefTable = EmployeesTable
 	TaskLabelsTable.ForeignKeys[0].RefTable = TasksTable
 	TaskLabelsTable.ForeignKeys[1].RefTable = LabelsTable
 	TaskAssigneesTable.ForeignKeys[0].RefTable = TasksTable
