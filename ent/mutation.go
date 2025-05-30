@@ -6845,6 +6845,9 @@ type ProjectMutation struct {
 	clearedcreator      bool
 	updater             *int
 	clearedupdater      bool
+	members             map[int]struct{}
+	removedmembers      map[int]struct{}
+	clearedmembers      bool
 	done                bool
 	oldValue            func(context.Context) (*Project, error)
 	predicates          []predicate.Project
@@ -7637,6 +7640,60 @@ func (m *ProjectMutation) ResetUpdater() {
 	m.clearedupdater = false
 }
 
+// AddMemberIDs adds the "members" edge to the Employee entity by ids.
+func (m *ProjectMutation) AddMemberIDs(ids ...int) {
+	if m.members == nil {
+		m.members = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.members[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMembers clears the "members" edge to the Employee entity.
+func (m *ProjectMutation) ClearMembers() {
+	m.clearedmembers = true
+}
+
+// MembersCleared reports if the "members" edge to the Employee entity was cleared.
+func (m *ProjectMutation) MembersCleared() bool {
+	return m.clearedmembers
+}
+
+// RemoveMemberIDs removes the "members" edge to the Employee entity by IDs.
+func (m *ProjectMutation) RemoveMemberIDs(ids ...int) {
+	if m.removedmembers == nil {
+		m.removedmembers = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.members, ids[i])
+		m.removedmembers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMembers returns the removed IDs of the "members" edge to the Employee entity.
+func (m *ProjectMutation) RemovedMembersIDs() (ids []int) {
+	for id := range m.removedmembers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MembersIDs returns the "members" edge IDs in the mutation.
+func (m *ProjectMutation) MembersIDs() (ids []int) {
+	for id := range m.members {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMembers resets all changes to the "members" edge.
+func (m *ProjectMutation) ResetMembers() {
+	m.members = nil
+	m.clearedmembers = false
+	m.removedmembers = nil
+}
+
 // Where appends a list predicates to the ProjectMutation builder.
 func (m *ProjectMutation) Where(ps ...predicate.Project) {
 	m.predicates = append(m.predicates, ps...)
@@ -8016,7 +8073,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tasks != nil {
 		edges = append(edges, project.EdgeTasks)
 	}
@@ -8028,6 +8085,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.updater != nil {
 		edges = append(edges, project.EdgeUpdater)
+	}
+	if m.members != nil {
+		edges = append(edges, project.EdgeMembers)
 	}
 	return edges
 }
@@ -8054,15 +8114,24 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 		if id := m.updater; id != nil {
 			return []ent.Value{*id}
 		}
+	case project.EdgeMembers:
+		ids := make([]ent.Value, 0, len(m.members))
+		for id := range m.members {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedtasks != nil {
 		edges = append(edges, project.EdgeTasks)
+	}
+	if m.removedmembers != nil {
+		edges = append(edges, project.EdgeMembers)
 	}
 	return edges
 }
@@ -8077,13 +8146,19 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeMembers:
+		ids := make([]ent.Value, 0, len(m.removedmembers))
+		for id := range m.removedmembers {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtasks {
 		edges = append(edges, project.EdgeTasks)
 	}
@@ -8095,6 +8170,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	}
 	if m.clearedupdater {
 		edges = append(edges, project.EdgeUpdater)
+	}
+	if m.clearedmembers {
+		edges = append(edges, project.EdgeMembers)
 	}
 	return edges
 }
@@ -8111,6 +8189,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.clearedcreator
 	case project.EdgeUpdater:
 		return m.clearedupdater
+	case project.EdgeMembers:
+		return m.clearedmembers
 	}
 	return false
 }
@@ -8147,6 +8227,9 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 		return nil
 	case project.EdgeUpdater:
 		m.ResetUpdater()
+		return nil
+	case project.EdgeMembers:
+		m.ResetMembers()
 		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)

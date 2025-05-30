@@ -34,6 +34,7 @@ type EmployeeQuery struct {
 	withAssignedTasks   *TaskQuery
 	withLeaveApproves   *LeaveApprovalQuery
 	withLeaveRequests   *LeaveRequestQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -549,6 +550,7 @@ func (eq *EmployeeQuery) prepareQuery(ctx context.Context) error {
 func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Employee, error) {
 	var (
 		nodes       = []*Employee{}
+		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
 		loadedTypes = [6]bool{
 			eq.withPosition != nil,
@@ -559,6 +561,9 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 			eq.withLeaveRequests != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, employee.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Employee).scanValues(nil, columns)
 	}

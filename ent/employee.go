@@ -36,8 +36,9 @@ type Employee struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EmployeeQuery when eager-loading is set.
-	Edges        EmployeeEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges           EmployeeEdges `json:"edges"`
+	project_members *int
+	selectValues    sql.SelectValues
 }
 
 // EmployeeEdges holds the relations/edges for other nodes in the graph.
@@ -126,6 +127,8 @@ func (*Employee) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case employee.FieldJoiningAt, employee.FieldCreatedAt, employee.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case employee.ForeignKeys[0]: // project_members
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -194,6 +197,13 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				e.UpdatedAt = value.Time
+			}
+		case employee.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field project_members", value)
+			} else if value.Valid {
+				e.project_members = new(int)
+				*e.project_members = int(value.Int64)
 			}
 		default:
 			e.selectValues.Set(columns[i], values[i])

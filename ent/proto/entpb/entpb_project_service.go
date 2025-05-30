@@ -123,6 +123,12 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 			Id: id,
 		}
 	}
+	for _, edg := range e.Edges.Members {
+		id := int64(edg.ID)
+		v.Members = append(v.Members, &Employee{
+			Id: id,
+		})
+	}
 	if edg := e.Edges.Organization; edg != nil {
 		id := int64(edg.ID)
 		v.Organization = &Organization{
@@ -198,6 +204,9 @@ func (svc *ProjectService) Get(ctx context.Context, req *GetProjectRequest) (*Pr
 			WithCreator(func(query *ent.EmployeeQuery) {
 				query.Select(employee.FieldID)
 			}).
+			WithMembers(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
 			WithOrganization(func(query *ent.OrganizationQuery) {
 				query.Select(organization.FieldID)
 			}).
@@ -262,6 +271,10 @@ func (svc *ProjectService) Update(ctx context.Context, req *UpdateProjectRequest
 	if project.GetCreator() != nil {
 		projectCreator := int(project.GetCreator().GetId())
 		m.SetCreatorID(projectCreator)
+	}
+	for _, item := range project.GetMembers() {
+		members := int(item.GetId())
+		m.AddMemberIDs(members)
 	}
 	if project.GetOrganization() != nil {
 		projectOrganization := int(project.GetOrganization().GetId())
@@ -346,6 +359,9 @@ func (svc *ProjectService) List(ctx context.Context, req *ListProjectRequest) (*
 	case ListProjectRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
 			WithCreator(func(query *ent.EmployeeQuery) {
+				query.Select(employee.FieldID)
+			}).
+			WithMembers(func(query *ent.EmployeeQuery) {
 				query.Select(employee.FieldID)
 			}).
 			WithOrganization(func(query *ent.OrganizationQuery) {
@@ -455,6 +471,10 @@ func (svc *ProjectService) createBuilder(project *Project) (*ent.ProjectCreate, 
 	if project.GetCreator() != nil {
 		projectCreator := int(project.GetCreator().GetId())
 		m.SetCreatorID(projectCreator)
+	}
+	for _, item := range project.GetMembers() {
+		members := int(item.GetId())
+		m.AddMemberIDs(members)
 	}
 	if project.GetOrganization() != nil {
 		projectOrganization := int(project.GetOrganization().GetId())

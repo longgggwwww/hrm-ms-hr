@@ -638,6 +638,8 @@ message Project {
 
   Employee updater = 18;
 
+  repeated Employee members = 19;
+
   enum Status {
     STATUS_NOT_STARTED = 0;
 

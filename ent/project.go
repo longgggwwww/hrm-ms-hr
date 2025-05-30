@@ -61,9 +61,11 @@ type ProjectEdges struct {
 	Creator *Employee `json:"creator,omitempty"`
 	// Updater holds the value of the updater edge.
 	Updater *Employee `json:"updater,omitempty"`
+	// Members holds the value of the members edge.
+	Members []*Employee `json:"members,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TasksOrErr returns the Tasks value or an error if the edge
@@ -106,6 +108,15 @@ func (e ProjectEdges) UpdaterOrErr() (*Employee, error) {
 		return nil, &NotFoundError{label: employee.Label}
 	}
 	return nil, &NotLoadedError{edge: "updater"}
+}
+
+// MembersOrErr returns the Members value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) MembersOrErr() ([]*Employee, error) {
+	if e.loadedTypes[4] {
+		return e.Members, nil
+	}
+	return nil, &NotLoadedError{edge: "members"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -249,6 +260,11 @@ func (pr *Project) QueryCreator() *EmployeeQuery {
 // QueryUpdater queries the "updater" edge of the Project entity.
 func (pr *Project) QueryUpdater() *EmployeeQuery {
 	return NewProjectClient(pr.config).QueryUpdater(pr)
+}
+
+// QueryMembers queries the "members" edge of the Project entity.
+func (pr *Project) QueryMembers() *EmployeeQuery {
+	return NewProjectClient(pr.config).QueryMembers(pr)
 }
 
 // Update returns a builder for updating this Project.

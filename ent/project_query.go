@@ -30,6 +30,7 @@ type ProjectQuery struct {
 	withOrganization *OrganizationQuery
 	withCreator      *EmployeeQuery
 	withUpdater      *EmployeeQuery
+	withMembers      *EmployeeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -147,6 +148,28 @@ func (pq *ProjectQuery) QueryUpdater() *EmployeeQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(employee.Table, employee.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, project.UpdaterTable, project.UpdaterColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMembers chains the current query on the "members" edge.
+func (pq *ProjectQuery) QueryMembers() *EmployeeQuery {
+	query := (&EmployeeClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.MembersTable, project.MembersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -350,6 +373,7 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		withOrganization: pq.withOrganization.Clone(),
 		withCreator:      pq.withCreator.Clone(),
 		withUpdater:      pq.withUpdater.Clone(),
+		withMembers:      pq.withMembers.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -397,6 +421,17 @@ func (pq *ProjectQuery) WithUpdater(opts ...func(*EmployeeQuery)) *ProjectQuery 
 		opt(query)
 	}
 	pq.withUpdater = query
+	return pq
+}
+
+// WithMembers tells the query-builder to eager-load the nodes that are connected to
+// the "members" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithMembers(opts ...func(*EmployeeQuery)) *ProjectQuery {
+	query := (&EmployeeClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withMembers = query
 	return pq
 }
 
@@ -478,11 +513,12 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			pq.withTasks != nil,
 			pq.withOrganization != nil,
 			pq.withCreator != nil,
 			pq.withUpdater != nil,
+			pq.withMembers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -525,6 +561,13 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	if query := pq.withUpdater; query != nil {
 		if err := pq.loadUpdater(ctx, query, nodes, nil,
 			func(n *Project, e *Employee) { n.Edges.Updater = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withMembers; query != nil {
+		if err := pq.loadMembers(ctx, query, nodes,
+			func(n *Project) { n.Edges.Members = []*Employee{} },
+			func(n *Project, e *Employee) { n.Edges.Members = append(n.Edges.Members, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -645,6 +688,37 @@ func (pq *ProjectQuery) loadUpdater(ctx context.Context, query *EmployeeQuery, n
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (pq *ProjectQuery) loadMembers(ctx context.Context, query *EmployeeQuery, nodes []*Project, init func(*Project), assign func(*Project, *Employee)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Employee(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.MembersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.project_members
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "project_members" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_members" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

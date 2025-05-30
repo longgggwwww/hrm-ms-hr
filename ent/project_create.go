@@ -203,6 +203,21 @@ func (pc *ProjectCreate) SetUpdater(e *Employee) *ProjectCreate {
 	return pc.SetUpdaterID(e.ID)
 }
 
+// AddMemberIDs adds the "members" edge to the Employee entity by IDs.
+func (pc *ProjectCreate) AddMemberIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddMemberIDs(ids...)
+	return pc
+}
+
+// AddMembers adds the "members" edges to the Employee entity.
+func (pc *ProjectCreate) AddMembers(e ...*Employee) *ProjectCreate {
+	ids := make([]int, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return pc.AddMemberIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pc *ProjectCreate) Mutation() *ProjectMutation {
 	return pc.mutation
@@ -436,6 +451,22 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.UpdaterID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.MembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MembersTable,
+			Columns: []string{project.MembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
