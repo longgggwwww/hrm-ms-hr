@@ -72,6 +72,11 @@ func (Employee) Edges() []ent.Edge {
 			Annotations(entproto.Field(14)),
 		edge.To("leave_requests", LeaveRequest.Type).
 			Annotations(entproto.Field(15)),
+		edge.To("task_reports", TaskReport.Type).
+			Annotations(entproto.Field(16)), // Edge đến TaskReport
+		edge.From("projects", Project.Type).
+			Ref("members").
+			Annotations(entproto.Field(17)), // Inverse edge for project members
 	}
 }
 

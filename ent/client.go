@@ -24,6 +24,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 // Client is the client that holds all ent builders.
@@ -49,6 +50,8 @@ type Client struct {
 	Project *ProjectClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
+	// TaskReport is the client for interacting with the TaskReport builders.
+	TaskReport *TaskReportClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -69,6 +72,7 @@ func (c *Client) init() {
 	c.Position = NewPositionClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.Task = NewTaskClient(c.config)
+	c.TaskReport = NewTaskReportClient(c.config)
 }
 
 type (
@@ -170,6 +174,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Position:      NewPositionClient(cfg),
 		Project:       NewProjectClient(cfg),
 		Task:          NewTaskClient(cfg),
+		TaskReport:    NewTaskReportClient(cfg),
 	}, nil
 }
 
@@ -198,6 +203,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Position:      NewPositionClient(cfg),
 		Project:       NewProjectClient(cfg),
 		Task:          NewTaskClient(cfg),
+		TaskReport:    NewTaskReportClient(cfg),
 	}, nil
 }
 
@@ -228,7 +234,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Department, c.Employee, c.Label, c.LeaveApproval, c.LeaveRequest,
-		c.Organization, c.Position, c.Project, c.Task,
+		c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
 	} {
 		n.Use(hooks...)
 	}
@@ -239,7 +245,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Department, c.Employee, c.Label, c.LeaveApproval, c.LeaveRequest,
-		c.Organization, c.Position, c.Project, c.Task,
+		c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -266,6 +272,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Project.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
+	case *TaskReportMutation:
+		return c.TaskReport.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -633,6 +641,38 @@ func (c *EmployeeClient) QueryLeaveRequests(e *Employee) *LeaveRequestQuery {
 			sqlgraph.From(employee.Table, employee.FieldID, id),
 			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, employee.LeaveRequestsTable, employee.LeaveRequestsColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTaskReports queries the task_reports edge of a Employee.
+func (c *EmployeeClient) QueryTaskReports(e *Employee) *TaskReportQuery {
+	query := (&TaskReportClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(taskreport.Table, taskreport.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.TaskReportsTable, employee.TaskReportsColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjects queries the projects edge of a Employee.
+func (c *EmployeeClient) QueryProjects(e *Employee) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, employee.ProjectsTable, employee.ProjectsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1782,7 +1822,7 @@ func (c *ProjectClient) QueryMembers(pr *Project) *EmployeeQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(employee.Table, employee.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, project.MembersTable, project.MembersColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, project.MembersTable, project.MembersPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
@@ -1971,6 +2011,22 @@ func (c *TaskClient) QueryAssignees(t *Task) *EmployeeQuery {
 	return query
 }
 
+// QueryReports queries the reports edge of a Task.
+func (c *TaskClient) QueryReports(t *Task) *TaskReportQuery {
+	query := (&TaskReportClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(taskreport.Table, taskreport.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, task.ReportsTable, task.ReportsColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *TaskClient) Hooks() []Hook {
 	return c.hooks.Task
@@ -1996,14 +2052,179 @@ func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error)
 	}
 }
 
+// TaskReportClient is a client for the TaskReport schema.
+type TaskReportClient struct {
+	config
+}
+
+// NewTaskReportClient returns a client for the TaskReport from the given config.
+func NewTaskReportClient(c config) *TaskReportClient {
+	return &TaskReportClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `taskreport.Hooks(f(g(h())))`.
+func (c *TaskReportClient) Use(hooks ...Hook) {
+	c.hooks.TaskReport = append(c.hooks.TaskReport, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `taskreport.Intercept(f(g(h())))`.
+func (c *TaskReportClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TaskReport = append(c.inters.TaskReport, interceptors...)
+}
+
+// Create returns a builder for creating a TaskReport entity.
+func (c *TaskReportClient) Create() *TaskReportCreate {
+	mutation := newTaskReportMutation(c.config, OpCreate)
+	return &TaskReportCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TaskReport entities.
+func (c *TaskReportClient) CreateBulk(builders ...*TaskReportCreate) *TaskReportCreateBulk {
+	return &TaskReportCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TaskReportClient) MapCreateBulk(slice any, setFunc func(*TaskReportCreate, int)) *TaskReportCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TaskReportCreateBulk{err: fmt.Errorf("calling to TaskReportClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TaskReportCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TaskReportCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TaskReport.
+func (c *TaskReportClient) Update() *TaskReportUpdate {
+	mutation := newTaskReportMutation(c.config, OpUpdate)
+	return &TaskReportUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TaskReportClient) UpdateOne(tr *TaskReport) *TaskReportUpdateOne {
+	mutation := newTaskReportMutation(c.config, OpUpdateOne, withTaskReport(tr))
+	return &TaskReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TaskReportClient) UpdateOneID(id int) *TaskReportUpdateOne {
+	mutation := newTaskReportMutation(c.config, OpUpdateOne, withTaskReportID(id))
+	return &TaskReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TaskReport.
+func (c *TaskReportClient) Delete() *TaskReportDelete {
+	mutation := newTaskReportMutation(c.config, OpDelete)
+	return &TaskReportDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TaskReportClient) DeleteOne(tr *TaskReport) *TaskReportDeleteOne {
+	return c.DeleteOneID(tr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TaskReportClient) DeleteOneID(id int) *TaskReportDeleteOne {
+	builder := c.Delete().Where(taskreport.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TaskReportDeleteOne{builder}
+}
+
+// Query returns a query builder for TaskReport.
+func (c *TaskReportClient) Query() *TaskReportQuery {
+	return &TaskReportQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTaskReport},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TaskReport entity by its id.
+func (c *TaskReportClient) Get(ctx context.Context, id int) (*TaskReport, error) {
+	return c.Query().Where(taskreport.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TaskReportClient) GetX(ctx context.Context, id int) *TaskReport {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTask queries the task edge of a TaskReport.
+func (c *TaskReportClient) QueryTask(tr *TaskReport) *TaskQuery {
+	query := (&TaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := tr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(taskreport.Table, taskreport.FieldID, id),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, taskreport.TaskTable, taskreport.TaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReporter queries the reporter edge of a TaskReport.
+func (c *TaskReportClient) QueryReporter(tr *TaskReport) *EmployeeQuery {
+	query := (&EmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := tr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(taskreport.Table, taskreport.FieldID, id),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, taskreport.ReporterTable, taskreport.ReporterColumn),
+		)
+		fromV = sqlgraph.Neighbors(tr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TaskReportClient) Hooks() []Hook {
+	return c.hooks.TaskReport
+}
+
+// Interceptors returns the client interceptors.
+func (c *TaskReportClient) Interceptors() []Interceptor {
+	return c.inters.TaskReport
+}
+
+func (c *TaskReportClient) mutate(ctx context.Context, m *TaskReportMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TaskReportCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TaskReportUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TaskReportUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TaskReportDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TaskReport mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		Department, Employee, Label, LeaveApproval, LeaveRequest, Organization,
-		Position, Project, Task []ent.Hook
+		Position, Project, Task, TaskReport []ent.Hook
 	}
 	inters struct {
 		Department, Employee, Label, LeaveApproval, LeaveRequest, Organization,
-		Position, Project, Task []ent.Interceptor
+		Position, Project, Task, TaskReport []ent.Interceptor
 	}
 )

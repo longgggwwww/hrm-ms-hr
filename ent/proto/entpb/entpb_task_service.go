@@ -13,6 +13,7 @@ import (
 	label "github.com/longgggwwww/hrm-ms-hr/ent/label"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
+	taskreport "github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -138,6 +139,12 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 			Id: id,
 		}
 	}
+	for _, edg := range e.Edges.Reports {
+		id := int64(edg.ID)
+		v.Reports = append(v.Reports, &TaskReport{
+			Id: id,
+		})
+	}
 	return v, nil
 }
 
@@ -200,6 +207,9 @@ func (svc *TaskService) Get(ctx context.Context, req *GetTaskRequest) (*Task, er
 			}).
 			WithProject(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
+			}).
+			WithReports(func(query *ent.TaskReportQuery) {
+				query.Select(taskreport.FieldID)
 			}).
 			Only(ctx)
 	default:
@@ -264,6 +274,10 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 	if task.GetProject() != nil {
 		taskProject := int(task.GetProject().GetId())
 		m.SetProjectID(taskProject)
+	}
+	for _, item := range task.GetReports() {
+		reports := int(item.GetId())
+		m.AddReportIDs(reports)
 	}
 
 	res, err := m.Save(ctx)
@@ -343,6 +357,9 @@ func (svc *TaskService) List(ctx context.Context, req *ListTaskRequest) (*ListTa
 			}).
 			WithProject(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
+			}).
+			WithReports(func(query *ent.TaskReportQuery) {
+				query.Select(taskreport.FieldID)
 			}).
 			All(ctx)
 	}
@@ -450,6 +467,10 @@ func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 	if task.GetProject() != nil {
 		taskProject := int(task.GetProject().GetId())
 		m.SetProjectID(taskProject)
+	}
+	for _, item := range task.GetReports() {
+		reports := int(item.GetId())
+		m.AddReportIDs(reports)
 	}
 	return m, nil
 }

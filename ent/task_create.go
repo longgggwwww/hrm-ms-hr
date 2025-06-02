@@ -15,6 +15,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 // TaskCreate is the builder for creating a Task entity.
@@ -208,6 +209,21 @@ func (tc *TaskCreate) AddAssignees(e ...*Employee) *TaskCreate {
 		ids[i] = e[i].ID
 	}
 	return tc.AddAssigneeIDs(ids...)
+}
+
+// AddReportIDs adds the "reports" edge to the TaskReport entity by IDs.
+func (tc *TaskCreate) AddReportIDs(ids ...int) *TaskCreate {
+	tc.mutation.AddReportIDs(ids...)
+	return tc
+}
+
+// AddReports adds the "reports" edges to the TaskReport entity.
+func (tc *TaskCreate) AddReports(t ...*TaskReport) *TaskCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tc.AddReportIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -423,6 +439,22 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.ReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.ReportsTable,
+			Columns: []string{task.ReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

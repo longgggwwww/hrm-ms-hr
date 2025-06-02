@@ -568,6 +568,52 @@ func HasLeaveRequestsWith(preds ...predicate.LeaveRequest) predicate.Employee {
 	})
 }
 
+// HasTaskReports applies the HasEdge predicate on the "task_reports" edge.
+func HasTaskReports() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TaskReportsTable, TaskReportsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTaskReportsWith applies the HasEdge predicate on the "task_reports" edge with a given conditions (other predicates).
+func HasTaskReportsWith(preds ...predicate.TaskReport) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newTaskReportsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProjects applies the HasEdge predicate on the "projects" edge.
+func HasProjects() predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ProjectsTable, ProjectsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectsWith applies the HasEdge predicate on the "projects" edge with a given conditions (other predicates).
+func HasProjectsWith(preds ...predicate.Project) predicate.Employee {
+	return predicate.Employee(func(s *sql.Selector) {
+		step := newProjectsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Employee) predicate.Employee {
 	return predicate.Employee(sql.AndPredicates(predicates...))

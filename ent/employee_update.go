@@ -18,6 +18,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 // EmployeeUpdate is the builder for updating Employee entities.
@@ -216,6 +217,36 @@ func (eu *EmployeeUpdate) AddLeaveRequests(l ...*LeaveRequest) *EmployeeUpdate {
 	return eu.AddLeaveRequestIDs(ids...)
 }
 
+// AddTaskReportIDs adds the "task_reports" edge to the TaskReport entity by IDs.
+func (eu *EmployeeUpdate) AddTaskReportIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.AddTaskReportIDs(ids...)
+	return eu
+}
+
+// AddTaskReports adds the "task_reports" edges to the TaskReport entity.
+func (eu *EmployeeUpdate) AddTaskReports(t ...*TaskReport) *EmployeeUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return eu.AddTaskReportIDs(ids...)
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (eu *EmployeeUpdate) AddProjectIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.AddProjectIDs(ids...)
+	return eu
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (eu *EmployeeUpdate) AddProjects(p ...*Project) *EmployeeUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return eu.AddProjectIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (eu *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return eu.mutation
@@ -330,6 +361,48 @@ func (eu *EmployeeUpdate) RemoveLeaveRequests(l ...*LeaveRequest) *EmployeeUpdat
 		ids[i] = l[i].ID
 	}
 	return eu.RemoveLeaveRequestIDs(ids...)
+}
+
+// ClearTaskReports clears all "task_reports" edges to the TaskReport entity.
+func (eu *EmployeeUpdate) ClearTaskReports() *EmployeeUpdate {
+	eu.mutation.ClearTaskReports()
+	return eu
+}
+
+// RemoveTaskReportIDs removes the "task_reports" edge to TaskReport entities by IDs.
+func (eu *EmployeeUpdate) RemoveTaskReportIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.RemoveTaskReportIDs(ids...)
+	return eu
+}
+
+// RemoveTaskReports removes "task_reports" edges to TaskReport entities.
+func (eu *EmployeeUpdate) RemoveTaskReports(t ...*TaskReport) *EmployeeUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return eu.RemoveTaskReportIDs(ids...)
+}
+
+// ClearProjects clears all "projects" edges to the Project entity.
+func (eu *EmployeeUpdate) ClearProjects() *EmployeeUpdate {
+	eu.mutation.ClearProjects()
+	return eu
+}
+
+// RemoveProjectIDs removes the "projects" edge to Project entities by IDs.
+func (eu *EmployeeUpdate) RemoveProjectIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.RemoveProjectIDs(ids...)
+	return eu
+}
+
+// RemoveProjects removes "projects" edges to Project entities.
+func (eu *EmployeeUpdate) RemoveProjects(p ...*Project) *EmployeeUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return eu.RemoveProjectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -676,6 +749,96 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.TaskReportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.TaskReportsTable,
+			Columns: []string{employee.TaskReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedTaskReportsIDs(); len(nodes) > 0 && !eu.mutation.TaskReportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.TaskReportsTable,
+			Columns: []string{employee.TaskReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.TaskReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.TaskReportsTable,
+			Columns: []string{employee.TaskReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.ProjectsTable,
+			Columns: employee.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !eu.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.ProjectsTable,
+			Columns: employee.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.ProjectsTable,
+			Columns: employee.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{employee.Label}
@@ -879,6 +1042,36 @@ func (euo *EmployeeUpdateOne) AddLeaveRequests(l ...*LeaveRequest) *EmployeeUpda
 	return euo.AddLeaveRequestIDs(ids...)
 }
 
+// AddTaskReportIDs adds the "task_reports" edge to the TaskReport entity by IDs.
+func (euo *EmployeeUpdateOne) AddTaskReportIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.AddTaskReportIDs(ids...)
+	return euo
+}
+
+// AddTaskReports adds the "task_reports" edges to the TaskReport entity.
+func (euo *EmployeeUpdateOne) AddTaskReports(t ...*TaskReport) *EmployeeUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return euo.AddTaskReportIDs(ids...)
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (euo *EmployeeUpdateOne) AddProjectIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.AddProjectIDs(ids...)
+	return euo
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (euo *EmployeeUpdateOne) AddProjects(p ...*Project) *EmployeeUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return euo.AddProjectIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (euo *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return euo.mutation
@@ -993,6 +1186,48 @@ func (euo *EmployeeUpdateOne) RemoveLeaveRequests(l ...*LeaveRequest) *EmployeeU
 		ids[i] = l[i].ID
 	}
 	return euo.RemoveLeaveRequestIDs(ids...)
+}
+
+// ClearTaskReports clears all "task_reports" edges to the TaskReport entity.
+func (euo *EmployeeUpdateOne) ClearTaskReports() *EmployeeUpdateOne {
+	euo.mutation.ClearTaskReports()
+	return euo
+}
+
+// RemoveTaskReportIDs removes the "task_reports" edge to TaskReport entities by IDs.
+func (euo *EmployeeUpdateOne) RemoveTaskReportIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.RemoveTaskReportIDs(ids...)
+	return euo
+}
+
+// RemoveTaskReports removes "task_reports" edges to TaskReport entities.
+func (euo *EmployeeUpdateOne) RemoveTaskReports(t ...*TaskReport) *EmployeeUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return euo.RemoveTaskReportIDs(ids...)
+}
+
+// ClearProjects clears all "projects" edges to the Project entity.
+func (euo *EmployeeUpdateOne) ClearProjects() *EmployeeUpdateOne {
+	euo.mutation.ClearProjects()
+	return euo
+}
+
+// RemoveProjectIDs removes the "projects" edge to Project entities by IDs.
+func (euo *EmployeeUpdateOne) RemoveProjectIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.RemoveProjectIDs(ids...)
+	return euo
+}
+
+// RemoveProjects removes "projects" edges to Project entities.
+func (euo *EmployeeUpdateOne) RemoveProjects(p ...*Project) *EmployeeUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return euo.RemoveProjectIDs(ids...)
 }
 
 // Where appends a list predicates to the EmployeeUpdate builder.
@@ -1362,6 +1597,96 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.TaskReportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.TaskReportsTable,
+			Columns: []string{employee.TaskReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedTaskReportsIDs(); len(nodes) > 0 && !euo.mutation.TaskReportsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.TaskReportsTable,
+			Columns: []string{employee.TaskReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.TaskReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.TaskReportsTable,
+			Columns: []string{employee.TaskReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.ProjectsTable,
+			Columns: employee.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedProjectsIDs(); len(nodes) > 0 && !euo.mutation.ProjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.ProjectsTable,
+			Columns: employee.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.ProjectsTable,
+			Columns: employee.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -19,6 +19,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 // EmployeeQuery is the builder for querying Employee entities.
@@ -34,7 +35,8 @@ type EmployeeQuery struct {
 	withAssignedTasks   *TaskQuery
 	withLeaveApproves   *LeaveApprovalQuery
 	withLeaveRequests   *LeaveRequestQuery
-	withFKs             bool
+	withTaskReports     *TaskReportQuery
+	withProjects        *ProjectQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -196,6 +198,50 @@ func (eq *EmployeeQuery) QueryLeaveRequests() *LeaveRequestQuery {
 			sqlgraph.From(employee.Table, employee.FieldID, selector),
 			sqlgraph.To(leaverequest.Table, leaverequest.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, employee.LeaveRequestsTable, employee.LeaveRequestsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTaskReports chains the current query on the "task_reports" edge.
+func (eq *EmployeeQuery) QueryTaskReports() *TaskReportQuery {
+	query := (&TaskReportClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(taskreport.Table, taskreport.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.TaskReportsTable, employee.TaskReportsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjects chains the current query on the "projects" edge.
+func (eq *EmployeeQuery) QueryProjects() *ProjectQuery {
+	query := (&ProjectClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, employee.ProjectsTable, employee.ProjectsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -401,6 +447,8 @@ func (eq *EmployeeQuery) Clone() *EmployeeQuery {
 		withAssignedTasks:   eq.withAssignedTasks.Clone(),
 		withLeaveApproves:   eq.withLeaveApproves.Clone(),
 		withLeaveRequests:   eq.withLeaveRequests.Clone(),
+		withTaskReports:     eq.withTaskReports.Clone(),
+		withProjects:        eq.withProjects.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -470,6 +518,28 @@ func (eq *EmployeeQuery) WithLeaveRequests(opts ...func(*LeaveRequestQuery)) *Em
 		opt(query)
 	}
 	eq.withLeaveRequests = query
+	return eq
+}
+
+// WithTaskReports tells the query-builder to eager-load the nodes that are connected to
+// the "task_reports" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithTaskReports(opts ...func(*TaskReportQuery)) *EmployeeQuery {
+	query := (&TaskReportClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withTaskReports = query
+	return eq
+}
+
+// WithProjects tells the query-builder to eager-load the nodes that are connected to
+// the "projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithProjects(opts ...func(*ProjectQuery)) *EmployeeQuery {
+	query := (&ProjectClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withProjects = query
 	return eq
 }
 
@@ -550,20 +620,18 @@ func (eq *EmployeeQuery) prepareQuery(ctx context.Context) error {
 func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Employee, error) {
 	var (
 		nodes       = []*Employee{}
-		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [8]bool{
 			eq.withPosition != nil,
 			eq.withCreatedProjects != nil,
 			eq.withUpdatedProjects != nil,
 			eq.withAssignedTasks != nil,
 			eq.withLeaveApproves != nil,
 			eq.withLeaveRequests != nil,
+			eq.withTaskReports != nil,
+			eq.withProjects != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, employee.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Employee).scanValues(nil, columns)
 	}
@@ -620,6 +688,20 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 		if err := eq.loadLeaveRequests(ctx, query, nodes,
 			func(n *Employee) { n.Edges.LeaveRequests = []*LeaveRequest{} },
 			func(n *Employee, e *LeaveRequest) { n.Edges.LeaveRequests = append(n.Edges.LeaveRequests, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withTaskReports; query != nil {
+		if err := eq.loadTaskReports(ctx, query, nodes,
+			func(n *Employee) { n.Edges.TaskReports = []*TaskReport{} },
+			func(n *Employee, e *TaskReport) { n.Edges.TaskReports = append(n.Edges.TaskReports, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withProjects; query != nil {
+		if err := eq.loadProjects(ctx, query, nodes,
+			func(n *Employee) { n.Edges.Projects = []*Project{} },
+			func(n *Employee, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -833,6 +915,97 @@ func (eq *EmployeeQuery) loadLeaveRequests(ctx context.Context, query *LeaveRequ
 			return fmt.Errorf(`unexpected referenced foreign-key "employee_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadTaskReports(ctx context.Context, query *TaskReportQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *TaskReport)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(taskreport.FieldReporterID)
+	}
+	query.Where(predicate.TaskReport(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.TaskReportsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ReporterID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "reporter_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadProjects(ctx context.Context, query *ProjectQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Project)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Employee)
+	nids := make(map[int]map[*Employee]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(employee.ProjectsTable)
+		s.Join(joinT).On(s.C(project.FieldID), joinT.C(employee.ProjectsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(employee.ProjectsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(employee.ProjectsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Employee]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Project](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "projects" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

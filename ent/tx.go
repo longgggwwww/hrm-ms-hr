@@ -30,6 +30,8 @@ type Tx struct {
 	Project *ProjectClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
+	// TaskReport is the client for interacting with the TaskReport builders.
+	TaskReport *TaskReportClient
 
 	// lazily loaded.
 	client     *Client
@@ -170,6 +172,7 @@ func (tx *Tx) init() {
 	tx.Position = NewPositionClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
+	tx.TaskReport = NewTaskReportClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

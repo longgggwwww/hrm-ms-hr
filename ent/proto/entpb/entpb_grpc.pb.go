@@ -2648,3 +2648,295 @@ var TaskService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "entpb/entpb.proto",
 }
+
+const (
+	TaskReportService_Create_FullMethodName      = "/entpb.TaskReportService/Create"
+	TaskReportService_Get_FullMethodName         = "/entpb.TaskReportService/Get"
+	TaskReportService_Update_FullMethodName      = "/entpb.TaskReportService/Update"
+	TaskReportService_Delete_FullMethodName      = "/entpb.TaskReportService/Delete"
+	TaskReportService_List_FullMethodName        = "/entpb.TaskReportService/List"
+	TaskReportService_BatchCreate_FullMethodName = "/entpb.TaskReportService/BatchCreate"
+)
+
+// TaskReportServiceClient is the client API for TaskReportService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type TaskReportServiceClient interface {
+	Create(ctx context.Context, in *CreateTaskReportRequest, opts ...grpc.CallOption) (*TaskReport, error)
+	Get(ctx context.Context, in *GetTaskReportRequest, opts ...grpc.CallOption) (*TaskReport, error)
+	Update(ctx context.Context, in *UpdateTaskReportRequest, opts ...grpc.CallOption) (*TaskReport, error)
+	Delete(ctx context.Context, in *DeleteTaskReportRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	List(ctx context.Context, in *ListTaskReportRequest, opts ...grpc.CallOption) (*ListTaskReportResponse, error)
+	BatchCreate(ctx context.Context, in *BatchCreateTaskReportsRequest, opts ...grpc.CallOption) (*BatchCreateTaskReportsResponse, error)
+}
+
+type taskReportServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTaskReportServiceClient(cc grpc.ClientConnInterface) TaskReportServiceClient {
+	return &taskReportServiceClient{cc}
+}
+
+func (c *taskReportServiceClient) Create(ctx context.Context, in *CreateTaskReportRequest, opts ...grpc.CallOption) (*TaskReport, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TaskReport)
+	err := c.cc.Invoke(ctx, TaskReportService_Create_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskReportServiceClient) Get(ctx context.Context, in *GetTaskReportRequest, opts ...grpc.CallOption) (*TaskReport, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TaskReport)
+	err := c.cc.Invoke(ctx, TaskReportService_Get_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskReportServiceClient) Update(ctx context.Context, in *UpdateTaskReportRequest, opts ...grpc.CallOption) (*TaskReport, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TaskReport)
+	err := c.cc.Invoke(ctx, TaskReportService_Update_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskReportServiceClient) Delete(ctx context.Context, in *DeleteTaskReportRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, TaskReportService_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskReportServiceClient) List(ctx context.Context, in *ListTaskReportRequest, opts ...grpc.CallOption) (*ListTaskReportResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTaskReportResponse)
+	err := c.cc.Invoke(ctx, TaskReportService_List_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *taskReportServiceClient) BatchCreate(ctx context.Context, in *BatchCreateTaskReportsRequest, opts ...grpc.CallOption) (*BatchCreateTaskReportsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchCreateTaskReportsResponse)
+	err := c.cc.Invoke(ctx, TaskReportService_BatchCreate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TaskReportServiceServer is the server API for TaskReportService service.
+// All implementations must embed UnimplementedTaskReportServiceServer
+// for forward compatibility.
+type TaskReportServiceServer interface {
+	Create(context.Context, *CreateTaskReportRequest) (*TaskReport, error)
+	Get(context.Context, *GetTaskReportRequest) (*TaskReport, error)
+	Update(context.Context, *UpdateTaskReportRequest) (*TaskReport, error)
+	Delete(context.Context, *DeleteTaskReportRequest) (*emptypb.Empty, error)
+	List(context.Context, *ListTaskReportRequest) (*ListTaskReportResponse, error)
+	BatchCreate(context.Context, *BatchCreateTaskReportsRequest) (*BatchCreateTaskReportsResponse, error)
+	mustEmbedUnimplementedTaskReportServiceServer()
+}
+
+// UnimplementedTaskReportServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedTaskReportServiceServer struct{}
+
+func (UnimplementedTaskReportServiceServer) Create(context.Context, *CreateTaskReportRequest) (*TaskReport, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedTaskReportServiceServer) Get(context.Context, *GetTaskReportRequest) (*TaskReport, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedTaskReportServiceServer) Update(context.Context, *UpdateTaskReportRequest) (*TaskReport, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedTaskReportServiceServer) Delete(context.Context, *DeleteTaskReportRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedTaskReportServiceServer) List(context.Context, *ListTaskReportRequest) (*ListTaskReportResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedTaskReportServiceServer) BatchCreate(context.Context, *BatchCreateTaskReportsRequest) (*BatchCreateTaskReportsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchCreate not implemented")
+}
+func (UnimplementedTaskReportServiceServer) mustEmbedUnimplementedTaskReportServiceServer() {}
+func (UnimplementedTaskReportServiceServer) testEmbeddedByValue()                           {}
+
+// UnsafeTaskReportServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TaskReportServiceServer will
+// result in compilation errors.
+type UnsafeTaskReportServiceServer interface {
+	mustEmbedUnimplementedTaskReportServiceServer()
+}
+
+func RegisterTaskReportServiceServer(s grpc.ServiceRegistrar, srv TaskReportServiceServer) {
+	// If the following call pancis, it indicates UnimplementedTaskReportServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&TaskReportService_ServiceDesc, srv)
+}
+
+func _TaskReportService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTaskReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskReportServiceServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskReportService_Create_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskReportServiceServer).Create(ctx, req.(*CreateTaskReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskReportService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTaskReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskReportServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskReportService_Get_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskReportServiceServer).Get(ctx, req.(*GetTaskReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskReportService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTaskReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskReportServiceServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskReportService_Update_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskReportServiceServer).Update(ctx, req.(*UpdateTaskReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskReportService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTaskReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskReportServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskReportService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskReportServiceServer).Delete(ctx, req.(*DeleteTaskReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskReportService_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTaskReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskReportServiceServer).List(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskReportService_List_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskReportServiceServer).List(ctx, req.(*ListTaskReportRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TaskReportService_BatchCreate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchCreateTaskReportsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskReportServiceServer).BatchCreate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskReportService_BatchCreate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskReportServiceServer).BatchCreate(ctx, req.(*BatchCreateTaskReportsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// TaskReportService_ServiceDesc is the grpc.ServiceDesc for TaskReportService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var TaskReportService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "entpb.TaskReportService",
+	HandlerType: (*TaskReportServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _TaskReportService_Create_Handler,
+		},
+		{
+			MethodName: "Get",
+			Handler:    _TaskReportService_Get_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _TaskReportService_Update_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _TaskReportService_Delete_Handler,
+		},
+		{
+			MethodName: "List",
+			Handler:    _TaskReportService_List_Handler,
+		},
+		{
+			MethodName: "BatchCreate",
+			Handler:    _TaskReportService_BatchCreate_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "entpb/entpb.proto",
+}

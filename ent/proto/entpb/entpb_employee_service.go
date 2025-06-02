@@ -15,6 +15,7 @@ import (
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
+	taskreport "github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -113,6 +114,18 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 			Id: id,
 		}
 	}
+	for _, edg := range e.Edges.Projects {
+		id := int64(edg.ID)
+		v.Projects = append(v.Projects, &Project{
+			Id: id,
+		})
+	}
+	for _, edg := range e.Edges.TaskReports {
+		id := int64(edg.ID)
+		v.TaskReports = append(v.TaskReports, &TaskReport{
+			Id: id,
+		})
+	}
 	for _, edg := range e.Edges.UpdatedProjects {
 		id := int64(edg.ID)
 		v.UpdatedProjects = append(v.UpdatedProjects, &Project{
@@ -188,6 +201,12 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 			WithPosition(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
+			WithProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
+			}).
+			WithTaskReports(func(query *ent.TaskReportQuery) {
+				query.Select(taskreport.FieldID)
+			}).
 			WithUpdatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
@@ -246,6 +265,14 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
+	}
+	for _, item := range employee.GetProjects() {
+		projects := int(item.GetId())
+		m.AddProjectIDs(projects)
+	}
+	for _, item := range employee.GetTaskReports() {
+		taskreports := int(item.GetId())
+		m.AddTaskReportIDs(taskreports)
 	}
 	for _, item := range employee.GetUpdatedProjects() {
 		updatedprojects := int(item.GetId())
@@ -335,6 +362,12 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 			}).
 			WithPosition(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
+			}).
+			WithProjects(func(query *ent.ProjectQuery) {
+				query.Select(project.FieldID)
+			}).
+			WithTaskReports(func(query *ent.TaskReportQuery) {
+				query.Select(taskreport.FieldID)
 			}).
 			WithUpdatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
@@ -437,6 +470,14 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	if employee.GetPosition() != nil {
 		employeePosition := int(employee.GetPosition().GetId())
 		m.SetPositionID(employeePosition)
+	}
+	for _, item := range employee.GetProjects() {
+		projects := int(item.GetId())
+		m.AddProjectIDs(projects)
+	}
+	for _, item := range employee.GetTaskReports() {
+		taskreports := int(item.GetId())
+		m.AddTaskReportIDs(taskreports)
 	}
 	for _, item := range employee.GetUpdatedProjects() {
 		updatedprojects := int(item.GetId())

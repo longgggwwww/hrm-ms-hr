@@ -81,13 +81,11 @@ const (
 	UpdaterInverseTable = "employees"
 	// UpdaterColumn is the table column denoting the updater relation/edge.
 	UpdaterColumn = "updater_id"
-	// MembersTable is the table that holds the members relation/edge.
-	MembersTable = "employees"
+	// MembersTable is the table that holds the members relation/edge. The primary key declared below.
+	MembersTable = "project_members"
 	// MembersInverseTable is the table name for the Employee entity.
 	// It exists in this package in order to avoid circular dependency with the "employee" package.
 	MembersInverseTable = "employees"
-	// MembersColumn is the table column denoting the members relation/edge.
-	MembersColumn = "project_members"
 )
 
 // Columns holds all SQL columns for project fields.
@@ -107,6 +105,12 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
+
+var (
+	// MembersPrimaryKey and MembersColumn2 are the table columns denoting the
+	// primary key for the members relation (M2M).
+	MembersPrimaryKey = []string{"project_id", "employee_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -334,6 +338,6 @@ func newMembersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MembersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, MembersTable, MembersColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, MembersTable, MembersPrimaryKey...),
 	)
 }

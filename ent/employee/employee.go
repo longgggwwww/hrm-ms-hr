@@ -43,6 +43,10 @@ const (
 	EdgeLeaveApproves = "leave_approves"
 	// EdgeLeaveRequests holds the string denoting the leave_requests edge name in mutations.
 	EdgeLeaveRequests = "leave_requests"
+	// EdgeTaskReports holds the string denoting the task_reports edge name in mutations.
+	EdgeTaskReports = "task_reports"
+	// EdgeProjects holds the string denoting the projects edge name in mutations.
+	EdgeProjects = "projects"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 	// PositionTable is the table that holds the position relation/edge.
@@ -85,6 +89,18 @@ const (
 	LeaveRequestsInverseTable = "leave_requests"
 	// LeaveRequestsColumn is the table column denoting the leave_requests relation/edge.
 	LeaveRequestsColumn = "employee_id"
+	// TaskReportsTable is the table that holds the task_reports relation/edge.
+	TaskReportsTable = "task_reports"
+	// TaskReportsInverseTable is the table name for the TaskReport entity.
+	// It exists in this package in order to avoid circular dependency with the "taskreport" package.
+	TaskReportsInverseTable = "task_reports"
+	// TaskReportsColumn is the table column denoting the task_reports relation/edge.
+	TaskReportsColumn = "reporter_id"
+	// ProjectsTable is the table that holds the projects relation/edge. The primary key declared below.
+	ProjectsTable = "project_members"
+	// ProjectsInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	ProjectsInverseTable = "projects"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -100,27 +116,19 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "employees"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"project_members",
-}
-
 var (
 	// AssignedTasksPrimaryKey and AssignedTasksColumn2 are the table columns denoting the
 	// primary key for the assigned_tasks relation (M2M).
 	AssignedTasksPrimaryKey = []string{"task_id", "employee_id"}
+	// ProjectsPrimaryKey and ProjectsColumn2 are the table columns denoting the
+	// primary key for the projects relation (M2M).
+	ProjectsPrimaryKey = []string{"project_id", "employee_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -288,6 +296,34 @@ func ByLeaveRequests(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newLeaveRequestsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTaskReportsCount orders the results by task_reports count.
+func ByTaskReportsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTaskReportsStep(), opts...)
+	}
+}
+
+// ByTaskReports orders the results by task_reports terms.
+func ByTaskReports(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTaskReportsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByProjectsCount orders the results by projects count.
+func ByProjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProjectsStep(), opts...)
+	}
+}
+
+// ByProjects orders the results by projects terms.
+func ByProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPositionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -328,5 +364,19 @@ func newLeaveRequestsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LeaveRequestsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, LeaveRequestsTable, LeaveRequestsColumn),
+	)
+}
+func newTaskReportsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TaskReportsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TaskReportsTable, TaskReportsColumn),
+	)
+}
+func newProjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ProjectsTable, ProjectsPrimaryKey...),
 	)
 }

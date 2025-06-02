@@ -21,6 +21,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 const (
@@ -41,6 +42,7 @@ const (
 	TypePosition      = "Position"
 	TypeProject       = "Project"
 	TypeTask          = "Task"
+	TypeTaskReport    = "TaskReport"
 )
 
 // DepartmentMutation represents an operation that mutates the Department nodes in the graph.
@@ -772,6 +774,12 @@ type EmployeeMutation struct {
 	leave_requests          map[int]struct{}
 	removedleave_requests   map[int]struct{}
 	clearedleave_requests   bool
+	task_reports            map[int]struct{}
+	removedtask_reports     map[int]struct{}
+	clearedtask_reports     bool
+	projects                map[int]struct{}
+	removedprojects         map[int]struct{}
+	clearedprojects         bool
 	done                    bool
 	oldValue                func(context.Context) (*Employee, error)
 	predicates              []predicate.Employee
@@ -1493,6 +1501,114 @@ func (m *EmployeeMutation) ResetLeaveRequests() {
 	m.removedleave_requests = nil
 }
 
+// AddTaskReportIDs adds the "task_reports" edge to the TaskReport entity by ids.
+func (m *EmployeeMutation) AddTaskReportIDs(ids ...int) {
+	if m.task_reports == nil {
+		m.task_reports = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.task_reports[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTaskReports clears the "task_reports" edge to the TaskReport entity.
+func (m *EmployeeMutation) ClearTaskReports() {
+	m.clearedtask_reports = true
+}
+
+// TaskReportsCleared reports if the "task_reports" edge to the TaskReport entity was cleared.
+func (m *EmployeeMutation) TaskReportsCleared() bool {
+	return m.clearedtask_reports
+}
+
+// RemoveTaskReportIDs removes the "task_reports" edge to the TaskReport entity by IDs.
+func (m *EmployeeMutation) RemoveTaskReportIDs(ids ...int) {
+	if m.removedtask_reports == nil {
+		m.removedtask_reports = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.task_reports, ids[i])
+		m.removedtask_reports[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTaskReports returns the removed IDs of the "task_reports" edge to the TaskReport entity.
+func (m *EmployeeMutation) RemovedTaskReportsIDs() (ids []int) {
+	for id := range m.removedtask_reports {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TaskReportsIDs returns the "task_reports" edge IDs in the mutation.
+func (m *EmployeeMutation) TaskReportsIDs() (ids []int) {
+	for id := range m.task_reports {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTaskReports resets all changes to the "task_reports" edge.
+func (m *EmployeeMutation) ResetTaskReports() {
+	m.task_reports = nil
+	m.clearedtask_reports = false
+	m.removedtask_reports = nil
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by ids.
+func (m *EmployeeMutation) AddProjectIDs(ids ...int) {
+	if m.projects == nil {
+		m.projects = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.projects[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProjects clears the "projects" edge to the Project entity.
+func (m *EmployeeMutation) ClearProjects() {
+	m.clearedprojects = true
+}
+
+// ProjectsCleared reports if the "projects" edge to the Project entity was cleared.
+func (m *EmployeeMutation) ProjectsCleared() bool {
+	return m.clearedprojects
+}
+
+// RemoveProjectIDs removes the "projects" edge to the Project entity by IDs.
+func (m *EmployeeMutation) RemoveProjectIDs(ids ...int) {
+	if m.removedprojects == nil {
+		m.removedprojects = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.projects, ids[i])
+		m.removedprojects[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProjects returns the removed IDs of the "projects" edge to the Project entity.
+func (m *EmployeeMutation) RemovedProjectsIDs() (ids []int) {
+	for id := range m.removedprojects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProjectsIDs returns the "projects" edge IDs in the mutation.
+func (m *EmployeeMutation) ProjectsIDs() (ids []int) {
+	for id := range m.projects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProjects resets all changes to the "projects" edge.
+func (m *EmployeeMutation) ResetProjects() {
+	m.projects = nil
+	m.clearedprojects = false
+	m.removedprojects = nil
+}
+
 // Where appends a list predicates to the EmployeeMutation builder.
 func (m *EmployeeMutation) Where(ps ...predicate.Employee) {
 	m.predicates = append(m.predicates, ps...)
@@ -1769,7 +1885,7 @@ func (m *EmployeeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EmployeeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.position != nil {
 		edges = append(edges, employee.EdgePosition)
 	}
@@ -1787,6 +1903,12 @@ func (m *EmployeeMutation) AddedEdges() []string {
 	}
 	if m.leave_requests != nil {
 		edges = append(edges, employee.EdgeLeaveRequests)
+	}
+	if m.task_reports != nil {
+		edges = append(edges, employee.EdgeTaskReports)
+	}
+	if m.projects != nil {
+		edges = append(edges, employee.EdgeProjects)
 	}
 	return edges
 }
@@ -1829,13 +1951,25 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeTaskReports:
+		ids := make([]ent.Value, 0, len(m.task_reports))
+		for id := range m.task_reports {
+			ids = append(ids, id)
+		}
+		return ids
+	case employee.EdgeProjects:
+		ids := make([]ent.Value, 0, len(m.projects))
+		for id := range m.projects {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EmployeeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.removedcreated_projects != nil {
 		edges = append(edges, employee.EdgeCreatedProjects)
 	}
@@ -1850,6 +1984,12 @@ func (m *EmployeeMutation) RemovedEdges() []string {
 	}
 	if m.removedleave_requests != nil {
 		edges = append(edges, employee.EdgeLeaveRequests)
+	}
+	if m.removedtask_reports != nil {
+		edges = append(edges, employee.EdgeTaskReports)
+	}
+	if m.removedprojects != nil {
+		edges = append(edges, employee.EdgeProjects)
 	}
 	return edges
 }
@@ -1888,13 +2028,25 @@ func (m *EmployeeMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeTaskReports:
+		ids := make([]ent.Value, 0, len(m.removedtask_reports))
+		for id := range m.removedtask_reports {
+			ids = append(ids, id)
+		}
+		return ids
+	case employee.EdgeProjects:
+		ids := make([]ent.Value, 0, len(m.removedprojects))
+		for id := range m.removedprojects {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EmployeeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 8)
 	if m.clearedposition {
 		edges = append(edges, employee.EdgePosition)
 	}
@@ -1912,6 +2064,12 @@ func (m *EmployeeMutation) ClearedEdges() []string {
 	}
 	if m.clearedleave_requests {
 		edges = append(edges, employee.EdgeLeaveRequests)
+	}
+	if m.clearedtask_reports {
+		edges = append(edges, employee.EdgeTaskReports)
+	}
+	if m.clearedprojects {
+		edges = append(edges, employee.EdgeProjects)
 	}
 	return edges
 }
@@ -1932,6 +2090,10 @@ func (m *EmployeeMutation) EdgeCleared(name string) bool {
 		return m.clearedleave_approves
 	case employee.EdgeLeaveRequests:
 		return m.clearedleave_requests
+	case employee.EdgeTaskReports:
+		return m.clearedtask_reports
+	case employee.EdgeProjects:
+		return m.clearedprojects
 	}
 	return false
 }
@@ -1968,6 +2130,12 @@ func (m *EmployeeMutation) ResetEdge(name string) error {
 		return nil
 	case employee.EdgeLeaveRequests:
 		m.ResetLeaveRequests()
+		return nil
+	case employee.EdgeTaskReports:
+		m.ResetTaskReports()
+		return nil
+	case employee.EdgeProjects:
+		m.ResetProjects()
 		return nil
 	}
 	return fmt.Errorf("unknown Employee edge %s", name)
@@ -8265,6 +8433,9 @@ type TaskMutation struct {
 	assignees        map[int]struct{}
 	removedassignees map[int]struct{}
 	clearedassignees bool
+	reports          map[int]struct{}
+	removedreports   map[int]struct{}
+	clearedreports   bool
 	done             bool
 	oldValue         func(context.Context) (*Task, error)
 	predicates       []predicate.Task
@@ -9083,6 +9254,60 @@ func (m *TaskMutation) ResetAssignees() {
 	m.removedassignees = nil
 }
 
+// AddReportIDs adds the "reports" edge to the TaskReport entity by ids.
+func (m *TaskMutation) AddReportIDs(ids ...int) {
+	if m.reports == nil {
+		m.reports = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.reports[ids[i]] = struct{}{}
+	}
+}
+
+// ClearReports clears the "reports" edge to the TaskReport entity.
+func (m *TaskMutation) ClearReports() {
+	m.clearedreports = true
+}
+
+// ReportsCleared reports if the "reports" edge to the TaskReport entity was cleared.
+func (m *TaskMutation) ReportsCleared() bool {
+	return m.clearedreports
+}
+
+// RemoveReportIDs removes the "reports" edge to the TaskReport entity by IDs.
+func (m *TaskMutation) RemoveReportIDs(ids ...int) {
+	if m.removedreports == nil {
+		m.removedreports = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.reports, ids[i])
+		m.removedreports[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedReports returns the removed IDs of the "reports" edge to the TaskReport entity.
+func (m *TaskMutation) RemovedReportsIDs() (ids []int) {
+	for id := range m.removedreports {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ReportsIDs returns the "reports" edge IDs in the mutation.
+func (m *TaskMutation) ReportsIDs() (ids []int) {
+	for id := range m.reports {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetReports resets all changes to the "reports" edge.
+func (m *TaskMutation) ResetReports() {
+	m.reports = nil
+	m.clearedreports = false
+	m.removedreports = nil
+}
+
 // Where appends a list predicates to the TaskMutation builder.
 func (m *TaskMutation) Where(ps ...predicate.Task) {
 	m.predicates = append(m.predicates, ps...)
@@ -9486,7 +9711,7 @@ func (m *TaskMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.project != nil {
 		edges = append(edges, task.EdgeProject)
 	}
@@ -9495,6 +9720,9 @@ func (m *TaskMutation) AddedEdges() []string {
 	}
 	if m.assignees != nil {
 		edges = append(edges, task.EdgeAssignees)
+	}
+	if m.reports != nil {
+		edges = append(edges, task.EdgeReports)
 	}
 	return edges
 }
@@ -9519,18 +9747,27 @@ func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case task.EdgeReports:
+		ids := make([]ent.Value, 0, len(m.reports))
+		for id := range m.reports {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedlabels != nil {
 		edges = append(edges, task.EdgeLabels)
 	}
 	if m.removedassignees != nil {
 		edges = append(edges, task.EdgeAssignees)
+	}
+	if m.removedreports != nil {
+		edges = append(edges, task.EdgeReports)
 	}
 	return edges
 }
@@ -9551,13 +9788,19 @@ func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case task.EdgeReports:
+		ids := make([]ent.Value, 0, len(m.removedreports))
+		for id := range m.removedreports {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedproject {
 		edges = append(edges, task.EdgeProject)
 	}
@@ -9566,6 +9809,9 @@ func (m *TaskMutation) ClearedEdges() []string {
 	}
 	if m.clearedassignees {
 		edges = append(edges, task.EdgeAssignees)
+	}
+	if m.clearedreports {
+		edges = append(edges, task.EdgeReports)
 	}
 	return edges
 }
@@ -9580,6 +9826,8 @@ func (m *TaskMutation) EdgeCleared(name string) bool {
 		return m.clearedlabels
 	case task.EdgeAssignees:
 		return m.clearedassignees
+	case task.EdgeReports:
+		return m.clearedreports
 	}
 	return false
 }
@@ -9608,6 +9856,1144 @@ func (m *TaskMutation) ResetEdge(name string) error {
 	case task.EdgeAssignees:
 		m.ResetAssignees()
 		return nil
+	case task.EdgeReports:
+		m.ResetReports()
+		return nil
 	}
 	return fmt.Errorf("unknown Task edge %s", name)
+}
+
+// TaskReportMutation represents an operation that mutates the TaskReport nodes in the graph.
+type TaskReportMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *int
+	title                  *string
+	content                *string
+	status                 *taskreport.Status
+	progress_percentage    *int
+	addprogress_percentage *int
+	reported_at            *time.Time
+	issues_encountered     *string
+	next_steps             *string
+	estimated_completion   *time.Time
+	created_at             *time.Time
+	updated_at             *time.Time
+	clearedFields          map[string]struct{}
+	task                   *int
+	clearedtask            bool
+	reporter               *int
+	clearedreporter        bool
+	done                   bool
+	oldValue               func(context.Context) (*TaskReport, error)
+	predicates             []predicate.TaskReport
+}
+
+var _ ent.Mutation = (*TaskReportMutation)(nil)
+
+// taskreportOption allows management of the mutation configuration using functional options.
+type taskreportOption func(*TaskReportMutation)
+
+// newTaskReportMutation creates new mutation for the TaskReport entity.
+func newTaskReportMutation(c config, op Op, opts ...taskreportOption) *TaskReportMutation {
+	m := &TaskReportMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTaskReport,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTaskReportID sets the ID field of the mutation.
+func withTaskReportID(id int) taskreportOption {
+	return func(m *TaskReportMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TaskReport
+		)
+		m.oldValue = func(ctx context.Context) (*TaskReport, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TaskReport.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTaskReport sets the old TaskReport of the mutation.
+func withTaskReport(node *TaskReport) taskreportOption {
+	return func(m *TaskReportMutation) {
+		m.oldValue = func(context.Context) (*TaskReport, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TaskReportMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TaskReportMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TaskReportMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TaskReportMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TaskReport.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTitle sets the "title" field.
+func (m *TaskReportMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *TaskReportMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *TaskReportMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetContent sets the "content" field.
+func (m *TaskReportMutation) SetContent(s string) {
+	m.content = &s
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *TaskReportMutation) Content() (r string, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ClearContent clears the value of the "content" field.
+func (m *TaskReportMutation) ClearContent() {
+	m.content = nil
+	m.clearedFields[taskreport.FieldContent] = struct{}{}
+}
+
+// ContentCleared returns if the "content" field was cleared in this mutation.
+func (m *TaskReportMutation) ContentCleared() bool {
+	_, ok := m.clearedFields[taskreport.FieldContent]
+	return ok
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *TaskReportMutation) ResetContent() {
+	m.content = nil
+	delete(m.clearedFields, taskreport.FieldContent)
+}
+
+// SetStatus sets the "status" field.
+func (m *TaskReportMutation) SetStatus(t taskreport.Status) {
+	m.status = &t
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *TaskReportMutation) Status() (r taskreport.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldStatus(ctx context.Context) (v taskreport.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *TaskReportMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetProgressPercentage sets the "progress_percentage" field.
+func (m *TaskReportMutation) SetProgressPercentage(i int) {
+	m.progress_percentage = &i
+	m.addprogress_percentage = nil
+}
+
+// ProgressPercentage returns the value of the "progress_percentage" field in the mutation.
+func (m *TaskReportMutation) ProgressPercentage() (r int, exists bool) {
+	v := m.progress_percentage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgressPercentage returns the old "progress_percentage" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldProgressPercentage(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgressPercentage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgressPercentage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgressPercentage: %w", err)
+	}
+	return oldValue.ProgressPercentage, nil
+}
+
+// AddProgressPercentage adds i to the "progress_percentage" field.
+func (m *TaskReportMutation) AddProgressPercentage(i int) {
+	if m.addprogress_percentage != nil {
+		*m.addprogress_percentage += i
+	} else {
+		m.addprogress_percentage = &i
+	}
+}
+
+// AddedProgressPercentage returns the value that was added to the "progress_percentage" field in this mutation.
+func (m *TaskReportMutation) AddedProgressPercentage() (r int, exists bool) {
+	v := m.addprogress_percentage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetProgressPercentage resets all changes to the "progress_percentage" field.
+func (m *TaskReportMutation) ResetProgressPercentage() {
+	m.progress_percentage = nil
+	m.addprogress_percentage = nil
+}
+
+// SetReportedAt sets the "reported_at" field.
+func (m *TaskReportMutation) SetReportedAt(t time.Time) {
+	m.reported_at = &t
+}
+
+// ReportedAt returns the value of the "reported_at" field in the mutation.
+func (m *TaskReportMutation) ReportedAt() (r time.Time, exists bool) {
+	v := m.reported_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReportedAt returns the old "reported_at" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldReportedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReportedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReportedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReportedAt: %w", err)
+	}
+	return oldValue.ReportedAt, nil
+}
+
+// ResetReportedAt resets all changes to the "reported_at" field.
+func (m *TaskReportMutation) ResetReportedAt() {
+	m.reported_at = nil
+}
+
+// SetIssuesEncountered sets the "issues_encountered" field.
+func (m *TaskReportMutation) SetIssuesEncountered(s string) {
+	m.issues_encountered = &s
+}
+
+// IssuesEncountered returns the value of the "issues_encountered" field in the mutation.
+func (m *TaskReportMutation) IssuesEncountered() (r string, exists bool) {
+	v := m.issues_encountered
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIssuesEncountered returns the old "issues_encountered" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldIssuesEncountered(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIssuesEncountered is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIssuesEncountered requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIssuesEncountered: %w", err)
+	}
+	return oldValue.IssuesEncountered, nil
+}
+
+// ClearIssuesEncountered clears the value of the "issues_encountered" field.
+func (m *TaskReportMutation) ClearIssuesEncountered() {
+	m.issues_encountered = nil
+	m.clearedFields[taskreport.FieldIssuesEncountered] = struct{}{}
+}
+
+// IssuesEncounteredCleared returns if the "issues_encountered" field was cleared in this mutation.
+func (m *TaskReportMutation) IssuesEncounteredCleared() bool {
+	_, ok := m.clearedFields[taskreport.FieldIssuesEncountered]
+	return ok
+}
+
+// ResetIssuesEncountered resets all changes to the "issues_encountered" field.
+func (m *TaskReportMutation) ResetIssuesEncountered() {
+	m.issues_encountered = nil
+	delete(m.clearedFields, taskreport.FieldIssuesEncountered)
+}
+
+// SetNextSteps sets the "next_steps" field.
+func (m *TaskReportMutation) SetNextSteps(s string) {
+	m.next_steps = &s
+}
+
+// NextSteps returns the value of the "next_steps" field in the mutation.
+func (m *TaskReportMutation) NextSteps() (r string, exists bool) {
+	v := m.next_steps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNextSteps returns the old "next_steps" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldNextSteps(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNextSteps is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNextSteps requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNextSteps: %w", err)
+	}
+	return oldValue.NextSteps, nil
+}
+
+// ClearNextSteps clears the value of the "next_steps" field.
+func (m *TaskReportMutation) ClearNextSteps() {
+	m.next_steps = nil
+	m.clearedFields[taskreport.FieldNextSteps] = struct{}{}
+}
+
+// NextStepsCleared returns if the "next_steps" field was cleared in this mutation.
+func (m *TaskReportMutation) NextStepsCleared() bool {
+	_, ok := m.clearedFields[taskreport.FieldNextSteps]
+	return ok
+}
+
+// ResetNextSteps resets all changes to the "next_steps" field.
+func (m *TaskReportMutation) ResetNextSteps() {
+	m.next_steps = nil
+	delete(m.clearedFields, taskreport.FieldNextSteps)
+}
+
+// SetEstimatedCompletion sets the "estimated_completion" field.
+func (m *TaskReportMutation) SetEstimatedCompletion(t time.Time) {
+	m.estimated_completion = &t
+}
+
+// EstimatedCompletion returns the value of the "estimated_completion" field in the mutation.
+func (m *TaskReportMutation) EstimatedCompletion() (r time.Time, exists bool) {
+	v := m.estimated_completion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEstimatedCompletion returns the old "estimated_completion" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldEstimatedCompletion(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEstimatedCompletion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEstimatedCompletion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEstimatedCompletion: %w", err)
+	}
+	return oldValue.EstimatedCompletion, nil
+}
+
+// ClearEstimatedCompletion clears the value of the "estimated_completion" field.
+func (m *TaskReportMutation) ClearEstimatedCompletion() {
+	m.estimated_completion = nil
+	m.clearedFields[taskreport.FieldEstimatedCompletion] = struct{}{}
+}
+
+// EstimatedCompletionCleared returns if the "estimated_completion" field was cleared in this mutation.
+func (m *TaskReportMutation) EstimatedCompletionCleared() bool {
+	_, ok := m.clearedFields[taskreport.FieldEstimatedCompletion]
+	return ok
+}
+
+// ResetEstimatedCompletion resets all changes to the "estimated_completion" field.
+func (m *TaskReportMutation) ResetEstimatedCompletion() {
+	m.estimated_completion = nil
+	delete(m.clearedFields, taskreport.FieldEstimatedCompletion)
+}
+
+// SetTaskID sets the "task_id" field.
+func (m *TaskReportMutation) SetTaskID(i int) {
+	m.task = &i
+}
+
+// TaskID returns the value of the "task_id" field in the mutation.
+func (m *TaskReportMutation) TaskID() (r int, exists bool) {
+	v := m.task
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTaskID returns the old "task_id" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldTaskID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTaskID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTaskID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTaskID: %w", err)
+	}
+	return oldValue.TaskID, nil
+}
+
+// ResetTaskID resets all changes to the "task_id" field.
+func (m *TaskReportMutation) ResetTaskID() {
+	m.task = nil
+}
+
+// SetReporterID sets the "reporter_id" field.
+func (m *TaskReportMutation) SetReporterID(i int) {
+	m.reporter = &i
+}
+
+// ReporterID returns the value of the "reporter_id" field in the mutation.
+func (m *TaskReportMutation) ReporterID() (r int, exists bool) {
+	v := m.reporter
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReporterID returns the old "reporter_id" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldReporterID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReporterID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReporterID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReporterID: %w", err)
+	}
+	return oldValue.ReporterID, nil
+}
+
+// ResetReporterID resets all changes to the "reporter_id" field.
+func (m *TaskReportMutation) ResetReporterID() {
+	m.reporter = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TaskReportMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TaskReportMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TaskReportMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TaskReportMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TaskReportMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TaskReport entity.
+// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskReportMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TaskReportMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// ClearTask clears the "task" edge to the Task entity.
+func (m *TaskReportMutation) ClearTask() {
+	m.clearedtask = true
+	m.clearedFields[taskreport.FieldTaskID] = struct{}{}
+}
+
+// TaskCleared reports if the "task" edge to the Task entity was cleared.
+func (m *TaskReportMutation) TaskCleared() bool {
+	return m.clearedtask
+}
+
+// TaskIDs returns the "task" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TaskID instead. It exists only for internal usage by the builders.
+func (m *TaskReportMutation) TaskIDs() (ids []int) {
+	if id := m.task; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTask resets all changes to the "task" edge.
+func (m *TaskReportMutation) ResetTask() {
+	m.task = nil
+	m.clearedtask = false
+}
+
+// ClearReporter clears the "reporter" edge to the Employee entity.
+func (m *TaskReportMutation) ClearReporter() {
+	m.clearedreporter = true
+	m.clearedFields[taskreport.FieldReporterID] = struct{}{}
+}
+
+// ReporterCleared reports if the "reporter" edge to the Employee entity was cleared.
+func (m *TaskReportMutation) ReporterCleared() bool {
+	return m.clearedreporter
+}
+
+// ReporterIDs returns the "reporter" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ReporterID instead. It exists only for internal usage by the builders.
+func (m *TaskReportMutation) ReporterIDs() (ids []int) {
+	if id := m.reporter; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetReporter resets all changes to the "reporter" edge.
+func (m *TaskReportMutation) ResetReporter() {
+	m.reporter = nil
+	m.clearedreporter = false
+}
+
+// Where appends a list predicates to the TaskReportMutation builder.
+func (m *TaskReportMutation) Where(ps ...predicate.TaskReport) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TaskReportMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TaskReportMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TaskReport, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TaskReportMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TaskReportMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TaskReport).
+func (m *TaskReportMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TaskReportMutation) Fields() []string {
+	fields := make([]string, 0, 12)
+	if m.title != nil {
+		fields = append(fields, taskreport.FieldTitle)
+	}
+	if m.content != nil {
+		fields = append(fields, taskreport.FieldContent)
+	}
+	if m.status != nil {
+		fields = append(fields, taskreport.FieldStatus)
+	}
+	if m.progress_percentage != nil {
+		fields = append(fields, taskreport.FieldProgressPercentage)
+	}
+	if m.reported_at != nil {
+		fields = append(fields, taskreport.FieldReportedAt)
+	}
+	if m.issues_encountered != nil {
+		fields = append(fields, taskreport.FieldIssuesEncountered)
+	}
+	if m.next_steps != nil {
+		fields = append(fields, taskreport.FieldNextSteps)
+	}
+	if m.estimated_completion != nil {
+		fields = append(fields, taskreport.FieldEstimatedCompletion)
+	}
+	if m.task != nil {
+		fields = append(fields, taskreport.FieldTaskID)
+	}
+	if m.reporter != nil {
+		fields = append(fields, taskreport.FieldReporterID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, taskreport.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, taskreport.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TaskReportMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case taskreport.FieldTitle:
+		return m.Title()
+	case taskreport.FieldContent:
+		return m.Content()
+	case taskreport.FieldStatus:
+		return m.Status()
+	case taskreport.FieldProgressPercentage:
+		return m.ProgressPercentage()
+	case taskreport.FieldReportedAt:
+		return m.ReportedAt()
+	case taskreport.FieldIssuesEncountered:
+		return m.IssuesEncountered()
+	case taskreport.FieldNextSteps:
+		return m.NextSteps()
+	case taskreport.FieldEstimatedCompletion:
+		return m.EstimatedCompletion()
+	case taskreport.FieldTaskID:
+		return m.TaskID()
+	case taskreport.FieldReporterID:
+		return m.ReporterID()
+	case taskreport.FieldCreatedAt:
+		return m.CreatedAt()
+	case taskreport.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TaskReportMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case taskreport.FieldTitle:
+		return m.OldTitle(ctx)
+	case taskreport.FieldContent:
+		return m.OldContent(ctx)
+	case taskreport.FieldStatus:
+		return m.OldStatus(ctx)
+	case taskreport.FieldProgressPercentage:
+		return m.OldProgressPercentage(ctx)
+	case taskreport.FieldReportedAt:
+		return m.OldReportedAt(ctx)
+	case taskreport.FieldIssuesEncountered:
+		return m.OldIssuesEncountered(ctx)
+	case taskreport.FieldNextSteps:
+		return m.OldNextSteps(ctx)
+	case taskreport.FieldEstimatedCompletion:
+		return m.OldEstimatedCompletion(ctx)
+	case taskreport.FieldTaskID:
+		return m.OldTaskID(ctx)
+	case taskreport.FieldReporterID:
+		return m.OldReporterID(ctx)
+	case taskreport.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case taskreport.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TaskReport field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TaskReportMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case taskreport.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case taskreport.FieldContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	case taskreport.FieldStatus:
+		v, ok := value.(taskreport.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case taskreport.FieldProgressPercentage:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgressPercentage(v)
+		return nil
+	case taskreport.FieldReportedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReportedAt(v)
+		return nil
+	case taskreport.FieldIssuesEncountered:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIssuesEncountered(v)
+		return nil
+	case taskreport.FieldNextSteps:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNextSteps(v)
+		return nil
+	case taskreport.FieldEstimatedCompletion:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEstimatedCompletion(v)
+		return nil
+	case taskreport.FieldTaskID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTaskID(v)
+		return nil
+	case taskreport.FieldReporterID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReporterID(v)
+		return nil
+	case taskreport.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case taskreport.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TaskReport field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TaskReportMutation) AddedFields() []string {
+	var fields []string
+	if m.addprogress_percentage != nil {
+		fields = append(fields, taskreport.FieldProgressPercentage)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TaskReportMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case taskreport.FieldProgressPercentage:
+		return m.AddedProgressPercentage()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TaskReportMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case taskreport.FieldProgressPercentage:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgressPercentage(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TaskReport numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TaskReportMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(taskreport.FieldContent) {
+		fields = append(fields, taskreport.FieldContent)
+	}
+	if m.FieldCleared(taskreport.FieldIssuesEncountered) {
+		fields = append(fields, taskreport.FieldIssuesEncountered)
+	}
+	if m.FieldCleared(taskreport.FieldNextSteps) {
+		fields = append(fields, taskreport.FieldNextSteps)
+	}
+	if m.FieldCleared(taskreport.FieldEstimatedCompletion) {
+		fields = append(fields, taskreport.FieldEstimatedCompletion)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TaskReportMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TaskReportMutation) ClearField(name string) error {
+	switch name {
+	case taskreport.FieldContent:
+		m.ClearContent()
+		return nil
+	case taskreport.FieldIssuesEncountered:
+		m.ClearIssuesEncountered()
+		return nil
+	case taskreport.FieldNextSteps:
+		m.ClearNextSteps()
+		return nil
+	case taskreport.FieldEstimatedCompletion:
+		m.ClearEstimatedCompletion()
+		return nil
+	}
+	return fmt.Errorf("unknown TaskReport nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TaskReportMutation) ResetField(name string) error {
+	switch name {
+	case taskreport.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case taskreport.FieldContent:
+		m.ResetContent()
+		return nil
+	case taskreport.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case taskreport.FieldProgressPercentage:
+		m.ResetProgressPercentage()
+		return nil
+	case taskreport.FieldReportedAt:
+		m.ResetReportedAt()
+		return nil
+	case taskreport.FieldIssuesEncountered:
+		m.ResetIssuesEncountered()
+		return nil
+	case taskreport.FieldNextSteps:
+		m.ResetNextSteps()
+		return nil
+	case taskreport.FieldEstimatedCompletion:
+		m.ResetEstimatedCompletion()
+		return nil
+	case taskreport.FieldTaskID:
+		m.ResetTaskID()
+		return nil
+	case taskreport.FieldReporterID:
+		m.ResetReporterID()
+		return nil
+	case taskreport.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case taskreport.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TaskReport field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TaskReportMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.task != nil {
+		edges = append(edges, taskreport.EdgeTask)
+	}
+	if m.reporter != nil {
+		edges = append(edges, taskreport.EdgeReporter)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TaskReportMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case taskreport.EdgeTask:
+		if id := m.task; id != nil {
+			return []ent.Value{*id}
+		}
+	case taskreport.EdgeReporter:
+		if id := m.reporter; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TaskReportMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TaskReportMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TaskReportMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtask {
+		edges = append(edges, taskreport.EdgeTask)
+	}
+	if m.clearedreporter {
+		edges = append(edges, taskreport.EdgeReporter)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TaskReportMutation) EdgeCleared(name string) bool {
+	switch name {
+	case taskreport.EdgeTask:
+		return m.clearedtask
+	case taskreport.EdgeReporter:
+		return m.clearedreporter
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TaskReportMutation) ClearEdge(name string) error {
+	switch name {
+	case taskreport.EdgeTask:
+		m.ClearTask()
+		return nil
+	case taskreport.EdgeReporter:
+		m.ClearReporter()
+		return nil
+	}
+	return fmt.Errorf("unknown TaskReport unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TaskReportMutation) ResetEdge(name string) error {
+	switch name {
+	case taskreport.EdgeTask:
+		m.ResetTask()
+		return nil
+	case taskreport.EdgeReporter:
+		m.ResetReporter()
+		return nil
+	}
+	return fmt.Errorf("unknown TaskReport edge %s", name)
 }

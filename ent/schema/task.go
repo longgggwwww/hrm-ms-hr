@@ -88,6 +88,8 @@ func (Task) Edges() []ent.Edge {
 			Annotations(entproto.Field(16)), // Thêm edge tới label
 		edge.To("assignees", Employee.Type).
 			Annotations(entproto.Field(17)), // Edge many-to-many với Employee
+		edge.To("reports", TaskReport.Type).
+			Annotations(entproto.Field(18)), // Edge đến TaskReport
 	}
 }
 

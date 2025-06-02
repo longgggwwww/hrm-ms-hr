@@ -15,6 +15,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/schema"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -163,4 +164,40 @@ func init() {
 	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
 	// task.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	task.UpdateDefaultUpdatedAt = taskDescUpdatedAt.UpdateDefault.(func() time.Time)
+	taskreportFields := schema.TaskReport{}.Fields()
+	_ = taskreportFields
+	// taskreportDescProgressPercentage is the schema descriptor for progress_percentage field.
+	taskreportDescProgressPercentage := taskreportFields[3].Descriptor()
+	// taskreport.DefaultProgressPercentage holds the default value on creation for the progress_percentage field.
+	taskreport.DefaultProgressPercentage = taskreportDescProgressPercentage.Default.(int)
+	// taskreport.ProgressPercentageValidator is a validator for the "progress_percentage" field. It is called by the builders before save.
+	taskreport.ProgressPercentageValidator = func() func(int) error {
+		validators := taskreportDescProgressPercentage.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(progress_percentage int) error {
+			for _, fn := range fns {
+				if err := fn(progress_percentage); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// taskreportDescReportedAt is the schema descriptor for reported_at field.
+	taskreportDescReportedAt := taskreportFields[4].Descriptor()
+	// taskreport.DefaultReportedAt holds the default value on creation for the reported_at field.
+	taskreport.DefaultReportedAt = taskreportDescReportedAt.Default.(func() time.Time)
+	// taskreportDescCreatedAt is the schema descriptor for created_at field.
+	taskreportDescCreatedAt := taskreportFields[10].Descriptor()
+	// taskreport.DefaultCreatedAt holds the default value on creation for the created_at field.
+	taskreport.DefaultCreatedAt = taskreportDescCreatedAt.Default.(func() time.Time)
+	// taskreportDescUpdatedAt is the schema descriptor for updated_at field.
+	taskreportDescUpdatedAt := taskreportFields[11].Descriptor()
+	// taskreport.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	taskreport.DefaultUpdatedAt = taskreportDescUpdatedAt.Default.(func() time.Time)
+	// taskreport.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	taskreport.UpdateDefaultUpdatedAt = taskreportDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

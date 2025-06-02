@@ -36,9 +36,8 @@ type Employee struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EmployeeQuery when eager-loading is set.
-	Edges           EmployeeEdges `json:"edges"`
-	project_members *int
-	selectValues    sql.SelectValues
+	Edges        EmployeeEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // EmployeeEdges holds the relations/edges for other nodes in the graph.
@@ -55,9 +54,13 @@ type EmployeeEdges struct {
 	LeaveApproves []*LeaveApproval `json:"leave_approves,omitempty"`
 	// LeaveRequests holds the value of the leave_requests edge.
 	LeaveRequests []*LeaveRequest `json:"leave_requests,omitempty"`
+	// TaskReports holds the value of the task_reports edge.
+	TaskReports []*TaskReport `json:"task_reports,omitempty"`
+	// Projects holds the value of the projects edge.
+	Projects []*Project `json:"projects,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [8]bool
 }
 
 // PositionOrErr returns the Position value or an error if the edge
@@ -116,6 +119,24 @@ func (e EmployeeEdges) LeaveRequestsOrErr() ([]*LeaveRequest, error) {
 	return nil, &NotLoadedError{edge: "leave_requests"}
 }
 
+// TaskReportsOrErr returns the TaskReports value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) TaskReportsOrErr() ([]*TaskReport, error) {
+	if e.loadedTypes[6] {
+		return e.TaskReports, nil
+	}
+	return nil, &NotLoadedError{edge: "task_reports"}
+}
+
+// ProjectsOrErr returns the Projects value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) ProjectsOrErr() ([]*Project, error) {
+	if e.loadedTypes[7] {
+		return e.Projects, nil
+	}
+	return nil, &NotLoadedError{edge: "projects"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Employee) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -127,8 +148,6 @@ func (*Employee) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case employee.FieldJoiningAt, employee.FieldCreatedAt, employee.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case employee.ForeignKeys[0]: // project_members
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -198,13 +217,6 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.UpdatedAt = value.Time
 			}
-		case employee.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field project_members", value)
-			} else if value.Valid {
-				e.project_members = new(int)
-				*e.project_members = int(value.Int64)
-			}
 		default:
 			e.selectValues.Set(columns[i], values[i])
 		}
@@ -246,6 +258,16 @@ func (e *Employee) QueryLeaveApproves() *LeaveApprovalQuery {
 // QueryLeaveRequests queries the "leave_requests" edge of the Employee entity.
 func (e *Employee) QueryLeaveRequests() *LeaveRequestQuery {
 	return NewEmployeeClient(e.config).QueryLeaveRequests(e)
+}
+
+// QueryTaskReports queries the "task_reports" edge of the Employee entity.
+func (e *Employee) QueryTaskReports() *TaskReportQuery {
+	return NewEmployeeClient(e.config).QueryTaskReports(e)
+}
+
+// QueryProjects queries the "projects" edge of the Employee entity.
+func (e *Employee) QueryProjects() *ProjectQuery {
+	return NewEmployeeClient(e.config).QueryProjects(e)
 }
 
 // Update returns a builder for updating this Employee.

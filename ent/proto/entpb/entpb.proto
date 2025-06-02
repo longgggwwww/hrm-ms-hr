@@ -116,6 +116,10 @@ message Employee {
 
   repeated LeaveRequest leave_requests = 15;
 
+  repeated TaskReport task_reports = 16;
+
+  repeated Project projects = 17;
+
   enum Status {
     STATUS_ACTIVE = 0;
 
@@ -748,6 +752,8 @@ message Task {
 
   repeated Employee assignees = 17;
 
+  repeated TaskReport reports = 18;
+
   enum Status {
     STATUS_NOT_RECEIVED = 0;
 
@@ -825,6 +831,106 @@ message BatchCreateTasksRequest {
 
 message BatchCreateTasksResponse {
   repeated Task tasks = 1;
+}
+
+message TaskReport {
+  int64 id = 1;
+
+  string title = 2;
+
+  google.protobuf.StringValue content = 3;
+
+  Status status = 4;
+
+  int64 progress_percentage = 5;
+
+  google.protobuf.Timestamp reported_at = 6;
+
+  google.protobuf.StringValue issues_encountered = 7;
+
+  google.protobuf.StringValue next_steps = 8;
+
+  google.protobuf.Timestamp estimated_completion = 9;
+
+  int64 task_id = 10;
+
+  int64 reporter_id = 11;
+
+  google.protobuf.Timestamp created_at = 12;
+
+  google.protobuf.Timestamp updated_at = 13;
+
+  Task task = 14;
+
+  Employee reporter = 15;
+
+  enum Status {
+    STATUS_RECEIVED = 0;
+
+    STATUS_NOT_RECEIVED = 1;
+
+    STATUS_IN_PROGRESS = 2;
+
+    STATUS_COMPLETED = 3;
+
+    STATUS_CANCELLED = 4;
+  }
+}
+
+message CreateTaskReportRequest {
+  TaskReport task_report = 1;
+}
+
+message GetTaskReportRequest {
+  int64 id = 1;
+
+  View view = 2;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message UpdateTaskReportRequest {
+  TaskReport task_report = 1;
+}
+
+message DeleteTaskReportRequest {
+  int64 id = 1;
+}
+
+message ListTaskReportRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+
+  View view = 3;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message ListTaskReportResponse {
+  repeated TaskReport task_report_list = 1;
+
+  string next_page_token = 2;
+}
+
+message BatchCreateTaskReportsRequest {
+  repeated CreateTaskReportRequest requests = 1;
+}
+
+message BatchCreateTaskReportsResponse {
+  repeated TaskReport task_reports = 1;
 }
 
 service DepartmentService {
@@ -951,4 +1057,18 @@ service TaskService {
   rpc List ( ListTaskRequest ) returns ( ListTaskResponse );
 
   rpc BatchCreate ( BatchCreateTasksRequest ) returns ( BatchCreateTasksResponse );
+}
+
+service TaskReportService {
+  rpc Create ( CreateTaskReportRequest ) returns ( TaskReport );
+
+  rpc Get ( GetTaskReportRequest ) returns ( TaskReport );
+
+  rpc Update ( UpdateTaskReportRequest ) returns ( TaskReport );
+
+  rpc Delete ( DeleteTaskReportRequest ) returns ( google.protobuf.Empty );
+
+  rpc List ( ListTaskReportRequest ) returns ( ListTaskReportResponse );
+
+  rpc BatchCreate ( BatchCreateTaskReportsRequest ) returns ( BatchCreateTaskReportsResponse );
 }

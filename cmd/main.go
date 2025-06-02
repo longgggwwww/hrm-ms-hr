@@ -21,6 +21,7 @@ func registerGRPCServices(srv *grpc.Server, cli *ent.Client) {
 	entpb.RegisterEmployeeServiceServer(srv, entpb.NewEmployeeService(cli))
 	entpb.RegisterProjectServiceServer(srv, entpb.NewProjectService(cli))
 	entpb.RegisterTaskServiceServer(srv, entpb.NewTaskService(cli))
+	entpb.RegisterTaskReportServiceServer(srv, entpb.NewTaskReportService(cli))
 	entpb.RegisterExtServiceServer(srv, entpb.NewExtService(cli))
 }
 
@@ -54,6 +55,7 @@ func startHTTPServer(cli *ent.Client) {
 		{handlers.NewPositionHandler(cli, nil).RegisterRoutes},
 		{handlers.NewProjectHandler(cli).RegisterRoutes},
 		{handlers.NewTaskHandler(cli).RegisterRoutes},
+		{handlers.NewTaskReportHandler(cli).RegisterRoutes},
 		{handlers.NewLabelHandler(cli).RegisterRoutes},
 		{handlers.NewLeaveRequestHandler(cli).RegisterRoutes},
 	}

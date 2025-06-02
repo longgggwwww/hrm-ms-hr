@@ -17,6 +17,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 // TaskQuery is the builder for querying Task entities.
@@ -29,6 +30,7 @@ type TaskQuery struct {
 	withProject   *ProjectQuery
 	withLabels    *LabelQuery
 	withAssignees *EmployeeQuery
+	withReports   *TaskReportQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -124,6 +126,28 @@ func (tq *TaskQuery) QueryAssignees() *EmployeeQuery {
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(employee.Table, employee.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, task.AssigneesTable, task.AssigneesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReports chains the current query on the "reports" edge.
+func (tq *TaskQuery) QueryReports() *TaskReportQuery {
+	query := (&TaskReportClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(taskreport.Table, taskreport.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, task.ReportsTable, task.ReportsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -326,6 +350,7 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		withProject:   tq.withProject.Clone(),
 		withLabels:    tq.withLabels.Clone(),
 		withAssignees: tq.withAssignees.Clone(),
+		withReports:   tq.withReports.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -362,6 +387,17 @@ func (tq *TaskQuery) WithAssignees(opts ...func(*EmployeeQuery)) *TaskQuery {
 		opt(query)
 	}
 	tq.withAssignees = query
+	return tq
+}
+
+// WithReports tells the query-builder to eager-load the nodes that are connected to
+// the "reports" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithReports(opts ...func(*TaskReportQuery)) *TaskQuery {
+	query := (&TaskReportClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withReports = query
 	return tq
 }
 
@@ -443,10 +479,11 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	var (
 		nodes       = []*Task{}
 		_spec       = tq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			tq.withProject != nil,
 			tq.withLabels != nil,
 			tq.withAssignees != nil,
+			tq.withReports != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -484,6 +521,13 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 		if err := tq.loadAssignees(ctx, query, nodes,
 			func(n *Task) { n.Edges.Assignees = []*Employee{} },
 			func(n *Task, e *Employee) { n.Edges.Assignees = append(n.Edges.Assignees, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withReports; query != nil {
+		if err := tq.loadReports(ctx, query, nodes,
+			func(n *Task) { n.Edges.Reports = []*TaskReport{} },
+			func(n *Task, e *TaskReport) { n.Edges.Reports = append(n.Edges.Reports, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -638,6 +682,36 @@ func (tq *TaskQuery) loadAssignees(ctx context.Context, query *EmployeeQuery, no
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (tq *TaskQuery) loadReports(ctx context.Context, query *TaskReportQuery, nodes []*Task, init func(*Task), assign func(*Task, *TaskReport)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Task)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(taskreport.FieldTaskID)
+	}
+	query.Where(predicate.TaskReport(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(task.ReportsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TaskID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "task_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

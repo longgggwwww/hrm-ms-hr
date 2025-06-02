@@ -17,6 +17,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
 )
 
 // EmployeeCreate is the builder for creating a Employee entity.
@@ -185,6 +186,36 @@ func (ec *EmployeeCreate) AddLeaveRequests(l ...*LeaveRequest) *EmployeeCreate {
 		ids[i] = l[i].ID
 	}
 	return ec.AddLeaveRequestIDs(ids...)
+}
+
+// AddTaskReportIDs adds the "task_reports" edge to the TaskReport entity by IDs.
+func (ec *EmployeeCreate) AddTaskReportIDs(ids ...int) *EmployeeCreate {
+	ec.mutation.AddTaskReportIDs(ids...)
+	return ec
+}
+
+// AddTaskReports adds the "task_reports" edges to the TaskReport entity.
+func (ec *EmployeeCreate) AddTaskReports(t ...*TaskReport) *EmployeeCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ec.AddTaskReportIDs(ids...)
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (ec *EmployeeCreate) AddProjectIDs(ids ...int) *EmployeeCreate {
+	ec.mutation.AddProjectIDs(ids...)
+	return ec
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (ec *EmployeeCreate) AddProjects(p ...*Project) *EmployeeCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return ec.AddProjectIDs(ids...)
 }
 
 // Mutation returns the EmployeeMutation object of the builder.
@@ -417,6 +448,38 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(leaverequest.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.TaskReportsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.TaskReportsTable,
+			Columns: []string{employee.TaskReportsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   employee.ProjectsTable,
+			Columns: employee.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
