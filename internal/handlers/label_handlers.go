@@ -39,25 +39,26 @@ func (h *LabelHandler) RegisterRoutes(r *gin.Engine) {
 	}
 }
 
-// List retrieves labels with advanced filtering, sorting and pagination options
-// Query Parameters:
-// - name: Filter by label name (contains search)
-// - description: Filter by description (contains search)
-// - color: Filter by exact color match
-// - order_by: Sort field (id, name, description, color, org_id, created_at, updated_at) - default: created_at
-// - order_dir: Sort direction (asc, desc) - default: desc
-// - page: Page number for offset pagination (default: 1)
-// - limit: Items per page for offset pagination (default: 10, max: 100)
-// - cursor: Cursor for cursor-based pagination (base64 encoded ID)
-// - cursor_limit: Items per cursor page (default: 10, max: 100)
-// - pagination_type: Type of pagination (page, cursor) - default: page
+// List lấy danh sách nhãn với các tùy chọn lọc, sắp xếp và phân trang nâng cao
+// Tham số truy vấn:
+// - name: Lọc theo tên nhãn (tìm kiếm chứa)
+// - description: Lọc theo mô tả (tìm kiếm chứa)
+// - color: Lọc theo màu chính xác
+// - order_by: Trường sắp xếp (id, name, description, color, org_id, created_at, updated_at, task_count) - mặc định: created_at
+// - order_dir: Hướng sắp xếp (asc, desc) - mặc định: desc
+// - page: Số trang cho phân trang offset (mặc định: 1)
+// - limit: Số mục trên mỗi trang cho phân trang offset (mặc định: 10, tối đa: 100)
+// - cursor: Con trỏ cho phân trang dựa trên cursor (ID được mã hóa base64)
+// - cursor_limit: Số mục trên mỗi trang cursor (mặc định: 10, tối đa: 100)
+// - pagination_type: Loại phân trang (page, cursor) - mặc định: page
 //
-// Examples:
-// - Offset pagination: GET /labels?name=urgent&order_by=name&order_dir=asc&page=1&limit=20
-// - Cursor pagination: GET /labels?pagination_type=cursor&cursor_limit=10&cursor=eyJpZCI6MTB9
-// - Filter by org: Labels are automatically filtered by org_id from JWT token
+// Ví dụ:
+// - Phân trang offset: GET /labels?name=urgent&order_by=name&order_dir=asc&page=1&limit=20
+// - Sắp xếp theo số lượng task: GET /labels?order_by=task_count&order_dir=desc&page=1&limit=10
+// - Phân trang cursor: GET /labels?pagination_type=cursor&cursor_limit=10&cursor=eyJpZCI6MTB9
+// - Lọc theo tổ chức: Nhãn được tự động lọc theo org_id từ JWT token
 func (h *LabelHandler) List(c *gin.Context) {
-	// Extract org_id from JWT token
+	// Trích xuất org_id từ JWT token
 	tokenData, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -76,10 +77,10 @@ func (h *LabelHandler) List(c *gin.Context) {
 
 	query := h.Client.Label.Query()
 
-	// Filter by org_id from token
+	// Lọc theo org_id từ token
 	query = query.Where(label.OrgIDEQ(orgID))
 
-	// Filtering
+	// Lọc dữ liệu
 	if name := c.Query("name"); name != "" {
 		query = query.Where(label.NameContainsFold(name))
 	}
@@ -92,7 +93,7 @@ func (h *LabelHandler) List(c *gin.Context) {
 		query = query.Where(label.ColorEQ(color))
 	}
 
-	// Determine pagination type
+	// Xác định loại phân trang
 	paginationType := c.DefaultQuery("pagination_type", "page")
 
 	if paginationType == "cursor" {
@@ -100,7 +101,7 @@ func (h *LabelHandler) List(c *gin.Context) {
 		return
 	}
 
-	// Default: offset-based pagination
+	// Mặc định: phân trang dựa trên offset
 	h.listWithOffsetPagination(c, query)
 }
 
@@ -147,7 +148,7 @@ func (h *LabelHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// Extract org_id from JWT token
+	// Trích xuất org_id từ JWT token
 	tokenData, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -176,7 +177,7 @@ func (h *LabelHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// Fetch the created label with edge relationships
+	// Lấy nhãn đã tạo với các mối quan hệ edge
 	createdLabel, err := h.Client.Label.Query().
 		Where(label.ID(labelObj.ID)).
 		WithTasks().
@@ -211,7 +212,7 @@ func (h *LabelHandler) CreateBulk(c *gin.Context) {
 		return
 	}
 
-	// Extract org_id from JWT token
+	// Trích xuất org_id từ JWT token
 	tokenData, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -245,7 +246,7 @@ func (h *LabelHandler) CreateBulk(c *gin.Context) {
 		return
 	}
 
-	// Fetch the created labels with edge relationships
+	// Lấy các nhãn đã tạo với các mối quan hệ edge
 	labelIDs := make([]int, len(labels))
 	for i, lbl := range labels {
 		labelIDs[i] = lbl.ID
@@ -302,7 +303,7 @@ func (h *LabelHandler) Update(c *gin.Context) {
 		return
 	}
 
-	// Fetch the updated label with edge relationships
+	// Lấy nhãn đã cập nhật với các mối quan hệ edge
 	updatedLabel, err := h.Client.Label.Query().
 		Where(label.ID(labelObj.ID)).
 		WithTasks().
@@ -355,9 +356,9 @@ func (h *LabelHandler) DeleteBulk(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// listWithOffsetPagination handles traditional offset-based pagination
+// listWithOffsetPagination xử lý phân trang truyền thống dựa trên offset
 func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.LabelQuery) {
-	// Extract org_id from JWT token for count query
+	// Trích xuất org_id từ JWT token cho truy vấn đếm
 	tokenData, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
@@ -374,14 +375,14 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 		return
 	}
 
-	// Apply ordering
+	// Áp dụng sắp xếp
 	orderOption := h.getOrderOption(c)
 	if orderOption == nil {
 		return // Error response already sent
 	}
 	query = query.Order(orderOption)
 
-	// Pagination
+	// Phân trang
 	page := 1
 	limit := 10
 	if pageStr := c.Query("page"); pageStr != "" {
@@ -406,13 +407,13 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 		return
 	}
 
-	// Get total count for pagination info with same filters
+	// Lấy tổng số lượng cho thông tin phân trang với cùng các bộ lọc
 	countQuery := h.Client.Label.Query()
 
-	// Apply org_id filter from token
+	// Áp dụng bộ lọc org_id từ token
 	countQuery = countQuery.Where(label.OrgIDEQ(orgID))
 
-	// Apply the same filters as the main query
+	// Áp dụng các bộ lọc giống như truy vấn chính
 	if name := c.Query("name"); name != "" {
 		countQuery = countQuery.Where(label.NameContainsFold(name))
 	}
@@ -433,7 +434,7 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 
 	totalPages := (total + limit - 1) / limit
 
-	// Add task counts to labels
+	// Thêm số lượng task vào nhãn
 	labelsWithTaskCount, err := h.addTaskCountsToLabels(c, labels)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -456,16 +457,16 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 	c.JSON(http.StatusOK, response)
 }
 
-// listWithCursorPagination handles cursor-based pagination
+// listWithCursorPagination xử lý phân trang dựa trên cursor
 func (h *LabelHandler) listWithCursorPagination(c *gin.Context, query *ent.LabelQuery) {
-	// Apply ordering
+	// Áp dụng sắp xếp
 	orderOption := h.getOrderOption(c)
 	if orderOption == nil {
 		return // Error response already sent
 	}
 	query = query.Order(orderOption)
 
-	// Cursor pagination setup
+	// Thiết lập phân trang cursor
 	limit := 10
 	if limitStr := c.Query("cursor_limit"); limitStr != "" {
 		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
@@ -473,7 +474,7 @@ func (h *LabelHandler) listWithCursorPagination(c *gin.Context, query *ent.Label
 		}
 	}
 
-	// Parse cursor if provided
+	// Phân tích cursor nếu được cung cấp
 	if cursor := c.Query("cursor"); cursor != "" {
 		cursorData, err := h.decodeCursor(cursor)
 		if err != nil {
@@ -483,13 +484,13 @@ func (h *LabelHandler) listWithCursorPagination(c *gin.Context, query *ent.Label
 			return
 		}
 
-		// Apply cursor filter (assuming ID-based cursor)
+		// Áp dụng bộ lọc cursor (giả định cursor dựa trên ID)
 		if id, ok := cursorData["id"].(float64); ok {
 			query = query.Where(label.IDGT(int(id)))
 		}
 	}
 
-	// Get one extra item to determine if there's a next page
+	// Lấy thêm một mục để xác định có trang tiếp theo không
 	labels, err := query.Limit(limit + 1).All(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{
@@ -500,7 +501,7 @@ func (h *LabelHandler) listWithCursorPagination(c *gin.Context, query *ent.Label
 
 	hasNext := len(labels) > limit
 	if hasNext {
-		labels = labels[:limit] // Remove the extra item
+		labels = labels[:limit] // Loại bỏ mục thêm
 	}
 
 	var nextCursor *string
@@ -512,7 +513,7 @@ func (h *LabelHandler) listWithCursorPagination(c *gin.Context, query *ent.Label
 		nextCursor = &cursorStr
 	}
 
-	// Add task counts to labels
+	// Thêm số lượng task vào nhãn
 	labelsWithTaskCount, err := h.addTaskCountsToLabels(c, labels)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -534,7 +535,7 @@ func (h *LabelHandler) listWithCursorPagination(c *gin.Context, query *ent.Label
 	c.JSON(http.StatusOK, response)
 }
 
-// getOrderOption returns the appropriate order option based on query parameters
+// getOrderOption trả về tùy chọn sắp xếp phù hợp dựa trên tham số truy vấn
 func (h *LabelHandler) getOrderOption(c *gin.Context) label.OrderOption {
 	orderBy := c.DefaultQuery("order_by", "created_at")
 	orderDir := c.DefaultQuery("order_dir", "desc")
@@ -583,9 +584,16 @@ func (h *LabelHandler) getOrderOption(c *gin.Context) label.OrderOption {
 		} else {
 			orderOption = label.ByUpdatedAt(sql.OrderDesc())
 		}
+	case "task_count":
+		// Sắp xếp theo số lượng task sử dụng ByTasksCount của Ent
+		if orderDir == "asc" {
+			orderOption = label.ByTasksCount()
+		} else {
+			orderOption = label.ByTasksCount(sql.OrderDesc())
+		}
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid order_by field. Valid fields: id, name, description, color, org_id, created_at, updated_at",
+			"error": "Invalid order_by field. Valid fields: id, name, description, color, org_id, created_at, updated_at, task_count",
 		})
 		return nil
 	}
@@ -593,13 +601,13 @@ func (h *LabelHandler) getOrderOption(c *gin.Context) label.OrderOption {
 	return orderOption
 }
 
-// encodeCursor encodes cursor data to base64
+// encodeCursor mã hóa dữ liệu cursor thành base64
 func (h *LabelHandler) encodeCursor(data map[string]interface{}) string {
 	jsonData, _ := json.Marshal(data)
 	return base64.StdEncoding.EncodeToString(jsonData)
 }
 
-// decodeCursor decodes base64 cursor to data map
+// decodeCursor giải mã cursor base64 thành map dữ liệu
 func (h *LabelHandler) decodeCursor(cursor string) (map[string]interface{}, error) {
 	data, err := base64.StdEncoding.DecodeString(cursor)
 	if err != nil {
@@ -611,12 +619,12 @@ func (h *LabelHandler) decodeCursor(cursor string) (map[string]interface{}, erro
 	return result, err
 }
 
-// addTaskCountsToLabels adds task_count field to each label
+// addTaskCountsToLabels thêm trường task_count vào mỗi nhãn
 func (h *LabelHandler) addTaskCountsToLabels(c *gin.Context, labels []*ent.Label) ([]map[string]interface{}, error) {
 	result := make([]map[string]interface{}, len(labels))
 
 	for i, labelEntity := range labels {
-		// Count tasks for this label
+		// Đếm task cho nhãn này
 		taskCount, err := h.Client.Task.Query().
 			Where(task.HasLabelsWith(label.IDEQ(labelEntity.ID))).
 			Count(c.Request.Context())
@@ -624,7 +632,7 @@ func (h *LabelHandler) addTaskCountsToLabels(c *gin.Context, labels []*ent.Label
 			return nil, err
 		}
 
-		// Convert label to map and add task_count
+		// Chuyển đổi nhãn thành map và thêm task_count
 		labelMap := map[string]interface{}{
 			"id":          labelEntity.ID,
 			"name":        labelEntity.Name,
