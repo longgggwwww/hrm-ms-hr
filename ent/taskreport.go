@@ -19,22 +19,8 @@ type TaskReport struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
-	// Status holds the value of the "status" field.
-	Status taskreport.Status `json:"status,omitempty"`
-	// ProgressPercentage holds the value of the "progress_percentage" field.
-	ProgressPercentage int `json:"progress_percentage,omitempty"`
-	// ReportedAt holds the value of the "reported_at" field.
-	ReportedAt time.Time `json:"reported_at,omitempty"`
-	// IssuesEncountered holds the value of the "issues_encountered" field.
-	IssuesEncountered string `json:"issues_encountered,omitempty"`
-	// NextSteps holds the value of the "next_steps" field.
-	NextSteps string `json:"next_steps,omitempty"`
-	// EstimatedCompletion holds the value of the "estimated_completion" field.
-	EstimatedCompletion time.Time `json:"estimated_completion,omitempty"`
 	// TaskID holds the value of the "task_id" field.
 	TaskID int `json:"task_id,omitempty"`
 	// ReporterID holds the value of the "reporter_id" field.
@@ -87,11 +73,11 @@ func (*TaskReport) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case taskreport.FieldID, taskreport.FieldProgressPercentage, taskreport.FieldTaskID, taskreport.FieldReporterID:
+		case taskreport.FieldID, taskreport.FieldTaskID, taskreport.FieldReporterID:
 			values[i] = new(sql.NullInt64)
-		case taskreport.FieldTitle, taskreport.FieldContent, taskreport.FieldStatus, taskreport.FieldIssuesEncountered, taskreport.FieldNextSteps:
+		case taskreport.FieldContent:
 			values[i] = new(sql.NullString)
-		case taskreport.FieldReportedAt, taskreport.FieldEstimatedCompletion, taskreport.FieldCreatedAt, taskreport.FieldUpdatedAt:
+		case taskreport.FieldCreatedAt, taskreport.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -114,53 +100,11 @@ func (tr *TaskReport) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			tr.ID = int(value.Int64)
-		case taskreport.FieldTitle:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
-			} else if value.Valid {
-				tr.Title = value.String
-			}
 		case taskreport.FieldContent:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value.Valid {
 				tr.Content = value.String
-			}
-		case taskreport.FieldStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				tr.Status = taskreport.Status(value.String)
-			}
-		case taskreport.FieldProgressPercentage:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field progress_percentage", values[i])
-			} else if value.Valid {
-				tr.ProgressPercentage = int(value.Int64)
-			}
-		case taskreport.FieldReportedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field reported_at", values[i])
-			} else if value.Valid {
-				tr.ReportedAt = value.Time
-			}
-		case taskreport.FieldIssuesEncountered:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field issues_encountered", values[i])
-			} else if value.Valid {
-				tr.IssuesEncountered = value.String
-			}
-		case taskreport.FieldNextSteps:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field next_steps", values[i])
-			} else if value.Valid {
-				tr.NextSteps = value.String
-			}
-		case taskreport.FieldEstimatedCompletion:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field estimated_completion", values[i])
-			} else if value.Valid {
-				tr.EstimatedCompletion = value.Time
 			}
 		case taskreport.FieldTaskID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -232,29 +176,8 @@ func (tr *TaskReport) String() string {
 	var builder strings.Builder
 	builder.WriteString("TaskReport(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", tr.ID))
-	builder.WriteString("title=")
-	builder.WriteString(tr.Title)
-	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(tr.Content)
-	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", tr.Status))
-	builder.WriteString(", ")
-	builder.WriteString("progress_percentage=")
-	builder.WriteString(fmt.Sprintf("%v", tr.ProgressPercentage))
-	builder.WriteString(", ")
-	builder.WriteString("reported_at=")
-	builder.WriteString(tr.ReportedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("issues_encountered=")
-	builder.WriteString(tr.IssuesEncountered)
-	builder.WriteString(", ")
-	builder.WriteString("next_steps=")
-	builder.WriteString(tr.NextSteps)
-	builder.WriteString(", ")
-	builder.WriteString("estimated_completion=")
-	builder.WriteString(tr.EstimatedCompletion.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("task_id=")
 	builder.WriteString(fmt.Sprintf("%v", tr.TaskID))

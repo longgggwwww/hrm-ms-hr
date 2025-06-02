@@ -24,12 +24,6 @@ type TaskReportCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetTitle sets the "title" field.
-func (trc *TaskReportCreate) SetTitle(s string) *TaskReportCreate {
-	trc.mutation.SetTitle(s)
-	return trc
-}
-
 // SetContent sets the "content" field.
 func (trc *TaskReportCreate) SetContent(s string) *TaskReportCreate {
 	trc.mutation.SetContent(s)
@@ -40,90 +34,6 @@ func (trc *TaskReportCreate) SetContent(s string) *TaskReportCreate {
 func (trc *TaskReportCreate) SetNillableContent(s *string) *TaskReportCreate {
 	if s != nil {
 		trc.SetContent(*s)
-	}
-	return trc
-}
-
-// SetStatus sets the "status" field.
-func (trc *TaskReportCreate) SetStatus(t taskreport.Status) *TaskReportCreate {
-	trc.mutation.SetStatus(t)
-	return trc
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (trc *TaskReportCreate) SetNillableStatus(t *taskreport.Status) *TaskReportCreate {
-	if t != nil {
-		trc.SetStatus(*t)
-	}
-	return trc
-}
-
-// SetProgressPercentage sets the "progress_percentage" field.
-func (trc *TaskReportCreate) SetProgressPercentage(i int) *TaskReportCreate {
-	trc.mutation.SetProgressPercentage(i)
-	return trc
-}
-
-// SetNillableProgressPercentage sets the "progress_percentage" field if the given value is not nil.
-func (trc *TaskReportCreate) SetNillableProgressPercentage(i *int) *TaskReportCreate {
-	if i != nil {
-		trc.SetProgressPercentage(*i)
-	}
-	return trc
-}
-
-// SetReportedAt sets the "reported_at" field.
-func (trc *TaskReportCreate) SetReportedAt(t time.Time) *TaskReportCreate {
-	trc.mutation.SetReportedAt(t)
-	return trc
-}
-
-// SetNillableReportedAt sets the "reported_at" field if the given value is not nil.
-func (trc *TaskReportCreate) SetNillableReportedAt(t *time.Time) *TaskReportCreate {
-	if t != nil {
-		trc.SetReportedAt(*t)
-	}
-	return trc
-}
-
-// SetIssuesEncountered sets the "issues_encountered" field.
-func (trc *TaskReportCreate) SetIssuesEncountered(s string) *TaskReportCreate {
-	trc.mutation.SetIssuesEncountered(s)
-	return trc
-}
-
-// SetNillableIssuesEncountered sets the "issues_encountered" field if the given value is not nil.
-func (trc *TaskReportCreate) SetNillableIssuesEncountered(s *string) *TaskReportCreate {
-	if s != nil {
-		trc.SetIssuesEncountered(*s)
-	}
-	return trc
-}
-
-// SetNextSteps sets the "next_steps" field.
-func (trc *TaskReportCreate) SetNextSteps(s string) *TaskReportCreate {
-	trc.mutation.SetNextSteps(s)
-	return trc
-}
-
-// SetNillableNextSteps sets the "next_steps" field if the given value is not nil.
-func (trc *TaskReportCreate) SetNillableNextSteps(s *string) *TaskReportCreate {
-	if s != nil {
-		trc.SetNextSteps(*s)
-	}
-	return trc
-}
-
-// SetEstimatedCompletion sets the "estimated_completion" field.
-func (trc *TaskReportCreate) SetEstimatedCompletion(t time.Time) *TaskReportCreate {
-	trc.mutation.SetEstimatedCompletion(t)
-	return trc
-}
-
-// SetNillableEstimatedCompletion sets the "estimated_completion" field if the given value is not nil.
-func (trc *TaskReportCreate) SetNillableEstimatedCompletion(t *time.Time) *TaskReportCreate {
-	if t != nil {
-		trc.SetEstimatedCompletion(*t)
 	}
 	return trc
 }
@@ -213,18 +123,6 @@ func (trc *TaskReportCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (trc *TaskReportCreate) defaults() {
-	if _, ok := trc.mutation.Status(); !ok {
-		v := taskreport.DefaultStatus
-		trc.mutation.SetStatus(v)
-	}
-	if _, ok := trc.mutation.ProgressPercentage(); !ok {
-		v := taskreport.DefaultProgressPercentage
-		trc.mutation.SetProgressPercentage(v)
-	}
-	if _, ok := trc.mutation.ReportedAt(); !ok {
-		v := taskreport.DefaultReportedAt()
-		trc.mutation.SetReportedAt(v)
-	}
 	if _, ok := trc.mutation.CreatedAt(); !ok {
 		v := taskreport.DefaultCreatedAt()
 		trc.mutation.SetCreatedAt(v)
@@ -237,28 +135,6 @@ func (trc *TaskReportCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (trc *TaskReportCreate) check() error {
-	if _, ok := trc.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "TaskReport.title"`)}
-	}
-	if _, ok := trc.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "TaskReport.status"`)}
-	}
-	if v, ok := trc.mutation.Status(); ok {
-		if err := taskreport.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "TaskReport.status": %w`, err)}
-		}
-	}
-	if _, ok := trc.mutation.ProgressPercentage(); !ok {
-		return &ValidationError{Name: "progress_percentage", err: errors.New(`ent: missing required field "TaskReport.progress_percentage"`)}
-	}
-	if v, ok := trc.mutation.ProgressPercentage(); ok {
-		if err := taskreport.ProgressPercentageValidator(v); err != nil {
-			return &ValidationError{Name: "progress_percentage", err: fmt.Errorf(`ent: validator failed for field "TaskReport.progress_percentage": %w`, err)}
-		}
-	}
-	if _, ok := trc.mutation.ReportedAt(); !ok {
-		return &ValidationError{Name: "reported_at", err: errors.New(`ent: missing required field "TaskReport.reported_at"`)}
-	}
 	if _, ok := trc.mutation.TaskID(); !ok {
 		return &ValidationError{Name: "task_id", err: errors.New(`ent: missing required field "TaskReport.task_id"`)}
 	}
@@ -304,37 +180,9 @@ func (trc *TaskReportCreate) createSpec() (*TaskReport, *sqlgraph.CreateSpec) {
 		_spec = sqlgraph.NewCreateSpec(taskreport.Table, sqlgraph.NewFieldSpec(taskreport.FieldID, field.TypeInt))
 	)
 	_spec.OnConflict = trc.conflict
-	if value, ok := trc.mutation.Title(); ok {
-		_spec.SetField(taskreport.FieldTitle, field.TypeString, value)
-		_node.Title = value
-	}
 	if value, ok := trc.mutation.Content(); ok {
 		_spec.SetField(taskreport.FieldContent, field.TypeString, value)
 		_node.Content = value
-	}
-	if value, ok := trc.mutation.Status(); ok {
-		_spec.SetField(taskreport.FieldStatus, field.TypeEnum, value)
-		_node.Status = value
-	}
-	if value, ok := trc.mutation.ProgressPercentage(); ok {
-		_spec.SetField(taskreport.FieldProgressPercentage, field.TypeInt, value)
-		_node.ProgressPercentage = value
-	}
-	if value, ok := trc.mutation.ReportedAt(); ok {
-		_spec.SetField(taskreport.FieldReportedAt, field.TypeTime, value)
-		_node.ReportedAt = value
-	}
-	if value, ok := trc.mutation.IssuesEncountered(); ok {
-		_spec.SetField(taskreport.FieldIssuesEncountered, field.TypeString, value)
-		_node.IssuesEncountered = value
-	}
-	if value, ok := trc.mutation.NextSteps(); ok {
-		_spec.SetField(taskreport.FieldNextSteps, field.TypeString, value)
-		_node.NextSteps = value
-	}
-	if value, ok := trc.mutation.EstimatedCompletion(); ok {
-		_spec.SetField(taskreport.FieldEstimatedCompletion, field.TypeTime, value)
-		_node.EstimatedCompletion = value
 	}
 	if value, ok := trc.mutation.CreatedAt(); ok {
 		_spec.SetField(taskreport.FieldCreatedAt, field.TypeTime, value)
@@ -385,7 +233,7 @@ func (trc *TaskReportCreate) createSpec() (*TaskReport, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.TaskReport.Create().
-//		SetTitle(v).
+//		SetContent(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -394,7 +242,7 @@ func (trc *TaskReportCreate) createSpec() (*TaskReport, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TaskReportUpsert) {
-//			SetTitle(v+v).
+//			SetContent(v+v).
 //		}).
 //		Exec(ctx)
 func (trc *TaskReportCreate) OnConflict(opts ...sql.ConflictOption) *TaskReportUpsertOne {
@@ -430,18 +278,6 @@ type (
 	}
 )
 
-// SetTitle sets the "title" field.
-func (u *TaskReportUpsert) SetTitle(v string) *TaskReportUpsert {
-	u.Set(taskreport.FieldTitle, v)
-	return u
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *TaskReportUpsert) UpdateTitle() *TaskReportUpsert {
-	u.SetExcluded(taskreport.FieldTitle)
-	return u
-}
-
 // SetContent sets the "content" field.
 func (u *TaskReportUpsert) SetContent(v string) *TaskReportUpsert {
 	u.Set(taskreport.FieldContent, v)
@@ -457,102 +293,6 @@ func (u *TaskReportUpsert) UpdateContent() *TaskReportUpsert {
 // ClearContent clears the value of the "content" field.
 func (u *TaskReportUpsert) ClearContent() *TaskReportUpsert {
 	u.SetNull(taskreport.FieldContent)
-	return u
-}
-
-// SetStatus sets the "status" field.
-func (u *TaskReportUpsert) SetStatus(v taskreport.Status) *TaskReportUpsert {
-	u.Set(taskreport.FieldStatus, v)
-	return u
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *TaskReportUpsert) UpdateStatus() *TaskReportUpsert {
-	u.SetExcluded(taskreport.FieldStatus)
-	return u
-}
-
-// SetProgressPercentage sets the "progress_percentage" field.
-func (u *TaskReportUpsert) SetProgressPercentage(v int) *TaskReportUpsert {
-	u.Set(taskreport.FieldProgressPercentage, v)
-	return u
-}
-
-// UpdateProgressPercentage sets the "progress_percentage" field to the value that was provided on create.
-func (u *TaskReportUpsert) UpdateProgressPercentage() *TaskReportUpsert {
-	u.SetExcluded(taskreport.FieldProgressPercentage)
-	return u
-}
-
-// AddProgressPercentage adds v to the "progress_percentage" field.
-func (u *TaskReportUpsert) AddProgressPercentage(v int) *TaskReportUpsert {
-	u.Add(taskreport.FieldProgressPercentage, v)
-	return u
-}
-
-// SetReportedAt sets the "reported_at" field.
-func (u *TaskReportUpsert) SetReportedAt(v time.Time) *TaskReportUpsert {
-	u.Set(taskreport.FieldReportedAt, v)
-	return u
-}
-
-// UpdateReportedAt sets the "reported_at" field to the value that was provided on create.
-func (u *TaskReportUpsert) UpdateReportedAt() *TaskReportUpsert {
-	u.SetExcluded(taskreport.FieldReportedAt)
-	return u
-}
-
-// SetIssuesEncountered sets the "issues_encountered" field.
-func (u *TaskReportUpsert) SetIssuesEncountered(v string) *TaskReportUpsert {
-	u.Set(taskreport.FieldIssuesEncountered, v)
-	return u
-}
-
-// UpdateIssuesEncountered sets the "issues_encountered" field to the value that was provided on create.
-func (u *TaskReportUpsert) UpdateIssuesEncountered() *TaskReportUpsert {
-	u.SetExcluded(taskreport.FieldIssuesEncountered)
-	return u
-}
-
-// ClearIssuesEncountered clears the value of the "issues_encountered" field.
-func (u *TaskReportUpsert) ClearIssuesEncountered() *TaskReportUpsert {
-	u.SetNull(taskreport.FieldIssuesEncountered)
-	return u
-}
-
-// SetNextSteps sets the "next_steps" field.
-func (u *TaskReportUpsert) SetNextSteps(v string) *TaskReportUpsert {
-	u.Set(taskreport.FieldNextSteps, v)
-	return u
-}
-
-// UpdateNextSteps sets the "next_steps" field to the value that was provided on create.
-func (u *TaskReportUpsert) UpdateNextSteps() *TaskReportUpsert {
-	u.SetExcluded(taskreport.FieldNextSteps)
-	return u
-}
-
-// ClearNextSteps clears the value of the "next_steps" field.
-func (u *TaskReportUpsert) ClearNextSteps() *TaskReportUpsert {
-	u.SetNull(taskreport.FieldNextSteps)
-	return u
-}
-
-// SetEstimatedCompletion sets the "estimated_completion" field.
-func (u *TaskReportUpsert) SetEstimatedCompletion(v time.Time) *TaskReportUpsert {
-	u.Set(taskreport.FieldEstimatedCompletion, v)
-	return u
-}
-
-// UpdateEstimatedCompletion sets the "estimated_completion" field to the value that was provided on create.
-func (u *TaskReportUpsert) UpdateEstimatedCompletion() *TaskReportUpsert {
-	u.SetExcluded(taskreport.FieldEstimatedCompletion)
-	return u
-}
-
-// ClearEstimatedCompletion clears the value of the "estimated_completion" field.
-func (u *TaskReportUpsert) ClearEstimatedCompletion() *TaskReportUpsert {
-	u.SetNull(taskreport.FieldEstimatedCompletion)
 	return u
 }
 
@@ -637,20 +377,6 @@ func (u *TaskReportUpsertOne) Update(set func(*TaskReportUpsert)) *TaskReportUps
 	return u
 }
 
-// SetTitle sets the "title" field.
-func (u *TaskReportUpsertOne) SetTitle(v string) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *TaskReportUpsertOne) UpdateTitle() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateTitle()
-	})
-}
-
 // SetContent sets the "content" field.
 func (u *TaskReportUpsertOne) SetContent(v string) *TaskReportUpsertOne {
 	return u.Update(func(s *TaskReportUpsert) {
@@ -669,118 +395,6 @@ func (u *TaskReportUpsertOne) UpdateContent() *TaskReportUpsertOne {
 func (u *TaskReportUpsertOne) ClearContent() *TaskReportUpsertOne {
 	return u.Update(func(s *TaskReportUpsert) {
 		s.ClearContent()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *TaskReportUpsertOne) SetStatus(v taskreport.Status) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *TaskReportUpsertOne) UpdateStatus() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateStatus()
-	})
-}
-
-// SetProgressPercentage sets the "progress_percentage" field.
-func (u *TaskReportUpsertOne) SetProgressPercentage(v int) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetProgressPercentage(v)
-	})
-}
-
-// AddProgressPercentage adds v to the "progress_percentage" field.
-func (u *TaskReportUpsertOne) AddProgressPercentage(v int) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.AddProgressPercentage(v)
-	})
-}
-
-// UpdateProgressPercentage sets the "progress_percentage" field to the value that was provided on create.
-func (u *TaskReportUpsertOne) UpdateProgressPercentage() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateProgressPercentage()
-	})
-}
-
-// SetReportedAt sets the "reported_at" field.
-func (u *TaskReportUpsertOne) SetReportedAt(v time.Time) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetReportedAt(v)
-	})
-}
-
-// UpdateReportedAt sets the "reported_at" field to the value that was provided on create.
-func (u *TaskReportUpsertOne) UpdateReportedAt() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateReportedAt()
-	})
-}
-
-// SetIssuesEncountered sets the "issues_encountered" field.
-func (u *TaskReportUpsertOne) SetIssuesEncountered(v string) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetIssuesEncountered(v)
-	})
-}
-
-// UpdateIssuesEncountered sets the "issues_encountered" field to the value that was provided on create.
-func (u *TaskReportUpsertOne) UpdateIssuesEncountered() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateIssuesEncountered()
-	})
-}
-
-// ClearIssuesEncountered clears the value of the "issues_encountered" field.
-func (u *TaskReportUpsertOne) ClearIssuesEncountered() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.ClearIssuesEncountered()
-	})
-}
-
-// SetNextSteps sets the "next_steps" field.
-func (u *TaskReportUpsertOne) SetNextSteps(v string) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetNextSteps(v)
-	})
-}
-
-// UpdateNextSteps sets the "next_steps" field to the value that was provided on create.
-func (u *TaskReportUpsertOne) UpdateNextSteps() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateNextSteps()
-	})
-}
-
-// ClearNextSteps clears the value of the "next_steps" field.
-func (u *TaskReportUpsertOne) ClearNextSteps() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.ClearNextSteps()
-	})
-}
-
-// SetEstimatedCompletion sets the "estimated_completion" field.
-func (u *TaskReportUpsertOne) SetEstimatedCompletion(v time.Time) *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetEstimatedCompletion(v)
-	})
-}
-
-// UpdateEstimatedCompletion sets the "estimated_completion" field to the value that was provided on create.
-func (u *TaskReportUpsertOne) UpdateEstimatedCompletion() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateEstimatedCompletion()
-	})
-}
-
-// ClearEstimatedCompletion clears the value of the "estimated_completion" field.
-func (u *TaskReportUpsertOne) ClearEstimatedCompletion() *TaskReportUpsertOne {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.ClearEstimatedCompletion()
 	})
 }
 
@@ -961,7 +575,7 @@ func (trcb *TaskReportCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TaskReportUpsert) {
-//			SetTitle(v+v).
+//			SetContent(v+v).
 //		}).
 //		Exec(ctx)
 func (trcb *TaskReportCreateBulk) OnConflict(opts ...sql.ConflictOption) *TaskReportUpsertBulk {
@@ -1037,20 +651,6 @@ func (u *TaskReportUpsertBulk) Update(set func(*TaskReportUpsert)) *TaskReportUp
 	return u
 }
 
-// SetTitle sets the "title" field.
-func (u *TaskReportUpsertBulk) SetTitle(v string) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *TaskReportUpsertBulk) UpdateTitle() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateTitle()
-	})
-}
-
 // SetContent sets the "content" field.
 func (u *TaskReportUpsertBulk) SetContent(v string) *TaskReportUpsertBulk {
 	return u.Update(func(s *TaskReportUpsert) {
@@ -1069,118 +669,6 @@ func (u *TaskReportUpsertBulk) UpdateContent() *TaskReportUpsertBulk {
 func (u *TaskReportUpsertBulk) ClearContent() *TaskReportUpsertBulk {
 	return u.Update(func(s *TaskReportUpsert) {
 		s.ClearContent()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *TaskReportUpsertBulk) SetStatus(v taskreport.Status) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *TaskReportUpsertBulk) UpdateStatus() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateStatus()
-	})
-}
-
-// SetProgressPercentage sets the "progress_percentage" field.
-func (u *TaskReportUpsertBulk) SetProgressPercentage(v int) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetProgressPercentage(v)
-	})
-}
-
-// AddProgressPercentage adds v to the "progress_percentage" field.
-func (u *TaskReportUpsertBulk) AddProgressPercentage(v int) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.AddProgressPercentage(v)
-	})
-}
-
-// UpdateProgressPercentage sets the "progress_percentage" field to the value that was provided on create.
-func (u *TaskReportUpsertBulk) UpdateProgressPercentage() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateProgressPercentage()
-	})
-}
-
-// SetReportedAt sets the "reported_at" field.
-func (u *TaskReportUpsertBulk) SetReportedAt(v time.Time) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetReportedAt(v)
-	})
-}
-
-// UpdateReportedAt sets the "reported_at" field to the value that was provided on create.
-func (u *TaskReportUpsertBulk) UpdateReportedAt() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateReportedAt()
-	})
-}
-
-// SetIssuesEncountered sets the "issues_encountered" field.
-func (u *TaskReportUpsertBulk) SetIssuesEncountered(v string) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetIssuesEncountered(v)
-	})
-}
-
-// UpdateIssuesEncountered sets the "issues_encountered" field to the value that was provided on create.
-func (u *TaskReportUpsertBulk) UpdateIssuesEncountered() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateIssuesEncountered()
-	})
-}
-
-// ClearIssuesEncountered clears the value of the "issues_encountered" field.
-func (u *TaskReportUpsertBulk) ClearIssuesEncountered() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.ClearIssuesEncountered()
-	})
-}
-
-// SetNextSteps sets the "next_steps" field.
-func (u *TaskReportUpsertBulk) SetNextSteps(v string) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetNextSteps(v)
-	})
-}
-
-// UpdateNextSteps sets the "next_steps" field to the value that was provided on create.
-func (u *TaskReportUpsertBulk) UpdateNextSteps() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateNextSteps()
-	})
-}
-
-// ClearNextSteps clears the value of the "next_steps" field.
-func (u *TaskReportUpsertBulk) ClearNextSteps() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.ClearNextSteps()
-	})
-}
-
-// SetEstimatedCompletion sets the "estimated_completion" field.
-func (u *TaskReportUpsertBulk) SetEstimatedCompletion(v time.Time) *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.SetEstimatedCompletion(v)
-	})
-}
-
-// UpdateEstimatedCompletion sets the "estimated_completion" field to the value that was provided on create.
-func (u *TaskReportUpsertBulk) UpdateEstimatedCompletion() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.UpdateEstimatedCompletion()
-	})
-}
-
-// ClearEstimatedCompletion clears the value of the "estimated_completion" field.
-func (u *TaskReportUpsertBulk) ClearEstimatedCompletion() *TaskReportUpsertBulk {
-	return u.Update(func(s *TaskReportUpsert) {
-		s.ClearEstimatedCompletion()
 	})
 }
 

@@ -9866,28 +9866,20 @@ func (m *TaskMutation) ResetEdge(name string) error {
 // TaskReportMutation represents an operation that mutates the TaskReport nodes in the graph.
 type TaskReportMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *int
-	title                  *string
-	content                *string
-	status                 *taskreport.Status
-	progress_percentage    *int
-	addprogress_percentage *int
-	reported_at            *time.Time
-	issues_encountered     *string
-	next_steps             *string
-	estimated_completion   *time.Time
-	created_at             *time.Time
-	updated_at             *time.Time
-	clearedFields          map[string]struct{}
-	task                   *int
-	clearedtask            bool
-	reporter               *int
-	clearedreporter        bool
-	done                   bool
-	oldValue               func(context.Context) (*TaskReport, error)
-	predicates             []predicate.TaskReport
+	op              Op
+	typ             string
+	id              *int
+	content         *string
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	task            *int
+	clearedtask     bool
+	reporter        *int
+	clearedreporter bool
+	done            bool
+	oldValue        func(context.Context) (*TaskReport, error)
+	predicates      []predicate.TaskReport
 }
 
 var _ ent.Mutation = (*TaskReportMutation)(nil)
@@ -9988,42 +9980,6 @@ func (m *TaskReportMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
-// SetTitle sets the "title" field.
-func (m *TaskReportMutation) SetTitle(s string) {
-	m.title = &s
-}
-
-// Title returns the value of the "title" field in the mutation.
-func (m *TaskReportMutation) Title() (r string, exists bool) {
-	v := m.title
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTitle returns the old "title" field's value of the TaskReport entity.
-// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskReportMutation) OldTitle(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTitle requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
-	}
-	return oldValue.Title, nil
-}
-
-// ResetTitle resets all changes to the "title" field.
-func (m *TaskReportMutation) ResetTitle() {
-	m.title = nil
-}
-
 // SetContent sets the "content" field.
 func (m *TaskReportMutation) SetContent(s string) {
 	m.content = &s
@@ -10071,281 +10027,6 @@ func (m *TaskReportMutation) ContentCleared() bool {
 func (m *TaskReportMutation) ResetContent() {
 	m.content = nil
 	delete(m.clearedFields, taskreport.FieldContent)
-}
-
-// SetStatus sets the "status" field.
-func (m *TaskReportMutation) SetStatus(t taskreport.Status) {
-	m.status = &t
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *TaskReportMutation) Status() (r taskreport.Status, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the TaskReport entity.
-// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskReportMutation) OldStatus(ctx context.Context) (v taskreport.Status, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *TaskReportMutation) ResetStatus() {
-	m.status = nil
-}
-
-// SetProgressPercentage sets the "progress_percentage" field.
-func (m *TaskReportMutation) SetProgressPercentage(i int) {
-	m.progress_percentage = &i
-	m.addprogress_percentage = nil
-}
-
-// ProgressPercentage returns the value of the "progress_percentage" field in the mutation.
-func (m *TaskReportMutation) ProgressPercentage() (r int, exists bool) {
-	v := m.progress_percentage
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProgressPercentage returns the old "progress_percentage" field's value of the TaskReport entity.
-// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskReportMutation) OldProgressPercentage(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProgressPercentage is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProgressPercentage requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProgressPercentage: %w", err)
-	}
-	return oldValue.ProgressPercentage, nil
-}
-
-// AddProgressPercentage adds i to the "progress_percentage" field.
-func (m *TaskReportMutation) AddProgressPercentage(i int) {
-	if m.addprogress_percentage != nil {
-		*m.addprogress_percentage += i
-	} else {
-		m.addprogress_percentage = &i
-	}
-}
-
-// AddedProgressPercentage returns the value that was added to the "progress_percentage" field in this mutation.
-func (m *TaskReportMutation) AddedProgressPercentage() (r int, exists bool) {
-	v := m.addprogress_percentage
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetProgressPercentage resets all changes to the "progress_percentage" field.
-func (m *TaskReportMutation) ResetProgressPercentage() {
-	m.progress_percentage = nil
-	m.addprogress_percentage = nil
-}
-
-// SetReportedAt sets the "reported_at" field.
-func (m *TaskReportMutation) SetReportedAt(t time.Time) {
-	m.reported_at = &t
-}
-
-// ReportedAt returns the value of the "reported_at" field in the mutation.
-func (m *TaskReportMutation) ReportedAt() (r time.Time, exists bool) {
-	v := m.reported_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldReportedAt returns the old "reported_at" field's value of the TaskReport entity.
-// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskReportMutation) OldReportedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldReportedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldReportedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldReportedAt: %w", err)
-	}
-	return oldValue.ReportedAt, nil
-}
-
-// ResetReportedAt resets all changes to the "reported_at" field.
-func (m *TaskReportMutation) ResetReportedAt() {
-	m.reported_at = nil
-}
-
-// SetIssuesEncountered sets the "issues_encountered" field.
-func (m *TaskReportMutation) SetIssuesEncountered(s string) {
-	m.issues_encountered = &s
-}
-
-// IssuesEncountered returns the value of the "issues_encountered" field in the mutation.
-func (m *TaskReportMutation) IssuesEncountered() (r string, exists bool) {
-	v := m.issues_encountered
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIssuesEncountered returns the old "issues_encountered" field's value of the TaskReport entity.
-// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskReportMutation) OldIssuesEncountered(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIssuesEncountered is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIssuesEncountered requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIssuesEncountered: %w", err)
-	}
-	return oldValue.IssuesEncountered, nil
-}
-
-// ClearIssuesEncountered clears the value of the "issues_encountered" field.
-func (m *TaskReportMutation) ClearIssuesEncountered() {
-	m.issues_encountered = nil
-	m.clearedFields[taskreport.FieldIssuesEncountered] = struct{}{}
-}
-
-// IssuesEncounteredCleared returns if the "issues_encountered" field was cleared in this mutation.
-func (m *TaskReportMutation) IssuesEncounteredCleared() bool {
-	_, ok := m.clearedFields[taskreport.FieldIssuesEncountered]
-	return ok
-}
-
-// ResetIssuesEncountered resets all changes to the "issues_encountered" field.
-func (m *TaskReportMutation) ResetIssuesEncountered() {
-	m.issues_encountered = nil
-	delete(m.clearedFields, taskreport.FieldIssuesEncountered)
-}
-
-// SetNextSteps sets the "next_steps" field.
-func (m *TaskReportMutation) SetNextSteps(s string) {
-	m.next_steps = &s
-}
-
-// NextSteps returns the value of the "next_steps" field in the mutation.
-func (m *TaskReportMutation) NextSteps() (r string, exists bool) {
-	v := m.next_steps
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNextSteps returns the old "next_steps" field's value of the TaskReport entity.
-// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskReportMutation) OldNextSteps(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNextSteps is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNextSteps requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNextSteps: %w", err)
-	}
-	return oldValue.NextSteps, nil
-}
-
-// ClearNextSteps clears the value of the "next_steps" field.
-func (m *TaskReportMutation) ClearNextSteps() {
-	m.next_steps = nil
-	m.clearedFields[taskreport.FieldNextSteps] = struct{}{}
-}
-
-// NextStepsCleared returns if the "next_steps" field was cleared in this mutation.
-func (m *TaskReportMutation) NextStepsCleared() bool {
-	_, ok := m.clearedFields[taskreport.FieldNextSteps]
-	return ok
-}
-
-// ResetNextSteps resets all changes to the "next_steps" field.
-func (m *TaskReportMutation) ResetNextSteps() {
-	m.next_steps = nil
-	delete(m.clearedFields, taskreport.FieldNextSteps)
-}
-
-// SetEstimatedCompletion sets the "estimated_completion" field.
-func (m *TaskReportMutation) SetEstimatedCompletion(t time.Time) {
-	m.estimated_completion = &t
-}
-
-// EstimatedCompletion returns the value of the "estimated_completion" field in the mutation.
-func (m *TaskReportMutation) EstimatedCompletion() (r time.Time, exists bool) {
-	v := m.estimated_completion
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEstimatedCompletion returns the old "estimated_completion" field's value of the TaskReport entity.
-// If the TaskReport object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskReportMutation) OldEstimatedCompletion(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEstimatedCompletion is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEstimatedCompletion requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEstimatedCompletion: %w", err)
-	}
-	return oldValue.EstimatedCompletion, nil
-}
-
-// ClearEstimatedCompletion clears the value of the "estimated_completion" field.
-func (m *TaskReportMutation) ClearEstimatedCompletion() {
-	m.estimated_completion = nil
-	m.clearedFields[taskreport.FieldEstimatedCompletion] = struct{}{}
-}
-
-// EstimatedCompletionCleared returns if the "estimated_completion" field was cleared in this mutation.
-func (m *TaskReportMutation) EstimatedCompletionCleared() bool {
-	_, ok := m.clearedFields[taskreport.FieldEstimatedCompletion]
-	return ok
-}
-
-// ResetEstimatedCompletion resets all changes to the "estimated_completion" field.
-func (m *TaskReportMutation) ResetEstimatedCompletion() {
-	m.estimated_completion = nil
-	delete(m.clearedFields, taskreport.FieldEstimatedCompletion)
 }
 
 // SetTaskID sets the "task_id" field.
@@ -10580,30 +10261,9 @@ func (m *TaskReportMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskReportMutation) Fields() []string {
-	fields := make([]string, 0, 12)
-	if m.title != nil {
-		fields = append(fields, taskreport.FieldTitle)
-	}
+	fields := make([]string, 0, 5)
 	if m.content != nil {
 		fields = append(fields, taskreport.FieldContent)
-	}
-	if m.status != nil {
-		fields = append(fields, taskreport.FieldStatus)
-	}
-	if m.progress_percentage != nil {
-		fields = append(fields, taskreport.FieldProgressPercentage)
-	}
-	if m.reported_at != nil {
-		fields = append(fields, taskreport.FieldReportedAt)
-	}
-	if m.issues_encountered != nil {
-		fields = append(fields, taskreport.FieldIssuesEncountered)
-	}
-	if m.next_steps != nil {
-		fields = append(fields, taskreport.FieldNextSteps)
-	}
-	if m.estimated_completion != nil {
-		fields = append(fields, taskreport.FieldEstimatedCompletion)
 	}
 	if m.task != nil {
 		fields = append(fields, taskreport.FieldTaskID)
@@ -10625,22 +10285,8 @@ func (m *TaskReportMutation) Fields() []string {
 // schema.
 func (m *TaskReportMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case taskreport.FieldTitle:
-		return m.Title()
 	case taskreport.FieldContent:
 		return m.Content()
-	case taskreport.FieldStatus:
-		return m.Status()
-	case taskreport.FieldProgressPercentage:
-		return m.ProgressPercentage()
-	case taskreport.FieldReportedAt:
-		return m.ReportedAt()
-	case taskreport.FieldIssuesEncountered:
-		return m.IssuesEncountered()
-	case taskreport.FieldNextSteps:
-		return m.NextSteps()
-	case taskreport.FieldEstimatedCompletion:
-		return m.EstimatedCompletion()
 	case taskreport.FieldTaskID:
 		return m.TaskID()
 	case taskreport.FieldReporterID:
@@ -10658,22 +10304,8 @@ func (m *TaskReportMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TaskReportMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case taskreport.FieldTitle:
-		return m.OldTitle(ctx)
 	case taskreport.FieldContent:
 		return m.OldContent(ctx)
-	case taskreport.FieldStatus:
-		return m.OldStatus(ctx)
-	case taskreport.FieldProgressPercentage:
-		return m.OldProgressPercentage(ctx)
-	case taskreport.FieldReportedAt:
-		return m.OldReportedAt(ctx)
-	case taskreport.FieldIssuesEncountered:
-		return m.OldIssuesEncountered(ctx)
-	case taskreport.FieldNextSteps:
-		return m.OldNextSteps(ctx)
-	case taskreport.FieldEstimatedCompletion:
-		return m.OldEstimatedCompletion(ctx)
 	case taskreport.FieldTaskID:
 		return m.OldTaskID(ctx)
 	case taskreport.FieldReporterID:
@@ -10691,61 +10323,12 @@ func (m *TaskReportMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *TaskReportMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case taskreport.FieldTitle:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTitle(v)
-		return nil
 	case taskreport.FieldContent:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContent(v)
-		return nil
-	case taskreport.FieldStatus:
-		v, ok := value.(taskreport.Status)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
-		return nil
-	case taskreport.FieldProgressPercentage:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProgressPercentage(v)
-		return nil
-	case taskreport.FieldReportedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetReportedAt(v)
-		return nil
-	case taskreport.FieldIssuesEncountered:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIssuesEncountered(v)
-		return nil
-	case taskreport.FieldNextSteps:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNextSteps(v)
-		return nil
-	case taskreport.FieldEstimatedCompletion:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEstimatedCompletion(v)
 		return nil
 	case taskreport.FieldTaskID:
 		v, ok := value.(int)
@@ -10783,9 +10366,6 @@ func (m *TaskReportMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *TaskReportMutation) AddedFields() []string {
 	var fields []string
-	if m.addprogress_percentage != nil {
-		fields = append(fields, taskreport.FieldProgressPercentage)
-	}
 	return fields
 }
 
@@ -10794,8 +10374,6 @@ func (m *TaskReportMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *TaskReportMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case taskreport.FieldProgressPercentage:
-		return m.AddedProgressPercentage()
 	}
 	return nil, false
 }
@@ -10805,13 +10383,6 @@ func (m *TaskReportMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TaskReportMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case taskreport.FieldProgressPercentage:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProgressPercentage(v)
-		return nil
 	}
 	return fmt.Errorf("unknown TaskReport numeric field %s", name)
 }
@@ -10822,15 +10393,6 @@ func (m *TaskReportMutation) ClearedFields() []string {
 	var fields []string
 	if m.FieldCleared(taskreport.FieldContent) {
 		fields = append(fields, taskreport.FieldContent)
-	}
-	if m.FieldCleared(taskreport.FieldIssuesEncountered) {
-		fields = append(fields, taskreport.FieldIssuesEncountered)
-	}
-	if m.FieldCleared(taskreport.FieldNextSteps) {
-		fields = append(fields, taskreport.FieldNextSteps)
-	}
-	if m.FieldCleared(taskreport.FieldEstimatedCompletion) {
-		fields = append(fields, taskreport.FieldEstimatedCompletion)
 	}
 	return fields
 }
@@ -10849,15 +10411,6 @@ func (m *TaskReportMutation) ClearField(name string) error {
 	case taskreport.FieldContent:
 		m.ClearContent()
 		return nil
-	case taskreport.FieldIssuesEncountered:
-		m.ClearIssuesEncountered()
-		return nil
-	case taskreport.FieldNextSteps:
-		m.ClearNextSteps()
-		return nil
-	case taskreport.FieldEstimatedCompletion:
-		m.ClearEstimatedCompletion()
-		return nil
 	}
 	return fmt.Errorf("unknown TaskReport nullable field %s", name)
 }
@@ -10866,29 +10419,8 @@ func (m *TaskReportMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TaskReportMutation) ResetField(name string) error {
 	switch name {
-	case taskreport.FieldTitle:
-		m.ResetTitle()
-		return nil
 	case taskreport.FieldContent:
 		m.ResetContent()
-		return nil
-	case taskreport.FieldStatus:
-		m.ResetStatus()
-		return nil
-	case taskreport.FieldProgressPercentage:
-		m.ResetProgressPercentage()
-		return nil
-	case taskreport.FieldReportedAt:
-		m.ResetReportedAt()
-		return nil
-	case taskreport.FieldIssuesEncountered:
-		m.ResetIssuesEncountered()
-		return nil
-	case taskreport.FieldNextSteps:
-		m.ResetNextSteps()
-		return nil
-	case taskreport.FieldEstimatedCompletion:
-		m.ResetEstimatedCompletion()
 		return nil
 	case taskreport.FieldTaskID:
 		m.ResetTaskID()

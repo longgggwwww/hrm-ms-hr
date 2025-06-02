@@ -25,7 +25,7 @@ func NewLeaveRequestHandler(client *ent.Client) *LeaveRequestHandler {
 
 func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 	log.Println("vlxx")
-	leaveRequests := r.Group("leave_requests")
+	leaveRequests := r.Group("leave-requests")
 	{
 		leaveRequests.GET("/admin", h.ListAdmin)
 		leaveRequests.GET("/employee", h.ListEmployee)

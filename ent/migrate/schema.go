@@ -300,14 +300,7 @@ var (
 	// TaskReportsColumns holds the columns for the "task_reports" table.
 	TaskReportsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "title", Type: field.TypeString},
 		{Name: "content", Type: field.TypeString, Nullable: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"received", "not_received", "in_progress", "completed", "cancelled"}, Default: "received"},
-		{Name: "progress_percentage", Type: field.TypeInt, Default: 0},
-		{Name: "reported_at", Type: field.TypeTime},
-		{Name: "issues_encountered", Type: field.TypeString, Nullable: true},
-		{Name: "next_steps", Type: field.TypeString, Nullable: true},
-		{Name: "estimated_completion", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "reporter_id", Type: field.TypeInt},
@@ -321,13 +314,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "task_reports_employees_task_reports",
-				Columns:    []*schema.Column{TaskReportsColumns[11]},
+				Columns:    []*schema.Column{TaskReportsColumns[4]},
 				RefColumns: []*schema.Column{EmployeesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "task_reports_tasks_reports",
-				Columns:    []*schema.Column{TaskReportsColumns[12]},
+				Columns:    []*schema.Column{TaskReportsColumns[5]},
 				RefColumns: []*schema.Column{TasksColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

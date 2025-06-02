@@ -334,12 +334,12 @@ func (trq *TaskReportQuery) WithReporter(opts ...func(*EmployeeQuery)) *TaskRepo
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		Content string `json:"content,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.TaskReport.Query().
-//		GroupBy(taskreport.FieldTitle).
+//		GroupBy(taskreport.FieldContent).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (trq *TaskReportQuery) GroupBy(field string, fields ...string) *TaskReportGroupBy {
@@ -357,11 +357,11 @@ func (trq *TaskReportQuery) GroupBy(field string, fields ...string) *TaskReportG
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		Content string `json:"content,omitempty"`
 //	}
 //
 //	client.TaskReport.Query().
-//		Select(taskreport.FieldTitle).
+//		Select(taskreport.FieldContent).
 //		Scan(ctx, &v)
 func (trq *TaskReportQuery) Select(fields ...string) *TaskReportSelect {
 	trq.ctx.Fields = append(trq.ctx.Fields, fields...)

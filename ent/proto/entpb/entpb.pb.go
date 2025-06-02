@@ -1254,61 +1254,6 @@ func (ListTaskRequest_View) EnumDescriptor() ([]byte, []int) {
 	return file_entpb_entpb_proto_rawDescGZIP(), []int{77, 0}
 }
 
-type TaskReport_Status int32
-
-const (
-	TaskReport_STATUS_RECEIVED     TaskReport_Status = 0
-	TaskReport_STATUS_NOT_RECEIVED TaskReport_Status = 1
-	TaskReport_STATUS_IN_PROGRESS  TaskReport_Status = 2
-	TaskReport_STATUS_COMPLETED    TaskReport_Status = 3
-	TaskReport_STATUS_CANCELLED    TaskReport_Status = 4
-)
-
-// Enum value maps for TaskReport_Status.
-var (
-	TaskReport_Status_name = map[int32]string{
-		0: "STATUS_RECEIVED",
-		1: "STATUS_NOT_RECEIVED",
-		2: "STATUS_IN_PROGRESS",
-		3: "STATUS_COMPLETED",
-		4: "STATUS_CANCELLED",
-	}
-	TaskReport_Status_value = map[string]int32{
-		"STATUS_RECEIVED":     0,
-		"STATUS_NOT_RECEIVED": 1,
-		"STATUS_IN_PROGRESS":  2,
-		"STATUS_COMPLETED":    3,
-		"STATUS_CANCELLED":    4,
-	}
-)
-
-func (x TaskReport_Status) Enum() *TaskReport_Status {
-	p := new(TaskReport_Status)
-	*p = x
-	return p
-}
-
-func (x TaskReport_Status) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (TaskReport_Status) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[25].Descriptor()
-}
-
-func (TaskReport_Status) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[25]
-}
-
-func (x TaskReport_Status) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use TaskReport_Status.Descriptor instead.
-func (TaskReport_Status) EnumDescriptor() ([]byte, []int) {
-	return file_entpb_entpb_proto_rawDescGZIP(), []int{81, 0}
-}
-
 type GetTaskReportRequest_View int32
 
 const (
@@ -1342,11 +1287,11 @@ func (x GetTaskReportRequest_View) String() string {
 }
 
 func (GetTaskReportRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[26].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[25].Descriptor()
 }
 
 func (GetTaskReportRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[26]
+	return &file_entpb_entpb_proto_enumTypes[25]
 }
 
 func (x GetTaskReportRequest_View) Number() protoreflect.EnumNumber {
@@ -1391,11 +1336,11 @@ func (x ListTaskReportRequest_View) String() string {
 }
 
 func (ListTaskReportRequest_View) Descriptor() protoreflect.EnumDescriptor {
-	return file_entpb_entpb_proto_enumTypes[27].Descriptor()
+	return file_entpb_entpb_proto_enumTypes[26].Descriptor()
 }
 
 func (ListTaskReportRequest_View) Type() protoreflect.EnumType {
-	return &file_entpb_entpb_proto_enumTypes[27]
+	return &file_entpb_entpb_proto_enumTypes[26]
 }
 
 func (x ListTaskReportRequest_View) Number() protoreflect.EnumNumber {
@@ -6156,24 +6101,17 @@ func (x *BatchCreateTasksResponse) GetTasks() []*Task {
 }
 
 type TaskReport struct {
-	state               protoimpl.MessageState  `protogen:"open.v1"`
-	Id                  int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title               string                  `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Content             *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
-	Status              TaskReport_Status       `protobuf:"varint,4,opt,name=status,proto3,enum=entpb.TaskReport_Status" json:"status,omitempty"`
-	ProgressPercentage  int64                   `protobuf:"varint,5,opt,name=progress_percentage,json=progressPercentage,proto3" json:"progress_percentage,omitempty"`
-	ReportedAt          *timestamppb.Timestamp  `protobuf:"bytes,6,opt,name=reported_at,json=reportedAt,proto3" json:"reported_at,omitempty"`
-	IssuesEncountered   *wrapperspb.StringValue `protobuf:"bytes,7,opt,name=issues_encountered,json=issuesEncountered,proto3" json:"issues_encountered,omitempty"`
-	NextSteps           *wrapperspb.StringValue `protobuf:"bytes,8,opt,name=next_steps,json=nextSteps,proto3" json:"next_steps,omitempty"`
-	EstimatedCompletion *timestamppb.Timestamp  `protobuf:"bytes,9,opt,name=estimated_completion,json=estimatedCompletion,proto3" json:"estimated_completion,omitempty"`
-	TaskId              int64                   `protobuf:"varint,10,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
-	ReporterId          int64                   `protobuf:"varint,11,opt,name=reporter_id,json=reporterId,proto3" json:"reporter_id,omitempty"`
-	CreatedAt           *timestamppb.Timestamp  `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt           *timestamppb.Timestamp  `protobuf:"bytes,13,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Task                *Task                   `protobuf:"bytes,14,opt,name=task,proto3" json:"task,omitempty"`
-	Reporter            *Employee               `protobuf:"bytes,15,opt,name=reporter,proto3" json:"reporter,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Content       *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	TaskId        int64                   `protobuf:"varint,4,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	ReporterId    int64                   `protobuf:"varint,5,opt,name=reporter_id,json=reporterId,proto3" json:"reporter_id,omitempty"`
+	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Task          *Task                   `protobuf:"bytes,8,opt,name=task,proto3" json:"task,omitempty"`
+	Reporter      *Employee               `protobuf:"bytes,9,opt,name=reporter,proto3" json:"reporter,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TaskReport) Reset() {
@@ -6213,58 +6151,9 @@ func (x *TaskReport) GetId() int64 {
 	return 0
 }
 
-func (x *TaskReport) GetTitle() string {
-	if x != nil {
-		return x.Title
-	}
-	return ""
-}
-
 func (x *TaskReport) GetContent() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Content
-	}
-	return nil
-}
-
-func (x *TaskReport) GetStatus() TaskReport_Status {
-	if x != nil {
-		return x.Status
-	}
-	return TaskReport_STATUS_RECEIVED
-}
-
-func (x *TaskReport) GetProgressPercentage() int64 {
-	if x != nil {
-		return x.ProgressPercentage
-	}
-	return 0
-}
-
-func (x *TaskReport) GetReportedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.ReportedAt
-	}
-	return nil
-}
-
-func (x *TaskReport) GetIssuesEncountered() *wrapperspb.StringValue {
-	if x != nil {
-		return x.IssuesEncountered
-	}
-	return nil
-}
-
-func (x *TaskReport) GetNextSteps() *wrapperspb.StringValue {
-	if x != nil {
-		return x.NextSteps
-	}
-	return nil
-}
-
-func (x *TaskReport) GetEstimatedCompletion() *timestamppb.Timestamp {
-	if x != nil {
-		return x.EstimatedCompletion
 	}
 	return nil
 }
@@ -7162,36 +7051,20 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x17BatchCreateTasksRequest\x124\n" +
 	"\brequests\x18\x01 \x03(\v2\x18.entpb.CreateTaskRequestR\brequests\"=\n" +
 	"\x18BatchCreateTasksResponse\x12!\n" +
-	"\x05tasks\x18\x01 \x03(\v2\v.entpb.TaskR\x05tasks\"\xdd\x06\n" +
+	"\x05tasks\x18\x01 \x03(\v2\v.entpb.TaskR\x05tasks\"\xd2\x02\n" +
 	"\n" +
 	"TaskReport\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x126\n" +
-	"\acontent\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\acontent\x120\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x18.entpb.TaskReport.StatusR\x06status\x12/\n" +
-	"\x13progress_percentage\x18\x05 \x01(\x03R\x12progressPercentage\x12;\n" +
-	"\vreported_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"reportedAt\x12K\n" +
-	"\x12issues_encountered\x18\a \x01(\v2\x1c.google.protobuf.StringValueR\x11issuesEncountered\x12;\n" +
-	"\n" +
-	"next_steps\x18\b \x01(\v2\x1c.google.protobuf.StringValueR\tnextSteps\x12M\n" +
-	"\x14estimated_completion\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\x13estimatedCompletion\x12\x17\n" +
-	"\atask_id\x18\n" +
-	" \x01(\x03R\x06taskId\x12\x1f\n" +
-	"\vreporter_id\x18\v \x01(\x03R\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x126\n" +
+	"\acontent\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\acontent\x12\x17\n" +
+	"\atask_id\x18\x04 \x01(\x03R\x06taskId\x12\x1f\n" +
+	"\vreporter_id\x18\x05 \x01(\x03R\n" +
 	"reporterId\x129\n" +
 	"\n" +
-	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1f\n" +
-	"\x04task\x18\x0e \x01(\v2\v.entpb.TaskR\x04task\x12+\n" +
-	"\breporter\x18\x0f \x01(\v2\x0f.entpb.EmployeeR\breporter\"z\n" +
-	"\x06Status\x12\x13\n" +
-	"\x0fSTATUS_RECEIVED\x10\x00\x12\x17\n" +
-	"\x13STATUS_NOT_RECEIVED\x10\x01\x12\x16\n" +
-	"\x12STATUS_IN_PROGRESS\x10\x02\x12\x14\n" +
-	"\x10STATUS_COMPLETED\x10\x03\x12\x14\n" +
-	"\x10STATUS_CANCELLED\x10\x04\"M\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1f\n" +
+	"\x04task\x18\b \x01(\v2\v.entpb.TaskR\x04task\x12+\n" +
+	"\breporter\x18\t \x01(\v2\x0f.entpb.EmployeeR\breporter\"M\n" +
 	"\x17CreateTaskReportRequest\x122\n" +
 	"\vtask_report\x18\x01 \x01(\v2\x11.entpb.TaskReportR\n" +
 	"taskReport\"\x98\x01\n" +
@@ -7306,7 +7179,7 @@ func file_entpb_entpb_proto_rawDescGZIP() []byte {
 	return file_entpb_entpb_proto_rawDescData
 }
 
-var file_entpb_entpb_proto_enumTypes = make([]protoimpl.EnumInfo, 28)
+var file_entpb_entpb_proto_enumTypes = make([]protoimpl.EnumInfo, 27)
 var file_entpb_entpb_proto_msgTypes = make([]protoimpl.MessageInfo, 90)
 var file_entpb_entpb_proto_goTypes = []any{
 	(GetDepartmentRequest_View)(0),            // 0: entpb.GetDepartmentRequest.View
@@ -7334,394 +7207,388 @@ var file_entpb_entpb_proto_goTypes = []any{
 	(Task_Type)(0),                            // 22: entpb.Task.Type
 	(GetTaskRequest_View)(0),                  // 23: entpb.GetTaskRequest.View
 	(ListTaskRequest_View)(0),                 // 24: entpb.ListTaskRequest.View
-	(TaskReport_Status)(0),                    // 25: entpb.TaskReport.Status
-	(GetTaskReportRequest_View)(0),            // 26: entpb.GetTaskReportRequest.View
-	(ListTaskReportRequest_View)(0),           // 27: entpb.ListTaskReportRequest.View
-	(*Department)(nil),                        // 28: entpb.Department
-	(*CreateDepartmentRequest)(nil),           // 29: entpb.CreateDepartmentRequest
-	(*GetDepartmentRequest)(nil),              // 30: entpb.GetDepartmentRequest
-	(*UpdateDepartmentRequest)(nil),           // 31: entpb.UpdateDepartmentRequest
-	(*DeleteDepartmentRequest)(nil),           // 32: entpb.DeleteDepartmentRequest
-	(*ListDepartmentRequest)(nil),             // 33: entpb.ListDepartmentRequest
-	(*ListDepartmentResponse)(nil),            // 34: entpb.ListDepartmentResponse
-	(*BatchCreateDepartmentsRequest)(nil),     // 35: entpb.BatchCreateDepartmentsRequest
-	(*BatchCreateDepartmentsResponse)(nil),    // 36: entpb.BatchCreateDepartmentsResponse
-	(*Employee)(nil),                          // 37: entpb.Employee
-	(*CreateEmployeeRequest)(nil),             // 38: entpb.CreateEmployeeRequest
-	(*GetEmployeeRequest)(nil),                // 39: entpb.GetEmployeeRequest
-	(*UpdateEmployeeRequest)(nil),             // 40: entpb.UpdateEmployeeRequest
-	(*DeleteEmployeeRequest)(nil),             // 41: entpb.DeleteEmployeeRequest
-	(*ListEmployeeRequest)(nil),               // 42: entpb.ListEmployeeRequest
-	(*ListEmployeeResponse)(nil),              // 43: entpb.ListEmployeeResponse
-	(*BatchCreateEmployeesRequest)(nil),       // 44: entpb.BatchCreateEmployeesRequest
-	(*BatchCreateEmployeesResponse)(nil),      // 45: entpb.BatchCreateEmployeesResponse
-	(*Label)(nil),                             // 46: entpb.Label
-	(*CreateLabelRequest)(nil),                // 47: entpb.CreateLabelRequest
-	(*GetLabelRequest)(nil),                   // 48: entpb.GetLabelRequest
-	(*UpdateLabelRequest)(nil),                // 49: entpb.UpdateLabelRequest
-	(*DeleteLabelRequest)(nil),                // 50: entpb.DeleteLabelRequest
-	(*ListLabelRequest)(nil),                  // 51: entpb.ListLabelRequest
-	(*ListLabelResponse)(nil),                 // 52: entpb.ListLabelResponse
-	(*BatchCreateLabelsRequest)(nil),          // 53: entpb.BatchCreateLabelsRequest
-	(*BatchCreateLabelsResponse)(nil),         // 54: entpb.BatchCreateLabelsResponse
-	(*LeaveApproval)(nil),                     // 55: entpb.LeaveApproval
-	(*CreateLeaveApprovalRequest)(nil),        // 56: entpb.CreateLeaveApprovalRequest
-	(*GetLeaveApprovalRequest)(nil),           // 57: entpb.GetLeaveApprovalRequest
-	(*UpdateLeaveApprovalRequest)(nil),        // 58: entpb.UpdateLeaveApprovalRequest
-	(*DeleteLeaveApprovalRequest)(nil),        // 59: entpb.DeleteLeaveApprovalRequest
-	(*ListLeaveApprovalRequest)(nil),          // 60: entpb.ListLeaveApprovalRequest
-	(*ListLeaveApprovalResponse)(nil),         // 61: entpb.ListLeaveApprovalResponse
-	(*BatchCreateLeaveApprovalsRequest)(nil),  // 62: entpb.BatchCreateLeaveApprovalsRequest
-	(*BatchCreateLeaveApprovalsResponse)(nil), // 63: entpb.BatchCreateLeaveApprovalsResponse
-	(*LeaveRequest)(nil),                      // 64: entpb.LeaveRequest
-	(*CreateLeaveRequestRequest)(nil),         // 65: entpb.CreateLeaveRequestRequest
-	(*GetLeaveRequestRequest)(nil),            // 66: entpb.GetLeaveRequestRequest
-	(*UpdateLeaveRequestRequest)(nil),         // 67: entpb.UpdateLeaveRequestRequest
-	(*DeleteLeaveRequestRequest)(nil),         // 68: entpb.DeleteLeaveRequestRequest
-	(*ListLeaveRequestRequest)(nil),           // 69: entpb.ListLeaveRequestRequest
-	(*ListLeaveRequestResponse)(nil),          // 70: entpb.ListLeaveRequestResponse
-	(*BatchCreateLeaveRequestsRequest)(nil),   // 71: entpb.BatchCreateLeaveRequestsRequest
-	(*BatchCreateLeaveRequestsResponse)(nil),  // 72: entpb.BatchCreateLeaveRequestsResponse
-	(*Organization)(nil),                      // 73: entpb.Organization
-	(*CreateOrganizationRequest)(nil),         // 74: entpb.CreateOrganizationRequest
-	(*GetOrganizationRequest)(nil),            // 75: entpb.GetOrganizationRequest
-	(*UpdateOrganizationRequest)(nil),         // 76: entpb.UpdateOrganizationRequest
-	(*DeleteOrganizationRequest)(nil),         // 77: entpb.DeleteOrganizationRequest
-	(*ListOrganizationRequest)(nil),           // 78: entpb.ListOrganizationRequest
-	(*ListOrganizationResponse)(nil),          // 79: entpb.ListOrganizationResponse
-	(*BatchCreateOrganizationsRequest)(nil),   // 80: entpb.BatchCreateOrganizationsRequest
-	(*BatchCreateOrganizationsResponse)(nil),  // 81: entpb.BatchCreateOrganizationsResponse
-	(*Position)(nil),                          // 82: entpb.Position
-	(*CreatePositionRequest)(nil),             // 83: entpb.CreatePositionRequest
-	(*GetPositionRequest)(nil),                // 84: entpb.GetPositionRequest
-	(*UpdatePositionRequest)(nil),             // 85: entpb.UpdatePositionRequest
-	(*DeletePositionRequest)(nil),             // 86: entpb.DeletePositionRequest
-	(*ListPositionRequest)(nil),               // 87: entpb.ListPositionRequest
-	(*ListPositionResponse)(nil),              // 88: entpb.ListPositionResponse
-	(*BatchCreatePositionsRequest)(nil),       // 89: entpb.BatchCreatePositionsRequest
-	(*BatchCreatePositionsResponse)(nil),      // 90: entpb.BatchCreatePositionsResponse
-	(*Project)(nil),                           // 91: entpb.Project
-	(*CreateProjectRequest)(nil),              // 92: entpb.CreateProjectRequest
-	(*GetProjectRequest)(nil),                 // 93: entpb.GetProjectRequest
-	(*UpdateProjectRequest)(nil),              // 94: entpb.UpdateProjectRequest
-	(*DeleteProjectRequest)(nil),              // 95: entpb.DeleteProjectRequest
-	(*ListProjectRequest)(nil),                // 96: entpb.ListProjectRequest
-	(*ListProjectResponse)(nil),               // 97: entpb.ListProjectResponse
-	(*BatchCreateProjectsRequest)(nil),        // 98: entpb.BatchCreateProjectsRequest
-	(*BatchCreateProjectsResponse)(nil),       // 99: entpb.BatchCreateProjectsResponse
-	(*Task)(nil),                              // 100: entpb.Task
-	(*CreateTaskRequest)(nil),                 // 101: entpb.CreateTaskRequest
-	(*GetTaskRequest)(nil),                    // 102: entpb.GetTaskRequest
-	(*UpdateTaskRequest)(nil),                 // 103: entpb.UpdateTaskRequest
-	(*DeleteTaskRequest)(nil),                 // 104: entpb.DeleteTaskRequest
-	(*ListTaskRequest)(nil),                   // 105: entpb.ListTaskRequest
-	(*ListTaskResponse)(nil),                  // 106: entpb.ListTaskResponse
-	(*BatchCreateTasksRequest)(nil),           // 107: entpb.BatchCreateTasksRequest
-	(*BatchCreateTasksResponse)(nil),          // 108: entpb.BatchCreateTasksResponse
-	(*TaskReport)(nil),                        // 109: entpb.TaskReport
-	(*CreateTaskReportRequest)(nil),           // 110: entpb.CreateTaskReportRequest
-	(*GetTaskReportRequest)(nil),              // 111: entpb.GetTaskReportRequest
-	(*UpdateTaskReportRequest)(nil),           // 112: entpb.UpdateTaskReportRequest
-	(*DeleteTaskReportRequest)(nil),           // 113: entpb.DeleteTaskReportRequest
-	(*ListTaskReportRequest)(nil),             // 114: entpb.ListTaskReportRequest
-	(*ListTaskReportResponse)(nil),            // 115: entpb.ListTaskReportResponse
-	(*BatchCreateTaskReportsRequest)(nil),     // 116: entpb.BatchCreateTaskReportsRequest
-	(*BatchCreateTaskReportsResponse)(nil),    // 117: entpb.BatchCreateTaskReportsResponse
-	(*timestamppb.Timestamp)(nil),             // 118: google.protobuf.Timestamp
-	(*wrapperspb.StringValue)(nil),            // 119: google.protobuf.StringValue
-	(*wrapperspb.Int64Value)(nil),             // 120: google.protobuf.Int64Value
-	(*emptypb.Empty)(nil),                     // 121: google.protobuf.Empty
+	(GetTaskReportRequest_View)(0),            // 25: entpb.GetTaskReportRequest.View
+	(ListTaskReportRequest_View)(0),           // 26: entpb.ListTaskReportRequest.View
+	(*Department)(nil),                        // 27: entpb.Department
+	(*CreateDepartmentRequest)(nil),           // 28: entpb.CreateDepartmentRequest
+	(*GetDepartmentRequest)(nil),              // 29: entpb.GetDepartmentRequest
+	(*UpdateDepartmentRequest)(nil),           // 30: entpb.UpdateDepartmentRequest
+	(*DeleteDepartmentRequest)(nil),           // 31: entpb.DeleteDepartmentRequest
+	(*ListDepartmentRequest)(nil),             // 32: entpb.ListDepartmentRequest
+	(*ListDepartmentResponse)(nil),            // 33: entpb.ListDepartmentResponse
+	(*BatchCreateDepartmentsRequest)(nil),     // 34: entpb.BatchCreateDepartmentsRequest
+	(*BatchCreateDepartmentsResponse)(nil),    // 35: entpb.BatchCreateDepartmentsResponse
+	(*Employee)(nil),                          // 36: entpb.Employee
+	(*CreateEmployeeRequest)(nil),             // 37: entpb.CreateEmployeeRequest
+	(*GetEmployeeRequest)(nil),                // 38: entpb.GetEmployeeRequest
+	(*UpdateEmployeeRequest)(nil),             // 39: entpb.UpdateEmployeeRequest
+	(*DeleteEmployeeRequest)(nil),             // 40: entpb.DeleteEmployeeRequest
+	(*ListEmployeeRequest)(nil),               // 41: entpb.ListEmployeeRequest
+	(*ListEmployeeResponse)(nil),              // 42: entpb.ListEmployeeResponse
+	(*BatchCreateEmployeesRequest)(nil),       // 43: entpb.BatchCreateEmployeesRequest
+	(*BatchCreateEmployeesResponse)(nil),      // 44: entpb.BatchCreateEmployeesResponse
+	(*Label)(nil),                             // 45: entpb.Label
+	(*CreateLabelRequest)(nil),                // 46: entpb.CreateLabelRequest
+	(*GetLabelRequest)(nil),                   // 47: entpb.GetLabelRequest
+	(*UpdateLabelRequest)(nil),                // 48: entpb.UpdateLabelRequest
+	(*DeleteLabelRequest)(nil),                // 49: entpb.DeleteLabelRequest
+	(*ListLabelRequest)(nil),                  // 50: entpb.ListLabelRequest
+	(*ListLabelResponse)(nil),                 // 51: entpb.ListLabelResponse
+	(*BatchCreateLabelsRequest)(nil),          // 52: entpb.BatchCreateLabelsRequest
+	(*BatchCreateLabelsResponse)(nil),         // 53: entpb.BatchCreateLabelsResponse
+	(*LeaveApproval)(nil),                     // 54: entpb.LeaveApproval
+	(*CreateLeaveApprovalRequest)(nil),        // 55: entpb.CreateLeaveApprovalRequest
+	(*GetLeaveApprovalRequest)(nil),           // 56: entpb.GetLeaveApprovalRequest
+	(*UpdateLeaveApprovalRequest)(nil),        // 57: entpb.UpdateLeaveApprovalRequest
+	(*DeleteLeaveApprovalRequest)(nil),        // 58: entpb.DeleteLeaveApprovalRequest
+	(*ListLeaveApprovalRequest)(nil),          // 59: entpb.ListLeaveApprovalRequest
+	(*ListLeaveApprovalResponse)(nil),         // 60: entpb.ListLeaveApprovalResponse
+	(*BatchCreateLeaveApprovalsRequest)(nil),  // 61: entpb.BatchCreateLeaveApprovalsRequest
+	(*BatchCreateLeaveApprovalsResponse)(nil), // 62: entpb.BatchCreateLeaveApprovalsResponse
+	(*LeaveRequest)(nil),                      // 63: entpb.LeaveRequest
+	(*CreateLeaveRequestRequest)(nil),         // 64: entpb.CreateLeaveRequestRequest
+	(*GetLeaveRequestRequest)(nil),            // 65: entpb.GetLeaveRequestRequest
+	(*UpdateLeaveRequestRequest)(nil),         // 66: entpb.UpdateLeaveRequestRequest
+	(*DeleteLeaveRequestRequest)(nil),         // 67: entpb.DeleteLeaveRequestRequest
+	(*ListLeaveRequestRequest)(nil),           // 68: entpb.ListLeaveRequestRequest
+	(*ListLeaveRequestResponse)(nil),          // 69: entpb.ListLeaveRequestResponse
+	(*BatchCreateLeaveRequestsRequest)(nil),   // 70: entpb.BatchCreateLeaveRequestsRequest
+	(*BatchCreateLeaveRequestsResponse)(nil),  // 71: entpb.BatchCreateLeaveRequestsResponse
+	(*Organization)(nil),                      // 72: entpb.Organization
+	(*CreateOrganizationRequest)(nil),         // 73: entpb.CreateOrganizationRequest
+	(*GetOrganizationRequest)(nil),            // 74: entpb.GetOrganizationRequest
+	(*UpdateOrganizationRequest)(nil),         // 75: entpb.UpdateOrganizationRequest
+	(*DeleteOrganizationRequest)(nil),         // 76: entpb.DeleteOrganizationRequest
+	(*ListOrganizationRequest)(nil),           // 77: entpb.ListOrganizationRequest
+	(*ListOrganizationResponse)(nil),          // 78: entpb.ListOrganizationResponse
+	(*BatchCreateOrganizationsRequest)(nil),   // 79: entpb.BatchCreateOrganizationsRequest
+	(*BatchCreateOrganizationsResponse)(nil),  // 80: entpb.BatchCreateOrganizationsResponse
+	(*Position)(nil),                          // 81: entpb.Position
+	(*CreatePositionRequest)(nil),             // 82: entpb.CreatePositionRequest
+	(*GetPositionRequest)(nil),                // 83: entpb.GetPositionRequest
+	(*UpdatePositionRequest)(nil),             // 84: entpb.UpdatePositionRequest
+	(*DeletePositionRequest)(nil),             // 85: entpb.DeletePositionRequest
+	(*ListPositionRequest)(nil),               // 86: entpb.ListPositionRequest
+	(*ListPositionResponse)(nil),              // 87: entpb.ListPositionResponse
+	(*BatchCreatePositionsRequest)(nil),       // 88: entpb.BatchCreatePositionsRequest
+	(*BatchCreatePositionsResponse)(nil),      // 89: entpb.BatchCreatePositionsResponse
+	(*Project)(nil),                           // 90: entpb.Project
+	(*CreateProjectRequest)(nil),              // 91: entpb.CreateProjectRequest
+	(*GetProjectRequest)(nil),                 // 92: entpb.GetProjectRequest
+	(*UpdateProjectRequest)(nil),              // 93: entpb.UpdateProjectRequest
+	(*DeleteProjectRequest)(nil),              // 94: entpb.DeleteProjectRequest
+	(*ListProjectRequest)(nil),                // 95: entpb.ListProjectRequest
+	(*ListProjectResponse)(nil),               // 96: entpb.ListProjectResponse
+	(*BatchCreateProjectsRequest)(nil),        // 97: entpb.BatchCreateProjectsRequest
+	(*BatchCreateProjectsResponse)(nil),       // 98: entpb.BatchCreateProjectsResponse
+	(*Task)(nil),                              // 99: entpb.Task
+	(*CreateTaskRequest)(nil),                 // 100: entpb.CreateTaskRequest
+	(*GetTaskRequest)(nil),                    // 101: entpb.GetTaskRequest
+	(*UpdateTaskRequest)(nil),                 // 102: entpb.UpdateTaskRequest
+	(*DeleteTaskRequest)(nil),                 // 103: entpb.DeleteTaskRequest
+	(*ListTaskRequest)(nil),                   // 104: entpb.ListTaskRequest
+	(*ListTaskResponse)(nil),                  // 105: entpb.ListTaskResponse
+	(*BatchCreateTasksRequest)(nil),           // 106: entpb.BatchCreateTasksRequest
+	(*BatchCreateTasksResponse)(nil),          // 107: entpb.BatchCreateTasksResponse
+	(*TaskReport)(nil),                        // 108: entpb.TaskReport
+	(*CreateTaskReportRequest)(nil),           // 109: entpb.CreateTaskReportRequest
+	(*GetTaskReportRequest)(nil),              // 110: entpb.GetTaskReportRequest
+	(*UpdateTaskReportRequest)(nil),           // 111: entpb.UpdateTaskReportRequest
+	(*DeleteTaskReportRequest)(nil),           // 112: entpb.DeleteTaskReportRequest
+	(*ListTaskReportRequest)(nil),             // 113: entpb.ListTaskReportRequest
+	(*ListTaskReportResponse)(nil),            // 114: entpb.ListTaskReportResponse
+	(*BatchCreateTaskReportsRequest)(nil),     // 115: entpb.BatchCreateTaskReportsRequest
+	(*BatchCreateTaskReportsResponse)(nil),    // 116: entpb.BatchCreateTaskReportsResponse
+	(*timestamppb.Timestamp)(nil),             // 117: google.protobuf.Timestamp
+	(*wrapperspb.StringValue)(nil),            // 118: google.protobuf.StringValue
+	(*wrapperspb.Int64Value)(nil),             // 119: google.protobuf.Int64Value
+	(*emptypb.Empty)(nil),                     // 120: google.protobuf.Empty
 }
 var file_entpb_entpb_proto_depIdxs = []int32{
-	118, // 0: entpb.Department.created_at:type_name -> google.protobuf.Timestamp
-	118, // 1: entpb.Department.updated_at:type_name -> google.protobuf.Timestamp
-	82,  // 2: entpb.Department.positions:type_name -> entpb.Position
-	73,  // 3: entpb.Department.organization:type_name -> entpb.Organization
-	28,  // 4: entpb.CreateDepartmentRequest.department:type_name -> entpb.Department
+	117, // 0: entpb.Department.created_at:type_name -> google.protobuf.Timestamp
+	117, // 1: entpb.Department.updated_at:type_name -> google.protobuf.Timestamp
+	81,  // 2: entpb.Department.positions:type_name -> entpb.Position
+	72,  // 3: entpb.Department.organization:type_name -> entpb.Organization
+	27,  // 4: entpb.CreateDepartmentRequest.department:type_name -> entpb.Department
 	0,   // 5: entpb.GetDepartmentRequest.view:type_name -> entpb.GetDepartmentRequest.View
-	28,  // 6: entpb.UpdateDepartmentRequest.department:type_name -> entpb.Department
+	27,  // 6: entpb.UpdateDepartmentRequest.department:type_name -> entpb.Department
 	1,   // 7: entpb.ListDepartmentRequest.view:type_name -> entpb.ListDepartmentRequest.View
-	28,  // 8: entpb.ListDepartmentResponse.department_list:type_name -> entpb.Department
-	29,  // 9: entpb.BatchCreateDepartmentsRequest.requests:type_name -> entpb.CreateDepartmentRequest
-	28,  // 10: entpb.BatchCreateDepartmentsResponse.departments:type_name -> entpb.Department
-	119, // 11: entpb.Employee.user_id:type_name -> google.protobuf.StringValue
+	27,  // 8: entpb.ListDepartmentResponse.department_list:type_name -> entpb.Department
+	28,  // 9: entpb.BatchCreateDepartmentsRequest.requests:type_name -> entpb.CreateDepartmentRequest
+	27,  // 10: entpb.BatchCreateDepartmentsResponse.departments:type_name -> entpb.Department
+	118, // 11: entpb.Employee.user_id:type_name -> google.protobuf.StringValue
 	2,   // 12: entpb.Employee.status:type_name -> entpb.Employee.Status
-	118, // 13: entpb.Employee.joining_at:type_name -> google.protobuf.Timestamp
-	118, // 14: entpb.Employee.created_at:type_name -> google.protobuf.Timestamp
-	118, // 15: entpb.Employee.updated_at:type_name -> google.protobuf.Timestamp
-	82,  // 16: entpb.Employee.position:type_name -> entpb.Position
-	91,  // 17: entpb.Employee.created_projects:type_name -> entpb.Project
-	91,  // 18: entpb.Employee.updated_projects:type_name -> entpb.Project
-	100, // 19: entpb.Employee.assigned_tasks:type_name -> entpb.Task
-	55,  // 20: entpb.Employee.leave_approves:type_name -> entpb.LeaveApproval
-	64,  // 21: entpb.Employee.leave_requests:type_name -> entpb.LeaveRequest
-	109, // 22: entpb.Employee.task_reports:type_name -> entpb.TaskReport
-	91,  // 23: entpb.Employee.projects:type_name -> entpb.Project
-	37,  // 24: entpb.CreateEmployeeRequest.employee:type_name -> entpb.Employee
+	117, // 13: entpb.Employee.joining_at:type_name -> google.protobuf.Timestamp
+	117, // 14: entpb.Employee.created_at:type_name -> google.protobuf.Timestamp
+	117, // 15: entpb.Employee.updated_at:type_name -> google.protobuf.Timestamp
+	81,  // 16: entpb.Employee.position:type_name -> entpb.Position
+	90,  // 17: entpb.Employee.created_projects:type_name -> entpb.Project
+	90,  // 18: entpb.Employee.updated_projects:type_name -> entpb.Project
+	99,  // 19: entpb.Employee.assigned_tasks:type_name -> entpb.Task
+	54,  // 20: entpb.Employee.leave_approves:type_name -> entpb.LeaveApproval
+	63,  // 21: entpb.Employee.leave_requests:type_name -> entpb.LeaveRequest
+	108, // 22: entpb.Employee.task_reports:type_name -> entpb.TaskReport
+	90,  // 23: entpb.Employee.projects:type_name -> entpb.Project
+	36,  // 24: entpb.CreateEmployeeRequest.employee:type_name -> entpb.Employee
 	3,   // 25: entpb.GetEmployeeRequest.view:type_name -> entpb.GetEmployeeRequest.View
-	37,  // 26: entpb.UpdateEmployeeRequest.employee:type_name -> entpb.Employee
+	36,  // 26: entpb.UpdateEmployeeRequest.employee:type_name -> entpb.Employee
 	4,   // 27: entpb.ListEmployeeRequest.view:type_name -> entpb.ListEmployeeRequest.View
-	37,  // 28: entpb.ListEmployeeResponse.employee_list:type_name -> entpb.Employee
-	38,  // 29: entpb.BatchCreateEmployeesRequest.requests:type_name -> entpb.CreateEmployeeRequest
-	37,  // 30: entpb.BatchCreateEmployeesResponse.employees:type_name -> entpb.Employee
-	119, // 31: entpb.Label.description:type_name -> google.protobuf.StringValue
-	120, // 32: entpb.Label.org_id:type_name -> google.protobuf.Int64Value
-	118, // 33: entpb.Label.created_at:type_name -> google.protobuf.Timestamp
-	118, // 34: entpb.Label.updated_at:type_name -> google.protobuf.Timestamp
-	100, // 35: entpb.Label.tasks:type_name -> entpb.Task
-	73,  // 36: entpb.Label.organization:type_name -> entpb.Organization
-	46,  // 37: entpb.CreateLabelRequest.label:type_name -> entpb.Label
+	36,  // 28: entpb.ListEmployeeResponse.employee_list:type_name -> entpb.Employee
+	37,  // 29: entpb.BatchCreateEmployeesRequest.requests:type_name -> entpb.CreateEmployeeRequest
+	36,  // 30: entpb.BatchCreateEmployeesResponse.employees:type_name -> entpb.Employee
+	118, // 31: entpb.Label.description:type_name -> google.protobuf.StringValue
+	119, // 32: entpb.Label.org_id:type_name -> google.protobuf.Int64Value
+	117, // 33: entpb.Label.created_at:type_name -> google.protobuf.Timestamp
+	117, // 34: entpb.Label.updated_at:type_name -> google.protobuf.Timestamp
+	99,  // 35: entpb.Label.tasks:type_name -> entpb.Task
+	72,  // 36: entpb.Label.organization:type_name -> entpb.Organization
+	45,  // 37: entpb.CreateLabelRequest.label:type_name -> entpb.Label
 	5,   // 38: entpb.GetLabelRequest.view:type_name -> entpb.GetLabelRequest.View
-	46,  // 39: entpb.UpdateLabelRequest.label:type_name -> entpb.Label
+	45,  // 39: entpb.UpdateLabelRequest.label:type_name -> entpb.Label
 	6,   // 40: entpb.ListLabelRequest.view:type_name -> entpb.ListLabelRequest.View
-	46,  // 41: entpb.ListLabelResponse.label_list:type_name -> entpb.Label
-	47,  // 42: entpb.BatchCreateLabelsRequest.requests:type_name -> entpb.CreateLabelRequest
-	46,  // 43: entpb.BatchCreateLabelsResponse.labels:type_name -> entpb.Label
-	119, // 44: entpb.LeaveApproval.comment:type_name -> google.protobuf.StringValue
-	118, // 45: entpb.LeaveApproval.created_at:type_name -> google.protobuf.Timestamp
-	118, // 46: entpb.LeaveApproval.updated_at:type_name -> google.protobuf.Timestamp
-	64,  // 47: entpb.LeaveApproval.leave_request:type_name -> entpb.LeaveRequest
-	37,  // 48: entpb.LeaveApproval.reviewer:type_name -> entpb.Employee
-	55,  // 49: entpb.CreateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
+	45,  // 41: entpb.ListLabelResponse.label_list:type_name -> entpb.Label
+	46,  // 42: entpb.BatchCreateLabelsRequest.requests:type_name -> entpb.CreateLabelRequest
+	45,  // 43: entpb.BatchCreateLabelsResponse.labels:type_name -> entpb.Label
+	118, // 44: entpb.LeaveApproval.comment:type_name -> google.protobuf.StringValue
+	117, // 45: entpb.LeaveApproval.created_at:type_name -> google.protobuf.Timestamp
+	117, // 46: entpb.LeaveApproval.updated_at:type_name -> google.protobuf.Timestamp
+	63,  // 47: entpb.LeaveApproval.leave_request:type_name -> entpb.LeaveRequest
+	36,  // 48: entpb.LeaveApproval.reviewer:type_name -> entpb.Employee
+	54,  // 49: entpb.CreateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
 	7,   // 50: entpb.GetLeaveApprovalRequest.view:type_name -> entpb.GetLeaveApprovalRequest.View
-	55,  // 51: entpb.UpdateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
+	54,  // 51: entpb.UpdateLeaveApprovalRequest.leave_approval:type_name -> entpb.LeaveApproval
 	8,   // 52: entpb.ListLeaveApprovalRequest.view:type_name -> entpb.ListLeaveApprovalRequest.View
-	55,  // 53: entpb.ListLeaveApprovalResponse.leave_approval_list:type_name -> entpb.LeaveApproval
-	56,  // 54: entpb.BatchCreateLeaveApprovalsRequest.requests:type_name -> entpb.CreateLeaveApprovalRequest
-	55,  // 55: entpb.BatchCreateLeaveApprovalsResponse.leave_approvals:type_name -> entpb.LeaveApproval
-	118, // 56: entpb.LeaveRequest.start_at:type_name -> google.protobuf.Timestamp
-	118, // 57: entpb.LeaveRequest.end_at:type_name -> google.protobuf.Timestamp
-	119, // 58: entpb.LeaveRequest.reason:type_name -> google.protobuf.StringValue
+	54,  // 53: entpb.ListLeaveApprovalResponse.leave_approval_list:type_name -> entpb.LeaveApproval
+	55,  // 54: entpb.BatchCreateLeaveApprovalsRequest.requests:type_name -> entpb.CreateLeaveApprovalRequest
+	54,  // 55: entpb.BatchCreateLeaveApprovalsResponse.leave_approvals:type_name -> entpb.LeaveApproval
+	117, // 56: entpb.LeaveRequest.start_at:type_name -> google.protobuf.Timestamp
+	117, // 57: entpb.LeaveRequest.end_at:type_name -> google.protobuf.Timestamp
+	118, // 58: entpb.LeaveRequest.reason:type_name -> google.protobuf.StringValue
 	9,   // 59: entpb.LeaveRequest.type:type_name -> entpb.LeaveRequest.Type
 	10,  // 60: entpb.LeaveRequest.status:type_name -> entpb.LeaveRequest.Status
-	118, // 61: entpb.LeaveRequest.created_at:type_name -> google.protobuf.Timestamp
-	118, // 62: entpb.LeaveRequest.updated_at:type_name -> google.protobuf.Timestamp
-	55,  // 63: entpb.LeaveRequest.leave_approves:type_name -> entpb.LeaveApproval
-	37,  // 64: entpb.LeaveRequest.applicant:type_name -> entpb.Employee
-	73,  // 65: entpb.LeaveRequest.organization:type_name -> entpb.Organization
-	64,  // 66: entpb.CreateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
+	117, // 61: entpb.LeaveRequest.created_at:type_name -> google.protobuf.Timestamp
+	117, // 62: entpb.LeaveRequest.updated_at:type_name -> google.protobuf.Timestamp
+	54,  // 63: entpb.LeaveRequest.leave_approves:type_name -> entpb.LeaveApproval
+	36,  // 64: entpb.LeaveRequest.applicant:type_name -> entpb.Employee
+	72,  // 65: entpb.LeaveRequest.organization:type_name -> entpb.Organization
+	63,  // 66: entpb.CreateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
 	11,  // 67: entpb.GetLeaveRequestRequest.view:type_name -> entpb.GetLeaveRequestRequest.View
-	64,  // 68: entpb.UpdateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
+	63,  // 68: entpb.UpdateLeaveRequestRequest.leave_request:type_name -> entpb.LeaveRequest
 	12,  // 69: entpb.ListLeaveRequestRequest.view:type_name -> entpb.ListLeaveRequestRequest.View
-	64,  // 70: entpb.ListLeaveRequestResponse.leave_request_list:type_name -> entpb.LeaveRequest
-	65,  // 71: entpb.BatchCreateLeaveRequestsRequest.requests:type_name -> entpb.CreateLeaveRequestRequest
-	64,  // 72: entpb.BatchCreateLeaveRequestsResponse.leave_requests:type_name -> entpb.LeaveRequest
-	119, // 73: entpb.Organization.logo_url:type_name -> google.protobuf.StringValue
-	119, // 74: entpb.Organization.address:type_name -> google.protobuf.StringValue
-	119, // 75: entpb.Organization.phone:type_name -> google.protobuf.StringValue
-	119, // 76: entpb.Organization.email:type_name -> google.protobuf.StringValue
-	119, // 77: entpb.Organization.website:type_name -> google.protobuf.StringValue
-	118, // 78: entpb.Organization.created_at:type_name -> google.protobuf.Timestamp
-	118, // 79: entpb.Organization.updated_at:type_name -> google.protobuf.Timestamp
-	120, // 80: entpb.Organization.parent_id:type_name -> google.protobuf.Int64Value
-	73,  // 81: entpb.Organization.parent:type_name -> entpb.Organization
-	73,  // 82: entpb.Organization.children:type_name -> entpb.Organization
-	28,  // 83: entpb.Organization.departments:type_name -> entpb.Department
-	91,  // 84: entpb.Organization.projects:type_name -> entpb.Project
-	46,  // 85: entpb.Organization.labels:type_name -> entpb.Label
-	64,  // 86: entpb.Organization.leave_requests:type_name -> entpb.LeaveRequest
-	73,  // 87: entpb.CreateOrganizationRequest.organization:type_name -> entpb.Organization
+	63,  // 70: entpb.ListLeaveRequestResponse.leave_request_list:type_name -> entpb.LeaveRequest
+	64,  // 71: entpb.BatchCreateLeaveRequestsRequest.requests:type_name -> entpb.CreateLeaveRequestRequest
+	63,  // 72: entpb.BatchCreateLeaveRequestsResponse.leave_requests:type_name -> entpb.LeaveRequest
+	118, // 73: entpb.Organization.logo_url:type_name -> google.protobuf.StringValue
+	118, // 74: entpb.Organization.address:type_name -> google.protobuf.StringValue
+	118, // 75: entpb.Organization.phone:type_name -> google.protobuf.StringValue
+	118, // 76: entpb.Organization.email:type_name -> google.protobuf.StringValue
+	118, // 77: entpb.Organization.website:type_name -> google.protobuf.StringValue
+	117, // 78: entpb.Organization.created_at:type_name -> google.protobuf.Timestamp
+	117, // 79: entpb.Organization.updated_at:type_name -> google.protobuf.Timestamp
+	119, // 80: entpb.Organization.parent_id:type_name -> google.protobuf.Int64Value
+	72,  // 81: entpb.Organization.parent:type_name -> entpb.Organization
+	72,  // 82: entpb.Organization.children:type_name -> entpb.Organization
+	27,  // 83: entpb.Organization.departments:type_name -> entpb.Department
+	90,  // 84: entpb.Organization.projects:type_name -> entpb.Project
+	45,  // 85: entpb.Organization.labels:type_name -> entpb.Label
+	63,  // 86: entpb.Organization.leave_requests:type_name -> entpb.LeaveRequest
+	72,  // 87: entpb.CreateOrganizationRequest.organization:type_name -> entpb.Organization
 	13,  // 88: entpb.GetOrganizationRequest.view:type_name -> entpb.GetOrganizationRequest.View
-	73,  // 89: entpb.UpdateOrganizationRequest.organization:type_name -> entpb.Organization
+	72,  // 89: entpb.UpdateOrganizationRequest.organization:type_name -> entpb.Organization
 	14,  // 90: entpb.ListOrganizationRequest.view:type_name -> entpb.ListOrganizationRequest.View
-	73,  // 91: entpb.ListOrganizationResponse.organization_list:type_name -> entpb.Organization
-	74,  // 92: entpb.BatchCreateOrganizationsRequest.requests:type_name -> entpb.CreateOrganizationRequest
-	73,  // 93: entpb.BatchCreateOrganizationsResponse.organizations:type_name -> entpb.Organization
-	120, // 94: entpb.Position.parent_id:type_name -> google.protobuf.Int64Value
-	118, // 95: entpb.Position.created_at:type_name -> google.protobuf.Timestamp
-	118, // 96: entpb.Position.updated_at:type_name -> google.protobuf.Timestamp
-	37,  // 97: entpb.Position.employees:type_name -> entpb.Employee
-	28,  // 98: entpb.Position.departments:type_name -> entpb.Department
-	82,  // 99: entpb.Position.children:type_name -> entpb.Position
-	82,  // 100: entpb.Position.parent:type_name -> entpb.Position
-	82,  // 101: entpb.CreatePositionRequest.position:type_name -> entpb.Position
+	72,  // 91: entpb.ListOrganizationResponse.organization_list:type_name -> entpb.Organization
+	73,  // 92: entpb.BatchCreateOrganizationsRequest.requests:type_name -> entpb.CreateOrganizationRequest
+	72,  // 93: entpb.BatchCreateOrganizationsResponse.organizations:type_name -> entpb.Organization
+	119, // 94: entpb.Position.parent_id:type_name -> google.protobuf.Int64Value
+	117, // 95: entpb.Position.created_at:type_name -> google.protobuf.Timestamp
+	117, // 96: entpb.Position.updated_at:type_name -> google.protobuf.Timestamp
+	36,  // 97: entpb.Position.employees:type_name -> entpb.Employee
+	27,  // 98: entpb.Position.departments:type_name -> entpb.Department
+	81,  // 99: entpb.Position.children:type_name -> entpb.Position
+	81,  // 100: entpb.Position.parent:type_name -> entpb.Position
+	81,  // 101: entpb.CreatePositionRequest.position:type_name -> entpb.Position
 	15,  // 102: entpb.GetPositionRequest.view:type_name -> entpb.GetPositionRequest.View
-	82,  // 103: entpb.UpdatePositionRequest.position:type_name -> entpb.Position
+	81,  // 103: entpb.UpdatePositionRequest.position:type_name -> entpb.Position
 	16,  // 104: entpb.ListPositionRequest.view:type_name -> entpb.ListPositionRequest.View
-	82,  // 105: entpb.ListPositionResponse.position_list:type_name -> entpb.Position
-	83,  // 106: entpb.BatchCreatePositionsRequest.requests:type_name -> entpb.CreatePositionRequest
-	82,  // 107: entpb.BatchCreatePositionsResponse.positions:type_name -> entpb.Position
-	119, // 108: entpb.Project.description:type_name -> google.protobuf.StringValue
-	118, // 109: entpb.Project.start_at:type_name -> google.protobuf.Timestamp
-	118, // 110: entpb.Project.end_at:type_name -> google.protobuf.Timestamp
-	120, // 111: entpb.Project.process:type_name -> google.protobuf.Int64Value
+	81,  // 105: entpb.ListPositionResponse.position_list:type_name -> entpb.Position
+	82,  // 106: entpb.BatchCreatePositionsRequest.requests:type_name -> entpb.CreatePositionRequest
+	81,  // 107: entpb.BatchCreatePositionsResponse.positions:type_name -> entpb.Position
+	118, // 108: entpb.Project.description:type_name -> google.protobuf.StringValue
+	117, // 109: entpb.Project.start_at:type_name -> google.protobuf.Timestamp
+	117, // 110: entpb.Project.end_at:type_name -> google.protobuf.Timestamp
+	119, // 111: entpb.Project.process:type_name -> google.protobuf.Int64Value
 	17,  // 112: entpb.Project.status:type_name -> entpb.Project.Status
 	18,  // 113: entpb.Project.visibility:type_name -> entpb.Project.Visibility
-	118, // 114: entpb.Project.created_at:type_name -> google.protobuf.Timestamp
-	118, // 115: entpb.Project.updated_at:type_name -> google.protobuf.Timestamp
-	100, // 116: entpb.Project.tasks:type_name -> entpb.Task
-	73,  // 117: entpb.Project.organization:type_name -> entpb.Organization
-	37,  // 118: entpb.Project.creator:type_name -> entpb.Employee
-	37,  // 119: entpb.Project.updater:type_name -> entpb.Employee
-	37,  // 120: entpb.Project.members:type_name -> entpb.Employee
-	91,  // 121: entpb.CreateProjectRequest.project:type_name -> entpb.Project
+	117, // 114: entpb.Project.created_at:type_name -> google.protobuf.Timestamp
+	117, // 115: entpb.Project.updated_at:type_name -> google.protobuf.Timestamp
+	99,  // 116: entpb.Project.tasks:type_name -> entpb.Task
+	72,  // 117: entpb.Project.organization:type_name -> entpb.Organization
+	36,  // 118: entpb.Project.creator:type_name -> entpb.Employee
+	36,  // 119: entpb.Project.updater:type_name -> entpb.Employee
+	36,  // 120: entpb.Project.members:type_name -> entpb.Employee
+	90,  // 121: entpb.CreateProjectRequest.project:type_name -> entpb.Project
 	19,  // 122: entpb.GetProjectRequest.view:type_name -> entpb.GetProjectRequest.View
-	91,  // 123: entpb.UpdateProjectRequest.project:type_name -> entpb.Project
+	90,  // 123: entpb.UpdateProjectRequest.project:type_name -> entpb.Project
 	20,  // 124: entpb.ListProjectRequest.view:type_name -> entpb.ListProjectRequest.View
-	91,  // 125: entpb.ListProjectResponse.project_list:type_name -> entpb.Project
-	92,  // 126: entpb.BatchCreateProjectsRequest.requests:type_name -> entpb.CreateProjectRequest
-	91,  // 127: entpb.BatchCreateProjectsResponse.projects:type_name -> entpb.Project
-	119, // 128: entpb.Task.description:type_name -> google.protobuf.StringValue
+	90,  // 125: entpb.ListProjectResponse.project_list:type_name -> entpb.Project
+	91,  // 126: entpb.BatchCreateProjectsRequest.requests:type_name -> entpb.CreateProjectRequest
+	90,  // 127: entpb.BatchCreateProjectsResponse.projects:type_name -> entpb.Project
+	118, // 128: entpb.Task.description:type_name -> google.protobuf.StringValue
 	21,  // 129: entpb.Task.status:type_name -> entpb.Task.Status
-	118, // 130: entpb.Task.start_at:type_name -> google.protobuf.Timestamp
-	118, // 131: entpb.Task.due_date:type_name -> google.protobuf.Timestamp
-	120, // 132: entpb.Task.project_id:type_name -> google.protobuf.Int64Value
-	118, // 133: entpb.Task.created_at:type_name -> google.protobuf.Timestamp
-	118, // 134: entpb.Task.updated_at:type_name -> google.protobuf.Timestamp
+	117, // 130: entpb.Task.start_at:type_name -> google.protobuf.Timestamp
+	117, // 131: entpb.Task.due_date:type_name -> google.protobuf.Timestamp
+	119, // 132: entpb.Task.project_id:type_name -> google.protobuf.Int64Value
+	117, // 133: entpb.Task.created_at:type_name -> google.protobuf.Timestamp
+	117, // 134: entpb.Task.updated_at:type_name -> google.protobuf.Timestamp
 	22,  // 135: entpb.Task.type:type_name -> entpb.Task.Type
-	91,  // 136: entpb.Task.project:type_name -> entpb.Project
-	46,  // 137: entpb.Task.labels:type_name -> entpb.Label
-	37,  // 138: entpb.Task.assignees:type_name -> entpb.Employee
-	109, // 139: entpb.Task.reports:type_name -> entpb.TaskReport
-	100, // 140: entpb.CreateTaskRequest.task:type_name -> entpb.Task
+	90,  // 136: entpb.Task.project:type_name -> entpb.Project
+	45,  // 137: entpb.Task.labels:type_name -> entpb.Label
+	36,  // 138: entpb.Task.assignees:type_name -> entpb.Employee
+	108, // 139: entpb.Task.reports:type_name -> entpb.TaskReport
+	99,  // 140: entpb.CreateTaskRequest.task:type_name -> entpb.Task
 	23,  // 141: entpb.GetTaskRequest.view:type_name -> entpb.GetTaskRequest.View
-	100, // 142: entpb.UpdateTaskRequest.task:type_name -> entpb.Task
+	99,  // 142: entpb.UpdateTaskRequest.task:type_name -> entpb.Task
 	24,  // 143: entpb.ListTaskRequest.view:type_name -> entpb.ListTaskRequest.View
-	100, // 144: entpb.ListTaskResponse.task_list:type_name -> entpb.Task
-	101, // 145: entpb.BatchCreateTasksRequest.requests:type_name -> entpb.CreateTaskRequest
-	100, // 146: entpb.BatchCreateTasksResponse.tasks:type_name -> entpb.Task
-	119, // 147: entpb.TaskReport.content:type_name -> google.protobuf.StringValue
-	25,  // 148: entpb.TaskReport.status:type_name -> entpb.TaskReport.Status
-	118, // 149: entpb.TaskReport.reported_at:type_name -> google.protobuf.Timestamp
-	119, // 150: entpb.TaskReport.issues_encountered:type_name -> google.protobuf.StringValue
-	119, // 151: entpb.TaskReport.next_steps:type_name -> google.protobuf.StringValue
-	118, // 152: entpb.TaskReport.estimated_completion:type_name -> google.protobuf.Timestamp
-	118, // 153: entpb.TaskReport.created_at:type_name -> google.protobuf.Timestamp
-	118, // 154: entpb.TaskReport.updated_at:type_name -> google.protobuf.Timestamp
-	100, // 155: entpb.TaskReport.task:type_name -> entpb.Task
-	37,  // 156: entpb.TaskReport.reporter:type_name -> entpb.Employee
-	109, // 157: entpb.CreateTaskReportRequest.task_report:type_name -> entpb.TaskReport
-	26,  // 158: entpb.GetTaskReportRequest.view:type_name -> entpb.GetTaskReportRequest.View
-	109, // 159: entpb.UpdateTaskReportRequest.task_report:type_name -> entpb.TaskReport
-	27,  // 160: entpb.ListTaskReportRequest.view:type_name -> entpb.ListTaskReportRequest.View
-	109, // 161: entpb.ListTaskReportResponse.task_report_list:type_name -> entpb.TaskReport
-	110, // 162: entpb.BatchCreateTaskReportsRequest.requests:type_name -> entpb.CreateTaskReportRequest
-	109, // 163: entpb.BatchCreateTaskReportsResponse.task_reports:type_name -> entpb.TaskReport
-	29,  // 164: entpb.DepartmentService.Create:input_type -> entpb.CreateDepartmentRequest
-	30,  // 165: entpb.DepartmentService.Get:input_type -> entpb.GetDepartmentRequest
-	31,  // 166: entpb.DepartmentService.Update:input_type -> entpb.UpdateDepartmentRequest
-	32,  // 167: entpb.DepartmentService.Delete:input_type -> entpb.DeleteDepartmentRequest
-	33,  // 168: entpb.DepartmentService.List:input_type -> entpb.ListDepartmentRequest
-	35,  // 169: entpb.DepartmentService.BatchCreate:input_type -> entpb.BatchCreateDepartmentsRequest
-	38,  // 170: entpb.EmployeeService.Create:input_type -> entpb.CreateEmployeeRequest
-	39,  // 171: entpb.EmployeeService.Get:input_type -> entpb.GetEmployeeRequest
-	40,  // 172: entpb.EmployeeService.Update:input_type -> entpb.UpdateEmployeeRequest
-	41,  // 173: entpb.EmployeeService.Delete:input_type -> entpb.DeleteEmployeeRequest
-	42,  // 174: entpb.EmployeeService.List:input_type -> entpb.ListEmployeeRequest
-	44,  // 175: entpb.EmployeeService.BatchCreate:input_type -> entpb.BatchCreateEmployeesRequest
-	47,  // 176: entpb.LabelService.Create:input_type -> entpb.CreateLabelRequest
-	48,  // 177: entpb.LabelService.Get:input_type -> entpb.GetLabelRequest
-	49,  // 178: entpb.LabelService.Update:input_type -> entpb.UpdateLabelRequest
-	50,  // 179: entpb.LabelService.Delete:input_type -> entpb.DeleteLabelRequest
-	51,  // 180: entpb.LabelService.List:input_type -> entpb.ListLabelRequest
-	53,  // 181: entpb.LabelService.BatchCreate:input_type -> entpb.BatchCreateLabelsRequest
-	56,  // 182: entpb.LeaveApprovalService.Create:input_type -> entpb.CreateLeaveApprovalRequest
-	57,  // 183: entpb.LeaveApprovalService.Get:input_type -> entpb.GetLeaveApprovalRequest
-	58,  // 184: entpb.LeaveApprovalService.Update:input_type -> entpb.UpdateLeaveApprovalRequest
-	59,  // 185: entpb.LeaveApprovalService.Delete:input_type -> entpb.DeleteLeaveApprovalRequest
-	60,  // 186: entpb.LeaveApprovalService.List:input_type -> entpb.ListLeaveApprovalRequest
-	62,  // 187: entpb.LeaveApprovalService.BatchCreate:input_type -> entpb.BatchCreateLeaveApprovalsRequest
-	65,  // 188: entpb.LeaveRequestService.Create:input_type -> entpb.CreateLeaveRequestRequest
-	66,  // 189: entpb.LeaveRequestService.Get:input_type -> entpb.GetLeaveRequestRequest
-	67,  // 190: entpb.LeaveRequestService.Update:input_type -> entpb.UpdateLeaveRequestRequest
-	68,  // 191: entpb.LeaveRequestService.Delete:input_type -> entpb.DeleteLeaveRequestRequest
-	69,  // 192: entpb.LeaveRequestService.List:input_type -> entpb.ListLeaveRequestRequest
-	71,  // 193: entpb.LeaveRequestService.BatchCreate:input_type -> entpb.BatchCreateLeaveRequestsRequest
-	74,  // 194: entpb.OrganizationService.Create:input_type -> entpb.CreateOrganizationRequest
-	75,  // 195: entpb.OrganizationService.Get:input_type -> entpb.GetOrganizationRequest
-	76,  // 196: entpb.OrganizationService.Update:input_type -> entpb.UpdateOrganizationRequest
-	77,  // 197: entpb.OrganizationService.Delete:input_type -> entpb.DeleteOrganizationRequest
-	78,  // 198: entpb.OrganizationService.List:input_type -> entpb.ListOrganizationRequest
-	80,  // 199: entpb.OrganizationService.BatchCreate:input_type -> entpb.BatchCreateOrganizationsRequest
-	83,  // 200: entpb.PositionService.Create:input_type -> entpb.CreatePositionRequest
-	84,  // 201: entpb.PositionService.Get:input_type -> entpb.GetPositionRequest
-	85,  // 202: entpb.PositionService.Update:input_type -> entpb.UpdatePositionRequest
-	86,  // 203: entpb.PositionService.Delete:input_type -> entpb.DeletePositionRequest
-	87,  // 204: entpb.PositionService.List:input_type -> entpb.ListPositionRequest
-	89,  // 205: entpb.PositionService.BatchCreate:input_type -> entpb.BatchCreatePositionsRequest
-	92,  // 206: entpb.ProjectService.Create:input_type -> entpb.CreateProjectRequest
-	93,  // 207: entpb.ProjectService.Get:input_type -> entpb.GetProjectRequest
-	94,  // 208: entpb.ProjectService.Update:input_type -> entpb.UpdateProjectRequest
-	95,  // 209: entpb.ProjectService.Delete:input_type -> entpb.DeleteProjectRequest
-	96,  // 210: entpb.ProjectService.List:input_type -> entpb.ListProjectRequest
-	98,  // 211: entpb.ProjectService.BatchCreate:input_type -> entpb.BatchCreateProjectsRequest
-	101, // 212: entpb.TaskService.Create:input_type -> entpb.CreateTaskRequest
-	102, // 213: entpb.TaskService.Get:input_type -> entpb.GetTaskRequest
-	103, // 214: entpb.TaskService.Update:input_type -> entpb.UpdateTaskRequest
-	104, // 215: entpb.TaskService.Delete:input_type -> entpb.DeleteTaskRequest
-	105, // 216: entpb.TaskService.List:input_type -> entpb.ListTaskRequest
-	107, // 217: entpb.TaskService.BatchCreate:input_type -> entpb.BatchCreateTasksRequest
-	110, // 218: entpb.TaskReportService.Create:input_type -> entpb.CreateTaskReportRequest
-	111, // 219: entpb.TaskReportService.Get:input_type -> entpb.GetTaskReportRequest
-	112, // 220: entpb.TaskReportService.Update:input_type -> entpb.UpdateTaskReportRequest
-	113, // 221: entpb.TaskReportService.Delete:input_type -> entpb.DeleteTaskReportRequest
-	114, // 222: entpb.TaskReportService.List:input_type -> entpb.ListTaskReportRequest
-	116, // 223: entpb.TaskReportService.BatchCreate:input_type -> entpb.BatchCreateTaskReportsRequest
-	28,  // 224: entpb.DepartmentService.Create:output_type -> entpb.Department
-	28,  // 225: entpb.DepartmentService.Get:output_type -> entpb.Department
-	28,  // 226: entpb.DepartmentService.Update:output_type -> entpb.Department
-	121, // 227: entpb.DepartmentService.Delete:output_type -> google.protobuf.Empty
-	34,  // 228: entpb.DepartmentService.List:output_type -> entpb.ListDepartmentResponse
-	36,  // 229: entpb.DepartmentService.BatchCreate:output_type -> entpb.BatchCreateDepartmentsResponse
-	37,  // 230: entpb.EmployeeService.Create:output_type -> entpb.Employee
-	37,  // 231: entpb.EmployeeService.Get:output_type -> entpb.Employee
-	37,  // 232: entpb.EmployeeService.Update:output_type -> entpb.Employee
-	121, // 233: entpb.EmployeeService.Delete:output_type -> google.protobuf.Empty
-	43,  // 234: entpb.EmployeeService.List:output_type -> entpb.ListEmployeeResponse
-	45,  // 235: entpb.EmployeeService.BatchCreate:output_type -> entpb.BatchCreateEmployeesResponse
-	46,  // 236: entpb.LabelService.Create:output_type -> entpb.Label
-	46,  // 237: entpb.LabelService.Get:output_type -> entpb.Label
-	46,  // 238: entpb.LabelService.Update:output_type -> entpb.Label
-	121, // 239: entpb.LabelService.Delete:output_type -> google.protobuf.Empty
-	52,  // 240: entpb.LabelService.List:output_type -> entpb.ListLabelResponse
-	54,  // 241: entpb.LabelService.BatchCreate:output_type -> entpb.BatchCreateLabelsResponse
-	55,  // 242: entpb.LeaveApprovalService.Create:output_type -> entpb.LeaveApproval
-	55,  // 243: entpb.LeaveApprovalService.Get:output_type -> entpb.LeaveApproval
-	55,  // 244: entpb.LeaveApprovalService.Update:output_type -> entpb.LeaveApproval
-	121, // 245: entpb.LeaveApprovalService.Delete:output_type -> google.protobuf.Empty
-	61,  // 246: entpb.LeaveApprovalService.List:output_type -> entpb.ListLeaveApprovalResponse
-	63,  // 247: entpb.LeaveApprovalService.BatchCreate:output_type -> entpb.BatchCreateLeaveApprovalsResponse
-	64,  // 248: entpb.LeaveRequestService.Create:output_type -> entpb.LeaveRequest
-	64,  // 249: entpb.LeaveRequestService.Get:output_type -> entpb.LeaveRequest
-	64,  // 250: entpb.LeaveRequestService.Update:output_type -> entpb.LeaveRequest
-	121, // 251: entpb.LeaveRequestService.Delete:output_type -> google.protobuf.Empty
-	70,  // 252: entpb.LeaveRequestService.List:output_type -> entpb.ListLeaveRequestResponse
-	72,  // 253: entpb.LeaveRequestService.BatchCreate:output_type -> entpb.BatchCreateLeaveRequestsResponse
-	73,  // 254: entpb.OrganizationService.Create:output_type -> entpb.Organization
-	73,  // 255: entpb.OrganizationService.Get:output_type -> entpb.Organization
-	73,  // 256: entpb.OrganizationService.Update:output_type -> entpb.Organization
-	121, // 257: entpb.OrganizationService.Delete:output_type -> google.protobuf.Empty
-	79,  // 258: entpb.OrganizationService.List:output_type -> entpb.ListOrganizationResponse
-	81,  // 259: entpb.OrganizationService.BatchCreate:output_type -> entpb.BatchCreateOrganizationsResponse
-	82,  // 260: entpb.PositionService.Create:output_type -> entpb.Position
-	82,  // 261: entpb.PositionService.Get:output_type -> entpb.Position
-	82,  // 262: entpb.PositionService.Update:output_type -> entpb.Position
-	121, // 263: entpb.PositionService.Delete:output_type -> google.protobuf.Empty
-	88,  // 264: entpb.PositionService.List:output_type -> entpb.ListPositionResponse
-	90,  // 265: entpb.PositionService.BatchCreate:output_type -> entpb.BatchCreatePositionsResponse
-	91,  // 266: entpb.ProjectService.Create:output_type -> entpb.Project
-	91,  // 267: entpb.ProjectService.Get:output_type -> entpb.Project
-	91,  // 268: entpb.ProjectService.Update:output_type -> entpb.Project
-	121, // 269: entpb.ProjectService.Delete:output_type -> google.protobuf.Empty
-	97,  // 270: entpb.ProjectService.List:output_type -> entpb.ListProjectResponse
-	99,  // 271: entpb.ProjectService.BatchCreate:output_type -> entpb.BatchCreateProjectsResponse
-	100, // 272: entpb.TaskService.Create:output_type -> entpb.Task
-	100, // 273: entpb.TaskService.Get:output_type -> entpb.Task
-	100, // 274: entpb.TaskService.Update:output_type -> entpb.Task
-	121, // 275: entpb.TaskService.Delete:output_type -> google.protobuf.Empty
-	106, // 276: entpb.TaskService.List:output_type -> entpb.ListTaskResponse
-	108, // 277: entpb.TaskService.BatchCreate:output_type -> entpb.BatchCreateTasksResponse
-	109, // 278: entpb.TaskReportService.Create:output_type -> entpb.TaskReport
-	109, // 279: entpb.TaskReportService.Get:output_type -> entpb.TaskReport
-	109, // 280: entpb.TaskReportService.Update:output_type -> entpb.TaskReport
-	121, // 281: entpb.TaskReportService.Delete:output_type -> google.protobuf.Empty
-	115, // 282: entpb.TaskReportService.List:output_type -> entpb.ListTaskReportResponse
-	117, // 283: entpb.TaskReportService.BatchCreate:output_type -> entpb.BatchCreateTaskReportsResponse
-	224, // [224:284] is the sub-list for method output_type
-	164, // [164:224] is the sub-list for method input_type
-	164, // [164:164] is the sub-list for extension type_name
-	164, // [164:164] is the sub-list for extension extendee
-	0,   // [0:164] is the sub-list for field type_name
+	99,  // 144: entpb.ListTaskResponse.task_list:type_name -> entpb.Task
+	100, // 145: entpb.BatchCreateTasksRequest.requests:type_name -> entpb.CreateTaskRequest
+	99,  // 146: entpb.BatchCreateTasksResponse.tasks:type_name -> entpb.Task
+	118, // 147: entpb.TaskReport.content:type_name -> google.protobuf.StringValue
+	117, // 148: entpb.TaskReport.created_at:type_name -> google.protobuf.Timestamp
+	117, // 149: entpb.TaskReport.updated_at:type_name -> google.protobuf.Timestamp
+	99,  // 150: entpb.TaskReport.task:type_name -> entpb.Task
+	36,  // 151: entpb.TaskReport.reporter:type_name -> entpb.Employee
+	108, // 152: entpb.CreateTaskReportRequest.task_report:type_name -> entpb.TaskReport
+	25,  // 153: entpb.GetTaskReportRequest.view:type_name -> entpb.GetTaskReportRequest.View
+	108, // 154: entpb.UpdateTaskReportRequest.task_report:type_name -> entpb.TaskReport
+	26,  // 155: entpb.ListTaskReportRequest.view:type_name -> entpb.ListTaskReportRequest.View
+	108, // 156: entpb.ListTaskReportResponse.task_report_list:type_name -> entpb.TaskReport
+	109, // 157: entpb.BatchCreateTaskReportsRequest.requests:type_name -> entpb.CreateTaskReportRequest
+	108, // 158: entpb.BatchCreateTaskReportsResponse.task_reports:type_name -> entpb.TaskReport
+	28,  // 159: entpb.DepartmentService.Create:input_type -> entpb.CreateDepartmentRequest
+	29,  // 160: entpb.DepartmentService.Get:input_type -> entpb.GetDepartmentRequest
+	30,  // 161: entpb.DepartmentService.Update:input_type -> entpb.UpdateDepartmentRequest
+	31,  // 162: entpb.DepartmentService.Delete:input_type -> entpb.DeleteDepartmentRequest
+	32,  // 163: entpb.DepartmentService.List:input_type -> entpb.ListDepartmentRequest
+	34,  // 164: entpb.DepartmentService.BatchCreate:input_type -> entpb.BatchCreateDepartmentsRequest
+	37,  // 165: entpb.EmployeeService.Create:input_type -> entpb.CreateEmployeeRequest
+	38,  // 166: entpb.EmployeeService.Get:input_type -> entpb.GetEmployeeRequest
+	39,  // 167: entpb.EmployeeService.Update:input_type -> entpb.UpdateEmployeeRequest
+	40,  // 168: entpb.EmployeeService.Delete:input_type -> entpb.DeleteEmployeeRequest
+	41,  // 169: entpb.EmployeeService.List:input_type -> entpb.ListEmployeeRequest
+	43,  // 170: entpb.EmployeeService.BatchCreate:input_type -> entpb.BatchCreateEmployeesRequest
+	46,  // 171: entpb.LabelService.Create:input_type -> entpb.CreateLabelRequest
+	47,  // 172: entpb.LabelService.Get:input_type -> entpb.GetLabelRequest
+	48,  // 173: entpb.LabelService.Update:input_type -> entpb.UpdateLabelRequest
+	49,  // 174: entpb.LabelService.Delete:input_type -> entpb.DeleteLabelRequest
+	50,  // 175: entpb.LabelService.List:input_type -> entpb.ListLabelRequest
+	52,  // 176: entpb.LabelService.BatchCreate:input_type -> entpb.BatchCreateLabelsRequest
+	55,  // 177: entpb.LeaveApprovalService.Create:input_type -> entpb.CreateLeaveApprovalRequest
+	56,  // 178: entpb.LeaveApprovalService.Get:input_type -> entpb.GetLeaveApprovalRequest
+	57,  // 179: entpb.LeaveApprovalService.Update:input_type -> entpb.UpdateLeaveApprovalRequest
+	58,  // 180: entpb.LeaveApprovalService.Delete:input_type -> entpb.DeleteLeaveApprovalRequest
+	59,  // 181: entpb.LeaveApprovalService.List:input_type -> entpb.ListLeaveApprovalRequest
+	61,  // 182: entpb.LeaveApprovalService.BatchCreate:input_type -> entpb.BatchCreateLeaveApprovalsRequest
+	64,  // 183: entpb.LeaveRequestService.Create:input_type -> entpb.CreateLeaveRequestRequest
+	65,  // 184: entpb.LeaveRequestService.Get:input_type -> entpb.GetLeaveRequestRequest
+	66,  // 185: entpb.LeaveRequestService.Update:input_type -> entpb.UpdateLeaveRequestRequest
+	67,  // 186: entpb.LeaveRequestService.Delete:input_type -> entpb.DeleteLeaveRequestRequest
+	68,  // 187: entpb.LeaveRequestService.List:input_type -> entpb.ListLeaveRequestRequest
+	70,  // 188: entpb.LeaveRequestService.BatchCreate:input_type -> entpb.BatchCreateLeaveRequestsRequest
+	73,  // 189: entpb.OrganizationService.Create:input_type -> entpb.CreateOrganizationRequest
+	74,  // 190: entpb.OrganizationService.Get:input_type -> entpb.GetOrganizationRequest
+	75,  // 191: entpb.OrganizationService.Update:input_type -> entpb.UpdateOrganizationRequest
+	76,  // 192: entpb.OrganizationService.Delete:input_type -> entpb.DeleteOrganizationRequest
+	77,  // 193: entpb.OrganizationService.List:input_type -> entpb.ListOrganizationRequest
+	79,  // 194: entpb.OrganizationService.BatchCreate:input_type -> entpb.BatchCreateOrganizationsRequest
+	82,  // 195: entpb.PositionService.Create:input_type -> entpb.CreatePositionRequest
+	83,  // 196: entpb.PositionService.Get:input_type -> entpb.GetPositionRequest
+	84,  // 197: entpb.PositionService.Update:input_type -> entpb.UpdatePositionRequest
+	85,  // 198: entpb.PositionService.Delete:input_type -> entpb.DeletePositionRequest
+	86,  // 199: entpb.PositionService.List:input_type -> entpb.ListPositionRequest
+	88,  // 200: entpb.PositionService.BatchCreate:input_type -> entpb.BatchCreatePositionsRequest
+	91,  // 201: entpb.ProjectService.Create:input_type -> entpb.CreateProjectRequest
+	92,  // 202: entpb.ProjectService.Get:input_type -> entpb.GetProjectRequest
+	93,  // 203: entpb.ProjectService.Update:input_type -> entpb.UpdateProjectRequest
+	94,  // 204: entpb.ProjectService.Delete:input_type -> entpb.DeleteProjectRequest
+	95,  // 205: entpb.ProjectService.List:input_type -> entpb.ListProjectRequest
+	97,  // 206: entpb.ProjectService.BatchCreate:input_type -> entpb.BatchCreateProjectsRequest
+	100, // 207: entpb.TaskService.Create:input_type -> entpb.CreateTaskRequest
+	101, // 208: entpb.TaskService.Get:input_type -> entpb.GetTaskRequest
+	102, // 209: entpb.TaskService.Update:input_type -> entpb.UpdateTaskRequest
+	103, // 210: entpb.TaskService.Delete:input_type -> entpb.DeleteTaskRequest
+	104, // 211: entpb.TaskService.List:input_type -> entpb.ListTaskRequest
+	106, // 212: entpb.TaskService.BatchCreate:input_type -> entpb.BatchCreateTasksRequest
+	109, // 213: entpb.TaskReportService.Create:input_type -> entpb.CreateTaskReportRequest
+	110, // 214: entpb.TaskReportService.Get:input_type -> entpb.GetTaskReportRequest
+	111, // 215: entpb.TaskReportService.Update:input_type -> entpb.UpdateTaskReportRequest
+	112, // 216: entpb.TaskReportService.Delete:input_type -> entpb.DeleteTaskReportRequest
+	113, // 217: entpb.TaskReportService.List:input_type -> entpb.ListTaskReportRequest
+	115, // 218: entpb.TaskReportService.BatchCreate:input_type -> entpb.BatchCreateTaskReportsRequest
+	27,  // 219: entpb.DepartmentService.Create:output_type -> entpb.Department
+	27,  // 220: entpb.DepartmentService.Get:output_type -> entpb.Department
+	27,  // 221: entpb.DepartmentService.Update:output_type -> entpb.Department
+	120, // 222: entpb.DepartmentService.Delete:output_type -> google.protobuf.Empty
+	33,  // 223: entpb.DepartmentService.List:output_type -> entpb.ListDepartmentResponse
+	35,  // 224: entpb.DepartmentService.BatchCreate:output_type -> entpb.BatchCreateDepartmentsResponse
+	36,  // 225: entpb.EmployeeService.Create:output_type -> entpb.Employee
+	36,  // 226: entpb.EmployeeService.Get:output_type -> entpb.Employee
+	36,  // 227: entpb.EmployeeService.Update:output_type -> entpb.Employee
+	120, // 228: entpb.EmployeeService.Delete:output_type -> google.protobuf.Empty
+	42,  // 229: entpb.EmployeeService.List:output_type -> entpb.ListEmployeeResponse
+	44,  // 230: entpb.EmployeeService.BatchCreate:output_type -> entpb.BatchCreateEmployeesResponse
+	45,  // 231: entpb.LabelService.Create:output_type -> entpb.Label
+	45,  // 232: entpb.LabelService.Get:output_type -> entpb.Label
+	45,  // 233: entpb.LabelService.Update:output_type -> entpb.Label
+	120, // 234: entpb.LabelService.Delete:output_type -> google.protobuf.Empty
+	51,  // 235: entpb.LabelService.List:output_type -> entpb.ListLabelResponse
+	53,  // 236: entpb.LabelService.BatchCreate:output_type -> entpb.BatchCreateLabelsResponse
+	54,  // 237: entpb.LeaveApprovalService.Create:output_type -> entpb.LeaveApproval
+	54,  // 238: entpb.LeaveApprovalService.Get:output_type -> entpb.LeaveApproval
+	54,  // 239: entpb.LeaveApprovalService.Update:output_type -> entpb.LeaveApproval
+	120, // 240: entpb.LeaveApprovalService.Delete:output_type -> google.protobuf.Empty
+	60,  // 241: entpb.LeaveApprovalService.List:output_type -> entpb.ListLeaveApprovalResponse
+	62,  // 242: entpb.LeaveApprovalService.BatchCreate:output_type -> entpb.BatchCreateLeaveApprovalsResponse
+	63,  // 243: entpb.LeaveRequestService.Create:output_type -> entpb.LeaveRequest
+	63,  // 244: entpb.LeaveRequestService.Get:output_type -> entpb.LeaveRequest
+	63,  // 245: entpb.LeaveRequestService.Update:output_type -> entpb.LeaveRequest
+	120, // 246: entpb.LeaveRequestService.Delete:output_type -> google.protobuf.Empty
+	69,  // 247: entpb.LeaveRequestService.List:output_type -> entpb.ListLeaveRequestResponse
+	71,  // 248: entpb.LeaveRequestService.BatchCreate:output_type -> entpb.BatchCreateLeaveRequestsResponse
+	72,  // 249: entpb.OrganizationService.Create:output_type -> entpb.Organization
+	72,  // 250: entpb.OrganizationService.Get:output_type -> entpb.Organization
+	72,  // 251: entpb.OrganizationService.Update:output_type -> entpb.Organization
+	120, // 252: entpb.OrganizationService.Delete:output_type -> google.protobuf.Empty
+	78,  // 253: entpb.OrganizationService.List:output_type -> entpb.ListOrganizationResponse
+	80,  // 254: entpb.OrganizationService.BatchCreate:output_type -> entpb.BatchCreateOrganizationsResponse
+	81,  // 255: entpb.PositionService.Create:output_type -> entpb.Position
+	81,  // 256: entpb.PositionService.Get:output_type -> entpb.Position
+	81,  // 257: entpb.PositionService.Update:output_type -> entpb.Position
+	120, // 258: entpb.PositionService.Delete:output_type -> google.protobuf.Empty
+	87,  // 259: entpb.PositionService.List:output_type -> entpb.ListPositionResponse
+	89,  // 260: entpb.PositionService.BatchCreate:output_type -> entpb.BatchCreatePositionsResponse
+	90,  // 261: entpb.ProjectService.Create:output_type -> entpb.Project
+	90,  // 262: entpb.ProjectService.Get:output_type -> entpb.Project
+	90,  // 263: entpb.ProjectService.Update:output_type -> entpb.Project
+	120, // 264: entpb.ProjectService.Delete:output_type -> google.protobuf.Empty
+	96,  // 265: entpb.ProjectService.List:output_type -> entpb.ListProjectResponse
+	98,  // 266: entpb.ProjectService.BatchCreate:output_type -> entpb.BatchCreateProjectsResponse
+	99,  // 267: entpb.TaskService.Create:output_type -> entpb.Task
+	99,  // 268: entpb.TaskService.Get:output_type -> entpb.Task
+	99,  // 269: entpb.TaskService.Update:output_type -> entpb.Task
+	120, // 270: entpb.TaskService.Delete:output_type -> google.protobuf.Empty
+	105, // 271: entpb.TaskService.List:output_type -> entpb.ListTaskResponse
+	107, // 272: entpb.TaskService.BatchCreate:output_type -> entpb.BatchCreateTasksResponse
+	108, // 273: entpb.TaskReportService.Create:output_type -> entpb.TaskReport
+	108, // 274: entpb.TaskReportService.Get:output_type -> entpb.TaskReport
+	108, // 275: entpb.TaskReportService.Update:output_type -> entpb.TaskReport
+	120, // 276: entpb.TaskReportService.Delete:output_type -> google.protobuf.Empty
+	114, // 277: entpb.TaskReportService.List:output_type -> entpb.ListTaskReportResponse
+	116, // 278: entpb.TaskReportService.BatchCreate:output_type -> entpb.BatchCreateTaskReportsResponse
+	219, // [219:279] is the sub-list for method output_type
+	159, // [159:219] is the sub-list for method input_type
+	159, // [159:159] is the sub-list for extension type_name
+	159, // [159:159] is the sub-list for extension extendee
+	0,   // [0:159] is the sub-list for field type_name
 }
 
 func init() { file_entpb_entpb_proto_init() }
@@ -7734,7 +7601,7 @@ func file_entpb_entpb_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_entpb_entpb_proto_rawDesc), len(file_entpb_entpb_proto_rawDesc)),
-			NumEnums:      28,
+			NumEnums:      27,
 			NumMessages:   90,
 			NumExtensions: 0,
 			NumServices:   10,

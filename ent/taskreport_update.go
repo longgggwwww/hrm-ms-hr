@@ -30,20 +30,6 @@ func (tru *TaskReportUpdate) Where(ps ...predicate.TaskReport) *TaskReportUpdate
 	return tru
 }
 
-// SetTitle sets the "title" field.
-func (tru *TaskReportUpdate) SetTitle(s string) *TaskReportUpdate {
-	tru.mutation.SetTitle(s)
-	return tru
-}
-
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (tru *TaskReportUpdate) SetNillableTitle(s *string) *TaskReportUpdate {
-	if s != nil {
-		tru.SetTitle(*s)
-	}
-	return tru
-}
-
 // SetContent sets the "content" field.
 func (tru *TaskReportUpdate) SetContent(s string) *TaskReportUpdate {
 	tru.mutation.SetContent(s)
@@ -61,115 +47,6 @@ func (tru *TaskReportUpdate) SetNillableContent(s *string) *TaskReportUpdate {
 // ClearContent clears the value of the "content" field.
 func (tru *TaskReportUpdate) ClearContent() *TaskReportUpdate {
 	tru.mutation.ClearContent()
-	return tru
-}
-
-// SetStatus sets the "status" field.
-func (tru *TaskReportUpdate) SetStatus(t taskreport.Status) *TaskReportUpdate {
-	tru.mutation.SetStatus(t)
-	return tru
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (tru *TaskReportUpdate) SetNillableStatus(t *taskreport.Status) *TaskReportUpdate {
-	if t != nil {
-		tru.SetStatus(*t)
-	}
-	return tru
-}
-
-// SetProgressPercentage sets the "progress_percentage" field.
-func (tru *TaskReportUpdate) SetProgressPercentage(i int) *TaskReportUpdate {
-	tru.mutation.ResetProgressPercentage()
-	tru.mutation.SetProgressPercentage(i)
-	return tru
-}
-
-// SetNillableProgressPercentage sets the "progress_percentage" field if the given value is not nil.
-func (tru *TaskReportUpdate) SetNillableProgressPercentage(i *int) *TaskReportUpdate {
-	if i != nil {
-		tru.SetProgressPercentage(*i)
-	}
-	return tru
-}
-
-// AddProgressPercentage adds i to the "progress_percentage" field.
-func (tru *TaskReportUpdate) AddProgressPercentage(i int) *TaskReportUpdate {
-	tru.mutation.AddProgressPercentage(i)
-	return tru
-}
-
-// SetReportedAt sets the "reported_at" field.
-func (tru *TaskReportUpdate) SetReportedAt(t time.Time) *TaskReportUpdate {
-	tru.mutation.SetReportedAt(t)
-	return tru
-}
-
-// SetNillableReportedAt sets the "reported_at" field if the given value is not nil.
-func (tru *TaskReportUpdate) SetNillableReportedAt(t *time.Time) *TaskReportUpdate {
-	if t != nil {
-		tru.SetReportedAt(*t)
-	}
-	return tru
-}
-
-// SetIssuesEncountered sets the "issues_encountered" field.
-func (tru *TaskReportUpdate) SetIssuesEncountered(s string) *TaskReportUpdate {
-	tru.mutation.SetIssuesEncountered(s)
-	return tru
-}
-
-// SetNillableIssuesEncountered sets the "issues_encountered" field if the given value is not nil.
-func (tru *TaskReportUpdate) SetNillableIssuesEncountered(s *string) *TaskReportUpdate {
-	if s != nil {
-		tru.SetIssuesEncountered(*s)
-	}
-	return tru
-}
-
-// ClearIssuesEncountered clears the value of the "issues_encountered" field.
-func (tru *TaskReportUpdate) ClearIssuesEncountered() *TaskReportUpdate {
-	tru.mutation.ClearIssuesEncountered()
-	return tru
-}
-
-// SetNextSteps sets the "next_steps" field.
-func (tru *TaskReportUpdate) SetNextSteps(s string) *TaskReportUpdate {
-	tru.mutation.SetNextSteps(s)
-	return tru
-}
-
-// SetNillableNextSteps sets the "next_steps" field if the given value is not nil.
-func (tru *TaskReportUpdate) SetNillableNextSteps(s *string) *TaskReportUpdate {
-	if s != nil {
-		tru.SetNextSteps(*s)
-	}
-	return tru
-}
-
-// ClearNextSteps clears the value of the "next_steps" field.
-func (tru *TaskReportUpdate) ClearNextSteps() *TaskReportUpdate {
-	tru.mutation.ClearNextSteps()
-	return tru
-}
-
-// SetEstimatedCompletion sets the "estimated_completion" field.
-func (tru *TaskReportUpdate) SetEstimatedCompletion(t time.Time) *TaskReportUpdate {
-	tru.mutation.SetEstimatedCompletion(t)
-	return tru
-}
-
-// SetNillableEstimatedCompletion sets the "estimated_completion" field if the given value is not nil.
-func (tru *TaskReportUpdate) SetNillableEstimatedCompletion(t *time.Time) *TaskReportUpdate {
-	if t != nil {
-		tru.SetEstimatedCompletion(*t)
-	}
-	return tru
-}
-
-// ClearEstimatedCompletion clears the value of the "estimated_completion" field.
-func (tru *TaskReportUpdate) ClearEstimatedCompletion() *TaskReportUpdate {
-	tru.mutation.ClearEstimatedCompletion()
 	return tru
 }
 
@@ -272,16 +149,6 @@ func (tru *TaskReportUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tru *TaskReportUpdate) check() error {
-	if v, ok := tru.mutation.Status(); ok {
-		if err := taskreport.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "TaskReport.status": %w`, err)}
-		}
-	}
-	if v, ok := tru.mutation.ProgressPercentage(); ok {
-		if err := taskreport.ProgressPercentageValidator(v); err != nil {
-			return &ValidationError{Name: "progress_percentage", err: fmt.Errorf(`ent: validator failed for field "TaskReport.progress_percentage": %w`, err)}
-		}
-	}
 	if tru.mutation.TaskCleared() && len(tru.mutation.TaskIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "TaskReport.task"`)
 	}
@@ -303,44 +170,11 @@ func (tru *TaskReportUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := tru.mutation.Title(); ok {
-		_spec.SetField(taskreport.FieldTitle, field.TypeString, value)
-	}
 	if value, ok := tru.mutation.Content(); ok {
 		_spec.SetField(taskreport.FieldContent, field.TypeString, value)
 	}
 	if tru.mutation.ContentCleared() {
 		_spec.ClearField(taskreport.FieldContent, field.TypeString)
-	}
-	if value, ok := tru.mutation.Status(); ok {
-		_spec.SetField(taskreport.FieldStatus, field.TypeEnum, value)
-	}
-	if value, ok := tru.mutation.ProgressPercentage(); ok {
-		_spec.SetField(taskreport.FieldProgressPercentage, field.TypeInt, value)
-	}
-	if value, ok := tru.mutation.AddedProgressPercentage(); ok {
-		_spec.AddField(taskreport.FieldProgressPercentage, field.TypeInt, value)
-	}
-	if value, ok := tru.mutation.ReportedAt(); ok {
-		_spec.SetField(taskreport.FieldReportedAt, field.TypeTime, value)
-	}
-	if value, ok := tru.mutation.IssuesEncountered(); ok {
-		_spec.SetField(taskreport.FieldIssuesEncountered, field.TypeString, value)
-	}
-	if tru.mutation.IssuesEncounteredCleared() {
-		_spec.ClearField(taskreport.FieldIssuesEncountered, field.TypeString)
-	}
-	if value, ok := tru.mutation.NextSteps(); ok {
-		_spec.SetField(taskreport.FieldNextSteps, field.TypeString, value)
-	}
-	if tru.mutation.NextStepsCleared() {
-		_spec.ClearField(taskreport.FieldNextSteps, field.TypeString)
-	}
-	if value, ok := tru.mutation.EstimatedCompletion(); ok {
-		_spec.SetField(taskreport.FieldEstimatedCompletion, field.TypeTime, value)
-	}
-	if tru.mutation.EstimatedCompletionCleared() {
-		_spec.ClearField(taskreport.FieldEstimatedCompletion, field.TypeTime)
 	}
 	if value, ok := tru.mutation.UpdatedAt(); ok {
 		_spec.SetField(taskreport.FieldUpdatedAt, field.TypeTime, value)
@@ -423,20 +257,6 @@ type TaskReportUpdateOne struct {
 	mutation *TaskReportMutation
 }
 
-// SetTitle sets the "title" field.
-func (truo *TaskReportUpdateOne) SetTitle(s string) *TaskReportUpdateOne {
-	truo.mutation.SetTitle(s)
-	return truo
-}
-
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (truo *TaskReportUpdateOne) SetNillableTitle(s *string) *TaskReportUpdateOne {
-	if s != nil {
-		truo.SetTitle(*s)
-	}
-	return truo
-}
-
 // SetContent sets the "content" field.
 func (truo *TaskReportUpdateOne) SetContent(s string) *TaskReportUpdateOne {
 	truo.mutation.SetContent(s)
@@ -454,115 +274,6 @@ func (truo *TaskReportUpdateOne) SetNillableContent(s *string) *TaskReportUpdate
 // ClearContent clears the value of the "content" field.
 func (truo *TaskReportUpdateOne) ClearContent() *TaskReportUpdateOne {
 	truo.mutation.ClearContent()
-	return truo
-}
-
-// SetStatus sets the "status" field.
-func (truo *TaskReportUpdateOne) SetStatus(t taskreport.Status) *TaskReportUpdateOne {
-	truo.mutation.SetStatus(t)
-	return truo
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (truo *TaskReportUpdateOne) SetNillableStatus(t *taskreport.Status) *TaskReportUpdateOne {
-	if t != nil {
-		truo.SetStatus(*t)
-	}
-	return truo
-}
-
-// SetProgressPercentage sets the "progress_percentage" field.
-func (truo *TaskReportUpdateOne) SetProgressPercentage(i int) *TaskReportUpdateOne {
-	truo.mutation.ResetProgressPercentage()
-	truo.mutation.SetProgressPercentage(i)
-	return truo
-}
-
-// SetNillableProgressPercentage sets the "progress_percentage" field if the given value is not nil.
-func (truo *TaskReportUpdateOne) SetNillableProgressPercentage(i *int) *TaskReportUpdateOne {
-	if i != nil {
-		truo.SetProgressPercentage(*i)
-	}
-	return truo
-}
-
-// AddProgressPercentage adds i to the "progress_percentage" field.
-func (truo *TaskReportUpdateOne) AddProgressPercentage(i int) *TaskReportUpdateOne {
-	truo.mutation.AddProgressPercentage(i)
-	return truo
-}
-
-// SetReportedAt sets the "reported_at" field.
-func (truo *TaskReportUpdateOne) SetReportedAt(t time.Time) *TaskReportUpdateOne {
-	truo.mutation.SetReportedAt(t)
-	return truo
-}
-
-// SetNillableReportedAt sets the "reported_at" field if the given value is not nil.
-func (truo *TaskReportUpdateOne) SetNillableReportedAt(t *time.Time) *TaskReportUpdateOne {
-	if t != nil {
-		truo.SetReportedAt(*t)
-	}
-	return truo
-}
-
-// SetIssuesEncountered sets the "issues_encountered" field.
-func (truo *TaskReportUpdateOne) SetIssuesEncountered(s string) *TaskReportUpdateOne {
-	truo.mutation.SetIssuesEncountered(s)
-	return truo
-}
-
-// SetNillableIssuesEncountered sets the "issues_encountered" field if the given value is not nil.
-func (truo *TaskReportUpdateOne) SetNillableIssuesEncountered(s *string) *TaskReportUpdateOne {
-	if s != nil {
-		truo.SetIssuesEncountered(*s)
-	}
-	return truo
-}
-
-// ClearIssuesEncountered clears the value of the "issues_encountered" field.
-func (truo *TaskReportUpdateOne) ClearIssuesEncountered() *TaskReportUpdateOne {
-	truo.mutation.ClearIssuesEncountered()
-	return truo
-}
-
-// SetNextSteps sets the "next_steps" field.
-func (truo *TaskReportUpdateOne) SetNextSteps(s string) *TaskReportUpdateOne {
-	truo.mutation.SetNextSteps(s)
-	return truo
-}
-
-// SetNillableNextSteps sets the "next_steps" field if the given value is not nil.
-func (truo *TaskReportUpdateOne) SetNillableNextSteps(s *string) *TaskReportUpdateOne {
-	if s != nil {
-		truo.SetNextSteps(*s)
-	}
-	return truo
-}
-
-// ClearNextSteps clears the value of the "next_steps" field.
-func (truo *TaskReportUpdateOne) ClearNextSteps() *TaskReportUpdateOne {
-	truo.mutation.ClearNextSteps()
-	return truo
-}
-
-// SetEstimatedCompletion sets the "estimated_completion" field.
-func (truo *TaskReportUpdateOne) SetEstimatedCompletion(t time.Time) *TaskReportUpdateOne {
-	truo.mutation.SetEstimatedCompletion(t)
-	return truo
-}
-
-// SetNillableEstimatedCompletion sets the "estimated_completion" field if the given value is not nil.
-func (truo *TaskReportUpdateOne) SetNillableEstimatedCompletion(t *time.Time) *TaskReportUpdateOne {
-	if t != nil {
-		truo.SetEstimatedCompletion(*t)
-	}
-	return truo
-}
-
-// ClearEstimatedCompletion clears the value of the "estimated_completion" field.
-func (truo *TaskReportUpdateOne) ClearEstimatedCompletion() *TaskReportUpdateOne {
-	truo.mutation.ClearEstimatedCompletion()
 	return truo
 }
 
@@ -678,16 +389,6 @@ func (truo *TaskReportUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (truo *TaskReportUpdateOne) check() error {
-	if v, ok := truo.mutation.Status(); ok {
-		if err := taskreport.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "TaskReport.status": %w`, err)}
-		}
-	}
-	if v, ok := truo.mutation.ProgressPercentage(); ok {
-		if err := taskreport.ProgressPercentageValidator(v); err != nil {
-			return &ValidationError{Name: "progress_percentage", err: fmt.Errorf(`ent: validator failed for field "TaskReport.progress_percentage": %w`, err)}
-		}
-	}
 	if truo.mutation.TaskCleared() && len(truo.mutation.TaskIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "TaskReport.task"`)
 	}
@@ -726,44 +427,11 @@ func (truo *TaskReportUpdateOne) sqlSave(ctx context.Context) (_node *TaskReport
 			}
 		}
 	}
-	if value, ok := truo.mutation.Title(); ok {
-		_spec.SetField(taskreport.FieldTitle, field.TypeString, value)
-	}
 	if value, ok := truo.mutation.Content(); ok {
 		_spec.SetField(taskreport.FieldContent, field.TypeString, value)
 	}
 	if truo.mutation.ContentCleared() {
 		_spec.ClearField(taskreport.FieldContent, field.TypeString)
-	}
-	if value, ok := truo.mutation.Status(); ok {
-		_spec.SetField(taskreport.FieldStatus, field.TypeEnum, value)
-	}
-	if value, ok := truo.mutation.ProgressPercentage(); ok {
-		_spec.SetField(taskreport.FieldProgressPercentage, field.TypeInt, value)
-	}
-	if value, ok := truo.mutation.AddedProgressPercentage(); ok {
-		_spec.AddField(taskreport.FieldProgressPercentage, field.TypeInt, value)
-	}
-	if value, ok := truo.mutation.ReportedAt(); ok {
-		_spec.SetField(taskreport.FieldReportedAt, field.TypeTime, value)
-	}
-	if value, ok := truo.mutation.IssuesEncountered(); ok {
-		_spec.SetField(taskreport.FieldIssuesEncountered, field.TypeString, value)
-	}
-	if truo.mutation.IssuesEncounteredCleared() {
-		_spec.ClearField(taskreport.FieldIssuesEncountered, field.TypeString)
-	}
-	if value, ok := truo.mutation.NextSteps(); ok {
-		_spec.SetField(taskreport.FieldNextSteps, field.TypeString, value)
-	}
-	if truo.mutation.NextStepsCleared() {
-		_spec.ClearField(taskreport.FieldNextSteps, field.TypeString)
-	}
-	if value, ok := truo.mutation.EstimatedCompletion(); ok {
-		_spec.SetField(taskreport.FieldEstimatedCompletion, field.TypeTime, value)
-	}
-	if truo.mutation.EstimatedCompletionCleared() {
-		_spec.ClearField(taskreport.FieldEstimatedCompletion, field.TypeTime)
 	}
 	if value, ok := truo.mutation.UpdatedAt(); ok {
 		_spec.SetField(taskreport.FieldUpdatedAt, field.TypeTime, value)

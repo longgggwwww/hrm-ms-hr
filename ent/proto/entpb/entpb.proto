@@ -836,45 +836,19 @@ message BatchCreateTasksResponse {
 message TaskReport {
   int64 id = 1;
 
-  string title = 2;
-
   google.protobuf.StringValue content = 3;
 
-  Status status = 4;
+  int64 task_id = 4;
 
-  int64 progress_percentage = 5;
+  int64 reporter_id = 5;
 
-  google.protobuf.Timestamp reported_at = 6;
+  google.protobuf.Timestamp created_at = 6;
 
-  google.protobuf.StringValue issues_encountered = 7;
+  google.protobuf.Timestamp updated_at = 7;
 
-  google.protobuf.StringValue next_steps = 8;
+  Task task = 8;
 
-  google.protobuf.Timestamp estimated_completion = 9;
-
-  int64 task_id = 10;
-
-  int64 reporter_id = 11;
-
-  google.protobuf.Timestamp created_at = 12;
-
-  google.protobuf.Timestamp updated_at = 13;
-
-  Task task = 14;
-
-  Employee reporter = 15;
-
-  enum Status {
-    STATUS_RECEIVED = 0;
-
-    STATUS_NOT_RECEIVED = 1;
-
-    STATUS_IN_PROGRESS = 2;
-
-    STATUS_COMPLETED = 3;
-
-    STATUS_CANCELLED = 4;
-  }
+  Employee reporter = 9;
 }
 
 message CreateTaskReportRequest {

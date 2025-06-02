@@ -3,7 +3,6 @@
 package taskreport
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -15,22 +14,8 @@ const (
 	Label = "task_report"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
-	// FieldProgressPercentage holds the string denoting the progress_percentage field in the database.
-	FieldProgressPercentage = "progress_percentage"
-	// FieldReportedAt holds the string denoting the reported_at field in the database.
-	FieldReportedAt = "reported_at"
-	// FieldIssuesEncountered holds the string denoting the issues_encountered field in the database.
-	FieldIssuesEncountered = "issues_encountered"
-	// FieldNextSteps holds the string denoting the next_steps field in the database.
-	FieldNextSteps = "next_steps"
-	// FieldEstimatedCompletion holds the string denoting the estimated_completion field in the database.
-	FieldEstimatedCompletion = "estimated_completion"
 	// FieldTaskID holds the string denoting the task_id field in the database.
 	FieldTaskID = "task_id"
 	// FieldReporterID holds the string denoting the reporter_id field in the database.
@@ -64,14 +49,7 @@ const (
 // Columns holds all SQL columns for taskreport fields.
 var Columns = []string{
 	FieldID,
-	FieldTitle,
 	FieldContent,
-	FieldStatus,
-	FieldProgressPercentage,
-	FieldReportedAt,
-	FieldIssuesEncountered,
-	FieldNextSteps,
-	FieldEstimatedCompletion,
 	FieldTaskID,
 	FieldReporterID,
 	FieldCreatedAt,
@@ -89,12 +67,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultProgressPercentage holds the default value on creation for the "progress_percentage" field.
-	DefaultProgressPercentage int
-	// ProgressPercentageValidator is a validator for the "progress_percentage" field. It is called by the builders before save.
-	ProgressPercentageValidator func(int) error
-	// DefaultReportedAt holds the default value on creation for the "reported_at" field.
-	DefaultReportedAt func() time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -102,35 +74,6 @@ var (
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
 )
-
-// Status defines the type for the "status" enum field.
-type Status string
-
-// StatusReceived is the default value of the Status enum.
-const DefaultStatus = StatusReceived
-
-// Status values.
-const (
-	StatusReceived    Status = "received"
-	StatusNotReceived Status = "not_received"
-	StatusInProgress  Status = "in_progress"
-	StatusCompleted   Status = "completed"
-	StatusCancelled   Status = "cancelled"
-)
-
-func (s Status) String() string {
-	return string(s)
-}
-
-// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s Status) error {
-	switch s {
-	case StatusReceived, StatusNotReceived, StatusInProgress, StatusCompleted, StatusCancelled:
-		return nil
-	default:
-		return fmt.Errorf("taskreport: invalid enum value for status field: %q", s)
-	}
-}
 
 // OrderOption defines the ordering options for the TaskReport queries.
 type OrderOption func(*sql.Selector)
@@ -140,44 +83,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByTitle orders the results by the title field.
-func ByTitle(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTitle, opts...).ToFunc()
-}
-
 // ByContent orders the results by the content field.
 func ByContent(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldContent, opts...).ToFunc()
-}
-
-// ByStatus orders the results by the status field.
-func ByStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStatus, opts...).ToFunc()
-}
-
-// ByProgressPercentage orders the results by the progress_percentage field.
-func ByProgressPercentage(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProgressPercentage, opts...).ToFunc()
-}
-
-// ByReportedAt orders the results by the reported_at field.
-func ByReportedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldReportedAt, opts...).ToFunc()
-}
-
-// ByIssuesEncountered orders the results by the issues_encountered field.
-func ByIssuesEncountered(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIssuesEncountered, opts...).ToFunc()
-}
-
-// ByNextSteps orders the results by the next_steps field.
-func ByNextSteps(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNextSteps, opts...).ToFunc()
-}
-
-// ByEstimatedCompletion orders the results by the estimated_completion field.
-func ByEstimatedCompletion(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEstimatedCompletion, opts...).ToFunc()
 }
 
 // ByTaskID orders the results by the task_id field.

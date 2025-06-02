@@ -17,9 +17,7 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
-	regexp "regexp"
 	strconv "strconv"
-	strings "strings"
 )
 
 // TaskReportService implements TaskReportServiceServer
@@ -35,33 +33,6 @@ func NewTaskReportService(client *ent.Client) *TaskReportService {
 	}
 }
 
-var protoIdentNormalizeRegexpTaskReport_Status = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
-
-func protoIdentNormalizeTaskReport_Status(e string) string {
-	return protoIdentNormalizeRegexpTaskReport_Status.ReplaceAllString(e, "_")
-}
-
-func toProtoTaskReport_Status(e taskreport.Status) TaskReport_Status {
-	if v, ok := TaskReport_Status_value[strings.ToUpper("STATUS_"+protoIdentNormalizeTaskReport_Status(string(e)))]; ok {
-		return TaskReport_Status(v)
-	}
-	return TaskReport_Status(0)
-}
-
-func toEntTaskReport_Status(e TaskReport_Status) taskreport.Status {
-	if v, ok := TaskReport_Status_name[int32(e)]; ok {
-		entVal := map[string]string{
-			"STATUS_RECEIVED":     "received",
-			"STATUS_NOT_RECEIVED": "not_received",
-			"STATUS_IN_PROGRESS":  "in_progress",
-			"STATUS_COMPLETED":    "completed",
-			"STATUS_CANCELLED":    "cancelled",
-		}[v]
-		return taskreport.Status(entVal)
-	}
-	return ""
-}
-
 // toProtoTaskReport transforms the ent type to the pb type
 func toProtoTaskReport(e *ent.TaskReport) (*TaskReport, error) {
 	v := &TaskReport{}
@@ -69,26 +40,12 @@ func toProtoTaskReport(e *ent.TaskReport) (*TaskReport, error) {
 	v.Content = content
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	estimated_completion := timestamppb.New(e.EstimatedCompletion)
-	v.EstimatedCompletion = estimated_completion
 	id := int64(e.ID)
 	v.Id = id
-	issues_encountered := wrapperspb.String(e.IssuesEncountered)
-	v.IssuesEncountered = issues_encountered
-	next_steps := wrapperspb.String(e.NextSteps)
-	v.NextSteps = next_steps
-	progress_percentage := int64(e.ProgressPercentage)
-	v.ProgressPercentage = progress_percentage
-	reported_at := timestamppb.New(e.ReportedAt)
-	v.ReportedAt = reported_at
 	reporter := int64(e.ReporterID)
 	v.ReporterId = reporter
-	status := toProtoTaskReport_Status(e.Status)
-	v.Status = status
 	task := int64(e.TaskID)
 	v.TaskId = task
-	title := e.Title
-	v.Title = title
 	updated_at := timestamppb.New(e.UpdatedAt)
 	v.UpdatedAt = updated_at
 	if edg := e.Edges.Reporter; edg != nil {
@@ -187,30 +144,10 @@ func (svc *TaskReportService) Update(ctx context.Context, req *UpdateTaskReportR
 		taskreportContent := taskreport.GetContent().GetValue()
 		m.SetContent(taskreportContent)
 	}
-	if taskreport.GetEstimatedCompletion() != nil {
-		taskreportEstimatedCompletion := runtime.ExtractTime(taskreport.GetEstimatedCompletion())
-		m.SetEstimatedCompletion(taskreportEstimatedCompletion)
-	}
-	if taskreport.GetIssuesEncountered() != nil {
-		taskreportIssuesEncountered := taskreport.GetIssuesEncountered().GetValue()
-		m.SetIssuesEncountered(taskreportIssuesEncountered)
-	}
-	if taskreport.GetNextSteps() != nil {
-		taskreportNextSteps := taskreport.GetNextSteps().GetValue()
-		m.SetNextSteps(taskreportNextSteps)
-	}
-	taskreportProgressPercentage := int(taskreport.GetProgressPercentage())
-	m.SetProgressPercentage(taskreportProgressPercentage)
-	taskreportReportedAt := runtime.ExtractTime(taskreport.GetReportedAt())
-	m.SetReportedAt(taskreportReportedAt)
 	taskreportReporterID := int(taskreport.GetReporterId())
 	m.SetReporterID(taskreportReporterID)
-	taskreportStatus := toEntTaskReport_Status(taskreport.GetStatus())
-	m.SetStatus(taskreportStatus)
 	taskreportTaskID := int(taskreport.GetTaskId())
 	m.SetTaskID(taskreportTaskID)
-	taskreportTitle := taskreport.GetTitle()
-	m.SetTitle(taskreportTitle)
 	taskreportUpdatedAt := runtime.ExtractTime(taskreport.GetUpdatedAt())
 	m.SetUpdatedAt(taskreportUpdatedAt)
 	if taskreport.GetReporter() != nil {
@@ -364,30 +301,10 @@ func (svc *TaskReportService) createBuilder(taskreport *TaskReport) (*ent.TaskRe
 	}
 	taskreportCreatedAt := runtime.ExtractTime(taskreport.GetCreatedAt())
 	m.SetCreatedAt(taskreportCreatedAt)
-	if taskreport.GetEstimatedCompletion() != nil {
-		taskreportEstimatedCompletion := runtime.ExtractTime(taskreport.GetEstimatedCompletion())
-		m.SetEstimatedCompletion(taskreportEstimatedCompletion)
-	}
-	if taskreport.GetIssuesEncountered() != nil {
-		taskreportIssuesEncountered := taskreport.GetIssuesEncountered().GetValue()
-		m.SetIssuesEncountered(taskreportIssuesEncountered)
-	}
-	if taskreport.GetNextSteps() != nil {
-		taskreportNextSteps := taskreport.GetNextSteps().GetValue()
-		m.SetNextSteps(taskreportNextSteps)
-	}
-	taskreportProgressPercentage := int(taskreport.GetProgressPercentage())
-	m.SetProgressPercentage(taskreportProgressPercentage)
-	taskreportReportedAt := runtime.ExtractTime(taskreport.GetReportedAt())
-	m.SetReportedAt(taskreportReportedAt)
 	taskreportReporterID := int(taskreport.GetReporterId())
 	m.SetReporterID(taskreportReporterID)
-	taskreportStatus := toEntTaskReport_Status(taskreport.GetStatus())
-	m.SetStatus(taskreportStatus)
 	taskreportTaskID := int(taskreport.GetTaskId())
 	m.SetTaskID(taskreportTaskID)
-	taskreportTitle := taskreport.GetTitle()
-	m.SetTitle(taskreportTitle)
 	taskreportUpdatedAt := runtime.ExtractTime(taskreport.GetUpdatedAt())
 	m.SetUpdatedAt(taskreportUpdatedAt)
 	if taskreport.GetReporter() != nil {
