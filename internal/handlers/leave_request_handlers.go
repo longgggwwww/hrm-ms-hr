@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/huynhthanhthao/hrm-ms-shared/middleware"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
@@ -24,16 +24,65 @@ func NewLeaveRequestHandler(client *ent.Client) *LeaveRequestHandler {
 }
 
 func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
-	log.Println("vlxx")
-	leaveRequests := r.Group("leave-requests")
+	leaveRequests := r.Group("/leave-requests")
 	{
-		leaveRequests.GET("/admin", h.ListAdmin)
-		leaveRequests.GET("/employee", h.ListEmployee)
-		leaveRequests.GET(":id/admin", h.GetAdmin)
-		leaveRequests.GET(":id/employee", h.GetEmployee)
-		leaveRequests.POST("", h.Create)
-		leaveRequests.PATCH(":id/approve", h.Approve)
-		leaveRequests.PATCH(":id/reject", h.Reject)
+		// Admin routes
+		leaveRequests.GET("/admin", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"leave_request:list:admin"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.ListAdmin(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+
+		leaveRequests.GET(":id/admin", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"leave_request:read:admin"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.GetAdmin(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+
+		leaveRequests.PATCH(":id/approve", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"leave_request:approve:admin"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.Approve(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+
+		leaveRequests.PATCH(":id/reject", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"leave_request:reject:admin"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.Reject(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+
+		// Employee routes
+		leaveRequests.GET("/employee", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"leave_request:list:employee"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.ListEmployee(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+
+		leaveRequests.GET(":id/employee", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"leave_request:read:employee"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.GetEmployee(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+
+		leaveRequests.POST("", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"leave_request:post:employee"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.Create(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
 	}
 }
 
