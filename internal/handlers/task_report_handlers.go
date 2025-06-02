@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/huynhthanhthao/hrm-ms-shared/middleware"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
@@ -20,8 +21,22 @@ func NewTaskReportHandler(client *ent.Client) *TaskReportHandler {
 
 func (h *TaskReportHandler) RegisterRoutes(r *gin.Engine) {
 	taskReports := r.Group("/task-reports")
-	taskReports.POST("", h.Create)
-	taskReports.PATCH(":id", h.Update)
+
+	taskReports.POST("", func(c *gin.Context) {
+		middleware.AuthMiddleware([]string{"task_report:create"},
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				c.Request = r
+				h.Create(c)
+			})).ServeHTTP(c.Writer, c.Request)
+	})
+
+	taskReports.PATCH(":id", func(c *gin.Context) {
+		middleware.AuthMiddleware([]string{"task_report:update"},
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				c.Request = r
+				h.Update(c)
+			})).ServeHTTP(c.Writer, c.Request)
+	})
 }
 
 func (h *TaskReportHandler) Create(c *gin.Context) {
