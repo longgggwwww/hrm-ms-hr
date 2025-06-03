@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -44,7 +45,7 @@ func (h *ProjectHandler) RegisterRoutes(r *gin.Engine) {
 func (h *ProjectHandler) Create(c *gin.Context) {
 	var req struct {
 		Name        string  `json:"name" binding:"required"`
-		Code        string  `json:"code" binding:"required"`
+		Code        *string `json:"code"` // Made optional for auto-generation
 		Description *string `json:"description"`
 		StartAt     *string `json:"start_at"`
 		EndAt       *string `json:"end_at"`
@@ -104,6 +105,73 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		visibilityVal = project.VisibilityPrivate
 	}
 
+	// Auto-generate code if not provided
+	var projectCode string
+	if req.Code != nil && *req.Code != "" {
+		projectCode = *req.Code
+
+		// Check if code already exists in the organization
+		existingProject, err := h.Client.Project.Query().
+			Where(project.CodeEQ(projectCode)).
+			Where(project.OrgIDEQ(orgID)).
+			First(c.Request.Context())
+		if err == nil && existingProject != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Project code already exists in your organization",
+			})
+			return
+		}
+		if err != nil && !ent.IsNotFound(err) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate project code"})
+			return
+		}
+	} else {
+		// Auto-generate code: ORG{orgId}-PROJ-{sequence}
+		// Find the highest sequence number for this organization
+		latestProjects, err := h.Client.Project.Query().
+			Where(project.OrgIDEQ(orgID)).
+			Where(project.CodeContains("ORG" + strconv.Itoa(orgID) + "-PROJ-")).
+			Order(project.ByCreatedAt(sql.OrderDesc())).
+			Limit(1).
+			All(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate project code"})
+			return
+		}
+
+		sequence := 1
+		if len(latestProjects) > 0 {
+			// Extract sequence number from the latest project code
+			latestCode := latestProjects[0].Code
+			prefix := "ORG" + strconv.Itoa(orgID) + "-PROJ-"
+			if len(latestCode) > len(prefix) {
+				sequenceStr := latestCode[len(prefix):]
+				if seq, err := strconv.Atoi(sequenceStr); err == nil {
+					sequence = seq + 1
+				}
+			}
+		}
+
+		projectCode = "ORG" + strconv.Itoa(orgID) + "-PROJ-" + fmt.Sprintf("%03d", sequence)
+
+		// Double-check uniqueness (in case of concurrent requests)
+		for {
+			exists, err := h.Client.Project.Query().
+				Where(project.CodeEQ(projectCode)).
+				Where(project.OrgIDEQ(orgID)).
+				Exist(c.Request.Context())
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate generated project code"})
+				return
+			}
+			if !exists {
+				break
+			}
+			sequence++
+			projectCode = "ORG" + strconv.Itoa(orgID) + "-PROJ-" + fmt.Sprintf("%03d", sequence)
+		}
+	}
+
 	// Prepare all member IDs (current employee + provided member IDs)
 	allMemberIDs := []int{}
 
@@ -144,7 +212,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 
 	projectCreate := h.Client.Project.Create().
 		SetName(req.Name).
-		SetCode(req.Code).
+		SetCode(projectCode).
 		SetNillableDescription(req.Description).
 		SetNillableStartAt(startAtPtr).
 		SetNillableEndAt(endAtPtr).
@@ -598,6 +666,30 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		projectUpdate.SetName(*req.Name)
 	}
 	if req.Code != nil {
+		// Check if the new code already exists in the organization (excluding current project)
+		ids, err := utils.ExtractIDsFromToken(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		orgID := ids["org_id"]
+
+		existingProject, err := h.Client.Project.Query().
+			Where(project.CodeEQ(*req.Code)).
+			Where(project.OrgIDEQ(orgID)).
+			Where(project.IDNEQ(id)). // Exclude current project
+			First(c.Request.Context())
+		if err == nil && existingProject != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Project code already exists in your organization",
+			})
+			return
+		}
+		if err != nil && !ent.IsNotFound(err) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate project code"})
+			return
+		}
+
 		projectUpdate.SetCode(*req.Code)
 	}
 	if req.Description != nil {

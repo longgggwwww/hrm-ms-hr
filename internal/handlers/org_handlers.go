@@ -3,14 +3,13 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	userpb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
+	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type OrgHandler struct {
@@ -226,44 +225,24 @@ func (h *OrgHandler) DeleteBatch(c *gin.Context) {
 }
 
 func (h *OrgHandler) GetOrgFromToken(c *gin.Context) {
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-		return
-	}
-
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-		return
-	}
-	tokenString := parts[1]
-
-	token, _, err := jwt.NewParser().ParseUnverified(tokenString, jwt.MapClaims{})
+	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
-		return
-	}
-
-	orgIDStr, ok := claims["org_id"].(string)
+	orgID, ok := ids["org_id"]
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "org_id not found in token"})
 		return
 	}
 
-	orgID, err := strconv.Atoi(orgIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid org_id in token"})
-		return
-	}
-
-	org, err := h.Client.Organization.Get(c.Request.Context(), orgID)
+	org, err := h.Client.Organization.Query().
+		Where(organization.ID(orgID)).
+		WithParent().
+		WithChildren().
+		WithDepartments().
+		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Org not found"})
 		return
