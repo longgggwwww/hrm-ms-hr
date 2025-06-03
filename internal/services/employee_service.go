@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,30 +11,12 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
 )
 
 type EmployeeService struct {
 	Client     *ent.Client
 	UserClient userPb.UserServiceClient
-}
-
-type EmployeeCreateInput struct {
-	Code       string   `json:"code" binding:"required"`
-	FirstName  string   `json:"first_name" binding:"required"`
-	LastName   string   `json:"last_name" binding:"required"`
-	Gender     string   `json:"gender"`
-	Phone      string   `json:"phone" binding:"required"`
-	Email      string   `json:"email" binding:"required,email"`
-	Address    string   `json:"address"`
-	WardCode   int      `json:"ward_code"`
-	AvatarURL  string   `json:"avatar_url"`
-	PositionID int      `json:"position_id" binding:"required"`
-	JoiningAt  string   `json:"joining_at"`
-	Status     string   `json:"status" binding:"required"`
-	Username   string   `json:"username" binding:"required"`
-	Password   string   `json:"password" binding:"required"`
-	RoleIds    []string `json:"role_ids"`
-	PermIds    []string `json:"perm_ids"`
 }
 
 // EmployeeListQuery gom các tham số truy vấn employee list
@@ -54,7 +35,7 @@ func NewEmployeeService(client *ent.Client, userClient userPb.UserServiceClient)
 	}
 }
 
-func (s *EmployeeService) Create(ctx context.Context, orgID int, input EmployeeCreateInput) (*ent.Employee, *userPb.CreateUserResponse, error) {
+func (s *EmployeeService) Create(ctx context.Context, orgID int, input dto.EmployeeCreateInput) (*ent.Employee, *userPb.CreateUserResponse, error) {
 	var joiningAt time.Time
 	if input.JoiningAt != "" {
 		var err error
@@ -81,7 +62,7 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input EmployeeC
 		tx.Rollback()
 		return nil, nil, &ServiceError{Status: http.StatusBadRequest, Msg: "Invalid status"}
 	}
-	fmt.Println(input.PositionID, 999)
+
 	employeeObj, err := tx.Employee.Create().
 		SetCode(input.Code).
 		SetPositionID(input.PositionID).
@@ -100,18 +81,18 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input EmployeeC
 	}
 
 	respb, err := s.UserClient.CreateUser(ctx, &userPb.CreateUserRequest{
-		FirstName: input.FirstName,
-		LastName:  input.LastName,
-		Email:     input.Email,
-		Gender:    input.Gender,
-		Phone:     input.Phone,
-		Address:   input.Address,
-		WardCode:  strconv.Itoa(input.WardCode),
-		RoleIds:   input.RoleIds,
-		PermIds:   input.PermIds,
+		FirstName: input.User.FirstName,
+		LastName:  input.User.LastName,
+		Email:     input.User.Email,
+		Gender:    input.User.Gender,
+		Phone:     input.User.Phone,
+		Address:   input.User.Address,
+		WardCode:  strconv.Itoa(input.User.WardCode),
+		RoleIds:   input.User.RoleIds,
+		PermIds:   input.User.PermIds,
 		Account: &userPb.Account{
-			Username: input.Username,
-			Password: input.Password,
+			Username: input.User.Account.Username,
+			Password: input.User.Account.Password,
 		},
 	})
 	if err != nil {
@@ -276,32 +257,24 @@ func (s *EmployeeService) DeleteById(ctx context.Context, id int, orgID int) (*e
 	return emp, nil
 }
 
-type EmployeeUpdateInput struct {
-	Code      string   `json:"code"`
-	FirstName string   `json:"first_name"`
-	LastName  string   `json:"last_name"`
-	Gender    string   `json:"gender"`
-	Phone     string   `json:"phone"`
-	Email     string   `json:"email"`
-	Address   string   `json:"address"`
-	WardCode  int      `json:"ward_code"`
-	AvatarURL string   `json:"avatar_url"`
-	JoiningAt string   `json:"joining_at"`
-	Status    string   `json:"status"`
-	Username  string   `json:"username"`
-	Password  string   `json:"password"`
-	RoleIds   []string `json:"role_ids"`
-	PermIds   []string `json:"perm_ids"`
-}
-
-// UpdateById cập nhật employee (trừ position_id), gọi userPb để cập nhật user nếu có user_id
-func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, input EmployeeUpdateInput) (*ent.Employee, *userPb.User, error) {
-	emp, err := s.Client.Employee.Query().Where(employee.ID(id), employee.OrgID(orgID)).Only(ctx)
+func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, input dto.EmployeeUpdateInput) (*ent.Employee, *userPb.User, error) {
+	tx, err := s.Client.Tx(ctx)
 	if err != nil {
-		return nil, nil, &ServiceError{Status: http.StatusNotFound, Msg: "#1 UpdateById: Employee not found or not in your organization"}
+		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#1 UpdateById: Failed to start transaction"}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	emp, err := tx.Employee.Query().Where(employee.ID(id), employee.OrgID(orgID)).Only(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, nil, &ServiceError{Status: http.StatusNotFound, Msg: "#2 UpdateById: Employee not found or not in your organization"}
 	}
 
-	upd := s.Client.Employee.UpdateOneID(id)
+	upd := tx.Employee.UpdateOneID(id)
 	if input.Code != "" {
 		upd.SetCode(input.Code)
 	}
@@ -313,44 +286,66 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 	if input.Status != "" {
 		upd.SetStatus(employee.Status(input.Status))
 	}
-
-	// Không cập nhật position_id, các trường không có trong ent/employee cũng không cập nhật
 	updatedEmp, err := upd.Save(ctx)
 	if err != nil {
+		tx.Rollback()
 		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: err.Error()}
 	}
 
-	// Gọi userPb để cập nhật user nếu có user_id (nếu có method UpdateUser)
 	var userInfo *userPb.User
-	fmt.Println(000000, emp.UserID)
 
 	if emp.UserID != "" && s.UserClient != nil {
-		fmt.Println(111111, emp.UserID)
 		if uid, err := strconv.Atoi(emp.UserID); err == nil {
-			fmt.Println(222222, emp.UserID)
-			userReq := &userPb.UpdateUserRequest{
-				Id:        int32(uid),
-				FirstName: input.FirstName,
-				LastName:  input.LastName,
-				Email:     input.Email,
-				Gender:    input.Gender,
-				Phone:     input.Phone,
-				Address:   input.Address,
-				WardCode:  strconv.Itoa(input.WardCode),
-				RoleIds:   input.RoleIds,
-				PermIds:   input.PermIds,
-				Account: &userPb.Account{
-					Username: input.Username,
-					Password: input.Password,
-				},
+			userReq := &userPb.UpdateUserRequest{Id: int32(uid)}
+			u := input.User
+			if u.FirstName != "" {
+				userReq.FirstName = u.FirstName
+			}
+			if u.LastName != "" {
+				userReq.LastName = u.LastName
+			}
+			if u.Email != "" {
+				userReq.Email = u.Email
+			}
+			if u.Gender != "" {
+				userReq.Gender = u.Gender
+			}
+			if u.Phone != "" {
+				userReq.Phone = u.Phone
+			}
+			if u.Address != "" {
+				userReq.Address = u.Address
+			}
+			if u.WardCode != 0 {
+				userReq.WardCode = strconv.Itoa(u.WardCode)
+			}
+			if len(u.RoleIds) > 0 {
+				userReq.RoleIds = u.RoleIds
+			}
+			if len(u.PermIds) > 0 {
+				userReq.PermIds = u.PermIds
+			}
+			if u.Account.Username != "" || u.Account.Password != "" {
+				userReq.Account = &userPb.Account{
+					Username: u.Account.Username,
+					Password: u.Account.Password,
+					Status:   u.Account.Status,
+				}
 			}
 			userResp, err := s.UserClient.UpdateUserByID(ctx, userReq)
-			fmt.Println(333333, err)
-			if err == nil {
-				fmt.Println(123456, userResp)
+
+			if err != nil {
+				tx.Rollback()
+				return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#3 UpdateById: Failed to update user info: " + err.Error()}
+			}
+			if userResp != nil {
 				userInfo = userResp.User
 			}
 		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#4 UpdateById: Failed to commit transaction"}
 	}
 
 	return updatedEmp, userInfo, nil

@@ -8,6 +8,7 @@ import (
 	userPb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -37,7 +38,7 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 }
 
 func (h *EmployeeHandler) Create(c *gin.Context) {
-	var input services.EmployeeCreateInput
+	var input dto.EmployeeCreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -185,17 +186,17 @@ func (h *EmployeeHandler) GetById(c *gin.Context) {
 func (h *EmployeeHandler) UpdateById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "#1 UpdateById: Invalid employee ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
 		return
 	}
 	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil || ids["org_id"] == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "#2 UpdateById: Invalid or missing org_id in token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or missing org_id in token"})
 		return
 	}
 	orgID := ids["org_id"]
 
-	var input services.EmployeeUpdateInput
+	var input dto.EmployeeUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
