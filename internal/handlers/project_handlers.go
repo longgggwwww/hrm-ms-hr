@@ -544,18 +544,11 @@ func (h *ProjectHandler) Get(c *gin.Context) {
 		WithCreator().
 		WithUpdater().
 		WithMembers().
+		WithTasks().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
 		return
-	}
-
-	// Get task count for this project
-	taskCount, err := h.Client.Task.Query().
-		Where(task.ProjectIDEQ(id)).
-		Count(c.Request.Context())
-	if err != nil {
-		taskCount = 0 // Default to 0 if there's an error
 	}
 
 	// Collect user IDs from the project
@@ -569,8 +562,8 @@ func (h *ProjectHandler) Get(c *gin.Context) {
 		// In production, you might want to use a proper logger
 	}
 
-	// Enrich project with user information
-	enrichedProject := h.enrichProjectWithUserInfo(project, userMap, taskCount)
+	// Enrich project with user information and tasks
+	enrichedProject := h.enrichProjectWithUserInfoForGet(project, userMap)
 
 	c.JSON(http.StatusOK, enrichedProject)
 }
@@ -854,6 +847,125 @@ func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 
 	// Add task_count instead of tasks array
 	edges["task_count"] = taskCount
+
+	// Add organization edge (unchanged)
+	if proj.Edges.Organization != nil {
+		edges["organization"] = proj.Edges.Organization
+	}
+
+	// Enrich creator with user_info while preserving original structure
+	if proj.Edges.Creator != nil {
+		// Start with the original creator data
+		creatorData := map[string]interface{}{
+			"id":          proj.Edges.Creator.ID,
+			"code":        proj.Edges.Creator.Code,
+			"position_id": proj.Edges.Creator.PositionID,
+			"org_id":      proj.Edges.Creator.OrgID,
+			"joining_at":  proj.Edges.Creator.JoiningAt,
+			"status":      proj.Edges.Creator.Status,
+			"created_at":  proj.Edges.Creator.CreatedAt,
+			"updated_at":  proj.Edges.Creator.UpdatedAt,
+		}
+
+		// Add user_info if available
+		if proj.Edges.Creator.UserID != "" {
+			if userIDInt, err := strconv.Atoi(proj.Edges.Creator.UserID); err == nil {
+				if userInfo, exists := userMap[int32(userIDInt)]; exists {
+					creatorData["user_info"] = userInfo
+				}
+			}
+		}
+		edges["creator"] = creatorData
+	}
+
+	// Enrich updater with user_info while preserving original structure
+	if proj.Edges.Updater != nil {
+		// Start with the original updater data
+		updaterData := map[string]interface{}{
+			"id":          proj.Edges.Updater.ID,
+			"code":        proj.Edges.Updater.Code,
+			"position_id": proj.Edges.Updater.PositionID,
+			"org_id":      proj.Edges.Updater.OrgID,
+			"joining_at":  proj.Edges.Updater.JoiningAt,
+			"status":      proj.Edges.Updater.Status,
+			"created_at":  proj.Edges.Updater.CreatedAt,
+			"updated_at":  proj.Edges.Updater.UpdatedAt,
+		}
+
+		// Add user_info if available
+		if proj.Edges.Updater.UserID != "" {
+			if userIDInt, err := strconv.Atoi(proj.Edges.Updater.UserID); err == nil {
+				if userInfo, exists := userMap[int32(userIDInt)]; exists {
+					updaterData["user_info"] = userInfo
+				}
+			}
+		}
+		edges["updater"] = updaterData
+	}
+
+	// Enrich members with user_info while preserving original structure
+	if len(proj.Edges.Members) > 0 {
+		var membersData []map[string]interface{}
+		for _, member := range proj.Edges.Members {
+			// Start with the original member data
+			memberData := map[string]interface{}{
+				"id":          member.ID,
+				"code":        member.Code,
+				"position_id": member.PositionID,
+				"org_id":      member.OrgID,
+				"joining_at":  member.JoiningAt,
+				"status":      member.Status,
+				"created_at":  member.CreatedAt,
+				"updated_at":  member.UpdatedAt,
+			}
+
+			// Add user_info if available
+			if member.UserID != "" {
+				if userIDInt, err := strconv.Atoi(member.UserID); err == nil {
+					if userInfo, exists := userMap[int32(userIDInt)]; exists {
+						memberData["user_info"] = userInfo
+					}
+				}
+			}
+			membersData = append(membersData, memberData)
+		}
+		edges["members"] = membersData
+	}
+
+	// Add the edges structure to the result
+	result["edges"] = edges
+
+	return result
+}
+
+// enrichProjectWithUserInfoForGet enriches a single project with user information and tasks (for Get method)
+func (h *ProjectHandler) enrichProjectWithUserInfoForGet(proj *ent.Project, userMap map[int32]*userpb.User) map[string]interface{} {
+	result := map[string]interface{}{
+		"id":          proj.ID,
+		"name":        proj.Name,
+		"code":        proj.Code,
+		"description": proj.Description,
+		"start_at":    proj.StartAt,
+		"end_at":      proj.EndAt,
+		"creator_id":  proj.CreatorID,
+		"updater_id":  proj.UpdaterID,
+		"org_id":      proj.OrgID,
+		"process":     proj.Process,
+		"status":      proj.Status,
+		"visibility":  proj.Visibility,
+		"created_at":  proj.CreatedAt,
+		"updated_at":  proj.UpdatedAt,
+	}
+
+	// Create edges structure preserving original structure
+	edges := make(map[string]interface{})
+
+	// Add tasks array instead of task_count (for Get method)
+	if proj.Edges.Tasks != nil {
+		edges["tasks"] = proj.Edges.Tasks
+	} else {
+		edges["tasks"] = []interface{}{}
+	}
 
 	// Add organization edge (unchanged)
 	if proj.Edges.Organization != nil {
