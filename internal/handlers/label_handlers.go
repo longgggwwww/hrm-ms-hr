@@ -27,15 +27,15 @@ func NewLabelHandler(client *ent.Client) *LabelHandler {
 }
 
 func (h *LabelHandler) RegisterRoutes(r *gin.Engine) {
-	labels := r.Group("labels")
+	labels := r.Group("/labels")
 	{
-		labels.POST("", h.Create)
-		labels.POST("bulk", h.CreateBulk)
-		labels.GET("", h.List)
-		labels.GET(":id", h.Get)
-		labels.PATCH(":id", h.Update)
-		labels.DELETE(":id", h.Delete)
-		labels.DELETE("", h.DeleteBulk)
+		labels.POST("/", h.Create)
+		labels.POST("/bulk", h.CreateBulk)
+		labels.GET("/", h.List)
+		labels.GET("/:id", h.Get)
+		labels.PATCH("/:id", h.Update)
+		labels.DELETE("/:id", h.Delete)
+		labels.DELETE("/", h.DeleteBulk)
 	}
 }
 
@@ -181,14 +181,22 @@ func (h *LabelHandler) Create(c *gin.Context) {
 	createdLabel, err := h.Client.Label.Query().
 		Where(label.ID(labelObj.ID)).
 		WithTasks().
-		WithOrganization().
 		Only(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch created label"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch created label",
+		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, createdLabel)
+	// Thêm task_count vào response
+	labelsWithTaskCount, err := h.addTaskCountsToLabels(c, []*ent.Label{createdLabel})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add task count"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, labelsWithTaskCount[0])
 }
 
 func (h *LabelHandler) CreateBulk(c *gin.Context) {
@@ -255,7 +263,6 @@ func (h *LabelHandler) CreateBulk(c *gin.Context) {
 	createdLabels, err := h.Client.Label.Query().
 		Where(label.IDIn(labelIDs...)).
 		WithTasks().
-		WithOrganization().
 		All(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch created labels"})
@@ -307,14 +314,20 @@ func (h *LabelHandler) Update(c *gin.Context) {
 	updatedLabel, err := h.Client.Label.Query().
 		Where(label.ID(labelObj.ID)).
 		WithTasks().
-		WithOrganization().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch updated label"})
 		return
 	}
 
-	c.JSON(http.StatusOK, updatedLabel)
+	// Thêm task_count vào response
+	labelsWithTaskCount, err := h.addTaskCountsToLabels(c, []*ent.Label{updatedLabel})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add task count"})
+		return
+	}
+
+	c.JSON(http.StatusOK, labelsWithTaskCount[0])
 }
 
 func (h *LabelHandler) Delete(c *gin.Context) {
@@ -356,7 +369,6 @@ func (h *LabelHandler) DeleteBulk(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// listWithOffsetPagination xử lý phân trang truyền thống dựa trên offset
 func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.LabelQuery) {
 	// Trích xuất org_id từ JWT token cho truy vấn đếm
 	tokenData, err := utils.ExtractIDsFromToken(c)
@@ -602,13 +614,13 @@ func (h *LabelHandler) getOrderOption(c *gin.Context) label.OrderOption {
 }
 
 // encodeCursor mã hóa dữ liệu cursor thành base64
-func (h *LabelHandler) encodeCursor(data map[string]interface{}) string {
+func (h *LabelHandler) encodeCursor(data map[string]any) string {
 	jsonData, _ := json.Marshal(data)
 	return base64.StdEncoding.EncodeToString(jsonData)
 }
 
 // decodeCursor giải mã cursor base64 thành map dữ liệu
-func (h *LabelHandler) decodeCursor(cursor string) (map[string]interface{}, error) {
+func (h *LabelHandler) decodeCursor(cursor string) (map[string]any, error) {
 	data, err := base64.StdEncoding.DecodeString(cursor)
 	if err != nil {
 		return nil, err
@@ -620,8 +632,8 @@ func (h *LabelHandler) decodeCursor(cursor string) (map[string]interface{}, erro
 }
 
 // addTaskCountsToLabels thêm trường task_count vào mỗi nhãn
-func (h *LabelHandler) addTaskCountsToLabels(c *gin.Context, labels []*ent.Label) ([]map[string]interface{}, error) {
-	result := make([]map[string]interface{}, len(labels))
+func (h *LabelHandler) addTaskCountsToLabels(c *gin.Context, labels []*ent.Label) ([]map[string]any, error) {
+	result := make([]map[string]any, len(labels))
 
 	for i, labelEntity := range labels {
 		// Đếm task cho nhãn này
@@ -633,7 +645,7 @@ func (h *LabelHandler) addTaskCountsToLabels(c *gin.Context, labels []*ent.Label
 		}
 
 		// Chuyển đổi nhãn thành map và thêm task_count
-		labelMap := map[string]interface{}{
+		labelMap := map[string]any{
 			"id":          labelEntity.ID,
 			"name":        labelEntity.Name,
 			"description": labelEntity.Description,

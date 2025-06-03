@@ -9,6 +9,7 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type DepartmentHandler struct {
@@ -66,19 +67,32 @@ func (h *DepartmentHandler) Get(c *gin.Context) {
 
 func (h *DepartmentHandler) Create(c *gin.Context) {
 	type DepartmentInput struct {
-		Name  string `json:"name" binding:"required"`
-		Code  string `json:"code" binding:"required"`
-		OrgID int    `json:"org_id" binding:"required"`
+		Name string `json:"name" binding:"required"`
+		Code string `json:"code" binding:"required"`
 	}
 	var input DepartmentInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Extract org_id from token
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	orgID, exists := tokenData["org_id"]
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "org_id not found in token"})
+		return
+	}
+
 	departmentObj, err := h.Client.Department.Create().
 		SetName(input.Name).
 		SetCode(input.Code).
-		SetOrgID(input.OrgID).
+		SetOrgID(orgID).
 		Save(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create department"})
@@ -94,15 +108,28 @@ func (h *DepartmentHandler) Update(c *gin.Context) {
 		return
 	}
 	type DepartmentUpdateInput struct {
-		Name  *string `json:"name"`
-		Code  *string `json:"code"`
-		OrgID *int    `json:"org_id"`
+		Name *string `json:"name"`
+		Code *string `json:"code"`
 	}
 	var input DepartmentUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Extract org_id from token
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	orgID, exists := tokenData["org_id"]
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "org_id not found in token"})
+		return
+	}
+
 	update := h.Client.Department.UpdateOneID(id)
 	if input.Name != nil {
 		update.SetName(*input.Name)
@@ -110,9 +137,9 @@ func (h *DepartmentHandler) Update(c *gin.Context) {
 	if input.Code != nil {
 		update.SetCode(*input.Code)
 	}
-	if input.OrgID != nil {
-		update.SetOrgID(*input.OrgID)
-	}
+	// Always set org_id from token to ensure data integrity
+	update.SetOrgID(orgID)
+
 	departmentObj, err := update.Save(c.Request.Context())
 	if err != nil {
 		if ent.IsNotFound(err) {

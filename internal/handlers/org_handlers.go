@@ -28,13 +28,13 @@ func NewOrgHandler(client *ent.Client, userService *userpb.UserServiceClient) *O
 func (h *OrgHandler) RegisterRoutes(r *gin.Engine) {
 	orgs := r.Group("/orgs")
 	{
-		orgs.POST("", h.Create)
-		orgs.GET("", h.List)
-		orgs.GET(":id", h.Get)
-		orgs.GET("from-token", h.GetOrgFromToken)
-		orgs.PATCH(":id", h.Update)
-		orgs.DELETE(":id", h.Delete)
-		orgs.DELETE("", h.DeleteBatch)
+		orgs.POST("/", h.Create)
+		orgs.GET("/", h.List)
+		orgs.GET("/:id", h.Get)
+		orgs.GET("/from-token", h.GetOrgFromToken)
+		orgs.PATCH("/:id", h.Update)
+		orgs.DELETE("/:id", h.Delete)
+		orgs.DELETE("/", h.DeleteBatch)
 	}
 }
 
@@ -225,7 +225,6 @@ func (h *OrgHandler) DeleteBatch(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// GetOrgFromToken trả về thông tin tổ chức dựa vào org_id trong JWT
 func (h *OrgHandler) GetOrgFromToken(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {

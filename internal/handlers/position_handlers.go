@@ -23,7 +23,6 @@ func NewPositionHandler(client *ent.Client, userClient *pb.UserServiceClient) *P
 	}
 }
 
-// GetPositions trả về danh sách tất cả chức vụ
 func (h *PositionHandler) GetPositions(c *gin.Context) {
 	positions, err := h.Client.Position.Query().All(c.Request.Context())
 	if err != nil {
@@ -33,7 +32,6 @@ func (h *PositionHandler) GetPositions(c *gin.Context) {
 	c.JSON(http.StatusOK, positions)
 }
 
-// GetPositionByID trả về thông tin chức vụ theo ID
 func (h *PositionHandler) GetPositionByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -48,12 +46,10 @@ func (h *PositionHandler) GetPositionByID(c *gin.Context) {
 	c.JSON(http.StatusOK, positionObj)
 }
 
-// UpdatePosition cập nhật thông tin chức vụ (chưa implement)
 func (h *PositionHandler) UpdatePosition(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented yet"})
 }
 
-// DeletePosition xóa chức vụ theo ID
 func (h *PositionHandler) DeletePosition(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

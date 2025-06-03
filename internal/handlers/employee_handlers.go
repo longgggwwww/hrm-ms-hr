@@ -59,7 +59,9 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 	}
 	var input EmployeeCreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
@@ -68,19 +70,25 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		WithDepartments().
 		Only(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid position_id"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid position_id",
+		})
 		return
 	}
 
 	joiningAt, err := time.Parse(time.RFC3339, input.JoiningAt)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid joining_at format, must be RFC3339"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid joining_at format, must be RFC3339",
+		})
 		return
 	}
 
 	tx, err := h.Client.Tx(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to start transaction"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to start transaction",
+		})
 		return
 	}
 	defer func() {
@@ -91,7 +99,9 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 
 	status := employee.Status(input.Status)
 	if status != employee.StatusActive && status != employee.StatusInactive {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value, must be 'active' or 'inactive'"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid status value, must be 'active' or 'inactive'",
+		})
 		return
 	}
 
@@ -112,7 +122,9 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 
 	if h.UserClient == nil {
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "UserClient is not initialized"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "UserClient is not initialized",
+		})
 		return
 	}
 
@@ -133,7 +145,9 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 	})
 	if err != nil {
 		tx.Rollback()
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
@@ -143,13 +157,17 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		_, err := tx.Employee.UpdateOneID(employeeObj.ID).SetUserID(userIDStr).Save(c.Request.Context())
 		if err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update employee with userID"})
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to update employee with userID",
+			})
 			return
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to commit transaction",
+		})
 		return
 	}
 
@@ -159,7 +177,9 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 func (h *EmployeeHandler) List(c *gin.Context) {
 	employees, err := h.Client.Employee.Query().All(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch employees"})
+		c.JSON(http.StatusBadGateway, gin.H{
+			"error": "Failed to fetch employees",
+		})
 		return
 	}
 
@@ -169,7 +189,9 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 func (h *EmployeeHandler) Get(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid employee ID",
+		})
 		return
 	}
 
@@ -180,7 +202,9 @@ func (h *EmployeeHandler) Get(c *gin.Context) {
 		}).
 		Only(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Employee not found",
+		})
 		return
 	}
 	c.JSON(http.StatusOK, employeeObj)
@@ -189,7 +213,9 @@ func (h *EmployeeHandler) Get(c *gin.Context) {
 func (h *EmployeeHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid employee ID",
+		})
 		return
 	}
 	type EmployeeUpdateInput struct {
@@ -212,13 +238,17 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 	}
 	var input EmployeeUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
 	tx, err := h.Client.Tx(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to start transaction"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to start transaction",
+		})
 		return
 	}
 	defer func() {
@@ -230,7 +260,9 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 	employeeObj, err := tx.Employee.Get(c.Request.Context(), id)
 	if err != nil {
 		tx.Rollback()
-		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Employee not found",
+		})
 		return
 	}
 
@@ -242,7 +274,9 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		positionObj, err := h.Client.Position.Query().Where(position.ID(*input.PositionID)).WithDepartments().Only(c.Request.Context())
 		if err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid position_id"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid position_id",
+			})
 			return
 		}
 		update.SetPositionID(*input.PositionID)
@@ -252,7 +286,9 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		joiningAt, err := time.Parse(time.RFC3339, *input.JoiningAt)
 		if err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid joining_at format, must be RFC3339"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid joining_at format, must be RFC3339",
+			})
 			return
 		}
 		update.SetJoiningAt(joiningAt)
@@ -261,7 +297,9 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		status := employee.Status(*input.Status)
 		if status != employee.StatusActive && status != employee.StatusInactive {
 			tx.Rollback()
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value, must be 'active' or 'inactive'"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid status value, must be 'active' or 'inactive'",
+			})
 			return
 		}
 		update.SetStatus(status)
@@ -271,13 +309,17 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		userID := employeeObj.UserID
 		if userID == "" {
 			tx.Rollback()
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Employee does not have a linked user"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Employee does not have a linked user",
+			})
 			return
 		}
 		userIDInt, err := strconv.Atoi(userID)
 		if err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userID format"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid userID format",
+			})
 			return
 		}
 		wardCodeStr := ""
@@ -303,7 +345,9 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 		})
 		if err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
 			return
 		}
 	}
@@ -312,15 +356,21 @@ func (h *EmployeeHandler) Update(c *gin.Context) {
 	if err != nil {
 		tx.Rollback()
 		if ent.IsNotFound(err) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Employee not found",
+			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update employee"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update employee",
+		})
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to commit transaction",
+		})
 		return
 	}
 
@@ -344,12 +394,16 @@ func derefStrSlice(s *[]string) []string {
 func (h *EmployeeHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid employee ID",
+		})
 		return
 	}
 	_, err = h.Client.Employee.Delete().Where(employee.ID(id)).Exec(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Employee not found",
+		})
 		return
 	}
 	c.JSON(http.StatusNoContent, nil)

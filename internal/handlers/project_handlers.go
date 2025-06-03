@@ -1,37 +1,43 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
+	userpb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
+	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
+	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type ProjectHandler struct {
-	Client *ent.Client
+	Client     *ent.Client
+	UserClient userpb.UserServiceClient
 }
 
-func NewProjectHandler(client *ent.Client) *ProjectHandler {
+func NewProjectHandler(client *ent.Client, userClient userpb.UserServiceClient) *ProjectHandler {
 	return &ProjectHandler{
-		Client: client,
+		Client:     client,
+		UserClient: userClient,
 	}
 }
 
 func (h *ProjectHandler) RegisterRoutes(r *gin.Engine) {
-	projs := r.Group("projects")
+	projs := r.Group("/projects")
 	{
-		projs.POST("", h.Create)
-		projs.GET("", h.List)
-		projs.GET(":id", h.Get)
-		projs.PATCH(":id", h.Update)
-		projs.DELETE(":id", h.Delete)
-		projs.DELETE("", h.BulkDelete)
+		projs.POST("/", h.Create)
+		projs.GET("/", h.List)
+		projs.GET("/:id", h.Get)
+		projs.PATCH("/:id", h.Update)
+		projs.DELETE("/:id", h.Delete)
+		projs.DELETE("/", h.BulkDelete)
 	}
 }
 
@@ -193,12 +199,46 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 //
 // Example: GET /projects?name=example&status=in_progress&visibility=public&order_by=name&order_dir=asc&page=1&limit=20
 func (h *ProjectHandler) List(c *gin.Context) {
+	// Extract IDs from JWT token
+	ids, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	orgID := ids["org_id"]
+	employeeID := ids["employee_id"]
+
+	// Build base query without hard filtering by org_id
 	query := h.Client.Project.Query().
-		WithTasks().
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
 		WithMembers()
+
+	// Apply visibility-based filtering
+	visibilityConditions := []predicate.Project{}
+
+	// Public projects - visible to everyone
+	visibilityConditions = append(visibilityConditions, project.VisibilityEQ(project.VisibilityPublic))
+
+	// Internal projects - visible if user belongs to the same org
+	visibilityConditions = append(visibilityConditions,
+		project.And(
+			project.VisibilityEQ(project.VisibilityInternal),
+			project.OrgIDEQ(orgID),
+		),
+	)
+
+	// Private projects - visible only if user is a member
+	visibilityConditions = append(visibilityConditions,
+		project.And(
+			project.VisibilityEQ(project.VisibilityPrivate),
+			project.HasMembersWith(employee.IDEQ(employeeID)),
+		),
+	)
+
+	// Apply OR condition for all visibility rules
+	query = query.Where(project.Or(visibilityConditions...))
 
 	// Filter by name
 	if name := c.Query("name"); name != "" {
@@ -225,31 +265,43 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		}
 	}
 
-	// Filter by visibility
+	// Filter by visibility (optional additional filter on top of access control)
 	if visibility := c.Query("visibility"); visibility != "" {
 		switch visibility {
 		case string(project.VisibilityPrivate),
 			string(project.VisibilityPublic),
 			string(project.VisibilityInternal):
-			query = query.Where(project.VisibilityEQ(project.Visibility(visibility)))
+			// Apply additional filter on top of existing visibility rules
+			additionalVisibilityConditions := []predicate.Project{}
+
+			if visibility == string(project.VisibilityPublic) {
+				additionalVisibilityConditions = append(additionalVisibilityConditions, project.VisibilityEQ(project.VisibilityPublic))
+			} else if visibility == string(project.VisibilityInternal) {
+				additionalVisibilityConditions = append(additionalVisibilityConditions,
+					project.And(
+						project.VisibilityEQ(project.VisibilityInternal),
+						project.OrgIDEQ(orgID),
+					),
+				)
+			} else if visibility == string(project.VisibilityPrivate) {
+				additionalVisibilityConditions = append(additionalVisibilityConditions,
+					project.And(
+						project.VisibilityEQ(project.VisibilityPrivate),
+						project.HasMembersWith(employee.IDEQ(employeeID)),
+					),
+				)
+			}
+
+			// Apply OR condition for additional visibility filter
+			if len(additionalVisibilityConditions) > 0 {
+				query = query.Where(project.Or(additionalVisibilityConditions...))
+			}
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Invalid visibility value. Valid values: private, public, internal",
 			})
 			return
 		}
-	}
-
-	// Filter by org_id
-	if orgIDStr := c.Query("org_id"); orgIDStr != "" {
-		orgID, err := strconv.Atoi(orgIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid org_id format",
-			})
-			return
-		}
-		query = query.Where(project.OrgIDEQ(orgID))
 	}
 
 	// Filter by creator_id
@@ -429,8 +481,45 @@ func (h *ProjectHandler) List(c *gin.Context) {
 
 	totalPages := (total + limit - 1) / limit
 
+	// Get task counts for all projects
+	taskCounts := make(map[int]int)
+	if len(projects) > 0 {
+		var projectIDs []int
+		for _, proj := range projects {
+			projectIDs = append(projectIDs, proj.ID)
+		}
+
+		// Query task counts efficiently using a subquery approach
+		for _, proj := range projects {
+			count, err := h.Client.Task.Query().
+				Where(task.ProjectIDEQ(proj.ID)).
+				Count(c.Request.Context())
+			if err == nil {
+				taskCounts[proj.ID] = count
+			}
+		}
+	}
+
+	// Collect user IDs from all projects
+	userIDs := h.collectUserIDsFromProjects(projects)
+
+	// Fetch user information
+	userMap, err := h.getUserInfoMap(userIDs)
+	if err != nil {
+		// Log error but continue without user enrichment
+		// In production, you might want to use a proper logger
+	}
+
+	// Enrich projects with user information
+	var enrichedProjects []map[string]interface{}
+	for _, proj := range projects {
+		taskCount := taskCounts[proj.ID] // Default to 0 if not found
+		enrichedProject := h.enrichProjectWithUserInfo(proj, userMap, taskCount)
+		enrichedProjects = append(enrichedProjects, enrichedProject)
+	}
+
 	response := gin.H{
-		"data": projects,
+		"data": enrichedProjects,
 		"pagination": gin.H{
 			"current_page": page,
 			"total_pages":  totalPages,
@@ -451,7 +540,6 @@ func (h *ProjectHandler) Get(c *gin.Context) {
 
 	project, err := h.Client.Project.Query().
 		Where(project.ID(id)).
-		WithTasks().
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
@@ -461,7 +549,30 @@ func (h *ProjectHandler) Get(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
 		return
 	}
-	c.JSON(http.StatusOK, project)
+
+	// Get task count for this project
+	taskCount, err := h.Client.Task.Query().
+		Where(task.ProjectIDEQ(id)).
+		Count(c.Request.Context())
+	if err != nil {
+		taskCount = 0 // Default to 0 if there's an error
+	}
+
+	// Collect user IDs from the project
+	projects := []*ent.Project{project}
+	userIDs := h.collectUserIDsFromProjects(projects)
+
+	// Fetch user information
+	userMap, err := h.getUserInfoMap(userIDs)
+	if err != nil {
+		// Log error but continue without user enrichment
+		// In production, you might want to use a proper logger
+	}
+
+	// Enrich project with user information
+	enrichedProject := h.enrichProjectWithUserInfo(project, userMap, taskCount)
+
+	c.JSON(http.StatusOK, enrichedProject)
 }
 
 func (h *ProjectHandler) Update(c *gin.Context) {
@@ -681,4 +792,199 @@ func (h *ProjectHandler) BulkDelete(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, response)
 	}
+}
+
+// getUserInfoMap fetches user information by user IDs and returns a map for quick lookup
+func (h *ProjectHandler) getUserInfoMap(userIDs []int32) (map[int32]*userpb.User, error) {
+	if h.UserClient == nil || len(userIDs) == 0 {
+		return make(map[int32]*userpb.User), nil
+	}
+
+	// Remove duplicates
+	uniqueIDs := make(map[int32]bool)
+	var cleanIDs []int32
+	for _, id := range userIDs {
+		if !uniqueIDs[id] {
+			uniqueIDs[id] = true
+			cleanIDs = append(cleanIDs, id)
+		}
+	}
+
+	userMap := make(map[int32]*userpb.User)
+
+	// Fetch users individually (assuming GetUserById method exists)
+	// If GetUsersByIds method exists, you can replace this with a bulk call
+	for _, userID := range cleanIDs {
+		response, err := h.UserClient.GetUserById(context.Background(), &userpb.GetUserByIdRequest{
+			Id: userID,
+		})
+		if err != nil {
+			// Log error but continue with other users
+			continue
+		}
+		if response != nil && response.User != nil {
+			userMap[userID] = response.User
+		}
+	}
+
+	return userMap, nil
+}
+
+// enrichProjectWithUserInfo enriches a single project with user information
+func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap map[int32]*userpb.User, taskCount int) map[string]interface{} {
+	result := map[string]interface{}{
+		"id":          proj.ID,
+		"name":        proj.Name,
+		"code":        proj.Code,
+		"description": proj.Description,
+		"start_at":    proj.StartAt,
+		"end_at":      proj.EndAt,
+		"creator_id":  proj.CreatorID,
+		"updater_id":  proj.UpdaterID,
+		"org_id":      proj.OrgID,
+		"process":     proj.Process,
+		"status":      proj.Status,
+		"visibility":  proj.Visibility,
+		"created_at":  proj.CreatedAt,
+		"updated_at":  proj.UpdatedAt,
+	}
+
+	// Create edges structure preserving original structure
+	edges := make(map[string]interface{})
+
+	// Add task_count instead of tasks array
+	edges["task_count"] = taskCount
+
+	// Add organization edge (unchanged)
+	if proj.Edges.Organization != nil {
+		edges["organization"] = proj.Edges.Organization
+	}
+
+	// Enrich creator with user_info while preserving original structure
+	if proj.Edges.Creator != nil {
+		// Start with the original creator data
+		creatorData := map[string]interface{}{
+			"id":          proj.Edges.Creator.ID,
+			"code":        proj.Edges.Creator.Code,
+			"position_id": proj.Edges.Creator.PositionID,
+			"org_id":      proj.Edges.Creator.OrgID,
+			"joining_at":  proj.Edges.Creator.JoiningAt,
+			"status":      proj.Edges.Creator.Status,
+			"created_at":  proj.Edges.Creator.CreatedAt,
+			"updated_at":  proj.Edges.Creator.UpdatedAt,
+		}
+
+		// Add user_info if available
+		if proj.Edges.Creator.UserID != "" {
+			if userIDInt, err := strconv.Atoi(proj.Edges.Creator.UserID); err == nil {
+				if userInfo, exists := userMap[int32(userIDInt)]; exists {
+					creatorData["user_info"] = userInfo
+				}
+			}
+		}
+		edges["creator"] = creatorData
+	}
+
+	// Enrich updater with user_info while preserving original structure
+	if proj.Edges.Updater != nil {
+		// Start with the original updater data
+		updaterData := map[string]interface{}{
+			"id":          proj.Edges.Updater.ID,
+			"code":        proj.Edges.Updater.Code,
+			"position_id": proj.Edges.Updater.PositionID,
+			"org_id":      proj.Edges.Updater.OrgID,
+			"joining_at":  proj.Edges.Updater.JoiningAt,
+			"status":      proj.Edges.Updater.Status,
+			"created_at":  proj.Edges.Updater.CreatedAt,
+			"updated_at":  proj.Edges.Updater.UpdatedAt,
+		}
+
+		// Add user_info if available
+		if proj.Edges.Updater.UserID != "" {
+			if userIDInt, err := strconv.Atoi(proj.Edges.Updater.UserID); err == nil {
+				if userInfo, exists := userMap[int32(userIDInt)]; exists {
+					updaterData["user_info"] = userInfo
+				}
+			}
+		}
+		edges["updater"] = updaterData
+	}
+
+	// Enrich members with user_info while preserving original structure
+	if len(proj.Edges.Members) > 0 {
+		var membersData []map[string]interface{}
+		for _, member := range proj.Edges.Members {
+			// Start with the original member data
+			memberData := map[string]interface{}{
+				"id":          member.ID,
+				"code":        member.Code,
+				"position_id": member.PositionID,
+				"org_id":      member.OrgID,
+				"joining_at":  member.JoiningAt,
+				"status":      member.Status,
+				"created_at":  member.CreatedAt,
+				"updated_at":  member.UpdatedAt,
+			}
+
+			// Add user_info if available
+			if member.UserID != "" {
+				if userIDInt, err := strconv.Atoi(member.UserID); err == nil {
+					if userInfo, exists := userMap[int32(userIDInt)]; exists {
+						memberData["user_info"] = userInfo
+					}
+				}
+			}
+			membersData = append(membersData, memberData)
+		}
+		edges["members"] = membersData
+	}
+
+	// Add the edges structure to the result
+	result["edges"] = edges
+
+	return result
+}
+
+// collectUserIDsFromProjects collects all user IDs from project creators, updaters, and members
+func (h *ProjectHandler) collectUserIDsFromProjects(projects []*ent.Project) []int32 {
+	userIDSet := make(map[int32]bool)
+	var userIDs []int32
+
+	for _, proj := range projects {
+		// Creator user ID
+		if proj.Edges.Creator != nil && proj.Edges.Creator.UserID != "" {
+			if userID, err := strconv.Atoi(proj.Edges.Creator.UserID); err == nil {
+				if !userIDSet[int32(userID)] {
+					userIDSet[int32(userID)] = true
+					userIDs = append(userIDs, int32(userID))
+				}
+			}
+		}
+
+		// Updater user ID
+		if proj.Edges.Updater != nil && proj.Edges.Updater.UserID != "" {
+			if userID, err := strconv.Atoi(proj.Edges.Updater.UserID); err == nil {
+				if !userIDSet[int32(userID)] {
+					userIDSet[int32(userID)] = true
+					userIDs = append(userIDs, int32(userID))
+				}
+			}
+		}
+
+		// Members user IDs
+		if proj.Edges.Members != nil {
+			for _, member := range proj.Edges.Members {
+				if member.UserID != "" {
+					if userID, err := strconv.Atoi(member.UserID); err == nil {
+						if !userIDSet[int32(userID)] {
+							userIDSet[int32(userID)] = true
+							userIDs = append(userIDs, int32(userID))
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return userIDs
 }
