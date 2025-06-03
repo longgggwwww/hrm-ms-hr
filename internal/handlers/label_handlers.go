@@ -89,10 +89,6 @@ func (h *LabelHandler) List(c *gin.Context) {
 		query = query.Where(label.DescriptionContainsFold(description))
 	}
 
-	if color := c.Query("color"); color != "" {
-		query = query.Where(label.ColorEQ(color))
-	}
-
 	// Xác định loại phân trang
 	paginationType := c.DefaultQuery("pagination_type", "page")
 
@@ -431,9 +427,6 @@ func (h *LabelHandler) listWithOffsetPagination(c *gin.Context, query *ent.Label
 	}
 	if description := c.Query("description"); description != "" {
 		countQuery = countQuery.Where(label.DescriptionContainsFold(description))
-	}
-	if color := c.Query("color"); color != "" {
-		countQuery = countQuery.Where(label.ColorEQ(color))
 	}
 
 	total, err := countQuery.Count(c.Request.Context())
