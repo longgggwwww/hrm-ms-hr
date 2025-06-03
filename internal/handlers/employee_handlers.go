@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -9,7 +8,6 @@ import (
 	userPb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
-	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -31,15 +29,14 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 	{
 		employees.POST("", h.Create)
 		employees.GET("", h.List)
-		employees.GET(":id", h.Get)
-		employees.PATCH(":id", h.Update)
-		employees.DELETE(":id", h.Delete)
+		employees.GET(":id", h.GetById)
+
+		employees.PATCH(":id", h.UpdateById)
+		employees.DELETE(":id", h.DeleteById)
 	}
 }
 
 func (h *EmployeeHandler) Create(c *gin.Context) {
-	log.Println("Creating new employee")
-
 	var input services.EmployeeCreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -48,16 +45,43 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		return
 	}
 
+	ids, err := utils.ExtractIDsFromToken(c)
+	if err != nil || ids["org_id"] == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or missing org_id in token"})
+		return
+	}
+	orgID := ids["org_id"]
+
 	svc := services.NewEmployeeService(h.Client, h.UserClient)
-	employeeObj, userResp, err := svc.CreateEmployee(c.Request.Context(), input)
+	employeeObj, userResp, err := svc.Create(c.Request.Context(), orgID, input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		if serr, ok := err.(*services.ServiceError); ok {
+			c.JSON(serr.Status, gin.H{"error": serr.Msg})
+			return
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"employee": employeeObj, "user": userResp})
+	var userInfo *userPb.User
+	if userResp != nil && userResp.User != nil {
+		userInfo = userResp.User
+	}
+
+	resp := gin.H{
+		"id":          employeeObj.ID,
+		"code":        employeeObj.Code,
+		"status":      employeeObj.Status,
+		"position_id": employeeObj.PositionID,
+		"joining_at":  employeeObj.JoiningAt,
+		"org_id":      employeeObj.OrgID,
+		"created_at":  employeeObj.CreatedAt,
+		"updated_at":  employeeObj.UpdatedAt,
+		"edges":       gin.H{},
+		"user_info":   userInfo,
+	}
+
+	c.JSON(http.StatusCreated, resp)
 }
 
 func (h *EmployeeHandler) List(c *gin.Context) {
@@ -68,7 +92,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 
 	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil || ids["org_id"] == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or missing org_id in token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "#1 List: Invalid or missing org_id in token"})
 		return
 	}
 	orgID := ids["org_id"]
@@ -83,7 +107,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 	}
 	employees, total, userInfoMap, err := svc.List(c.Request.Context(), query)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to fetch employees"})
+		c.JSON(http.StatusBadGateway, gin.H{"error": "#2 List: Failed to fetch employees"})
 		return
 	}
 
@@ -95,30 +119,6 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 				userInfo = userInfoMap[int32(id)]
 			}
 		}
-		edges := gin.H{}
-		if emp.Edges.Position != nil {
-			pos := emp.Edges.Position
-			posMap := gin.H{
-				"id":            pos.ID,
-				"name":          pos.Name,
-				"code":          pos.Code,
-				"department_id": pos.DepartmentID,
-				"created_at":    pos.CreatedAt,
-				"updated_at":    pos.UpdatedAt,
-			}
-			if pos.Edges.Departments != nil {
-				dept := pos.Edges.Departments
-				posMap["department"] = gin.H{
-					"id":         dept.ID,
-					"name":       dept.Name,
-					"code":       dept.Code,
-					"org_id":     dept.OrgID,
-					"created_at": dept.CreatedAt,
-					"updated_at": dept.UpdatedAt,
-				}
-			}
-			edges["position"] = posMap
-		}
 		item := gin.H{
 			"id":          emp.ID,
 			"code":        emp.Code,
@@ -129,7 +129,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 			"created_at":  emp.CreatedAt,
 			"updated_at":  emp.UpdatedAt,
 			"user_id":     emp.UserID,
-			"edges":       edges,
+			"edges":       emp.Edges,
 			"user_info":   userInfo,
 		}
 		data = append(data, item)
@@ -146,15 +146,15 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 	})
 }
 
-func (h *EmployeeHandler) Get(c *gin.Context) {
+func (h *EmployeeHandler) GetById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "#1 GetById: Invalid employee ID"})
 		return
 	}
 	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil || ids["org_id"] == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or missing org_id in token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "#2 GetById: Invalid or missing org_id in token"})
 		return
 	}
 	orgID := ids["org_id"]
@@ -162,34 +162,10 @@ func (h *EmployeeHandler) Get(c *gin.Context) {
 	svc := services.NewEmployeeService(h.Client, h.UserClient)
 	emp, userInfo, err := svc.GetEmployeeWithUserInfo(c.Request.Context(), id, orgID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Employee not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "#3 GetById: Employee not found"})
 		return
 	}
 
-	edges := gin.H{}
-	if emp.Edges.Position != nil {
-		pos := emp.Edges.Position
-		posMap := gin.H{
-			"id":            pos.ID,
-			"name":          pos.Name,
-			"code":          pos.Code,
-			"department_id": pos.DepartmentID,
-			"created_at":    pos.CreatedAt,
-			"updated_at":    pos.UpdatedAt,
-		}
-		if pos.Edges.Departments != nil {
-			dept := pos.Edges.Departments
-			posMap["department"] = gin.H{
-				"id":         dept.ID,
-				"name":       dept.Name,
-				"code":       dept.Code,
-				"org_id":     dept.OrgID,
-				"created_at": dept.CreatedAt,
-				"updated_at": dept.UpdatedAt,
-			}
-		}
-		edges["position"] = posMap
-	}
 	resp := gin.H{
 		"id":          emp.ID,
 		"code":        emp.Code,
@@ -200,30 +176,95 @@ func (h *EmployeeHandler) Get(c *gin.Context) {
 		"created_at":  emp.CreatedAt,
 		"updated_at":  emp.UpdatedAt,
 		"user_id":     emp.UserID,
-		"edges":       edges,
+		"edges":       emp.Edges,
 		"user_info":   userInfo,
 	}
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *EmployeeHandler) Update(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented. Please use EmployeeService for business logic."})
-}
-
-func (h *EmployeeHandler) Delete(c *gin.Context) {
+func (h *EmployeeHandler) UpdateById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid employee ID",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "#1 UpdateById: Invalid employee ID"})
 		return
 	}
-	_, err = h.Client.Employee.Delete().Where(employee.ID(id)).Exec(c.Request.Context())
+	ids, err := utils.ExtractIDsFromToken(c)
+	if err != nil || ids["org_id"] == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "#2 UpdateById: Invalid or missing org_id in token"})
+		return
+	}
+	orgID := ids["org_id"]
+
+	var input services.EmployeeUpdateInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	svc := services.NewEmployeeService(h.Client, h.UserClient)
+	emp, userInfo, err := svc.UpdateById(c.Request.Context(), id, orgID, input)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Employee not found",
-		})
+		if serr, ok := err.(*services.ServiceError); ok {
+			c.JSON(serr.Status, gin.H{"error": serr.Msg})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusNoContent, nil)
+
+	resp := gin.H{
+		"id":          emp.ID,
+		"code":        emp.Code,
+		"status":      emp.Status,
+		"position_id": emp.PositionID,
+		"joining_at":  emp.JoiningAt,
+		"org_id":      emp.OrgID,
+		"created_at":  emp.CreatedAt,
+		"updated_at":  emp.UpdatedAt,
+		"user_id":     emp.UserID,
+		"edges":       gin.H{},
+		"user_info":   userInfo,
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *EmployeeHandler) DeleteById(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "#1 DeleteById: Invalid employee ID"})
+		return
+	}
+	ids, err := utils.ExtractIDsFromToken(c)
+	if err != nil || ids["org_id"] == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "#2 DeleteById: Invalid or missing org_id in token"})
+		return
+	}
+	orgID := ids["org_id"]
+
+	svc := services.NewEmployeeService(h.Client, h.UserClient)
+	emp, err := svc.DeleteById(c.Request.Context(), id, orgID)
+	if err != nil {
+		if serr, ok := err.(*services.ServiceError); ok {
+			c.JSON(serr.Status, gin.H{"error": serr.Msg})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := gin.H{
+		"id":          emp.ID,
+		"code":        emp.Code,
+		"status":      emp.Status,
+		"position_id": emp.PositionID,
+		"joining_at":  emp.JoiningAt,
+		"org_id":      emp.OrgID,
+		"created_at":  emp.CreatedAt,
+		"updated_at":  emp.UpdatedAt,
+		"user_id":     emp.UserID,
+		"edges":       gin.H{},
+	}
+
+	c.JSON(http.StatusOK, resp)
 }

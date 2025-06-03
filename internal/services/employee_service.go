@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -10,7 +12,6 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
-	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 )
 
 type EmployeeService struct {
@@ -19,22 +20,22 @@ type EmployeeService struct {
 }
 
 type EmployeeCreateInput struct {
-	Code       string
-	FirstName  string
-	LastName   string
-	Gender     string
-	Phone      string
-	Email      string
-	Address    string
-	WardCode   int
-	AvatarURL  string
-	PositionID int
-	JoiningAt  string
-	Status     string
-	Username   string
-	Password   string
-	RoleIds    []string
-	PermIds    []string
+	Code       string   `json:"code" binding:"required"`
+	FirstName  string   `json:"first_name" binding:"required"`
+	LastName   string   `json:"last_name" binding:"required"`
+	Gender     string   `json:"gender"`
+	Phone      string   `json:"phone" binding:"required"`
+	Email      string   `json:"email" binding:"required,email"`
+	Address    string   `json:"address"`
+	WardCode   int      `json:"ward_code"`
+	AvatarURL  string   `json:"avatar_url"`
+	PositionID int      `json:"position_id" binding:"required"`
+	JoiningAt  string   `json:"joining_at"`
+	Status     string   `json:"status" binding:"required"`
+	Username   string   `json:"username" binding:"required"`
+	Password   string   `json:"password" binding:"required"`
+	RoleIds    []string `json:"role_ids"`
+	PermIds    []string `json:"perm_ids"`
 }
 
 // EmployeeListQuery gom các tham số truy vấn employee list
@@ -53,18 +54,16 @@ func NewEmployeeService(client *ent.Client, userClient userPb.UserServiceClient)
 	}
 }
 
-func (s *EmployeeService) CreateEmployee(ctx context.Context, input EmployeeCreateInput) (*ent.Employee, *userPb.CreateUserResponse, error) {
-	positionObj, err := s.Client.Position.Query().
-		Where(position.ID(input.PositionID)).
-		WithDepartments().
-		Only(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	joiningAt, err := time.Parse(time.RFC3339, input.JoiningAt)
-	if err != nil {
-		return nil, nil, err
+func (s *EmployeeService) Create(ctx context.Context, orgID int, input EmployeeCreateInput) (*ent.Employee, *userPb.CreateUserResponse, error) {
+	var joiningAt time.Time
+	if input.JoiningAt != "" {
+		var err error
+		joiningAt, err = time.Parse(time.RFC3339, input.JoiningAt)
+		if err != nil {
+			return nil, nil, &ServiceError{Status: http.StatusBadRequest, Msg: "Invalid joining_at format, must be RFC3339"}
+		}
+	} else {
+		joiningAt = time.Now()
 	}
 
 	tx, err := s.Client.Tx(ctx)
@@ -80,15 +79,15 @@ func (s *EmployeeService) CreateEmployee(ctx context.Context, input EmployeeCrea
 	status := employee.Status(input.Status)
 	if status != employee.StatusActive && status != employee.StatusInactive {
 		tx.Rollback()
-		return nil, nil, err
+		return nil, nil, &ServiceError{Status: http.StatusBadRequest, Msg: "Invalid status"}
 	}
-
+	fmt.Println(input.PositionID, 999)
 	employeeObj, err := tx.Employee.Create().
 		SetCode(input.Code).
 		SetPositionID(input.PositionID).
-		SetOrgID(positionObj.Edges.Departments.OrgID).
 		SetJoiningAt(joiningAt).
 		SetStatus(status).
+		SetOrgID(orgID).
 		Save(ctx)
 	if err != nil {
 		tx.Rollback()
@@ -97,7 +96,7 @@ func (s *EmployeeService) CreateEmployee(ctx context.Context, input EmployeeCrea
 
 	if s.UserClient == nil {
 		tx.Rollback()
-		return nil, nil, err
+		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "User service unavailable"}
 	}
 
 	respb, err := s.UserClient.CreateUser(ctx, &userPb.CreateUserRequest{
@@ -204,7 +203,11 @@ func (s *EmployeeService) List(ctx context.Context, q EmployeeListQuery) ([]*ent
 }
 
 // GetEmployeeWithUserInfo fetches a single employee by id, org, enriches with user info
-func (s *EmployeeService) GetEmployeeWithUserInfo(ctx context.Context, id int, orgID int) (*ent.Employee, *userPb.User, error) {
+func (s *EmployeeService) GetEmployeeWithUserInfo(
+	ctx context.Context,
+	id int,
+	orgID int,
+) (*ent.Employee, *userPb.User, error) {
 	emp, err := s.Client.Employee.Query().
 		Where(employee.ID(id), employee.OrgID(orgID)).
 		WithPosition(func(q *ent.PositionQuery) {
@@ -218,11 +221,137 @@ func (s *EmployeeService) GetEmployeeWithUserInfo(ctx context.Context, id int, o
 	var userInfo *userPb.User
 	if emp.UserID != "" && s.UserClient != nil {
 		if uid, err := strconv.Atoi(emp.UserID); err == nil {
-			resp, err := s.UserClient.GetUsersByIDs(ctx, &userPb.GetUsersByIDsRequest{Ids: []int32{int32(uid)}})
+			resp, err := s.UserClient.GetUsersByIDs(
+				ctx,
+				&userPb.GetUsersByIDsRequest{Ids: []int32{int32(uid)}},
+			)
 			if err == nil && resp != nil && len(resp.Users) > 0 {
 				userInfo = resp.Users[0]
 			}
 		}
 	}
 	return emp, userInfo, nil
+}
+
+// DeleteById xóa employee theo id và org_id, nếu có user_id thì xóa luôn user qua userPb, tất cả trong 1 transaction. Trả về employee vừa xóa.
+func (s *EmployeeService) DeleteById(ctx context.Context, id int, orgID int) (*ent.Employee, error) {
+	tx, err := s.Client.Tx(ctx)
+	if err != nil {
+		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "Failed to start transaction"}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	emp, err := tx.Employee.Query().Where(employee.ID(id), employee.OrgID(orgID)).Only(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, &ServiceError{Status: http.StatusNotFound, Msg: "#1 DeleteById: not found or not in your organization"}
+	}
+	userID := emp.UserID
+
+	res, err := tx.Employee.Delete().Where(employee.ID(id), employee.OrgID(orgID)).Exec(ctx)
+	if err != nil || res == 0 {
+		tx.Rollback()
+		return nil, &ServiceError{Status: http.StatusNotFound, Msg: "#2 DeleteById: not found or not in your organization"}
+	}
+
+	// Nếu có user_id thì gọi xóa user bên user service
+	if userID != "" && s.UserClient != nil {
+		uid, err := strconv.Atoi(userID)
+		if err == nil {
+			_, err := s.UserClient.DeleteUserByID(ctx, &userPb.DeleteUserRequest{Id: int32(uid)})
+			if err != nil {
+				tx.Rollback()
+				return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#3 DeleteById: Failed to delete user in user service"}
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#4 DeleteById: Failed to commit transaction"}
+	}
+	return emp, nil
+}
+
+type EmployeeUpdateInput struct {
+	Code      string   `json:"code"`
+	FirstName string   `json:"first_name"`
+	LastName  string   `json:"last_name"`
+	Gender    string   `json:"gender"`
+	Phone     string   `json:"phone"`
+	Email     string   `json:"email"`
+	Address   string   `json:"address"`
+	WardCode  int      `json:"ward_code"`
+	AvatarURL string   `json:"avatar_url"`
+	JoiningAt string   `json:"joining_at"`
+	Status    string   `json:"status"`
+	Username  string   `json:"username"`
+	Password  string   `json:"password"`
+	RoleIds   []string `json:"role_ids"`
+	PermIds   []string `json:"perm_ids"`
+}
+
+// UpdateById cập nhật employee (trừ position_id), gọi userPb để cập nhật user nếu có user_id
+func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, input EmployeeUpdateInput) (*ent.Employee, *userPb.User, error) {
+	emp, err := s.Client.Employee.Query().Where(employee.ID(id), employee.OrgID(orgID)).Only(ctx)
+	if err != nil {
+		return nil, nil, &ServiceError{Status: http.StatusNotFound, Msg: "#1 UpdateById: Employee not found or not in your organization"}
+	}
+
+	upd := s.Client.Employee.UpdateOneID(id)
+	if input.Code != "" {
+		upd.SetCode(input.Code)
+	}
+	if input.JoiningAt != "" {
+		if joiningAt, err := time.Parse(time.RFC3339, input.JoiningAt); err == nil {
+			upd.SetJoiningAt(joiningAt)
+		}
+	}
+	if input.Status != "" {
+		upd.SetStatus(employee.Status(input.Status))
+	}
+
+	// Không cập nhật position_id, các trường không có trong ent/employee cũng không cập nhật
+	updatedEmp, err := upd.Save(ctx)
+	if err != nil {
+		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: err.Error()}
+	}
+
+	// Gọi userPb để cập nhật user nếu có user_id (nếu có method UpdateUser)
+	var userInfo *userPb.User
+	fmt.Println(000000, emp.UserID)
+
+	if emp.UserID != "" && s.UserClient != nil {
+		fmt.Println(111111, emp.UserID)
+		if uid, err := strconv.Atoi(emp.UserID); err == nil {
+			fmt.Println(222222, emp.UserID)
+			userReq := &userPb.UpdateUserRequest{
+				Id:        int32(uid),
+				FirstName: input.FirstName,
+				LastName:  input.LastName,
+				Email:     input.Email,
+				Gender:    input.Gender,
+				Phone:     input.Phone,
+				Address:   input.Address,
+				WardCode:  strconv.Itoa(input.WardCode),
+				RoleIds:   input.RoleIds,
+				PermIds:   input.PermIds,
+				Account: &userPb.Account{
+					Username: input.Username,
+					Password: input.Password,
+				},
+			}
+			userResp, err := s.UserClient.UpdateUserByID(ctx, userReq)
+			fmt.Println(333333, err)
+			if err == nil {
+				fmt.Println(123456, userResp)
+				userInfo = userResp.User
+			}
+		}
+	}
+
+	return updatedEmp, userInfo, nil
 }
