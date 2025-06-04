@@ -13,7 +13,6 @@ import (
 	userpb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
-	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
@@ -50,7 +49,6 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		Description *string `json:"description"`
 		StartAt     *string `json:"start_at"`
 		EndAt       *string `json:"end_at"`
-		Visibility  *string `json:"visibility"`
 		MemberIDs   []int   `json:"member_ids"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -87,23 +85,6 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 			return
 		}
 		endAtPtr = &endAt
-	}
-
-	var visibilityVal project.Visibility
-	if req.Visibility != nil {
-		switch *req.Visibility {
-		case string(project.VisibilityPrivate),
-			string(project.VisibilityPublic),
-			string(project.VisibilityInternal):
-			visibilityVal = project.Visibility(*req.Visibility)
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid visibility value. Valid values: private, public, internal",
-			})
-			return
-		}
-	} else {
-		visibilityVal = project.VisibilityPrivate
 	}
 
 	// Auto-generate code if not provided
@@ -219,8 +200,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		SetNillableEndAt(endAtPtr).
 		SetCreatorID(employeeID).
 		SetUpdaterID(employeeID).
-		SetOrgID(orgID).
-		SetVisibility(visibilityVal)
+		SetOrgID(orgID)
 
 	// Add member IDs if there are any
 	if len(allMemberIDs) > 0 {
@@ -256,17 +236,16 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 // - name: Filter by project name (contains search)
 // - code: Filter by project code (contains search)
 // - status: Filter by status (not_started, in_progress, completed)
-// - visibility: Filter by visibility (private, public, internal)
 // - org_id: Filter by organization ID
 // - process: Filter by process percentage
 // - start_date_from: Filter projects that start from this date (RFC3339 format)
 // - start_date_to: Filter projects that start before this date (RFC3339 format)
-// - order_by: Sort field (id, name, code, start_at, end_at, status, visibility, process, org_id, created_at, updated_at, tasks_count)
+// - order_by: Sort field (id, name, code, start_at, end_at, status, process, org_id, created_at, updated_at, tasks_count)
 // - order_dir: Sort direction (asc, desc) - default: desc
 // - page: Page number (default: 1)
 // - limit: Items per page (default: 10, max: 100)
 //
-// Example: GET /projects?name=example&status=in_progress&visibility=public&order_by=name&order_dir=asc&page=1&limit=20
+// Example: GET /projects?name=example&status=in_progress&order_by=name&order_dir=asc&page=1&limit=20
 func (h *ProjectHandler) List(c *gin.Context) {
 	// Extract IDs from JWT token
 	ids, err := utils.ExtractIDsFromToken(c)
@@ -274,87 +253,15 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	orgID := ids["org_id"]
 	employeeID := ids["employee_id"]
 
-	// Build base query without hard filtering by org_id
+	// Build base query
 	query := h.Client.Project.Query().
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
-		WithMembers()
-
-	// Apply visibility-based filtering
-	visibilityConditions := []predicate.Project{}
-
-	// Check if user wants to filter by specific visibility
-	visibilityFilter := c.Query("visibility")
-
-	if visibilityFilter != "" {
-		// Filter by specific visibility type
-		switch visibilityFilter {
-		case string(project.VisibilityPublic):
-			// Only show public projects where user is a member
-			visibilityConditions = append(visibilityConditions,
-				project.And(
-					project.VisibilityEQ(project.VisibilityPublic),
-					project.HasMembersWith(employee.IDEQ(employeeID)),
-				),
-			)
-		case string(project.VisibilityInternal):
-			// Only show internal projects that belong to user's org and user is a member
-			visibilityConditions = append(visibilityConditions,
-				project.And(
-					project.VisibilityEQ(project.VisibilityInternal),
-					project.OrgIDEQ(orgID),
-					project.HasMembersWith(employee.IDEQ(employeeID)),
-				),
-			)
-		case string(project.VisibilityPrivate):
-			// Only show private projects where user is a member
-			visibilityConditions = append(visibilityConditions,
-				project.And(
-					project.VisibilityEQ(project.VisibilityPrivate),
-					project.HasMembersWith(employee.IDEQ(employeeID)),
-				),
-			)
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid visibility value. Valid values: private, public, internal",
-			})
-			return
-		}
-	} else {
-		// No specific visibility filter - show all projects where user is a member
-
-		// Public projects - visible if user is a member
-		visibilityConditions = append(visibilityConditions,
-			project.And(
-				project.VisibilityEQ(project.VisibilityPublic),
-				project.HasMembersWith(employee.IDEQ(employeeID)),
-			),
-		)
-
-		// Internal projects - visible if user belongs to the same org and is a member
-		visibilityConditions = append(visibilityConditions,
-			project.And(
-				project.VisibilityEQ(project.VisibilityInternal),
-				project.OrgIDEQ(orgID),
-				project.HasMembersWith(employee.IDEQ(employeeID)),
-			),
-		)
-
-		// Private projects - visible only if user is a member
-		visibilityConditions = append(visibilityConditions,
-			project.And(
-				project.VisibilityEQ(project.VisibilityPrivate),
-				project.HasMembersWith(employee.IDEQ(employeeID)),
-			),
-		)
-	}
-
-	// Apply OR condition for all visibility rules
-	query = query.Where(project.Or(visibilityConditions...))
+		WithMembers().
+		Where(project.HasMembersWith(employee.IDEQ(employeeID)))
 
 	// Filter by name
 	if name := c.Query("name"); name != "" {
@@ -463,12 +370,6 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		} else {
 			orderOption = project.ByStatus(sql.OrderDesc())
 		}
-	case "visibility":
-		if orderDir == "asc" {
-			orderOption = project.ByVisibility()
-		} else {
-			orderOption = project.ByVisibility(sql.OrderDesc())
-		}
 	case "process":
 		if orderDir == "asc" {
 			orderOption = project.ByProcess()
@@ -501,7 +402,7 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		}
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid order_by field. Valid fields: id, name, code, start_at, end_at, status, visibility, process, org_id, created_at, updated_at, tasks_count",
+			"error": "Invalid order_by field. Valid fields: id, name, code, start_at, end_at, status, process, org_id, created_at, updated_at, tasks_count",
 		})
 		return
 	}
@@ -524,10 +425,8 @@ func (h *ProjectHandler) List(c *gin.Context) {
 	}
 
 	// Create a separate query for total count with the same filters
-	countQuery := h.Client.Project.Query()
-
-	// Apply same visibility conditions to count query
-	countQuery = countQuery.Where(project.Or(visibilityConditions...))
+	countQuery := h.Client.Project.Query().
+		Where(project.HasMembersWith(employee.IDEQ(employeeID)))
 
 	// Apply the same filters to count query
 	if name := c.Query("name"); name != "" {
@@ -692,7 +591,6 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		OrgID       *int    `json:"org_id"`
 		Process     *int    `json:"process"`
 		Status      *string `json:"status"`
-		Visibility  *string `json:"visibility"`
 		MemberIDs   []int   `json:"member_ids"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -790,15 +688,6 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 			projectUpdate.SetStatus(project.Status(*req.Status))
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value"})
-			return
-		}
-	}
-	if req.Visibility != nil {
-		switch *req.Visibility {
-		case string(project.VisibilityPrivate), string(project.VisibilityPublic), string(project.VisibilityInternal):
-			projectUpdate.SetVisibility(project.Visibility(*req.Visibility))
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid visibility value. Valid values: private, public, internal"})
 			return
 		}
 	}
@@ -1036,7 +925,6 @@ func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 		"org_id":      proj.OrgID,
 		"process":     proj.Process,
 		"status":      proj.Status,
-		"visibility":  proj.Visibility,
 		"created_at":  proj.CreatedAt,
 		"updated_at":  proj.UpdatedAt,
 	}
@@ -1151,7 +1039,6 @@ func (h *ProjectHandler) enrichProjectWithUserInfoForGet(proj *ent.Project, user
 		"org_id":      proj.OrgID,
 		"process":     proj.Process,
 		"status":      proj.Status,
-		"visibility":  proj.Visibility,
 		"created_at":  proj.CreatedAt,
 		"updated_at":  proj.UpdatedAt,
 	}

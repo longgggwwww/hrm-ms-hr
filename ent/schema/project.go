@@ -50,24 +50,14 @@ func (Project) Fields() []ent.Field {
 					"in_progress": 1,
 					"completed":   2,
 				})),
-		field.Enum("visibility").
-			Values("private", "public", "internal").
-			Default("private").
-			Annotations(
-				entproto.Field(12),
-				entproto.Enum(map[string]int32{
-					"private":  0,
-					"public":   1,
-					"internal": 2,
-				})),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
-			Annotations(entproto.Field(13)),
+			Annotations(entproto.Field(12)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
-			Annotations(entproto.Field(14)),
+			Annotations(entproto.Field(13)),
 	}
 }
 
@@ -75,27 +65,27 @@ func (Project) Fields() []ent.Field {
 func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tasks", Task.Type).
-			Annotations(entproto.Field(15)),
+			Annotations(entproto.Field(14)),
 		edge.From("organization", Organization.Type).
 			Ref("projects").
 			Field("org_id").
 			Unique().
 			Required().
-			Annotations(entproto.Field(16)),
+			Annotations(entproto.Field(15)),
 		edge.From("creator", Employee.Type).
 			Ref("created_projects").
 			Field("creator_id").
 			Unique().
 			Required().
-			Annotations(entproto.Field(17)),
+			Annotations(entproto.Field(16)),
 		edge.From("updater", Employee.Type).
 			Ref("updated_projects").
 			Field("updater_id").
 			Unique().
 			Required().
-			Annotations(entproto.Field(18)),
+			Annotations(entproto.Field(17)),
 		edge.To("members", Employee.Type).
-			Annotations(entproto.Field(19)),
+			Annotations(entproto.Field(18)),
 	}
 }
 

@@ -7000,7 +7000,6 @@ type ProjectMutation struct {
 	process             *int
 	addprocess          *int
 	status              *project.Status
-	visibility          *project.Visibility
 	created_at          *time.Time
 	updated_at          *time.Time
 	clearedFields       map[string]struct{}
@@ -7552,42 +7551,6 @@ func (m *ProjectMutation) ResetStatus() {
 	m.status = nil
 }
 
-// SetVisibility sets the "visibility" field.
-func (m *ProjectMutation) SetVisibility(pr project.Visibility) {
-	m.visibility = &pr
-}
-
-// Visibility returns the value of the "visibility" field in the mutation.
-func (m *ProjectMutation) Visibility() (r project.Visibility, exists bool) {
-	v := m.visibility
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldVisibility returns the old "visibility" field's value of the Project entity.
-// If the Project object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldVisibility(ctx context.Context) (v project.Visibility, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldVisibility is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldVisibility requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldVisibility: %w", err)
-	}
-	return oldValue.Visibility, nil
-}
-
-// ResetVisibility resets all changes to the "visibility" field.
-func (m *ProjectMutation) ResetVisibility() {
-	m.visibility = nil
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *ProjectMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -7896,7 +7859,7 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 12)
 	if m.name != nil {
 		fields = append(fields, project.FieldName)
 	}
@@ -7926,9 +7889,6 @@ func (m *ProjectMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, project.FieldStatus)
-	}
-	if m.visibility != nil {
-		fields = append(fields, project.FieldVisibility)
 	}
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
@@ -7964,8 +7924,6 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.Process()
 	case project.FieldStatus:
 		return m.Status()
-	case project.FieldVisibility:
-		return m.Visibility()
 	case project.FieldCreatedAt:
 		return m.CreatedAt()
 	case project.FieldUpdatedAt:
@@ -7999,8 +7957,6 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldProcess(ctx)
 	case project.FieldStatus:
 		return m.OldStatus(ctx)
-	case project.FieldVisibility:
-		return m.OldVisibility(ctx)
 	case project.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case project.FieldUpdatedAt:
@@ -8083,13 +8039,6 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
-		return nil
-	case project.FieldVisibility:
-		v, ok := value.(project.Visibility)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetVisibility(v)
 		return nil
 	case project.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -8225,9 +8174,6 @@ func (m *ProjectMutation) ResetField(name string) error {
 		return nil
 	case project.FieldStatus:
 		m.ResetStatus()
-		return nil
-	case project.FieldVisibility:
-		m.ResetVisibility()
 		return nil
 	case project.FieldCreatedAt:
 		m.ResetCreatedAt()

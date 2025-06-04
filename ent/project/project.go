@@ -35,8 +35,6 @@ const (
 	FieldProcess = "process"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// FieldVisibility holds the string denoting the visibility field in the database.
-	FieldVisibility = "visibility"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -101,7 +99,6 @@ var Columns = []string{
 	FieldOrgID,
 	FieldProcess,
 	FieldStatus,
-	FieldVisibility,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -155,33 +152,6 @@ func StatusValidator(s Status) error {
 		return nil
 	default:
 		return fmt.Errorf("project: invalid enum value for status field: %q", s)
-	}
-}
-
-// Visibility defines the type for the "visibility" enum field.
-type Visibility string
-
-// VisibilityPrivate is the default value of the Visibility enum.
-const DefaultVisibility = VisibilityPrivate
-
-// Visibility values.
-const (
-	VisibilityPrivate  Visibility = "private"
-	VisibilityPublic   Visibility = "public"
-	VisibilityInternal Visibility = "internal"
-)
-
-func (v Visibility) String() string {
-	return string(v)
-}
-
-// VisibilityValidator is a validator for the "visibility" field enum values. It is called by the builders before save.
-func VisibilityValidator(v Visibility) error {
-	switch v {
-	case VisibilityPrivate, VisibilityPublic, VisibilityInternal:
-		return nil
-	default:
-		return fmt.Errorf("project: invalid enum value for visibility field: %q", v)
 	}
 }
 
@@ -241,11 +211,6 @@ func ByProcess(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
-}
-
-// ByVisibility orders the results by the visibility field.
-func ByVisibility(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldVisibility, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

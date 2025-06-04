@@ -628,21 +628,19 @@ message Project {
 
   Status status = 11;
 
-  Visibility visibility = 12;
+  google.protobuf.Timestamp created_at = 12;
 
-  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 13;
 
-  google.protobuf.Timestamp updated_at = 14;
+  repeated Task tasks = 14;
 
-  repeated Task tasks = 15;
+  Organization organization = 15;
 
-  Organization organization = 16;
+  Employee creator = 16;
 
-  Employee creator = 17;
+  Employee updater = 17;
 
-  Employee updater = 18;
-
-  repeated Employee members = 19;
+  repeated Employee members = 18;
 
   enum Status {
     STATUS_NOT_STARTED = 0;
@@ -650,14 +648,6 @@ message Project {
     STATUS_IN_PROGRESS = 1;
 
     STATUS_COMPLETED = 2;
-  }
-
-  enum Visibility {
-    VISIBILITY_PRIVATE = 0;
-
-    VISIBILITY_PUBLIC = 1;
-
-    VISIBILITY_INTERNAL = 2;
   }
 }
 

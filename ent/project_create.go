@@ -125,20 +125,6 @@ func (pc *ProjectCreate) SetNillableStatus(pr *project.Status) *ProjectCreate {
 	return pc
 }
 
-// SetVisibility sets the "visibility" field.
-func (pc *ProjectCreate) SetVisibility(pr project.Visibility) *ProjectCreate {
-	pc.mutation.SetVisibility(pr)
-	return pc
-}
-
-// SetNillableVisibility sets the "visibility" field if the given value is not nil.
-func (pc *ProjectCreate) SetNillableVisibility(pr *project.Visibility) *ProjectCreate {
-	if pr != nil {
-		pc.SetVisibility(*pr)
-	}
-	return pc
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (pc *ProjectCreate) SetCreatedAt(t time.Time) *ProjectCreate {
 	pc.mutation.SetCreatedAt(t)
@@ -257,10 +243,6 @@ func (pc *ProjectCreate) defaults() {
 		v := project.DefaultStatus
 		pc.mutation.SetStatus(v)
 	}
-	if _, ok := pc.mutation.Visibility(); !ok {
-		v := project.DefaultVisibility
-		pc.mutation.SetVisibility(v)
-	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		v := project.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
@@ -294,14 +276,6 @@ func (pc *ProjectCreate) check() error {
 	if v, ok := pc.mutation.Status(); ok {
 		if err := project.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Project.status": %w`, err)}
-		}
-	}
-	if _, ok := pc.mutation.Visibility(); !ok {
-		return &ValidationError{Name: "visibility", err: errors.New(`ent: missing required field "Project.visibility"`)}
-	}
-	if v, ok := pc.mutation.Visibility(); ok {
-		if err := project.VisibilityValidator(v); err != nil {
-			return &ValidationError{Name: "visibility", err: fmt.Errorf(`ent: validator failed for field "Project.visibility": %w`, err)}
 		}
 	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
@@ -373,10 +347,6 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Status(); ok {
 		_spec.SetField(project.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
-	}
-	if value, ok := pc.mutation.Visibility(); ok {
-		_spec.SetField(project.FieldVisibility, field.TypeEnum, value)
-		_node.Visibility = value
 	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
@@ -671,18 +641,6 @@ func (u *ProjectUpsert) UpdateStatus() *ProjectUpsert {
 	return u
 }
 
-// SetVisibility sets the "visibility" field.
-func (u *ProjectUpsert) SetVisibility(v project.Visibility) *ProjectUpsert {
-	u.Set(project.FieldVisibility, v)
-	return u
-}
-
-// UpdateVisibility sets the "visibility" field to the value that was provided on create.
-func (u *ProjectUpsert) UpdateVisibility() *ProjectUpsert {
-	u.SetExcluded(project.FieldVisibility)
-	return u
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (u *ProjectUpsert) SetUpdatedAt(v time.Time) *ProjectUpsert {
 	u.Set(project.FieldUpdatedAt, v)
@@ -912,20 +870,6 @@ func (u *ProjectUpsertOne) SetStatus(v project.Status) *ProjectUpsertOne {
 func (u *ProjectUpsertOne) UpdateStatus() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateStatus()
-	})
-}
-
-// SetVisibility sets the "visibility" field.
-func (u *ProjectUpsertOne) SetVisibility(v project.Visibility) *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.SetVisibility(v)
-	})
-}
-
-// UpdateVisibility sets the "visibility" field to the value that was provided on create.
-func (u *ProjectUpsertOne) UpdateVisibility() *ProjectUpsertOne {
-	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateVisibility()
 	})
 }
 
@@ -1326,20 +1270,6 @@ func (u *ProjectUpsertBulk) SetStatus(v project.Status) *ProjectUpsertBulk {
 func (u *ProjectUpsertBulk) UpdateStatus() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateStatus()
-	})
-}
-
-// SetVisibility sets the "visibility" field.
-func (u *ProjectUpsertBulk) SetVisibility(v project.Visibility) *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.SetVisibility(v)
-	})
-}
-
-// UpdateVisibility sets the "visibility" field to the value that was provided on create.
-func (u *ProjectUpsertBulk) UpdateVisibility() *ProjectUpsertBulk {
-	return u.Update(func(s *ProjectUpsert) {
-		s.UpdateVisibility()
 	})
 }
 

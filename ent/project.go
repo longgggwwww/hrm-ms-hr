@@ -39,8 +39,6 @@ type Project struct {
 	Process int `json:"process,omitempty"`
 	// Status holds the value of the "status" field.
 	Status project.Status `json:"status,omitempty"`
-	// Visibility holds the value of the "visibility" field.
-	Visibility project.Visibility `json:"visibility,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -126,7 +124,7 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case project.FieldID, project.FieldCreatorID, project.FieldUpdaterID, project.FieldOrgID, project.FieldProcess:
 			values[i] = new(sql.NullInt64)
-		case project.FieldName, project.FieldCode, project.FieldDescription, project.FieldStatus, project.FieldVisibility:
+		case project.FieldName, project.FieldCode, project.FieldDescription, project.FieldStatus:
 			values[i] = new(sql.NullString)
 		case project.FieldStartAt, project.FieldEndAt, project.FieldCreatedAt, project.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -210,12 +208,6 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				pr.Status = project.Status(value.String)
-			}
-		case project.FieldVisibility:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field visibility", values[i])
-			} else if value.Valid {
-				pr.Visibility = project.Visibility(value.String)
 			}
 		case project.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -319,9 +311,6 @@ func (pr *Project) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", pr.Status))
-	builder.WriteString(", ")
-	builder.WriteString("visibility=")
-	builder.WriteString(fmt.Sprintf("%v", pr.Visibility))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
