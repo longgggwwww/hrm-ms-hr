@@ -700,17 +700,39 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		return
 	}
 
+	// Extract employee ID from JWT token
+	ids, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	employeeID := ids["employee_id"]
+
+	// Check if the project exists and if the current user is the creator
+	existingProject, err := h.Client.Project.Query().
+		Where(project.ID(id)).
+		Only(c.Request.Context())
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		}
+		return
+	}
+
+	// Check if current employee is the creator of the project
+	if existingProject.CreatorID != employeeID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only the project creator can update this project"})
+		return
+	}
+
 	projectUpdate := h.Client.Project.UpdateOneID(id)
 	if req.Name != nil {
 		projectUpdate.SetName(*req.Name)
 	}
 	if req.Code != nil {
 		// Check if the new code already exists in the organization (excluding current project)
-		ids, err := utils.ExtractIDsFromToken(c)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
-		}
 		orgID := ids["org_id"]
 
 		existingProject, err := h.Client.Project.Query().
@@ -787,12 +809,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		projectUpdate.ClearMembers()
 
 		if len(req.MemberIDs) > 0 {
-			// Extract org_id from token for validation
-			ids, err := utils.ExtractIDsFromToken(c)
-			if err != nil {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-				return
-			}
+			// Use orgID already extracted from token
 			orgID := ids["org_id"]
 
 			// Validate that all member IDs exist in the employee table and belong to the same organization

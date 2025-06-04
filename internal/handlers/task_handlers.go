@@ -10,6 +10,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
+	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -54,13 +55,31 @@ func (h *TaskHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// Extract user ID from JWT token
+	// Extract user ID and employee ID from JWT token
 	ids, err := utils.ExtractIDsFromToken(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 	userID := ids["user_id"]
+	employeeID := ids["employee_id"]
+
+	// Validate project membership if project_id is provided
+	if req.ProjectID != nil {
+		// Check if the employee is a member of the specified project
+		projectExists, err := h.Client.Project.Query().
+			Where(project.ID(*req.ProjectID)).
+			Where(project.HasMembersWith(employee.ID(employeeID))).
+			Exist(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate project membership"})
+			return
+		}
+		if !projectExists {
+			c.JSON(http.StatusForbidden, gin.H{"error": "You are not a member of this project"})
+			return
+		}
+	}
 
 	// Parse start_at if provided
 	var startAtPtr *time.Time
