@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -38,7 +39,7 @@ func (h *ProjectHandler) RegisterRoutes(r *gin.Engine) {
 		projs.GET("/:id", h.Get)
 		projs.PATCH("/:id", h.Update)
 		projs.DELETE("/:id", h.Delete)
-		projs.DELETE("/", h.BulkDelete)
+		projs.DELETE("/", h.DeleteBulk)
 	}
 }
 
@@ -249,6 +250,7 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 }
 
 // List retrieves projects with filtering, sorting, and pagination support.
+// Only returns projects where the current employee is a member.
 //
 // Query Parameters:
 // - name: Filter by project name (contains search)
@@ -256,11 +258,10 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 // - status: Filter by status (not_started, in_progress, completed)
 // - visibility: Filter by visibility (private, public, internal)
 // - org_id: Filter by organization ID
-// - creator_id: Filter by creator ID
 // - process: Filter by process percentage
 // - start_date_from: Filter projects that start from this date (RFC3339 format)
 // - start_date_to: Filter projects that start before this date (RFC3339 format)
-// - order_by: Sort field (id, name, code, start_at, end_at, status, visibility, process, org_id, creator_id, created_at, updated_at, tasks_count)
+// - order_by: Sort field (id, name, code, start_at, end_at, status, visibility, process, org_id, created_at, updated_at, tasks_count)
 // - order_dir: Sort direction (asc, desc) - default: desc
 // - page: Page number (default: 1)
 // - limit: Items per page (default: 10, max: 100)
@@ -286,40 +287,90 @@ func (h *ProjectHandler) List(c *gin.Context) {
 	// Apply visibility-based filtering
 	visibilityConditions := []predicate.Project{}
 
-	// Public projects - visible to everyone
-	visibilityConditions = append(visibilityConditions, project.VisibilityEQ(project.VisibilityPublic))
+	// Check if user wants to filter by specific visibility
+	visibilityFilter := c.Query("visibility")
 
-	// Internal projects - visible if user belongs to the same org
-	visibilityConditions = append(visibilityConditions,
-		project.And(
-			project.VisibilityEQ(project.VisibilityInternal),
-			project.OrgIDEQ(orgID),
-		),
-	)
+	if visibilityFilter != "" {
+		// Filter by specific visibility type
+		switch visibilityFilter {
+		case string(project.VisibilityPublic):
+			// Only show public projects where user is a member
+			visibilityConditions = append(visibilityConditions,
+				project.And(
+					project.VisibilityEQ(project.VisibilityPublic),
+					project.HasMembersWith(employee.IDEQ(employeeID)),
+				),
+			)
+		case string(project.VisibilityInternal):
+			// Only show internal projects that belong to user's org and user is a member
+			visibilityConditions = append(visibilityConditions,
+				project.And(
+					project.VisibilityEQ(project.VisibilityInternal),
+					project.OrgIDEQ(orgID),
+					project.HasMembersWith(employee.IDEQ(employeeID)),
+				),
+			)
+		case string(project.VisibilityPrivate):
+			// Only show private projects where user is a member
+			visibilityConditions = append(visibilityConditions,
+				project.And(
+					project.VisibilityEQ(project.VisibilityPrivate),
+					project.HasMembersWith(employee.IDEQ(employeeID)),
+				),
+			)
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid visibility value. Valid values: private, public, internal",
+			})
+			return
+		}
+	} else {
+		// No specific visibility filter - show all projects where user is a member
 
-	// Private projects - visible only if user is a member
-	visibilityConditions = append(visibilityConditions,
-		project.And(
-			project.VisibilityEQ(project.VisibilityPrivate),
-			project.HasMembersWith(employee.IDEQ(employeeID)),
-		),
-	)
+		// Public projects - visible if user is a member
+		visibilityConditions = append(visibilityConditions,
+			project.And(
+				project.VisibilityEQ(project.VisibilityPublic),
+				project.HasMembersWith(employee.IDEQ(employeeID)),
+			),
+		)
+
+		// Internal projects - visible if user belongs to the same org and is a member
+		visibilityConditions = append(visibilityConditions,
+			project.And(
+				project.VisibilityEQ(project.VisibilityInternal),
+				project.OrgIDEQ(orgID),
+				project.HasMembersWith(employee.IDEQ(employeeID)),
+			),
+		)
+
+		// Private projects - visible only if user is a member
+		visibilityConditions = append(visibilityConditions,
+			project.And(
+				project.VisibilityEQ(project.VisibilityPrivate),
+				project.HasMembersWith(employee.IDEQ(employeeID)),
+			),
+		)
+	}
 
 	// Apply OR condition for all visibility rules
 	query = query.Where(project.Or(visibilityConditions...))
 
 	// Filter by name
 	if name := c.Query("name"); name != "" {
+		log.Println("go name")
 		query = query.Where(project.NameContains(name))
 	}
 
 	// Filter by code
 	if code := c.Query("code"); code != "" {
+		log.Println("go code")
 		query = query.Where(project.CodeContains(code))
 	}
 
 	// Filter by status
 	if status := c.Query("status"); status != "" {
+		log.Println("go status")
 		switch status {
 		case string(project.StatusNotStarted),
 			string(project.StatusInProgress),
@@ -331,57 +382,6 @@ func (h *ProjectHandler) List(c *gin.Context) {
 			})
 			return
 		}
-	}
-
-	// Filter by visibility (optional additional filter on top of access control)
-	if visibility := c.Query("visibility"); visibility != "" {
-		switch visibility {
-		case string(project.VisibilityPrivate),
-			string(project.VisibilityPublic),
-			string(project.VisibilityInternal):
-			// Apply additional filter on top of existing visibility rules
-			additionalVisibilityConditions := []predicate.Project{}
-
-			if visibility == string(project.VisibilityPublic) {
-				additionalVisibilityConditions = append(additionalVisibilityConditions, project.VisibilityEQ(project.VisibilityPublic))
-			} else if visibility == string(project.VisibilityInternal) {
-				additionalVisibilityConditions = append(additionalVisibilityConditions,
-					project.And(
-						project.VisibilityEQ(project.VisibilityInternal),
-						project.OrgIDEQ(orgID),
-					),
-				)
-			} else if visibility == string(project.VisibilityPrivate) {
-				additionalVisibilityConditions = append(additionalVisibilityConditions,
-					project.And(
-						project.VisibilityEQ(project.VisibilityPrivate),
-						project.HasMembersWith(employee.IDEQ(employeeID)),
-					),
-				)
-			}
-
-			// Apply OR condition for additional visibility filter
-			if len(additionalVisibilityConditions) > 0 {
-				query = query.Where(project.Or(additionalVisibilityConditions...))
-			}
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid visibility value. Valid values: private, public, internal",
-			})
-			return
-		}
-	}
-
-	// Filter by creator_id
-	if creatorIDStr := c.Query("creator_id"); creatorIDStr != "" {
-		creatorID, err := strconv.Atoi(creatorIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid creator_id format",
-			})
-			return
-		}
-		query = query.Where(project.CreatorIDEQ(creatorID))
 	}
 
 	// Filter by process (percentage)
@@ -398,6 +398,7 @@ func (h *ProjectHandler) List(c *gin.Context) {
 
 	// Date range filtering
 	if startDateStr := c.Query("start_date_from"); startDateStr != "" {
+		log.Println("go start_date_from")
 		startDate, err := time.Parse(time.RFC3339, startDateStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -409,6 +410,7 @@ func (h *ProjectHandler) List(c *gin.Context) {
 	}
 
 	if startDateStr := c.Query("start_date_to"); startDateStr != "" {
+		log.Println("go start_date_to")
 		startDate, err := time.Parse(time.RFC3339, startDateStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -479,12 +481,6 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		} else {
 			orderOption = project.ByOrgID(sql.OrderDesc())
 		}
-	case "creator_id":
-		if orderDir == "asc" {
-			orderOption = project.ByCreatorID()
-		} else {
-			orderOption = project.ByCreatorID(sql.OrderDesc())
-		}
 	case "created_at":
 		if orderDir == "asc" {
 			orderOption = project.ByCreatedAt()
@@ -505,7 +501,7 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		}
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid order_by field. Valid fields: id, name, code, start_at, end_at, status, visibility, process, org_id, creator_id, created_at, updated_at, tasks_count",
+			"error": "Invalid order_by field. Valid fields: id, name, code, start_at, end_at, status, visibility, process, org_id, created_at, updated_at, tasks_count",
 		})
 		return
 	}
@@ -527,10 +523,50 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		}
 	}
 
-	offset := (page - 1) * limit
-	query = query.Offset(offset).Limit(limit)
+	// Create a separate query for total count with the same filters
+	countQuery := h.Client.Project.Query()
 
-	projects, err := query.All(c.Request.Context())
+	// Apply same visibility conditions to count query
+	countQuery = countQuery.Where(project.Or(visibilityConditions...))
+
+	// Apply the same filters to count query
+	if name := c.Query("name"); name != "" {
+		countQuery = countQuery.Where(project.NameContains(name))
+	}
+
+	if code := c.Query("code"); code != "" {
+		countQuery = countQuery.Where(project.CodeContains(code))
+	}
+
+	if status := c.Query("status"); status != "" {
+		switch status {
+		case string(project.StatusNotStarted),
+			string(project.StatusInProgress),
+			string(project.StatusCompleted):
+			countQuery = countQuery.Where(project.StatusEQ(project.Status(status)))
+		}
+	}
+
+	if processStr := c.Query("process"); processStr != "" {
+		if process, err := strconv.Atoi(processStr); err == nil {
+			countQuery = countQuery.Where(project.ProcessEQ(process))
+		}
+	}
+
+	if startDateStr := c.Query("start_date_from"); startDateStr != "" {
+		if startDate, err := time.Parse(time.RFC3339, startDateStr); err == nil {
+			countQuery = countQuery.Where(project.StartAtGTE(startDate))
+		}
+	}
+
+	if startDateStr := c.Query("start_date_to"); startDateStr != "" {
+		if startDate, err := time.Parse(time.RFC3339, startDateStr); err == nil {
+			countQuery = countQuery.Where(project.StartAtLTE(startDate))
+		}
+	}
+
+	// Get total count for pagination info with same filters
+	total, err := countQuery.Count(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{
 			"error": err.Error(),
@@ -538,8 +574,10 @@ func (h *ProjectHandler) List(c *gin.Context) {
 		return
 	}
 
-	// Get total count for pagination info
-	total, err := h.Client.Project.Query().Count(c.Request.Context())
+	offset := (page - 1) * limit
+	query = query.Offset(offset).Limit(limit)
+
+	projects, err := query.All(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{
 			"error": err.Error(),
@@ -655,6 +693,7 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		Process     *int    `json:"process"`
 		Status      *string `json:"status"`
 		Visibility  *string `json:"visibility"`
+		MemberIDs   []int   `json:"member_ids"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -742,6 +781,57 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		}
 	}
 
+	// Handle member assignments
+	if req.MemberIDs != nil {
+		// Clear existing members first
+		projectUpdate.ClearMembers()
+
+		if len(req.MemberIDs) > 0 {
+			// Extract org_id from token for validation
+			ids, err := utils.ExtractIDsFromToken(c)
+			if err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+			orgID := ids["org_id"]
+
+			// Validate that all member IDs exist in the employee table and belong to the same organization
+			existingEmployees, err := h.Client.Employee.Query().
+				Where(employee.IDIn(req.MemberIDs...)).
+				Where(employee.OrgID(orgID)).
+				Select(employee.FieldID).
+				All(c.Request.Context())
+			if err != nil {
+				c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to validate member IDs"})
+				return
+			}
+
+			// Create map of existing employee IDs for validation
+			existingIDs := make(map[int]bool)
+			for _, emp := range existingEmployees {
+				existingIDs[emp.ID] = true
+			}
+
+			// Check if all requested member IDs exist
+			var invalidIDs []int
+			for _, id := range req.MemberIDs {
+				if !existingIDs[id] {
+					invalidIDs = append(invalidIDs, id)
+				}
+			}
+
+			if len(invalidIDs) > 0 {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error":       "Some member IDs do not exist or do not belong to your organization",
+					"invalid_ids": invalidIDs,
+				})
+				return
+			}
+
+			projectUpdate.AddMemberIDs(req.MemberIDs...)
+		}
+	}
+
 	_, err = projectUpdate.Save(c.Request.Context())
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -784,7 +874,7 @@ func (h *ProjectHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// BulkDelete deletes multiple projects by their IDs.
+// DeleteBulk deletes multiple projects by their IDs.
 //
 // Request body should contain:
 //
@@ -796,7 +886,7 @@ func (h *ProjectHandler) Delete(c *gin.Context) {
 // - deleted_count: number of successfully deleted projects
 // - failed_ids: array of IDs that failed to delete (if any)
 // - errors: array of error messages for failed deletions (if any)
-func (h *ProjectHandler) BulkDelete(c *gin.Context) {
+func (h *ProjectHandler) DeleteBulk(c *gin.Context) {
 	var req struct {
 		IDs []int `json:"ids" binding:"required,min=1"`
 	}
