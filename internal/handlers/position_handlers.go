@@ -5,18 +5,18 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	pb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
+	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 )
 
 type PositionHandler struct {
 	Client     *ent.Client
-	UserClient *pb.UserServiceClient
+	UserClient *grpc_clients.UserServiceClient
 }
 
-func NewPositionHandler(client *ent.Client, userClient *pb.UserServiceClient) *PositionHandler {
+func NewPositionHandler(client *ent.Client, userClient *grpc_clients.UserServiceClient) *PositionHandler {
 	return &PositionHandler{
 		Client:     client,
 		UserClient: userClient,

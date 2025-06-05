@@ -7,7 +7,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 )
 
 // Get retrieves a single label by ID
@@ -33,7 +33,7 @@ func (s *LabelService) Get(ctx context.Context, id int) (*ent.Label, error) {
 }
 
 // List retrieves labels with filtering, sorting, and pagination
-func (s *LabelService) List(ctx context.Context, query dto.LabelListQuery) (*dto.LabelListResponse, error) {
+func (s *LabelService) List(ctx context.Context, query dtos.LabelListQuery) (*dtos.LabelListResponse, error) {
 	labelQuery := s.Client.Label.Query()
 
 	// Filter by org_id from token
@@ -62,7 +62,7 @@ func (s *LabelService) List(ctx context.Context, query dto.LabelListQuery) (*dto
 }
 
 // listWithOffsetPagination handles offset-based pagination
-func (s *LabelService) listWithOffsetPagination(ctx context.Context, labelQuery *ent.LabelQuery, query dto.LabelListQuery) (*dto.LabelListResponse, error) {
+func (s *LabelService) listWithOffsetPagination(ctx context.Context, labelQuery *ent.LabelQuery, query dtos.LabelListQuery) (*dtos.LabelListResponse, error) {
 	// Apply sorting
 	orderOption := s.getOrderOption(query.OrderBy, query.OrderDir)
 	if orderOption == nil {
@@ -127,9 +127,9 @@ func (s *LabelService) listWithOffsetPagination(ctx context.Context, labelQuery 
 		return nil, err
 	}
 
-	response := &dto.LabelListResponse{
+	response := &dtos.LabelListResponse{
 		Data: labelsWithTaskCount,
-		Pagination: dto.OffsetPagination{
+		Pagination: dtos.OffsetPagination{
 			Type:        "offset",
 			CurrentPage: page,
 			TotalPages:  totalPages,
@@ -142,7 +142,7 @@ func (s *LabelService) listWithOffsetPagination(ctx context.Context, labelQuery 
 }
 
 // listWithCursorPagination handles cursor-based pagination
-func (s *LabelService) listWithCursorPagination(ctx context.Context, labelQuery *ent.LabelQuery, query dto.LabelListQuery) (*dto.LabelListResponse, error) {
+func (s *LabelService) listWithCursorPagination(ctx context.Context, labelQuery *ent.LabelQuery, query dtos.LabelListQuery) (*dtos.LabelListResponse, error) {
 	// Apply sorting
 	orderOption := s.getOrderOption(query.OrderBy, query.OrderDir)
 	if orderOption == nil {
@@ -207,9 +207,9 @@ func (s *LabelService) listWithCursorPagination(ctx context.Context, labelQuery 
 		return nil, err
 	}
 
-	response := &dto.LabelListResponse{
+	response := &dtos.LabelListResponse{
 		Data: labelsWithTaskCount,
-		Pagination: dto.CursorPagination{
+		Pagination: dtos.CursorPagination{
 			Type:       "cursor",
 			PerPage:    limit,
 			HasNext:    hasNext,

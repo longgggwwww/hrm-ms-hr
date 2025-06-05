@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	pb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
@@ -55,7 +54,7 @@ func startHTTPServer(cli *ent.Client) {
 	}
 }
 
-func setupExternalServices() pb.UserServiceClient {
+func setupExternalServices() grpc_clients.UserServiceClient {
 	userServiceAddr := os.Getenv("USER_SERVICE")
 	if userServiceAddr == "" {
 		log.Println("Warning: USER_SERVICE environment variable is not set")
@@ -66,7 +65,7 @@ func setupExternalServices() pb.UserServiceClient {
 	return grpc_clients.NewUserClient(userServiceAddr)
 }
 
-func registerHTTPRoutes(r *gin.Engine, cli *ent.Client, userServ pb.UserServiceClient) {
+func registerHTTPRoutes(r *gin.Engine, cli *ent.Client, userServ grpc_clients.UserServiceClient) {
 	handlersList := []struct {
 		name     string
 		register func(*gin.Engine)

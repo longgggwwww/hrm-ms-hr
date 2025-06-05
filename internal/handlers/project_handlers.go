@@ -10,20 +10,20 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
-	userpb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type ProjectHandler struct {
 	Client     *ent.Client
-	UserClient userpb.UserServiceClient
+	UserClient grpc_clients.UserServiceClient
 }
 
-func NewProjectHandler(client *ent.Client, userClient userpb.UserServiceClient) *ProjectHandler {
+func NewProjectHandler(client *ent.Client, userClient grpc_clients.UserServiceClient) *ProjectHandler {
 	return &ProjectHandler{
 		Client:     client,
 		UserClient: userClient,
@@ -906,9 +906,9 @@ func (h *ProjectHandler) DeleteBulk(c *gin.Context) {
 }
 
 // getUserInfoMap fetches user information by user IDs and returns a map for quick lookup
-func (h *ProjectHandler) getUserInfoMap(userIDs []int32) (map[int32]*userpb.User, error) {
+func (h *ProjectHandler) getUserInfoMap(userIDs []int32) (map[int32]*grpc_clients.User, error) {
 	if h.UserClient == nil || len(userIDs) == 0 {
-		return make(map[int32]*userpb.User), nil
+		return make(map[int32]*grpc_clients.User), nil
 	}
 
 	// Remove duplicates
@@ -921,12 +921,12 @@ func (h *ProjectHandler) getUserInfoMap(userIDs []int32) (map[int32]*userpb.User
 		}
 	}
 
-	userMap := make(map[int32]*userpb.User)
+	userMap := make(map[int32]*grpc_clients.User)
 
 	// Fetch users individually (assuming GetUserById method exists)
 	// If GetUsersByIds method exists, you can replace this with a bulk call
 	for _, userID := range cleanIDs {
-		response, err := h.UserClient.GetUserById(context.Background(), &userpb.GetUserByIdRequest{
+		response, err := h.UserClient.GetUserById(context.Background(), &grpc_clients.GetUserByIdRequest{
 			Id: userID,
 		})
 		if err != nil {
@@ -949,7 +949,7 @@ func (h *ProjectHandler) getUserInfoMap(userIDs []int32) (map[int32]*userpb.User
 }
 
 // normalizeUserInfo ensures avatar field is always a string
-func (h *ProjectHandler) normalizeUserInfo(user *userpb.User) map[string]interface{} {
+func (h *ProjectHandler) normalizeUserInfo(user *grpc_clients.User) map[string]interface{} {
 	if user == nil {
 		return nil
 	}
@@ -972,7 +972,7 @@ func (h *ProjectHandler) normalizeUserInfo(user *userpb.User) map[string]interfa
 }
 
 // enrichProjectWithUserInfo enriches a single project with user information
-func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap map[int32]*userpb.User, taskCount int) map[string]interface{} {
+func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap map[int32]*grpc_clients.User, taskCount int) map[string]interface{} {
 	result := map[string]interface{}{
 		"id":          proj.ID,
 		"name":        proj.Name,
@@ -1086,7 +1086,7 @@ func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 }
 
 // enrichProjectWithUserInfoForGet enriches a single project with user information and tasks (for Get method)
-func (h *ProjectHandler) enrichProjectWithUserInfoForGet(proj *ent.Project, userMap map[int32]*userpb.User) map[string]interface{} {
+func (h *ProjectHandler) enrichProjectWithUserInfoForGet(proj *ent.Project, userMap map[int32]*grpc_clients.User) map[string]interface{} {
 	result := map[string]interface{}{
 		"id":          proj.ID,
 		"name":        proj.Name,
