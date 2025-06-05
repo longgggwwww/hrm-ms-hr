@@ -273,6 +273,18 @@ func (s *ProjectService) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 				"updated_at":  member.UpdatedAt,
 			}
 
+			// Add position edge data if available
+			if member.Edges.Position != nil {
+				memberData["position"] = map[string]interface{}{
+					"id":            member.Edges.Position.ID,
+					"name":          member.Edges.Position.Name,
+					"code":          member.Edges.Position.Code,
+					"department_id": member.Edges.Position.DepartmentID,
+					"created_at":    member.Edges.Position.CreatedAt,
+					"updated_at":    member.Edges.Position.UpdatedAt,
+				}
+			}
+
 			// Add user_info if available
 			if member.UserID != "" {
 				if userIDInt, err := strconv.Atoi(member.UserID); err == nil {
@@ -385,6 +397,18 @@ func (s *ProjectService) enrichProjectWithUserInfoForGet(proj *ent.Project, user
 				"status":      member.Status,
 				"created_at":  member.CreatedAt,
 				"updated_at":  member.UpdatedAt,
+			}
+
+			// Add position edge data if available
+			if member.Edges.Position != nil {
+				memberData["position"] = map[string]interface{}{
+					"id":            member.Edges.Position.ID,
+					"name":          member.Edges.Position.Name,
+					"code":          member.Edges.Position.Code,
+					"department_id": member.Edges.Position.DepartmentID,
+					"created_at":    member.Edges.Position.CreatedAt,
+					"updated_at":    member.Edges.Position.UpdatedAt,
+				}
 			}
 
 			// Add user_info if available

@@ -20,7 +20,9 @@ func (s *ProjectService) List(ctx context.Context, query dtos.ProjectListQuery) 
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
-		WithMembers().
+		WithMembers(func(q *ent.EmployeeQuery) {
+			q.WithPosition() // Load position data for members
+		}).
 		Where(project.HasMembersWith(employee.IDEQ(query.EmployeeID)))
 
 	// Apply filters
@@ -338,7 +340,9 @@ func (s *ProjectService) Get(ctx context.Context, id int) (map[string]interface{
 		WithOrganization().
 		WithCreator().
 		WithUpdater().
-		WithMembers().
+		WithMembers(func(q *ent.EmployeeQuery) {
+			q.WithPosition() // Load position data for members
+		}).
 		WithTasks().
 		Only(ctx)
 	if err != nil {
