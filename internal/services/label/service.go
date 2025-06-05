@@ -9,7 +9,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 )
 
 // ServiceError represents a service-level error
@@ -53,8 +53,8 @@ func (s *LabelService) decodeCursor(cursor string) (map[string]interface{}, erro
 }
 
 // addTaskCountsToLabels adds task_count field to each label
-func (s *LabelService) addTaskCountsToLabels(ctx context.Context, labels []*ent.Label) ([]dto.LabelResponse, error) {
-	result := make([]dto.LabelResponse, len(labels))
+func (s *LabelService) addTaskCountsToLabels(ctx context.Context, labels []*ent.Label) ([]dtos.LabelResponse, error) {
+	result := make([]dtos.LabelResponse, len(labels))
 
 	for i, labelEntity := range labels {
 		// Count tasks for this label
@@ -69,7 +69,7 @@ func (s *LabelService) addTaskCountsToLabels(ctx context.Context, labels []*ent.
 		}
 
 		// Convert label to response format
-		result[i] = dto.LabelResponse{
+		result[i] = dtos.LabelResponse{
 			ID:          labelEntity.ID,
 			Name:        labelEntity.Name,
 			Description: labelEntity.Description,

@@ -5,20 +5,20 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	userPb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
+	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type EmployeeHandler struct {
 	Client     *ent.Client
-	UserClient userPb.UserServiceClient
+	UserClient grpc_clients.UserServiceClient
 }
 
-func NewEmployeeHandler(client *ent.Client, userClient userPb.UserServiceClient) *EmployeeHandler {
+func NewEmployeeHandler(client *ent.Client, userClient grpc_clients.UserServiceClient) *EmployeeHandler {
 	return &EmployeeHandler{
 		Client:     client,
 		UserClient: userClient,
@@ -38,7 +38,7 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 }
 
 func (h *EmployeeHandler) Create(c *gin.Context) {
-	var input dto.EmployeeCreateInput
+	var input dtos.EmployeeCreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -64,7 +64,7 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		return
 	}
 
-	var userInfo *userPb.User
+	var userInfo *grpc_clients.User
 	if userResp != nil && userResp.User != nil {
 		userInfo = userResp.User
 	}
@@ -114,7 +114,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 
 	var data []gin.H
 	for _, emp := range employees {
-		var userInfo *userPb.User = nil
+		var userInfo *grpc_clients.User = nil
 		if emp.UserID != "" {
 			if id, err := strconv.Atoi(emp.UserID); err == nil {
 				userInfo = userInfoMap[int32(id)]
@@ -196,7 +196,7 @@ func (h *EmployeeHandler) UpdateById(c *gin.Context) {
 	}
 	orgID := ids["org_id"]
 
-	var input dto.EmployeeUpdateInput
+	var input dtos.EmployeeUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

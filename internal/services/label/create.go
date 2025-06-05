@@ -6,11 +6,11 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 )
 
 // Create creates a new label
-func (s *LabelService) Create(ctx context.Context, orgID int, input dto.LabelCreateInput) (*dto.LabelResponse, error) {
+func (s *LabelService) Create(ctx context.Context, orgID int, input dtos.LabelCreateInput) (*dtos.LabelResponse, error) {
 	create := s.Client.Label.Create().
 		SetName(input.Name).
 		SetDescription(input.Description).
@@ -47,7 +47,7 @@ func (s *LabelService) Create(ctx context.Context, orgID int, input dto.LabelCre
 }
 
 // CreateBulk creates multiple labels in bulk
-func (s *LabelService) CreateBulk(ctx context.Context, orgID int, req dto.LabelBulkCreateInput) ([]*ent.Label, error) {
+func (s *LabelService) CreateBulk(ctx context.Context, orgID int, req dtos.LabelBulkCreateInput) ([]*ent.Label, error) {
 	if len(req.Labels) == 0 {
 		return nil, &ServiceError{
 			Status: http.StatusBadRequest,

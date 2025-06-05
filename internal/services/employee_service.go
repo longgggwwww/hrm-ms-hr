@@ -7,16 +7,16 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	userPb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
+	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 )
 
 type EmployeeService struct {
 	Client     *ent.Client
-	UserClient userPb.UserServiceClient
+	UserClient grpc_clients.UserServiceClient
 }
 
 // EmployeeListQuery gom các tham số truy vấn employee list
@@ -28,14 +28,14 @@ type EmployeeListQuery struct {
 	OrgID    int
 }
 
-func NewEmployeeService(client *ent.Client, userClient userPb.UserServiceClient) *EmployeeService {
+func NewEmployeeService(client *ent.Client, userClient grpc_clients.UserServiceClient) *EmployeeService {
 	return &EmployeeService{
 		Client:     client,
 		UserClient: userClient,
 	}
 }
 
-func (s *EmployeeService) Create(ctx context.Context, orgID int, input dto.EmployeeCreateInput) (*ent.Employee, *userPb.CreateUserResponse, error) {
+func (s *EmployeeService) Create(ctx context.Context, orgID int, input dtos.EmployeeCreateInput) (*ent.Employee, *grpc_clients.CreateUserResponse, error) {
 	var joiningAt time.Time
 	if input.JoiningAt != "" {
 		var err error
@@ -80,7 +80,7 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dto.Emplo
 		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "User service unavailable"}
 	}
 
-	respb, err := s.UserClient.CreateUser(ctx, &userPb.CreateUserRequest{
+	respb, err := s.UserClient.CreateUser(ctx, &grpc_clients.CreateUserRequest{
 		FirstName: input.User.FirstName,
 		LastName:  input.User.LastName,
 		Email:     input.User.Email,
@@ -90,7 +90,7 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dto.Emplo
 		WardCode:  strconv.Itoa(input.User.WardCode),
 		RoleIds:   input.User.RoleIds,
 		PermIds:   input.User.PermIds,
-		Account: &userPb.Account{
+		Account: &grpc_clients.Account{
 			Username: input.User.Account.Username,
 			Password: input.User.Account.Password,
 		},
@@ -117,7 +117,7 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dto.Emplo
 }
 
 // List returns paginated employees, total count, and user info map
-func (s *EmployeeService) List(ctx context.Context, q EmployeeListQuery) ([]*ent.Employee, int, map[int32]*userPb.User, error) {
+func (s *EmployeeService) List(ctx context.Context, q EmployeeListQuery) ([]*ent.Employee, int, map[int32]*grpc_clients.User, error) {
 	query := s.Client.Employee.Query().
 		Where(employee.OrgID(q.OrgID)).
 		WithPosition(func(qp *ent.PositionQuery) {
@@ -171,9 +171,9 @@ func (s *EmployeeService) List(ctx context.Context, q EmployeeListQuery) ([]*ent
 			}
 		}
 	}
-	userInfoMap := make(map[int32]*userPb.User)
+	userInfoMap := make(map[int32]*grpc_clients.User)
 	if s.UserClient != nil && len(userIDs) > 0 {
-		resp, err := s.UserClient.GetUsersByIDs(ctx, &userPb.GetUsersByIDsRequest{Ids: userIDs})
+		resp, err := s.UserClient.GetUsersByIDs(ctx, &grpc_clients.GetUsersByIDsRequest{Ids: userIDs})
 		if err == nil && resp != nil && len(resp.Users) > 0 {
 			for _, u := range resp.Users {
 				userInfoMap[u.Id] = u
@@ -188,7 +188,7 @@ func (s *EmployeeService) GetEmployeeWithUserInfo(
 	ctx context.Context,
 	id int,
 	orgID int,
-) (*ent.Employee, *userPb.User, error) {
+) (*ent.Employee, *grpc_clients.User, error) {
 	emp, err := s.Client.Employee.Query().
 		Where(employee.ID(id), employee.OrgID(orgID)).
 		WithPosition(func(q *ent.PositionQuery) {
@@ -199,12 +199,12 @@ func (s *EmployeeService) GetEmployeeWithUserInfo(
 		return nil, nil, err
 	}
 
-	var userInfo *userPb.User
+	var userInfo *grpc_clients.User
 	if emp.UserID != "" && s.UserClient != nil {
 		if uid, err := strconv.Atoi(emp.UserID); err == nil {
 			resp, err := s.UserClient.GetUsersByIDs(
 				ctx,
-				&userPb.GetUsersByIDsRequest{Ids: []int32{int32(uid)}},
+				&grpc_clients.GetUsersByIDsRequest{Ids: []int32{int32(uid)}},
 			)
 			if err == nil && resp != nil && len(resp.Users) > 0 {
 				userInfo = resp.Users[0]
@@ -243,7 +243,7 @@ func (s *EmployeeService) DeleteById(ctx context.Context, id int, orgID int) (*e
 	if userID != "" && s.UserClient != nil {
 		uid, err := strconv.Atoi(userID)
 		if err == nil {
-			_, err := s.UserClient.DeleteUserByID(ctx, &userPb.DeleteUserRequest{Id: int32(uid)})
+			_, err := s.UserClient.DeleteUserByID(ctx, &grpc_clients.DeleteUserRequest{Id: int32(uid)})
 			if err != nil {
 				tx.Rollback()
 				return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#3 DeleteById: Failed to delete user in user service"}
@@ -257,7 +257,7 @@ func (s *EmployeeService) DeleteById(ctx context.Context, id int, orgID int) (*e
 	return emp, nil
 }
 
-func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, input dto.EmployeeUpdateInput) (*ent.Employee, *userPb.User, error) {
+func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, input dtos.EmployeeUpdateInput) (*ent.Employee, *grpc_clients.User, error) {
 	tx, err := s.Client.Tx(ctx)
 	if err != nil {
 		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#1 UpdateById: Failed to start transaction"}
@@ -292,11 +292,11 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: err.Error()}
 	}
 
-	var userInfo *userPb.User
+	var userInfo *grpc_clients.User
 
 	if emp.UserID != "" && s.UserClient != nil {
 		if uid, err := strconv.Atoi(emp.UserID); err == nil {
-			userReq := &userPb.UpdateUserRequest{Id: int32(uid)}
+			userReq := &grpc_clients.UpdateUserRequest{Id: int32(uid)}
 			u := input.User
 			if u.FirstName != "" {
 				userReq.FirstName = u.FirstName
@@ -326,13 +326,13 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 				userReq.PermIds = u.PermIds
 			}
 			if u.Account.Username != "" || u.Account.Password != "" {
-				userReq.Account = &userPb.Account{
+				userReq.Account = &grpc_clients.Account{
 					Username: u.Account.Username,
 					Password: u.Account.Password,
 					Status:   u.Account.Status,
 				}
 			}
-			userResp, err := s.UserClient.UpdateUserByID(ctx, userReq)
+			userResp, err := s.UserClient.UpdateUser(ctx, userReq)
 
 			if err != nil {
 				tx.Rollback()

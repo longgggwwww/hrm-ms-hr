@@ -6,11 +6,11 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 )
 
 // Update updates an existing label
-func (s *LabelService) Update(ctx context.Context, id int, input dto.LabelUpdateInput) (*dto.LabelResponse, error) {
+func (s *LabelService) Update(ctx context.Context, id int, input dtos.LabelUpdateInput) (*dtos.LabelResponse, error) {
 	update := s.Client.Label.UpdateOneID(id)
 	update.SetNillableName(input.Name).
 		SetNillableDescription(input.Description).

@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services/label"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -56,7 +56,7 @@ func (h *LabelHandler) List(c *gin.Context) {
 	}
 
 	// Parse query parameters
-	var query dto.LabelListQuery
+	var query dtos.LabelListQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -118,7 +118,7 @@ func (h *LabelHandler) Get(c *gin.Context) {
 }
 
 func (h *LabelHandler) Create(c *gin.Context) {
-	var input dto.LabelCreateInput
+	var input dtos.LabelCreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -126,7 +126,7 @@ func (h *LabelHandler) Create(c *gin.Context) {
 
 	// Additional validation using the validator
 	validate := validator.New()
-	dto.RegisterCustomValidators(validate)
+	dtos.RegisterCustomValidators(validate)
 	if err := validate.Struct(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -168,7 +168,7 @@ func (h *LabelHandler) Create(c *gin.Context) {
 }
 
 func (h *LabelHandler) CreateBulk(c *gin.Context) {
-	var req dto.LabelBulkCreateInput
+	var req dtos.LabelBulkCreateInput
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -177,7 +177,7 @@ func (h *LabelHandler) CreateBulk(c *gin.Context) {
 
 	// Additional validation using the validator
 	validate := validator.New()
-	dto.RegisterCustomValidators(validate)
+	dtos.RegisterCustomValidators(validate)
 	if err := validate.Struct(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -227,7 +227,7 @@ func (h *LabelHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var input dto.LabelUpdateInput
+	var input dtos.LabelUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -235,7 +235,7 @@ func (h *LabelHandler) Update(c *gin.Context) {
 
 	// Additional validation using the validator
 	validate := validator.New()
-	dto.RegisterCustomValidators(validate)
+	dtos.RegisterCustomValidators(validate)
 	if err := validate.Struct(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -285,7 +285,7 @@ func (h *LabelHandler) Delete(c *gin.Context) {
 }
 
 func (h *LabelHandler) DeleteBulk(c *gin.Context) {
-	var req dto.LabelDeleteBulkInput
+	var req dtos.LabelDeleteBulkInput
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

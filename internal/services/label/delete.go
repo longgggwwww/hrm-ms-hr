@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
-	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 )
 
 // Delete deletes a label by ID
@@ -21,7 +21,7 @@ func (s *LabelService) Delete(ctx context.Context, id int) error {
 }
 
 // DeleteBulk deletes multiple labels by IDs
-func (s *LabelService) DeleteBulk(ctx context.Context, req dto.LabelDeleteBulkInput) error {
+func (s *LabelService) DeleteBulk(ctx context.Context, req dtos.LabelDeleteBulkInput) error {
 	if len(req.IDs) == 0 {
 		return &ServiceError{
 			Status: http.StatusBadRequest,

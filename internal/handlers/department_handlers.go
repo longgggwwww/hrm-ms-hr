@@ -5,19 +5,19 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	userpb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
+	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type DepartmentHandler struct {
 	Client     *ent.Client
-	UserClient *userpb.UserServiceClient
+	UserClient *grpc_clients.UserServiceClient
 }
 
-func NewDeptHandler(client *ent.Client, userGrpcClient *userpb.UserServiceClient) *DepartmentHandler {
+func NewDeptHandler(client *ent.Client, userGrpcClient *grpc_clients.UserServiceClient) *DepartmentHandler {
 	return &DepartmentHandler{
 		Client:     client,
 		UserClient: userGrpcClient,

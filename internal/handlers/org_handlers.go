@@ -5,19 +5,19 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	userpb "github.com/huynhthanhthao/hrm_user_service/proto/user"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
+	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type OrgHandler struct {
 	Client      *ent.Client
-	UserService *userpb.UserServiceClient
+	UserService *grpc_clients.UserServiceClient
 }
 
-func NewOrgHandler(client *ent.Client, userService *userpb.UserServiceClient) *OrgHandler {
+func NewOrgHandler(client *ent.Client, userService *grpc_clients.UserServiceClient) *OrgHandler {
 	return &OrgHandler{
 		Client:      client,
 		UserService: userService,
