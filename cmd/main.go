@@ -14,9 +14,13 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb"
 	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/handlers"
+	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 func main() {
+	// Initialize custom validators
+	utils.InitValidator()
+
 	cli := initDatabase()
 	defer cli.Close()
 

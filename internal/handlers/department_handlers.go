@@ -13,25 +13,25 @@ import (
 )
 
 type DepartmentHandler struct {
-	Client *ent.Client
-	UserPb *userpb.UserServiceClient
+	Client     *ent.Client
+	UserClient *userpb.UserServiceClient
 }
 
-func NewDeptHandler(client *ent.Client, userpb *userpb.UserServiceClient) *DepartmentHandler {
+func NewDeptHandler(client *ent.Client, userGrpcClient *userpb.UserServiceClient) *DepartmentHandler {
 	return &DepartmentHandler{
-		Client: client,
-		UserPb: userpb,
+		Client:     client,
+		UserClient: userGrpcClient,
 	}
 }
 
 func (h *DepartmentHandler) RegisterRoutes(r *gin.Engine) {
-	depts := r.Group("departments")
+	depts := r.Group("/departments")
 	{
-		depts.POST("", h.Create)
-		depts.GET("", h.List)
-		depts.GET(":id", h.Get)
-		depts.PUT(":id", h.Update)
-		depts.DELETE(":id", h.Delete)
+		depts.POST("/", h.Create)
+		depts.GET("/", h.List)
+		depts.GET("/:id", h.Get)
+		depts.PATCH("/:id", h.Update)
+		depts.DELETE("/:id", h.Delete)
 	}
 }
 

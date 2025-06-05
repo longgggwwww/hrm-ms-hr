@@ -9,10 +9,12 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dto"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
@@ -133,13 +135,16 @@ func (h *LabelHandler) Get(c *gin.Context) {
 }
 
 func (h *LabelHandler) Create(c *gin.Context) {
-	type LabelInput struct {
-		Name        string `json:"name" binding:"required"`
-		Description string `json:"description"`
-		Color       string `json:"color" binding:"required"`
-	}
-	var input LabelInput
+	var input dto.LabelCreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Additional validation using the validator
+	validate := validator.New()
+	dto.RegisterCustomValidators(validate)
+	if err := validate.Struct(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -196,17 +201,17 @@ func (h *LabelHandler) Create(c *gin.Context) {
 }
 
 func (h *LabelHandler) CreateBulk(c *gin.Context) {
-	type LabelInput struct {
-		Name        string `json:"name" binding:"required"`
-		Description string `json:"description"`
-		Color       string `json:"color" binding:"required"`
-	}
-
-	var req struct {
-		Labels []LabelInput `json:"labels" binding:"required"`
-	}
+	var req dto.LabelBulkCreateInput
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Additional validation using the validator
+	validate := validator.New()
+	dto.RegisterCustomValidators(validate)
+	if err := validate.Struct(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -276,17 +281,21 @@ func (h *LabelHandler) Update(c *gin.Context) {
 		})
 		return
 	}
-	type LabelUpdateInput struct {
-		Name        *string `json:"name"`
-		Description *string `json:"description"`
-		Color       *string `json:"color"`
-		OrgID       *int    `json:"org_id"`
-	}
-	var input LabelUpdateInput
+
+	var input dto.LabelUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Additional validation using the validator
+	validate := validator.New()
+	dto.RegisterCustomValidators(validate)
+	if err := validate.Struct(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	update := h.Client.Label.UpdateOneID(id)
 	update.SetNillableName(input.Name).
 		SetNillableDescription(input.Description).

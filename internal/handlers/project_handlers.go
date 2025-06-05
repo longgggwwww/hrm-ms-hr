@@ -226,7 +226,22 @@ func (h *ProjectHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusCreated, row)
 		return
 	}
-	c.JSON(http.StatusCreated, project)
+
+	// Collect user IDs from the project
+	projects := []*ent.Project{project}
+	userIDs := h.collectUserIDsFromProjects(projects)
+
+	// Fetch user information
+	userMap, err := h.getUserInfoMap(userIDs)
+	if err != nil {
+		// Log error but continue without user enrichment
+		// In production, you might want to use a proper logger
+	}
+
+	// Enrich project with user information and tasks
+	enrichedProject := h.enrichProjectWithUserInfoForGet(project, userMap)
+
+	c.JSON(http.StatusCreated, enrichedProject)
 }
 
 // List retrieves projects with filtering, sorting, and pagination support.
@@ -761,7 +776,22 @@ func (h *ProjectHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"id": id})
 		return
 	}
-	c.JSON(http.StatusOK, project)
+
+	// Collect user IDs from the project
+	projects := []*ent.Project{project}
+	userIDs := h.collectUserIDsFromProjects(projects)
+
+	// Fetch user information
+	userMap, err := h.getUserInfoMap(userIDs)
+	if err != nil {
+		// Log error but continue without user enrichment
+		// In production, you might want to use a proper logger
+	}
+
+	// Enrich project with user information and tasks
+	enrichedProject := h.enrichProjectWithUserInfoForGet(project, userMap)
+
+	c.JSON(http.StatusOK, enrichedProject)
 }
 
 func (h *ProjectHandler) Delete(c *gin.Context) {
@@ -904,11 +934,41 @@ func (h *ProjectHandler) getUserInfoMap(userIDs []int32) (map[int32]*userpb.User
 			continue
 		}
 		if response != nil && response.User != nil {
-			userMap[userID] = response.User
+			user := response.User
+
+			// Ensure avatar is empty string instead of nil/null
+			if user.Avatar == "" {
+				user.Avatar = ""
+			}
+
+			userMap[userID] = user
 		}
 	}
 
 	return userMap, nil
+}
+
+// normalizeUserInfo ensures avatar field is always a string
+func (h *ProjectHandler) normalizeUserInfo(user *userpb.User) map[string]interface{} {
+	if user == nil {
+		return nil
+	}
+
+	avatar := ""
+	if user.Avatar != "" {
+		avatar = user.Avatar
+	}
+
+	return map[string]interface{}{
+		"id":         user.Id,
+		"email":      user.Email,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"avatar":     avatar,
+		"phone":      user.Phone,
+		"created_at": user.CreatedAt,
+		"updated_at": user.UpdatedAt,
+	}
 }
 
 // enrichProjectWithUserInfo enriches a single project with user information
@@ -958,7 +1018,7 @@ func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 		if proj.Edges.Creator.UserID != "" {
 			if userIDInt, err := strconv.Atoi(proj.Edges.Creator.UserID); err == nil {
 				if userInfo, exists := userMap[int32(userIDInt)]; exists {
-					creatorData["user_info"] = userInfo
+					creatorData["user_info"] = h.normalizeUserInfo(userInfo)
 				}
 			}
 		}
@@ -983,7 +1043,7 @@ func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 		if proj.Edges.Updater.UserID != "" {
 			if userIDInt, err := strconv.Atoi(proj.Edges.Updater.UserID); err == nil {
 				if userInfo, exists := userMap[int32(userIDInt)]; exists {
-					updaterData["user_info"] = userInfo
+					updaterData["user_info"] = h.normalizeUserInfo(userInfo)
 				}
 			}
 		}
@@ -1010,7 +1070,7 @@ func (h *ProjectHandler) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 			if member.UserID != "" {
 				if userIDInt, err := strconv.Atoi(member.UserID); err == nil {
 					if userInfo, exists := userMap[int32(userIDInt)]; exists {
-						memberData["user_info"] = userInfo
+						memberData["user_info"] = h.normalizeUserInfo(userInfo)
 					}
 				}
 			}
@@ -1076,7 +1136,7 @@ func (h *ProjectHandler) enrichProjectWithUserInfoForGet(proj *ent.Project, user
 		if proj.Edges.Creator.UserID != "" {
 			if userIDInt, err := strconv.Atoi(proj.Edges.Creator.UserID); err == nil {
 				if userInfo, exists := userMap[int32(userIDInt)]; exists {
-					creatorData["user_info"] = userInfo
+					creatorData["user_info"] = h.normalizeUserInfo(userInfo)
 				}
 			}
 		}
@@ -1101,7 +1161,7 @@ func (h *ProjectHandler) enrichProjectWithUserInfoForGet(proj *ent.Project, user
 		if proj.Edges.Updater.UserID != "" {
 			if userIDInt, err := strconv.Atoi(proj.Edges.Updater.UserID); err == nil {
 				if userInfo, exists := userMap[int32(userIDInt)]; exists {
-					updaterData["user_info"] = userInfo
+					updaterData["user_info"] = h.normalizeUserInfo(userInfo)
 				}
 			}
 		}
@@ -1128,7 +1188,7 @@ func (h *ProjectHandler) enrichProjectWithUserInfoForGet(proj *ent.Project, user
 			if member.UserID != "" {
 				if userIDInt, err := strconv.Atoi(member.UserID); err == nil {
 					if userInfo, exists := userMap[int32(userIDInt)]; exists {
-						memberData["user_info"] = userInfo
+						memberData["user_info"] = h.normalizeUserInfo(userInfo)
 					}
 				}
 			}
