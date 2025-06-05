@@ -8,6 +8,31 @@ import (
 )
 
 var (
+	// AppointmentHistoriesColumns holds the columns for the "appointment_histories" table.
+	AppointmentHistoriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "position_name", Type: field.TypeString},
+		{Name: "joining_at", Type: field.TypeTime},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "attachment_urls", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "employee_id", Type: field.TypeInt},
+	}
+	// AppointmentHistoriesTable holds the schema information for the "appointment_histories" table.
+	AppointmentHistoriesTable = &schema.Table{
+		Name:       "appointment_histories",
+		Columns:    AppointmentHistoriesColumns,
+		PrimaryKey: []*schema.Column{AppointmentHistoriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "appointment_histories_employees_appointment_histories",
+				Columns:    []*schema.Column{AppointmentHistoriesColumns[7]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// DepartmentsColumns holds the columns for the "departments" table.
 	DepartmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -402,6 +427,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AppointmentHistoriesTable,
 		DepartmentsTable,
 		EmployeesTable,
 		LabelsTable,
@@ -419,6 +445,7 @@ var (
 )
 
 func init() {
+	AppointmentHistoriesTable.ForeignKeys[0].RefTable = EmployeesTable
 	DepartmentsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	EmployeesTable.ForeignKeys[0].RefTable = PositionsTable
 	LabelsTable.ForeignKeys[0].RefTable = OrganizationsTable

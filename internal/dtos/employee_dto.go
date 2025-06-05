@@ -12,7 +12,7 @@ type UserInput struct {
 	Gender    string       `json:"gender"`
 	Phone     string       `json:"phone"`
 	Email     string       `json:"email"`
-	AvatarURL string       `json:"avatar_url"`
+	Avatar    string       `json:"avatar"`
 	Address   string       `json:"address"`
 	WardCode  int          `json:"ward_code"`
 	RoleIds   []string     `json:"role_ids"`

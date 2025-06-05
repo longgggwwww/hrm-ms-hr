@@ -58,9 +58,11 @@ type EmployeeEdges struct {
 	TaskReports []*TaskReport `json:"task_reports,omitempty"`
 	// Projects holds the value of the projects edge.
 	Projects []*Project `json:"projects,omitempty"`
+	// AppointmentHistories holds the value of the appointment_histories edge.
+	AppointmentHistories []*AppointmentHistory `json:"appointment_histories,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // PositionOrErr returns the Position value or an error if the edge
@@ -135,6 +137,15 @@ func (e EmployeeEdges) ProjectsOrErr() ([]*Project, error) {
 		return e.Projects, nil
 	}
 	return nil, &NotLoadedError{edge: "projects"}
+}
+
+// AppointmentHistoriesOrErr returns the AppointmentHistories value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) AppointmentHistoriesOrErr() ([]*AppointmentHistory, error) {
+	if e.loadedTypes[8] {
+		return e.AppointmentHistories, nil
+	}
+	return nil, &NotLoadedError{edge: "appointment_histories"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -268,6 +279,11 @@ func (e *Employee) QueryTaskReports() *TaskReportQuery {
 // QueryProjects queries the "projects" edge of the Employee entity.
 func (e *Employee) QueryProjects() *ProjectQuery {
 	return NewEmployeeClient(e.config).QueryProjects(e)
+}
+
+// QueryAppointmentHistories queries the "appointment_histories" edge of the Employee entity.
+func (e *Employee) QueryAppointmentHistories() *AppointmentHistoryQuery {
+	return NewEmployeeClient(e.config).QueryAppointmentHistories(e)
 }
 
 // Update returns a builder for updating this Employee.

@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
@@ -32,6 +33,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AppointmentHistory is the client for interacting with the AppointmentHistory builders.
+	AppointmentHistory *AppointmentHistoryClient
 	// Department is the client for interacting with the Department builders.
 	Department *DepartmentClient
 	// Employee is the client for interacting with the Employee builders.
@@ -63,6 +66,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AppointmentHistory = NewAppointmentHistoryClient(c.config)
 	c.Department = NewDepartmentClient(c.config)
 	c.Employee = NewEmployeeClient(c.config)
 	c.Label = NewLabelClient(c.config)
@@ -163,18 +167,19 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		Department:    NewDepartmentClient(cfg),
-		Employee:      NewEmployeeClient(cfg),
-		Label:         NewLabelClient(cfg),
-		LeaveApproval: NewLeaveApprovalClient(cfg),
-		LeaveRequest:  NewLeaveRequestClient(cfg),
-		Organization:  NewOrganizationClient(cfg),
-		Position:      NewPositionClient(cfg),
-		Project:       NewProjectClient(cfg),
-		Task:          NewTaskClient(cfg),
-		TaskReport:    NewTaskReportClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		AppointmentHistory: NewAppointmentHistoryClient(cfg),
+		Department:         NewDepartmentClient(cfg),
+		Employee:           NewEmployeeClient(cfg),
+		Label:              NewLabelClient(cfg),
+		LeaveApproval:      NewLeaveApprovalClient(cfg),
+		LeaveRequest:       NewLeaveRequestClient(cfg),
+		Organization:       NewOrganizationClient(cfg),
+		Position:           NewPositionClient(cfg),
+		Project:            NewProjectClient(cfg),
+		Task:               NewTaskClient(cfg),
+		TaskReport:         NewTaskReportClient(cfg),
 	}, nil
 }
 
@@ -192,25 +197,26 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		Department:    NewDepartmentClient(cfg),
-		Employee:      NewEmployeeClient(cfg),
-		Label:         NewLabelClient(cfg),
-		LeaveApproval: NewLeaveApprovalClient(cfg),
-		LeaveRequest:  NewLeaveRequestClient(cfg),
-		Organization:  NewOrganizationClient(cfg),
-		Position:      NewPositionClient(cfg),
-		Project:       NewProjectClient(cfg),
-		Task:          NewTaskClient(cfg),
-		TaskReport:    NewTaskReportClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		AppointmentHistory: NewAppointmentHistoryClient(cfg),
+		Department:         NewDepartmentClient(cfg),
+		Employee:           NewEmployeeClient(cfg),
+		Label:              NewLabelClient(cfg),
+		LeaveApproval:      NewLeaveApprovalClient(cfg),
+		LeaveRequest:       NewLeaveRequestClient(cfg),
+		Organization:       NewOrganizationClient(cfg),
+		Position:           NewPositionClient(cfg),
+		Project:            NewProjectClient(cfg),
+		Task:               NewTaskClient(cfg),
+		TaskReport:         NewTaskReportClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Department.
+//		AppointmentHistory.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -233,8 +239,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Department, c.Employee, c.Label, c.LeaveApproval, c.LeaveRequest,
-		c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
+		c.AppointmentHistory, c.Department, c.Employee, c.Label, c.LeaveApproval,
+		c.LeaveRequest, c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
 	} {
 		n.Use(hooks...)
 	}
@@ -244,8 +250,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Department, c.Employee, c.Label, c.LeaveApproval, c.LeaveRequest,
-		c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
+		c.AppointmentHistory, c.Department, c.Employee, c.Label, c.LeaveApproval,
+		c.LeaveRequest, c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -254,6 +260,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AppointmentHistoryMutation:
+		return c.AppointmentHistory.mutate(ctx, m)
 	case *DepartmentMutation:
 		return c.Department.mutate(ctx, m)
 	case *EmployeeMutation:
@@ -276,6 +284,155 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.TaskReport.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AppointmentHistoryClient is a client for the AppointmentHistory schema.
+type AppointmentHistoryClient struct {
+	config
+}
+
+// NewAppointmentHistoryClient returns a client for the AppointmentHistory from the given config.
+func NewAppointmentHistoryClient(c config) *AppointmentHistoryClient {
+	return &AppointmentHistoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `appointmenthistory.Hooks(f(g(h())))`.
+func (c *AppointmentHistoryClient) Use(hooks ...Hook) {
+	c.hooks.AppointmentHistory = append(c.hooks.AppointmentHistory, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `appointmenthistory.Intercept(f(g(h())))`.
+func (c *AppointmentHistoryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AppointmentHistory = append(c.inters.AppointmentHistory, interceptors...)
+}
+
+// Create returns a builder for creating a AppointmentHistory entity.
+func (c *AppointmentHistoryClient) Create() *AppointmentHistoryCreate {
+	mutation := newAppointmentHistoryMutation(c.config, OpCreate)
+	return &AppointmentHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AppointmentHistory entities.
+func (c *AppointmentHistoryClient) CreateBulk(builders ...*AppointmentHistoryCreate) *AppointmentHistoryCreateBulk {
+	return &AppointmentHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AppointmentHistoryClient) MapCreateBulk(slice any, setFunc func(*AppointmentHistoryCreate, int)) *AppointmentHistoryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AppointmentHistoryCreateBulk{err: fmt.Errorf("calling to AppointmentHistoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AppointmentHistoryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AppointmentHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AppointmentHistory.
+func (c *AppointmentHistoryClient) Update() *AppointmentHistoryUpdate {
+	mutation := newAppointmentHistoryMutation(c.config, OpUpdate)
+	return &AppointmentHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AppointmentHistoryClient) UpdateOne(ah *AppointmentHistory) *AppointmentHistoryUpdateOne {
+	mutation := newAppointmentHistoryMutation(c.config, OpUpdateOne, withAppointmentHistory(ah))
+	return &AppointmentHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AppointmentHistoryClient) UpdateOneID(id int) *AppointmentHistoryUpdateOne {
+	mutation := newAppointmentHistoryMutation(c.config, OpUpdateOne, withAppointmentHistoryID(id))
+	return &AppointmentHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AppointmentHistory.
+func (c *AppointmentHistoryClient) Delete() *AppointmentHistoryDelete {
+	mutation := newAppointmentHistoryMutation(c.config, OpDelete)
+	return &AppointmentHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AppointmentHistoryClient) DeleteOne(ah *AppointmentHistory) *AppointmentHistoryDeleteOne {
+	return c.DeleteOneID(ah.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AppointmentHistoryClient) DeleteOneID(id int) *AppointmentHistoryDeleteOne {
+	builder := c.Delete().Where(appointmenthistory.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AppointmentHistoryDeleteOne{builder}
+}
+
+// Query returns a query builder for AppointmentHistory.
+func (c *AppointmentHistoryClient) Query() *AppointmentHistoryQuery {
+	return &AppointmentHistoryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAppointmentHistory},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AppointmentHistory entity by its id.
+func (c *AppointmentHistoryClient) Get(ctx context.Context, id int) (*AppointmentHistory, error) {
+	return c.Query().Where(appointmenthistory.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AppointmentHistoryClient) GetX(ctx context.Context, id int) *AppointmentHistory {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEmployee queries the employee edge of a AppointmentHistory.
+func (c *AppointmentHistoryClient) QueryEmployee(ah *AppointmentHistory) *EmployeeQuery {
+	query := (&EmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ah.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(appointmenthistory.Table, appointmenthistory.FieldID, id),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, appointmenthistory.EmployeeTable, appointmenthistory.EmployeeColumn),
+		)
+		fromV = sqlgraph.Neighbors(ah.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AppointmentHistoryClient) Hooks() []Hook {
+	return c.hooks.AppointmentHistory
+}
+
+// Interceptors returns the client interceptors.
+func (c *AppointmentHistoryClient) Interceptors() []Interceptor {
+	return c.inters.AppointmentHistory
+}
+
+func (c *AppointmentHistoryClient) mutate(ctx context.Context, m *AppointmentHistoryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AppointmentHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AppointmentHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AppointmentHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AppointmentHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AppointmentHistory mutation op: %q", m.Op())
 	}
 }
 
@@ -673,6 +830,22 @@ func (c *EmployeeClient) QueryProjects(e *Employee) *ProjectQuery {
 			sqlgraph.From(employee.Table, employee.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, employee.ProjectsTable, employee.ProjectsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAppointmentHistories queries the appointment_histories edge of a Employee.
+func (c *EmployeeClient) QueryAppointmentHistories(e *Employee) *AppointmentHistoryQuery {
+	query := (&AppointmentHistoryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(appointmenthistory.Table, appointmenthistory.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.AppointmentHistoriesTable, employee.AppointmentHistoriesColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -2220,11 +2393,11 @@ func (c *TaskReportClient) mutate(ctx context.Context, m *TaskReportMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Department, Employee, Label, LeaveApproval, LeaveRequest, Organization,
-		Position, Project, Task, TaskReport []ent.Hook
+		AppointmentHistory, Department, Employee, Label, LeaveApproval, LeaveRequest,
+		Organization, Position, Project, Task, TaskReport []ent.Hook
 	}
 	inters struct {
-		Department, Employee, Label, LeaveApproval, LeaveRequest, Organization,
-		Position, Project, Task, TaskReport []ent.Interceptor
+		AppointmentHistory, Department, Employee, Label, LeaveApproval, LeaveRequest,
+		Organization, Position, Project, Task, TaskReport []ent.Interceptor
 	}
 )

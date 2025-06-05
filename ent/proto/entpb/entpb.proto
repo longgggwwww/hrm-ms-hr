@@ -11,6 +11,82 @@ import "google/protobuf/wrappers.proto";
 
 option go_package = "github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb";
 
+message AppointmentHistory {
+  int64 id = 1;
+
+  int64 employee_id = 2;
+
+  string position_name = 3;
+
+  google.protobuf.Timestamp joining_at = 4;
+
+  google.protobuf.StringValue description = 5;
+
+  repeated string attachment_urls = 6;
+
+  google.protobuf.Timestamp created_at = 7;
+
+  google.protobuf.Timestamp updated_at = 8;
+
+  Employee employee = 9;
+}
+
+message CreateAppointmentHistoryRequest {
+  AppointmentHistory appointment_history = 1;
+}
+
+message GetAppointmentHistoryRequest {
+  int64 id = 1;
+
+  View view = 2;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message UpdateAppointmentHistoryRequest {
+  AppointmentHistory appointment_history = 1;
+}
+
+message DeleteAppointmentHistoryRequest {
+  int64 id = 1;
+}
+
+message ListAppointmentHistoryRequest {
+  int32 page_size = 1;
+
+  string page_token = 2;
+
+  View view = 3;
+
+  enum View {
+    VIEW_UNSPECIFIED = 0;
+
+    BASIC = 1;
+
+    WITH_EDGE_IDS = 2;
+  }
+}
+
+message ListAppointmentHistoryResponse {
+  repeated AppointmentHistory appointment_history_list = 1;
+
+  string next_page_token = 2;
+}
+
+message BatchCreateAppointmentHistoriesRequest {
+  repeated CreateAppointmentHistoryRequest requests = 1;
+}
+
+message BatchCreateAppointmentHistoriesResponse {
+  repeated AppointmentHistory appointment_histories = 1;
+}
+
 message Department {
   int64 id = 1;
 
@@ -119,6 +195,8 @@ message Employee {
   repeated TaskReport task_reports = 16;
 
   repeated Project projects = 17;
+
+  repeated AppointmentHistory appointment_histories = 18;
 
   enum Status {
     STATUS_ACTIVE = 0;
@@ -895,6 +973,20 @@ message BatchCreateTaskReportsRequest {
 
 message BatchCreateTaskReportsResponse {
   repeated TaskReport task_reports = 1;
+}
+
+service AppointmentHistoryService {
+  rpc Create ( CreateAppointmentHistoryRequest ) returns ( AppointmentHistory );
+
+  rpc Get ( GetAppointmentHistoryRequest ) returns ( AppointmentHistory );
+
+  rpc Update ( UpdateAppointmentHistoryRequest ) returns ( AppointmentHistory );
+
+  rpc Delete ( DeleteAppointmentHistoryRequest ) returns ( google.protobuf.Empty );
+
+  rpc List ( ListAppointmentHistoryRequest ) returns ( ListAppointmentHistoryResponse );
+
+  rpc BatchCreate ( BatchCreateAppointmentHistoriesRequest ) returns ( BatchCreateAppointmentHistoriesResponse );
 }
 
 service DepartmentService {

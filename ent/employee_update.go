@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
@@ -247,6 +248,21 @@ func (eu *EmployeeUpdate) AddProjects(p ...*Project) *EmployeeUpdate {
 	return eu.AddProjectIDs(ids...)
 }
 
+// AddAppointmentHistoryIDs adds the "appointment_histories" edge to the AppointmentHistory entity by IDs.
+func (eu *EmployeeUpdate) AddAppointmentHistoryIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.AddAppointmentHistoryIDs(ids...)
+	return eu
+}
+
+// AddAppointmentHistories adds the "appointment_histories" edges to the AppointmentHistory entity.
+func (eu *EmployeeUpdate) AddAppointmentHistories(a ...*AppointmentHistory) *EmployeeUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return eu.AddAppointmentHistoryIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (eu *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return eu.mutation
@@ -403,6 +419,27 @@ func (eu *EmployeeUpdate) RemoveProjects(p ...*Project) *EmployeeUpdate {
 		ids[i] = p[i].ID
 	}
 	return eu.RemoveProjectIDs(ids...)
+}
+
+// ClearAppointmentHistories clears all "appointment_histories" edges to the AppointmentHistory entity.
+func (eu *EmployeeUpdate) ClearAppointmentHistories() *EmployeeUpdate {
+	eu.mutation.ClearAppointmentHistories()
+	return eu
+}
+
+// RemoveAppointmentHistoryIDs removes the "appointment_histories" edge to AppointmentHistory entities by IDs.
+func (eu *EmployeeUpdate) RemoveAppointmentHistoryIDs(ids ...int) *EmployeeUpdate {
+	eu.mutation.RemoveAppointmentHistoryIDs(ids...)
+	return eu
+}
+
+// RemoveAppointmentHistories removes "appointment_histories" edges to AppointmentHistory entities.
+func (eu *EmployeeUpdate) RemoveAppointmentHistories(a ...*AppointmentHistory) *EmployeeUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return eu.RemoveAppointmentHistoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -839,6 +876,51 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.AppointmentHistoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AppointmentHistoriesTable,
+			Columns: []string{employee.AppointmentHistoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedAppointmentHistoriesIDs(); len(nodes) > 0 && !eu.mutation.AppointmentHistoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AppointmentHistoriesTable,
+			Columns: []string{employee.AppointmentHistoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.AppointmentHistoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AppointmentHistoriesTable,
+			Columns: []string{employee.AppointmentHistoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{employee.Label}
@@ -1072,6 +1154,21 @@ func (euo *EmployeeUpdateOne) AddProjects(p ...*Project) *EmployeeUpdateOne {
 	return euo.AddProjectIDs(ids...)
 }
 
+// AddAppointmentHistoryIDs adds the "appointment_histories" edge to the AppointmentHistory entity by IDs.
+func (euo *EmployeeUpdateOne) AddAppointmentHistoryIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.AddAppointmentHistoryIDs(ids...)
+	return euo
+}
+
+// AddAppointmentHistories adds the "appointment_histories" edges to the AppointmentHistory entity.
+func (euo *EmployeeUpdateOne) AddAppointmentHistories(a ...*AppointmentHistory) *EmployeeUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return euo.AddAppointmentHistoryIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (euo *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return euo.mutation
@@ -1228,6 +1325,27 @@ func (euo *EmployeeUpdateOne) RemoveProjects(p ...*Project) *EmployeeUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return euo.RemoveProjectIDs(ids...)
+}
+
+// ClearAppointmentHistories clears all "appointment_histories" edges to the AppointmentHistory entity.
+func (euo *EmployeeUpdateOne) ClearAppointmentHistories() *EmployeeUpdateOne {
+	euo.mutation.ClearAppointmentHistories()
+	return euo
+}
+
+// RemoveAppointmentHistoryIDs removes the "appointment_histories" edge to AppointmentHistory entities by IDs.
+func (euo *EmployeeUpdateOne) RemoveAppointmentHistoryIDs(ids ...int) *EmployeeUpdateOne {
+	euo.mutation.RemoveAppointmentHistoryIDs(ids...)
+	return euo
+}
+
+// RemoveAppointmentHistories removes "appointment_histories" edges to AppointmentHistory entities.
+func (euo *EmployeeUpdateOne) RemoveAppointmentHistories(a ...*AppointmentHistory) *EmployeeUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return euo.RemoveAppointmentHistoryIDs(ids...)
 }
 
 // Where appends a list predicates to the EmployeeUpdate builder.
@@ -1687,6 +1805,51 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.AppointmentHistoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AppointmentHistoriesTable,
+			Columns: []string{employee.AppointmentHistoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedAppointmentHistoriesIDs(); len(nodes) > 0 && !euo.mutation.AppointmentHistoriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AppointmentHistoriesTable,
+			Columns: []string{employee.AppointmentHistoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.AppointmentHistoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AppointmentHistoriesTable,
+			Columns: []string{employee.AppointmentHistoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

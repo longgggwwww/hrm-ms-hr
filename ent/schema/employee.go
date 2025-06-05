@@ -77,6 +77,8 @@ func (Employee) Edges() []ent.Edge {
 		edge.From("projects", Project.Type).
 			Ref("members").
 			Annotations(entproto.Field(17)), // Inverse edge for project members
+		edge.To("appointment_histories", AppointmentHistory.Type).
+			Annotations(entproto.Field(18)),
 	}
 }
 

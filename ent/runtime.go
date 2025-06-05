@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
@@ -22,6 +23,18 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	appointmenthistoryFields := schema.AppointmentHistory{}.Fields()
+	_ = appointmenthistoryFields
+	// appointmenthistoryDescCreatedAt is the schema descriptor for created_at field.
+	appointmenthistoryDescCreatedAt := appointmenthistoryFields[5].Descriptor()
+	// appointmenthistory.DefaultCreatedAt holds the default value on creation for the created_at field.
+	appointmenthistory.DefaultCreatedAt = appointmenthistoryDescCreatedAt.Default.(func() time.Time)
+	// appointmenthistoryDescUpdatedAt is the schema descriptor for updated_at field.
+	appointmenthistoryDescUpdatedAt := appointmenthistoryFields[6].Descriptor()
+	// appointmenthistory.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	appointmenthistory.DefaultUpdatedAt = appointmenthistoryDescUpdatedAt.Default.(func() time.Time)
+	// appointmenthistory.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	appointmenthistory.UpdateDefaultUpdatedAt = appointmenthistoryDescUpdatedAt.UpdateDefault.(func() time.Time)
 	departmentFields := schema.Department{}.Fields()
 	_ = departmentFields
 	// departmentDescName is the schema descriptor for name field.

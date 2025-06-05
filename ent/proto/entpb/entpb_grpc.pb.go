@@ -22,6 +22,299 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	AppointmentHistoryService_Create_FullMethodName      = "/entpb.AppointmentHistoryService/Create"
+	AppointmentHistoryService_Get_FullMethodName         = "/entpb.AppointmentHistoryService/Get"
+	AppointmentHistoryService_Update_FullMethodName      = "/entpb.AppointmentHistoryService/Update"
+	AppointmentHistoryService_Delete_FullMethodName      = "/entpb.AppointmentHistoryService/Delete"
+	AppointmentHistoryService_List_FullMethodName        = "/entpb.AppointmentHistoryService/List"
+	AppointmentHistoryService_BatchCreate_FullMethodName = "/entpb.AppointmentHistoryService/BatchCreate"
+)
+
+// AppointmentHistoryServiceClient is the client API for AppointmentHistoryService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AppointmentHistoryServiceClient interface {
+	Create(ctx context.Context, in *CreateAppointmentHistoryRequest, opts ...grpc.CallOption) (*AppointmentHistory, error)
+	Get(ctx context.Context, in *GetAppointmentHistoryRequest, opts ...grpc.CallOption) (*AppointmentHistory, error)
+	Update(ctx context.Context, in *UpdateAppointmentHistoryRequest, opts ...grpc.CallOption) (*AppointmentHistory, error)
+	Delete(ctx context.Context, in *DeleteAppointmentHistoryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	List(ctx context.Context, in *ListAppointmentHistoryRequest, opts ...grpc.CallOption) (*ListAppointmentHistoryResponse, error)
+	BatchCreate(ctx context.Context, in *BatchCreateAppointmentHistoriesRequest, opts ...grpc.CallOption) (*BatchCreateAppointmentHistoriesResponse, error)
+}
+
+type appointmentHistoryServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAppointmentHistoryServiceClient(cc grpc.ClientConnInterface) AppointmentHistoryServiceClient {
+	return &appointmentHistoryServiceClient{cc}
+}
+
+func (c *appointmentHistoryServiceClient) Create(ctx context.Context, in *CreateAppointmentHistoryRequest, opts ...grpc.CallOption) (*AppointmentHistory, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AppointmentHistory)
+	err := c.cc.Invoke(ctx, AppointmentHistoryService_Create_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appointmentHistoryServiceClient) Get(ctx context.Context, in *GetAppointmentHistoryRequest, opts ...grpc.CallOption) (*AppointmentHistory, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AppointmentHistory)
+	err := c.cc.Invoke(ctx, AppointmentHistoryService_Get_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appointmentHistoryServiceClient) Update(ctx context.Context, in *UpdateAppointmentHistoryRequest, opts ...grpc.CallOption) (*AppointmentHistory, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AppointmentHistory)
+	err := c.cc.Invoke(ctx, AppointmentHistoryService_Update_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appointmentHistoryServiceClient) Delete(ctx context.Context, in *DeleteAppointmentHistoryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AppointmentHistoryService_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appointmentHistoryServiceClient) List(ctx context.Context, in *ListAppointmentHistoryRequest, opts ...grpc.CallOption) (*ListAppointmentHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAppointmentHistoryResponse)
+	err := c.cc.Invoke(ctx, AppointmentHistoryService_List_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appointmentHistoryServiceClient) BatchCreate(ctx context.Context, in *BatchCreateAppointmentHistoriesRequest, opts ...grpc.CallOption) (*BatchCreateAppointmentHistoriesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchCreateAppointmentHistoriesResponse)
+	err := c.cc.Invoke(ctx, AppointmentHistoryService_BatchCreate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AppointmentHistoryServiceServer is the server API for AppointmentHistoryService service.
+// All implementations must embed UnimplementedAppointmentHistoryServiceServer
+// for forward compatibility.
+type AppointmentHistoryServiceServer interface {
+	Create(context.Context, *CreateAppointmentHistoryRequest) (*AppointmentHistory, error)
+	Get(context.Context, *GetAppointmentHistoryRequest) (*AppointmentHistory, error)
+	Update(context.Context, *UpdateAppointmentHistoryRequest) (*AppointmentHistory, error)
+	Delete(context.Context, *DeleteAppointmentHistoryRequest) (*emptypb.Empty, error)
+	List(context.Context, *ListAppointmentHistoryRequest) (*ListAppointmentHistoryResponse, error)
+	BatchCreate(context.Context, *BatchCreateAppointmentHistoriesRequest) (*BatchCreateAppointmentHistoriesResponse, error)
+	mustEmbedUnimplementedAppointmentHistoryServiceServer()
+}
+
+// UnimplementedAppointmentHistoryServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAppointmentHistoryServiceServer struct{}
+
+func (UnimplementedAppointmentHistoryServiceServer) Create(context.Context, *CreateAppointmentHistoryRequest) (*AppointmentHistory, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedAppointmentHistoryServiceServer) Get(context.Context, *GetAppointmentHistoryRequest) (*AppointmentHistory, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedAppointmentHistoryServiceServer) Update(context.Context, *UpdateAppointmentHistoryRequest) (*AppointmentHistory, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedAppointmentHistoryServiceServer) Delete(context.Context, *DeleteAppointmentHistoryRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedAppointmentHistoryServiceServer) List(context.Context, *ListAppointmentHistoryRequest) (*ListAppointmentHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedAppointmentHistoryServiceServer) BatchCreate(context.Context, *BatchCreateAppointmentHistoriesRequest) (*BatchCreateAppointmentHistoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchCreate not implemented")
+}
+func (UnimplementedAppointmentHistoryServiceServer) mustEmbedUnimplementedAppointmentHistoryServiceServer() {
+}
+func (UnimplementedAppointmentHistoryServiceServer) testEmbeddedByValue() {}
+
+// UnsafeAppointmentHistoryServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AppointmentHistoryServiceServer will
+// result in compilation errors.
+type UnsafeAppointmentHistoryServiceServer interface {
+	mustEmbedUnimplementedAppointmentHistoryServiceServer()
+}
+
+func RegisterAppointmentHistoryServiceServer(s grpc.ServiceRegistrar, srv AppointmentHistoryServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAppointmentHistoryServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AppointmentHistoryService_ServiceDesc, srv)
+}
+
+func _AppointmentHistoryService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAppointmentHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppointmentHistoryServiceServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppointmentHistoryService_Create_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppointmentHistoryServiceServer).Create(ctx, req.(*CreateAppointmentHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppointmentHistoryService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAppointmentHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppointmentHistoryServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppointmentHistoryService_Get_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppointmentHistoryServiceServer).Get(ctx, req.(*GetAppointmentHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppointmentHistoryService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAppointmentHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppointmentHistoryServiceServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppointmentHistoryService_Update_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppointmentHistoryServiceServer).Update(ctx, req.(*UpdateAppointmentHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppointmentHistoryService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAppointmentHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppointmentHistoryServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppointmentHistoryService_Delete_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppointmentHistoryServiceServer).Delete(ctx, req.(*DeleteAppointmentHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppointmentHistoryService_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAppointmentHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppointmentHistoryServiceServer).List(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppointmentHistoryService_List_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppointmentHistoryServiceServer).List(ctx, req.(*ListAppointmentHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppointmentHistoryService_BatchCreate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchCreateAppointmentHistoriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppointmentHistoryServiceServer).BatchCreate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppointmentHistoryService_BatchCreate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppointmentHistoryServiceServer).BatchCreate(ctx, req.(*BatchCreateAppointmentHistoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AppointmentHistoryService_ServiceDesc is the grpc.ServiceDesc for AppointmentHistoryService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AppointmentHistoryService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "entpb.AppointmentHistoryService",
+	HandlerType: (*AppointmentHistoryServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Create",
+			Handler:    _AppointmentHistoryService_Create_Handler,
+		},
+		{
+			MethodName: "Get",
+			Handler:    _AppointmentHistoryService_Get_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _AppointmentHistoryService_Update_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _AppointmentHistoryService_Delete_Handler,
+		},
+		{
+			MethodName: "List",
+			Handler:    _AppointmentHistoryService_List_Handler,
+		},
+		{
+			MethodName: "BatchCreate",
+			Handler:    _AppointmentHistoryService_BatchCreate_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "entpb/entpb.proto",
+}
+
+const (
 	DepartmentService_Create_FullMethodName      = "/entpb.DepartmentService/Create"
 	DepartmentService_Get_FullMethodName         = "/entpb.DepartmentService/Get"
 	DepartmentService_Update_FullMethodName      = "/entpb.DepartmentService/Update"

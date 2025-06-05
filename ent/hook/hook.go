@@ -9,6 +9,18 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 )
 
+// The AppointmentHistoryFunc type is an adapter to allow the use of ordinary
+// function as AppointmentHistory mutator.
+type AppointmentHistoryFunc func(context.Context, *ent.AppointmentHistoryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AppointmentHistoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AppointmentHistoryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AppointmentHistoryMutation", m)
+}
+
 // The DepartmentFunc type is an adapter to allow the use of ordinary
 // function as Department mutator.
 type DepartmentFunc func(context.Context, *ent.DepartmentMutation) (ent.Value, error)

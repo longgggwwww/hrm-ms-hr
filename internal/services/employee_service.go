@@ -86,6 +86,7 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dtos.Empl
 		Email:     input.User.Email,
 		Gender:    input.User.Gender,
 		Phone:     input.User.Phone,
+		Avatar:    input.User.Avatar,
 		Address:   input.User.Address,
 		WardCode:  strconv.Itoa(input.User.WardCode),
 		RoleIds:   input.User.RoleIds,
@@ -194,6 +195,7 @@ func (s *EmployeeService) GetEmployeeWithUserInfo(
 		WithPosition(func(q *ent.PositionQuery) {
 			q.WithDepartments()
 		}).
+		WithAppointmentHistories().
 		Only(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -275,6 +277,7 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 	}
 
 	upd := tx.Employee.UpdateOneID(id)
+	// Gộp cập nhật các trường lại cho gọn
 	if input.Code != "" {
 		upd.SetCode(input.Code)
 	}
@@ -286,6 +289,7 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 	if input.Status != "" {
 		upd.SetStatus(employee.Status(input.Status))
 	}
+
 	updatedEmp, err := upd.Save(ctx)
 	if err != nil {
 		tx.Rollback()
@@ -293,28 +297,18 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 	}
 
 	var userInfo *grpc_clients.User
-
 	if emp.UserID != "" && s.UserClient != nil {
 		if uid, err := strconv.Atoi(emp.UserID); err == nil {
-			userReq := &grpc_clients.UpdateUserRequest{Id: int32(uid)}
 			u := input.User
-			if u.FirstName != "" {
-				userReq.FirstName = u.FirstName
-			}
-			if u.LastName != "" {
-				userReq.LastName = u.LastName
-			}
-			if u.Email != "" {
-				userReq.Email = u.Email
-			}
-			if u.Gender != "" {
-				userReq.Gender = u.Gender
-			}
-			if u.Phone != "" {
-				userReq.Phone = u.Phone
-			}
-			if u.Address != "" {
-				userReq.Address = u.Address
+			userReq := &grpc_clients.UpdateUserRequest{
+				Id:        int32(uid),
+				FirstName: u.FirstName,
+				LastName:  u.LastName,
+				Email:     u.Email,
+				Gender:    u.Gender,
+				Phone:     u.Phone,
+				Address:   u.Address,
+				Avatar:    u.Avatar,
 			}
 			if u.WardCode != 0 {
 				userReq.WardCode = strconv.Itoa(u.WardCode)
@@ -325,7 +319,7 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 			if len(u.PermIds) > 0 {
 				userReq.PermIds = u.PermIds
 			}
-			if u.Account.Username != "" || u.Account.Password != "" {
+			if u.Account.Username != "" || u.Account.Password != "" || u.Account.Status != "" {
 				userReq.Account = &grpc_clients.Account{
 					Username: u.Account.Username,
 					Password: u.Account.Password,
@@ -333,7 +327,6 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 				}
 			}
 			userResp, err := s.UserClient.UpdateUser(ctx, userReq)
-
 			if err != nil {
 				tx.Rollback()
 				return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#3 UpdateById: Failed to update user info: " + err.Error()}
@@ -349,4 +342,70 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 	}
 
 	return updatedEmp, userInfo, nil
+}
+
+// UpdatePositionAndLogHistory cập nhật position cho employee và lưu lịch sử bổ nhiệm
+func (s *EmployeeService) UpdatePositionAndLogHistory(ctx context.Context, orgID int, empID int, input dtos.UpdateEmployeePositionInput) (*ent.Employee, error) {
+	tx, err := s.Client.Tx(ctx)
+	if err != nil {
+		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#1 UpdatePositionAndLogHistory: Failed to start transaction"}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Kiểm tra employee tồn tại
+	_, err = tx.Employee.Query().Where(employee.ID(empID), employee.OrgID(orgID)).Only(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, &ServiceError{Status: http.StatusNotFound, Msg: "#2 UpdatePositionAndLogHistory: Employee not found or not in your organization"}
+	}
+
+	// Lấy position_name từ position_id
+	pos, err := tx.Position.Get(ctx, input.PositionID)
+	if err != nil {
+		tx.Rollback()
+		return nil, &ServiceError{Status: http.StatusBadRequest, Msg: "#3 UpdatePositionAndLogHistory: Position not found"}
+	}
+
+	upd := tx.Employee.UpdateOneID(empID).SetPositionID(input.PositionID)
+	var joiningAtTime time.Time
+	if input.JoiningAt != "" {
+		if t, err := time.Parse(time.RFC3339, input.JoiningAt); err == nil {
+			upd.SetJoiningAt(t)
+			joiningAtTime = t
+		}
+	}
+	updatedEmp, err := upd.Save(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: err.Error()}
+	}
+
+	ah := s.Client.AppointmentHistory.Create().
+		SetEmployeeID(empID).
+		SetPositionName(pos.Name)
+	if !joiningAtTime.IsZero() {
+		ah.SetJoiningAt(joiningAtTime)
+	} else {
+		ah.SetJoiningAt(updatedEmp.JoiningAt)
+	}
+	if input.Description != "" {
+		ah.SetDescription(input.Description)
+	}
+	if len(input.AttachmentUrls) != 0 {
+		ah.SetAttachmentUrls(input.AttachmentUrls)
+	}
+	_, err = ah.Save(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#4 UpdatePositionAndLogHistory: Failed to save appointment history: " + err.Error()}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#5 UpdatePositionAndLogHistory: Failed to commit transaction"}
+	}
+	return updatedEmp, nil
 }

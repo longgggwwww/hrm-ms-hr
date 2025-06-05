@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
@@ -25,18 +26,19 @@ import (
 // EmployeeQuery is the builder for querying Employee entities.
 type EmployeeQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []employee.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.Employee
-	withPosition        *PositionQuery
-	withCreatedProjects *ProjectQuery
-	withUpdatedProjects *ProjectQuery
-	withAssignedTasks   *TaskQuery
-	withLeaveApproves   *LeaveApprovalQuery
-	withLeaveRequests   *LeaveRequestQuery
-	withTaskReports     *TaskReportQuery
-	withProjects        *ProjectQuery
+	ctx                      *QueryContext
+	order                    []employee.OrderOption
+	inters                   []Interceptor
+	predicates               []predicate.Employee
+	withPosition             *PositionQuery
+	withCreatedProjects      *ProjectQuery
+	withUpdatedProjects      *ProjectQuery
+	withAssignedTasks        *TaskQuery
+	withLeaveApproves        *LeaveApprovalQuery
+	withLeaveRequests        *LeaveRequestQuery
+	withTaskReports          *TaskReportQuery
+	withProjects             *ProjectQuery
+	withAppointmentHistories *AppointmentHistoryQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -249,6 +251,28 @@ func (eq *EmployeeQuery) QueryProjects() *ProjectQuery {
 	return query
 }
 
+// QueryAppointmentHistories chains the current query on the "appointment_histories" edge.
+func (eq *EmployeeQuery) QueryAppointmentHistories() *AppointmentHistoryQuery {
+	query := (&AppointmentHistoryClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(appointmenthistory.Table, appointmenthistory.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.AppointmentHistoriesTable, employee.AppointmentHistoriesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Employee entity from the query.
 // Returns a *NotFoundError when no Employee was found.
 func (eq *EmployeeQuery) First(ctx context.Context) (*Employee, error) {
@@ -436,19 +460,20 @@ func (eq *EmployeeQuery) Clone() *EmployeeQuery {
 		return nil
 	}
 	return &EmployeeQuery{
-		config:              eq.config,
-		ctx:                 eq.ctx.Clone(),
-		order:               append([]employee.OrderOption{}, eq.order...),
-		inters:              append([]Interceptor{}, eq.inters...),
-		predicates:          append([]predicate.Employee{}, eq.predicates...),
-		withPosition:        eq.withPosition.Clone(),
-		withCreatedProjects: eq.withCreatedProjects.Clone(),
-		withUpdatedProjects: eq.withUpdatedProjects.Clone(),
-		withAssignedTasks:   eq.withAssignedTasks.Clone(),
-		withLeaveApproves:   eq.withLeaveApproves.Clone(),
-		withLeaveRequests:   eq.withLeaveRequests.Clone(),
-		withTaskReports:     eq.withTaskReports.Clone(),
-		withProjects:        eq.withProjects.Clone(),
+		config:                   eq.config,
+		ctx:                      eq.ctx.Clone(),
+		order:                    append([]employee.OrderOption{}, eq.order...),
+		inters:                   append([]Interceptor{}, eq.inters...),
+		predicates:               append([]predicate.Employee{}, eq.predicates...),
+		withPosition:             eq.withPosition.Clone(),
+		withCreatedProjects:      eq.withCreatedProjects.Clone(),
+		withUpdatedProjects:      eq.withUpdatedProjects.Clone(),
+		withAssignedTasks:        eq.withAssignedTasks.Clone(),
+		withLeaveApproves:        eq.withLeaveApproves.Clone(),
+		withLeaveRequests:        eq.withLeaveRequests.Clone(),
+		withTaskReports:          eq.withTaskReports.Clone(),
+		withProjects:             eq.withProjects.Clone(),
+		withAppointmentHistories: eq.withAppointmentHistories.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -543,6 +568,17 @@ func (eq *EmployeeQuery) WithProjects(opts ...func(*ProjectQuery)) *EmployeeQuer
 	return eq
 }
 
+// WithAppointmentHistories tells the query-builder to eager-load the nodes that are connected to
+// the "appointment_histories" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithAppointmentHistories(opts ...func(*AppointmentHistoryQuery)) *EmployeeQuery {
+	query := (&AppointmentHistoryClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withAppointmentHistories = query
+	return eq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -621,7 +657,7 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	var (
 		nodes       = []*Employee{}
 		_spec       = eq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			eq.withPosition != nil,
 			eq.withCreatedProjects != nil,
 			eq.withUpdatedProjects != nil,
@@ -630,6 +666,7 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 			eq.withLeaveRequests != nil,
 			eq.withTaskReports != nil,
 			eq.withProjects != nil,
+			eq.withAppointmentHistories != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -702,6 +739,15 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 		if err := eq.loadProjects(ctx, query, nodes,
 			func(n *Employee) { n.Edges.Projects = []*Project{} },
 			func(n *Employee, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withAppointmentHistories; query != nil {
+		if err := eq.loadAppointmentHistories(ctx, query, nodes,
+			func(n *Employee) { n.Edges.AppointmentHistories = []*AppointmentHistory{} },
+			func(n *Employee, e *AppointmentHistory) {
+				n.Edges.AppointmentHistories = append(n.Edges.AppointmentHistories, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1006,6 +1052,36 @@ func (eq *EmployeeQuery) loadProjects(ctx context.Context, query *ProjectQuery, 
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadAppointmentHistories(ctx context.Context, query *AppointmentHistoryQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *AppointmentHistory)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(appointmenthistory.FieldEmployeeID)
+	}
+	query.Where(predicate.AppointmentHistory(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.AppointmentHistoriesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EmployeeID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "employee_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

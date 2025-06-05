@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
@@ -82,16 +83,17 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			department.Table:    department.ValidColumn,
-			employee.Table:      employee.ValidColumn,
-			label.Table:         label.ValidColumn,
-			leaveapproval.Table: leaveapproval.ValidColumn,
-			leaverequest.Table:  leaverequest.ValidColumn,
-			organization.Table:  organization.ValidColumn,
-			position.Table:      position.ValidColumn,
-			project.Table:       project.ValidColumn,
-			task.Table:          task.ValidColumn,
-			taskreport.Table:    taskreport.ValidColumn,
+			appointmenthistory.Table: appointmenthistory.ValidColumn,
+			department.Table:         department.ValidColumn,
+			employee.Table:           employee.ValidColumn,
+			label.Table:              label.ValidColumn,
+			leaveapproval.Table:      leaveapproval.ValidColumn,
+			leaverequest.Table:       leaverequest.ValidColumn,
+			organization.Table:       organization.ValidColumn,
+			position.Table:           position.ValidColumn,
+			project.Table:            project.ValidColumn,
+			task.Table:               task.ValidColumn,
+			taskreport.Table:         taskreport.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

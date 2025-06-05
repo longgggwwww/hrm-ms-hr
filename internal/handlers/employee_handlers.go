@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/huynhthanhthao/hrm-ms-shared/middleware"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
@@ -28,12 +29,48 @@ func NewEmployeeHandler(client *ent.Client, userClient grpc_clients.UserServiceC
 func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 	employees := r.Group("employees")
 	{
-		employees.POST("", h.Create)
-		employees.GET("", h.List)
-		employees.GET(":id", h.GetById)
-
-		employees.PATCH(":id", h.UpdateById)
-		employees.DELETE(":id", h.DeleteById)
+		employees.POST("", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"employee:create"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.Create(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		employees.GET("", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"employee:read"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.List(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		employees.GET(":id", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"employee:read"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.GetById(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		employees.PATCH(":id", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"employee:update"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.UpdateById(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		employees.PATCH(":id/position", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"employee:update"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.UpdatePositionById(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		employees.DELETE(":id", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{"employee:delete"},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.DeleteById(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
 	}
 }
 
@@ -228,6 +265,55 @@ func (h *EmployeeHandler) UpdateById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+// UpdatePositionById cập nhật position cho employee và lưu lịch sử bổ nhiệm
+func (h *EmployeeHandler) UpdatePositionById(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid employee ID"})
+		return
+	}
+	ids, err := utils.ExtractIDsFromToken(c)
+	if err != nil || ids["org_id"] == 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or missing org_id in token"})
+		return
+	}
+	orgID := ids["org_id"]
+
+	var input dtos.UpdateEmployeePositionInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	svc := services.NewEmployeeService(h.Client, h.UserClient)
+	emp, err := svc.UpdatePositionAndLogHistory(
+		c.Request.Context(),
+		orgID,
+		id,
+		input,
+	)
+	if err != nil {
+		if serr, ok := err.(*services.ServiceError); ok {
+			c.JSON(serr.Status, gin.H{"error": serr.Msg})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":          emp.ID,
+		"code":        emp.Code,
+		"status":      emp.Status,
+		"position_id": emp.PositionID,
+		"org_id":      emp.OrgID,
+		"joining_at":  emp.JoiningAt,
+		"created_at":  emp.CreatedAt,
+		"updated_at":  emp.UpdatedAt,
+		"user_id":     emp.UserID,
+	})
 }
 
 func (h *EmployeeHandler) DeleteById(c *gin.Context) {

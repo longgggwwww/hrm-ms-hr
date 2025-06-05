@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	"github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
@@ -216,6 +217,21 @@ func (ec *EmployeeCreate) AddProjects(p ...*Project) *EmployeeCreate {
 		ids[i] = p[i].ID
 	}
 	return ec.AddProjectIDs(ids...)
+}
+
+// AddAppointmentHistoryIDs adds the "appointment_histories" edge to the AppointmentHistory entity by IDs.
+func (ec *EmployeeCreate) AddAppointmentHistoryIDs(ids ...int) *EmployeeCreate {
+	ec.mutation.AddAppointmentHistoryIDs(ids...)
+	return ec
+}
+
+// AddAppointmentHistories adds the "appointment_histories" edges to the AppointmentHistory entity.
+func (ec *EmployeeCreate) AddAppointmentHistories(a ...*AppointmentHistory) *EmployeeCreate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ec.AddAppointmentHistoryIDs(ids...)
 }
 
 // Mutation returns the EmployeeMutation object of the builder.
@@ -480,6 +496,22 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.AppointmentHistoriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AppointmentHistoriesTable,
+			Columns: []string{employee.AppointmentHistoriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

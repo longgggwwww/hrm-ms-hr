@@ -47,6 +47,8 @@ const (
 	EdgeTaskReports = "task_reports"
 	// EdgeProjects holds the string denoting the projects edge name in mutations.
 	EdgeProjects = "projects"
+	// EdgeAppointmentHistories holds the string denoting the appointment_histories edge name in mutations.
+	EdgeAppointmentHistories = "appointment_histories"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 	// PositionTable is the table that holds the position relation/edge.
@@ -101,6 +103,13 @@ const (
 	// ProjectsInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectsInverseTable = "projects"
+	// AppointmentHistoriesTable is the table that holds the appointment_histories relation/edge.
+	AppointmentHistoriesTable = "appointment_histories"
+	// AppointmentHistoriesInverseTable is the table name for the AppointmentHistory entity.
+	// It exists in this package in order to avoid circular dependency with the "appointmenthistory" package.
+	AppointmentHistoriesInverseTable = "appointment_histories"
+	// AppointmentHistoriesColumn is the table column denoting the appointment_histories relation/edge.
+	AppointmentHistoriesColumn = "employee_id"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -324,6 +333,20 @@ func ByProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAppointmentHistoriesCount orders the results by appointment_histories count.
+func ByAppointmentHistoriesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAppointmentHistoriesStep(), opts...)
+	}
+}
+
+// ByAppointmentHistories orders the results by appointment_histories terms.
+func ByAppointmentHistories(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAppointmentHistoriesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPositionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -378,5 +401,12 @@ func newProjectsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProjectsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, ProjectsTable, ProjectsPrimaryKey...),
+	)
+}
+func newAppointmentHistoriesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AppointmentHistoriesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AppointmentHistoriesTable, AppointmentHistoriesColumn),
 	)
 }

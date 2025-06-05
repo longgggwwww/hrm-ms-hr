@@ -9,6 +9,7 @@ import (
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	appointmenthistory "github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	leaveapproval "github.com/longgggwwww/hrm-ms-hr/ent/leaveapproval"
 	leaverequest "github.com/longgggwwww/hrm-ms-hr/ent/leaverequest"
@@ -84,6 +85,12 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v.UpdatedAt = updated_at
 	user_id := wrapperspb.String(e.UserID)
 	v.UserId = user_id
+	for _, edg := range e.Edges.AppointmentHistories {
+		id := int64(edg.ID)
+		v.AppointmentHistories = append(v.AppointmentHistories, &AppointmentHistory{
+			Id: id,
+		})
+	}
 	for _, edg := range e.Edges.AssignedTasks {
 		id := int64(edg.ID)
 		v.AssignedTasks = append(v.AssignedTasks, &Task{
@@ -186,6 +193,9 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 	case GetEmployeeRequest_WITH_EDGE_IDS:
 		get, err = svc.client.Employee.Query().
 			Where(employee.ID(id)).
+			WithAppointmentHistories(func(query *ent.AppointmentHistoryQuery) {
+				query.Select(appointmenthistory.FieldID)
+			}).
 			WithAssignedTasks(func(query *ent.TaskQuery) {
 				query.Select(task.FieldID)
 			}).
@@ -245,6 +255,10 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	if employee.GetUserId() != nil {
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
+	}
+	for _, item := range employee.GetAppointmentHistories() {
+		appointmenthistories := int(item.GetId())
+		m.AddAppointmentHistoryIDs(appointmenthistories)
 	}
 	for _, item := range employee.GetAssignedTasks() {
 		assignedtasks := int(item.GetId())
@@ -348,6 +362,9 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 		entList, err = listQuery.All(ctx)
 	case ListEmployeeRequest_WITH_EDGE_IDS:
 		entList, err = listQuery.
+			WithAppointmentHistories(func(query *ent.AppointmentHistoryQuery) {
+				query.Select(appointmenthistory.FieldID)
+			}).
 			WithAssignedTasks(func(query *ent.TaskQuery) {
 				query.Select(task.FieldID)
 			}).
@@ -450,6 +467,10 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	if employee.GetUserId() != nil {
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
+	}
+	for _, item := range employee.GetAppointmentHistories() {
+		appointmenthistories := int(item.GetId())
+		m.AddAppointmentHistoryIDs(appointmenthistories)
 	}
 	for _, item := range employee.GetAssignedTasks() {
 		assignedtasks := int(item.GetId())
