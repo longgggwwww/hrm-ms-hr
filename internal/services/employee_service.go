@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -419,44 +420,53 @@ func (s *EmployeeService) UpdatePositionAndLogHistory(ctx context.Context, orgID
 	return updatedEmp, nil
 }
 
-// CreateOrgAndRootEmployee tạo mới tổ chức, employee root, và gọi gRPC tạo user
-func (s *EmployeeService) CreateOrgAndRootEmployee(ctx context.Context, input dtos.CreateOrgAndRootEmployeeInput) (*ent.Organization, *ent.Employee, *grpc_clients.User, error) {
-	// tx, err := s.Client.Tx(ctx)
-	// if err != nil {
-	// 	return nil, nil, nil, err
-	// }
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		tx.Rollback()
-	// 	}
-	// }()
+// CreateRootEmployee tạo mới tổ chức, employee root, và gọi gRPC tạo user
+func (s *EmployeeService) CreateRootEmployee(ctx context.Context, input dtos.CreateRootEmployeeInput) (
+	*ent.Organization,
+	*ent.Employee,
+	*grpc_clients.User,
+	error,
+) {
+	// Check secret key
+	secret := os.Getenv("SECRET_KEY_IIT")
+	if input.SecretKeyIIT == "" || input.SecretKeyIIT != secret {
+		return nil, nil, nil, &ServiceError{Status: http.StatusUnauthorized, Msg: "#1 CreateRootEmployee: Invalid or missing SecretKeyIIT"}
+	}
 
-	// org, err := tx.Organization.Create().
-	// 	SetName(input.Organization.Name).
-	// 	SetCode(input.Organization.Code).
-	// 	SetLogoURL(input.Organization.LogoUrl).
-	// 	Save(ctx)
-	// if err != nil {
-	// 	tx.Rollback()
-	// 	return nil, nil, nil, err
-	// }
+	tx, err := s.Client.Tx(ctx)
+	if err != nil {
+		return nil, nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#2 CreateRootEmployee: Failed to start transaction"}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
-	// empInput := input.Employee
-	// emp, userResp, err := s.Create(ctx, org.ID, empInput)
-	// if err != nil {
-	// 	tx.Rollback()
-	// 	return nil, nil, nil, err
-	// }
+	org, err := tx.Organization.Create().
+		SetName(input.Organization.Name).
+		SetCode(input.Organization.Code).
+		SetLogoURL(input.Organization.LogoUrl).
+		Save(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, nil, nil, err
+	}
 
-	// if err := tx.Commit(); err != nil {
-	// 	return nil, nil, nil, err
-	// }
+	emp, userResp, err := s.Create(ctx, org.ID, input.Employee)
+	if err != nil {
+		tx.Rollback()
+		return nil, nil, nil, err
+	}
 
-	// var userInfo *grpc_clients.User
-	// if userResp != nil && userResp.User != nil {
-	// 	userInfo = userResp.User
-	// }
+	var userInfo *grpc_clients.User
+	if userResp != nil && userResp.User != nil {
+		userInfo = userResp.User
+	}
 
-	// return org, emp, userInfo, nil
-	return nil, nil, nil, &ServiceError{Status: http.StatusNotImplemented, Msg: "CreateOrgAndRootEmployee not implemented"}
+	if err := tx.Commit(); err != nil {
+		return nil, nil, nil, err
+	}
+
+	return org, emp, userInfo, nil
 }

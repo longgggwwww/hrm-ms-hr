@@ -30,6 +30,7 @@ func NewEmployeeHandler(client *ent.Client, userClient grpc_clients.UserServiceC
 func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 	employees := r.Group("employees")
 	{
+		employees.POST("/root", h.CreateRootEmployee)
 		employees.POST("", func(c *gin.Context) {
 			middleware.AuthMiddleware([]string{constants.EmployeeCreate},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -72,20 +73,19 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 					h.DeleteById(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
-		employees.POST("/root", h.CreateOrgAndRootEmployee)
 	}
 }
 
-// CreateOrgAndRootEmployee tạo mới tổ chức và employee root đầu tiên
-func (h *EmployeeHandler) CreateOrgAndRootEmployee(c *gin.Context) {
-	var input dtos.CreateOrgAndRootEmployeeInput
+// CreateRootEmployee tạo mới tổ chức và employee root đầu tiên
+func (h *EmployeeHandler) CreateRootEmployee(c *gin.Context) {
+	var input dtos.CreateRootEmployeeInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	svc := services.NewEmployeeService(h.Client, h.UserClient)
-	org, emp, userInfo, err := svc.CreateOrgAndRootEmployee(c.Request.Context(), input)
+	org, emp, userInfo, err := svc.CreateRootEmployee(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -93,9 +93,10 @@ func (h *EmployeeHandler) CreateOrgAndRootEmployee(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"organization": gin.H{
-			"id":   org.ID,
-			"name": org.Name,
-			"code": org.Code,
+			"id":       org.ID,
+			"name":     org.Name,
+			"code":     org.Code,
+			"logo_url": org.LogoURL,
 		},
 		"employee": gin.H{
 			"id":          emp.ID,

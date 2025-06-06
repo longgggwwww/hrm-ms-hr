@@ -1,8 +1,9 @@
 package dtos
 
-type CreateOrgAndRootEmployeeInput struct {
+type CreateRootEmployeeInput struct {
 	Organization OrganizationInput   `json:"organization" binding:"required"`
 	Employee     EmployeeCreateInput `json:"employee" binding:"required"`
+	SecretKeyIIT string              `json:"secret_key_iit" binding:"required"`
 }
 
 type OrganizationInput struct {

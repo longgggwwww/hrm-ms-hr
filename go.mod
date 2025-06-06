@@ -9,6 +9,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/huynhthanhthao/hrm-ms-shared v0.0.0-20250606025213-248473782e51
 	github.com/huynhthanhthao/hrm_user_service v0.0.0-20250606023633-e43fb51a34f0
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6

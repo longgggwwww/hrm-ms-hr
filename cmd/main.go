@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
@@ -15,6 +16,12 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/internal/handlers"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
+
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found or error loading .env, relying on system environment variables.")
+	}
+}
 
 func main() {
 	// Initialize custom validators
