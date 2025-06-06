@@ -180,7 +180,9 @@ func (s *ProjectService) Create(ctx context.Context, orgID, employeeID int, inpu
 	// Get the created project with all edges
 	createdProject, err := s.Client.Project.Query().
 		Where(project.ID(row.ID)).
-		WithTasks().
+		WithTasks(func(q *ent.TaskQuery) {
+			q.WithAssignees() // Load assignees for tasks
+		}).
 		WithOrganization().
 		WithCreator().
 		WithUpdater().

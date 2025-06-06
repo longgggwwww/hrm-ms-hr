@@ -343,7 +343,9 @@ func (s *ProjectService) Get(ctx context.Context, id int) (map[string]interface{
 		WithMembers(func(q *ent.EmployeeQuery) {
 			q.WithPosition() // Load position data for members
 		}).
-		WithTasks().
+		WithTasks(func(q *ent.TaskQuery) {
+			q.WithAssignees() // Load assignees for tasks
+		}).
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {

@@ -161,6 +161,24 @@ func (s *ProjectService) collectUserIDsFromProjects(projects []*ent.Project) []i
 				}
 			}
 		}
+
+		// Task assignees user IDs
+		if proj.Edges.Tasks != nil {
+			for _, task := range proj.Edges.Tasks {
+				if task.Edges.Assignees != nil {
+					for _, assignee := range task.Edges.Assignees {
+						if assignee.UserID != "" {
+							if userID, err := strconv.Atoi(assignee.UserID); err == nil {
+								if !userIDSet[int32(userID)] {
+									userIDSet[int32(userID)] = true
+									userIDs = append(userIDs, int32(userID))
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return userIDs
@@ -347,7 +365,61 @@ func (s *ProjectService) enrichProjectWithUserInfoForGet(proj *ent.Project, user
 
 	// Add tasks array instead of task_count (for Get method)
 	if proj.Edges.Tasks != nil {
-		edges["tasks"] = proj.Edges.Tasks
+		var tasksData []map[string]interface{}
+		for _, task := range proj.Edges.Tasks {
+			taskData := map[string]interface{}{
+				"id":          task.ID,
+				"name":        task.Name,
+				"code":        task.Code,
+				"description": task.Description,
+				"process":     task.Process,
+				"status":      task.Status,
+				"start_at":    task.StartAt,
+				"due_date":    task.DueDate,
+				"project_id":  task.ProjectID,
+				"creator_id":  task.CreatorID,
+				"updater_id":  task.UpdaterID,
+				"created_at":  task.CreatedAt,
+				"updated_at":  task.UpdatedAt,
+				"type":        task.Type,
+			}
+
+			// Create task edges structure
+			taskEdges := make(map[string]interface{})
+
+			// Enrich assignees with user_info
+			if task.Edges.Assignees != nil {
+				var assigneesData []map[string]interface{}
+				for _, assignee := range task.Edges.Assignees {
+					assigneeData := map[string]interface{}{
+						"id":          assignee.ID,
+						"user_id":     assignee.UserID,
+						"code":        assignee.Code,
+						"position_id": assignee.PositionID,
+						"org_id":      assignee.OrgID,
+						"joining_at":  assignee.JoiningAt,
+						"status":      assignee.Status,
+						"created_at":  assignee.CreatedAt,
+						"updated_at":  assignee.UpdatedAt,
+					}
+
+					// Add user_info if available
+					if assignee.UserID != "" {
+						if userIDInt, err := strconv.Atoi(assignee.UserID); err == nil {
+							if userInfo, exists := userMap[int32(userIDInt)]; exists {
+								assigneeData["user_info"] = s.normalizeUserInfo(userInfo)
+							}
+						}
+					}
+					assigneesData = append(assigneesData, assigneeData)
+				}
+				taskEdges["assignees"] = assigneesData
+			}
+
+			taskData["edges"] = taskEdges
+			tasksData = append(tasksData, taskData)
+		}
+		edges["tasks"] = tasksData
 	}
 
 	// Add organization edge (unchanged)
