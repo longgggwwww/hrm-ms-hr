@@ -70,10 +70,14 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 	v.CreatedAt = created_at
 	creator := int64(e.CreatorID)
 	v.CreatorId = creator
-	description := wrapperspb.String(e.Description)
-	v.Description = description
-	end_at := timestamppb.New(e.EndAt)
-	v.EndAt = end_at
+	if e.Description != nil {
+		description := wrapperspb.String(*e.Description)
+		v.Description = description
+	}
+	if e.EndAt != nil {
+		end_at := timestamppb.New(*e.EndAt)
+		v.EndAt = end_at
+	}
 	id := int64(e.ID)
 	v.Id = id
 	name := e.Name
@@ -82,8 +86,10 @@ func toProtoProject(e *ent.Project) (*Project, error) {
 	v.OrgId = organization
 	process := wrapperspb.Int64(int64(e.Process))
 	v.Process = process
-	start_at := timestamppb.New(e.StartAt)
-	v.StartAt = start_at
+	if e.StartAt != nil {
+		start_at := timestamppb.New(*e.StartAt)
+		v.StartAt = start_at
+	}
 	status := toProtoProject_Status(e.Status)
 	v.Status = status
 	updated_at := timestamppb.New(e.UpdatedAt)
