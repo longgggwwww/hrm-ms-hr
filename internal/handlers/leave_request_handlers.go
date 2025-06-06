@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/huynhthanhthao/hrm-ms-shared/middleware"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/internal/constants"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -28,7 +29,7 @@ func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 	{
 		// Admin routes
 		leaveRequests.GET("/admin", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"leave_request:read:admin"},
+			middleware.AuthMiddleware([]string{constants.LeaveRequestReadAdmin},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.ListAdmin(c)
@@ -36,7 +37,7 @@ func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 		})
 
 		leaveRequests.GET(":id/admin", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"leave_request:read:admin"},
+			middleware.AuthMiddleware([]string{constants.LeaveRequestReadAdmin},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.GetAdmin(c)
@@ -44,7 +45,7 @@ func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 		})
 
 		leaveRequests.PATCH(":id/approve", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"leave_request:approve:admin"},
+			middleware.AuthMiddleware([]string{constants.LeaveRequestApproveAdmin},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.Approve(c)
@@ -52,7 +53,7 @@ func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 		})
 
 		leaveRequests.PATCH(":id/reject", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"leave_request:reject:admin"},
+			middleware.AuthMiddleware([]string{constants.LeaveRequestRejectAdmin},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.Reject(c)
@@ -61,7 +62,7 @@ func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 
 		// Employee routes
 		leaveRequests.GET("/employee", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"leave_request:read:employee"},
+			middleware.AuthMiddleware([]string{constants.LeaveRequestReadEmployee},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.ListEmployee(c)
@@ -69,7 +70,7 @@ func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 		})
 
 		leaveRequests.GET(":id/employee", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"leave_request:read:employee"},
+			middleware.AuthMiddleware([]string{constants.LeaveRequestReadEmployee},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.GetEmployee(c)
@@ -77,7 +78,7 @@ func (h *LeaveRequestHandler) RegisterRoutes(r *gin.Engine) {
 		})
 
 		leaveRequests.POST("", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"leave_request:create:employee"},
+			middleware.AuthMiddleware([]string{constants.LeaveRequestCreateEmployee},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.Create(c)

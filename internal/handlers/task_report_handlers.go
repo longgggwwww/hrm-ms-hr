@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/huynhthanhthao/hrm-ms-shared/middleware"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/internal/constants"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -23,7 +24,7 @@ func (h *TaskReportHandler) RegisterRoutes(r *gin.Engine) {
 	taskReports := r.Group("/task-reports")
 
 	taskReports.POST("", func(c *gin.Context) {
-		middleware.AuthMiddleware([]string{"task_report:create"},
+		middleware.AuthMiddleware([]string{constants.TaskReportCreate},
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				c.Request = r
 				h.Create(c)
@@ -31,7 +32,7 @@ func (h *TaskReportHandler) RegisterRoutes(r *gin.Engine) {
 	})
 
 	taskReports.PATCH(":id", func(c *gin.Context) {
-		middleware.AuthMiddleware([]string{"task_report:update"},
+		middleware.AuthMiddleware([]string{constants.TaskReportUpdate},
 			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				c.Request = r
 				h.Update(c)

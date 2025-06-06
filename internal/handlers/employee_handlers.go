@@ -8,6 +8,7 @@ import (
 	"github.com/huynhthanhthao/hrm-ms-shared/middleware"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/internal/constants"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services"
@@ -30,42 +31,42 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 	employees := r.Group("employees")
 	{
 		employees.POST("", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"employee:create"},
+			middleware.AuthMiddleware([]string{constants.EmployeeCreate},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.Create(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
 		employees.GET("", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"employee:read"},
+			middleware.AuthMiddleware([]string{constants.EmployeeRead},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.List(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
 		employees.GET(":id", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"employee:read"},
+			middleware.AuthMiddleware([]string{constants.EmployeeRead},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.GetById(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
 		employees.PATCH(":id", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"employee:update"},
+			middleware.AuthMiddleware([]string{constants.EmployeeUpdate},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.UpdateById(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
 		employees.PATCH(":id/position", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"employee:update"},
+			middleware.AuthMiddleware([]string{constants.EmployeeUpdate},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.UpdatePositionById(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
 		employees.DELETE(":id", func(c *gin.Context) {
-			middleware.AuthMiddleware([]string{"employee:delete"},
+			middleware.AuthMiddleware([]string{constants.EmployeeDelete},
 				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					c.Request = r
 					h.DeleteById(c)
