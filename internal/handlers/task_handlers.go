@@ -42,7 +42,7 @@ func (h *TaskHandler) RegisterRoutes(r *gin.Engine) {
 func (h *TaskHandler) Create(c *gin.Context) {
 	var req struct {
 		Name        string  `json:"name" binding:"required"`
-		Code        string  `json:"code" binding:"required"`
+		Code        *string `json:"code"`
 		Type        *string `json:"type"`
 		StartAt     *string `json:"start_at"`
 		DueDate     *string `json:"due_date"`
@@ -126,10 +126,57 @@ func (h *TaskHandler) Create(c *gin.Context) {
 		typeVal = task.TypeTask
 	}
 
+	// Auto-generate code if not provided (GitHub-style: #x)
+	var taskCode string
+	if req.Code != nil && *req.Code != "" {
+		taskCode = *req.Code
+
+		// Check if code already exists globally
+		exists, err := h.Client.Task.Query().
+			Where(task.CodeEQ(taskCode)).
+			Exist(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate task code"})
+			return
+		}
+		if exists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Task code already exists"})
+			return
+		}
+	} else {
+		// Auto-generate code in GitHub-style format: #x
+		// Get the total count of tasks to generate the next sequence number
+		count, err := h.Client.Task.Query().
+			Count(c.Request.Context())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate task code"})
+			return
+		}
+
+		sequence := count + 1
+		taskCode = "#" + strconv.Itoa(sequence)
+
+		// Double-check uniqueness (in case of concurrent requests)
+		for {
+			exists, err := h.Client.Task.Query().
+				Where(task.CodeEQ(taskCode)).
+				Exist(c.Request.Context())
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate generated task code"})
+				return
+			}
+			if !exists {
+				break
+			}
+			sequence++
+			taskCode = "#" + strconv.Itoa(sequence)
+		}
+	}
+
 	// Create task with basic fields
 	taskCreate := h.Client.Task.Create().
 		SetName(req.Name).
-		SetCode(req.Code).
+		SetCode(taskCode).
 		SetType(typeVal).
 		SetNillableStartAt(startAtPtr).
 		SetNillableDueDate(dueDatePtr).
@@ -564,13 +611,82 @@ func (h *TaskHandler) Update(c *gin.Context) {
 		return
 	}
 
-	taskUpdate := h.Client.Task.UpdateOneID(id)
+	// Extract user ID from JWT token
+	ids, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	userID := ids["user_id"]
+
+	taskUpdate := h.Client.Task.UpdateOneID(id).SetUpdaterID(userID)
 
 	if req.Name != nil {
 		taskUpdate.SetName(*req.Name)
 	}
+
+	// Handle code update with auto-generation if needed
 	if req.Code != nil {
-		taskUpdate.SetCode(*req.Code)
+		var taskCode string
+		if *req.Code != "" {
+			taskCode = *req.Code
+
+			// Check if the new code already exists (excluding current task)
+			var existsQuery *ent.TaskQuery
+			if req.ProjectID != nil {
+				// Check uniqueness within the project
+				existsQuery = h.Client.Task.Query().
+					Where(task.CodeEQ(taskCode)).
+					Where(task.ProjectIDEQ(*req.ProjectID)).
+					Where(task.IDNEQ(id))
+			} else {
+				// Check global uniqueness if no project
+				existsQuery = h.Client.Task.Query().
+					Where(task.CodeEQ(taskCode)).
+					Where(task.IDNEQ(id))
+			}
+
+			exists, err := existsQuery.Exist(c.Request.Context())
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate task code"})
+				return
+			}
+			if exists {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Task code already exists"})
+				return
+			}
+		} else {
+			// Auto-generate code in GitHub-style format: #x
+			// Get the total count of tasks to generate the next sequence number
+			count, err := h.Client.Task.Query().
+				Where(task.IDNEQ(id)). // Exclude current task
+				Count(c.Request.Context())
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate task code"})
+				return
+			}
+
+			sequence := count + 1
+			taskCode = "#" + strconv.Itoa(sequence)
+
+			// Double-check uniqueness (in case of concurrent requests)
+			for {
+				exists, err := h.Client.Task.Query().
+					Where(task.CodeEQ(taskCode)).
+					Where(task.IDNEQ(id)).
+					Exist(c.Request.Context())
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate generated task code"})
+					return
+				}
+				if !exists {
+					break
+				}
+				sequence++
+				taskCode = "#" + strconv.Itoa(sequence)
+			}
+		}
+		taskUpdate.SetCode(taskCode)
 	}
 	if req.Description != nil {
 		taskUpdate.SetDescription(*req.Description)

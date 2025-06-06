@@ -29,9 +29,9 @@ type Task struct {
 	// Status holds the value of the "status" field.
 	Status task.Status `json:"status,omitempty"`
 	// StartAt holds the value of the "start_at" field.
-	StartAt time.Time `json:"start_at,omitempty"`
+	StartAt *time.Time `json:"start_at"`
 	// DueDate holds the value of the "due_date" field.
-	DueDate time.Time `json:"due_date,omitempty"`
+	DueDate *time.Time `json:"due_date"`
 	// ProjectID holds the value of the "project_id" field.
 	ProjectID int `json:"project_id,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
@@ -169,13 +169,15 @@ func (t *Task) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field start_at", values[i])
 			} else if value.Valid {
-				t.StartAt = value.Time
+				t.StartAt = new(time.Time)
+				*t.StartAt = value.Time
 			}
 		case task.FieldDueDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field due_date", values[i])
 			} else if value.Valid {
-				t.DueDate = value.Time
+				t.DueDate = new(time.Time)
+				*t.DueDate = value.Time
 			}
 		case task.FieldProjectID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -284,11 +286,15 @@ func (t *Task) String() string {
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", t.Status))
 	builder.WriteString(", ")
-	builder.WriteString("start_at=")
-	builder.WriteString(t.StartAt.Format(time.ANSIC))
+	if v := t.StartAt; v != nil {
+		builder.WriteString("start_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("due_date=")
-	builder.WriteString(t.DueDate.Format(time.ANSIC))
+	if v := t.DueDate; v != nil {
+		builder.WriteString("due_date=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("project_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.ProjectID))

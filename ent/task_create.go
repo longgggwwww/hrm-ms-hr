@@ -371,11 +371,11 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := tc.mutation.StartAt(); ok {
 		_spec.SetField(task.FieldStartAt, field.TypeTime, value)
-		_node.StartAt = value
+		_node.StartAt = &value
 	}
 	if value, ok := tc.mutation.DueDate(); ok {
 		_spec.SetField(task.FieldDueDate, field.TypeTime, value)
-		_node.DueDate = value
+		_node.DueDate = &value
 	}
 	if value, ok := tc.mutation.CreatorID(); ok {
 		_spec.SetField(task.FieldCreatorID, field.TypeInt, value)

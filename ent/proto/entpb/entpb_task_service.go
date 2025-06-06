@@ -101,8 +101,10 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 	v.CreatorId = creator_id
 	description := wrapperspb.String(e.Description)
 	v.Description = description
-	due_date := timestamppb.New(e.DueDate)
-	v.DueDate = due_date
+	if e.DueDate != nil {
+		due_date := timestamppb.New(*e.DueDate)
+		v.DueDate = due_date
+	}
 	id := int64(e.ID)
 	v.Id = id
 	name := e.Name
@@ -111,8 +113,10 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 	v.Process = process
 	project := wrapperspb.Int64(int64(e.ProjectID))
 	v.ProjectId = project
-	start_at := timestamppb.New(e.StartAt)
-	v.StartAt = start_at
+	if e.StartAt != nil {
+		start_at := timestamppb.New(*e.StartAt)
+		v.StartAt = start_at
+	}
 	status := toProtoTask_Status(e.Status)
 	v.Status = status
 	_type := toProtoTask_Type(e.Type)

@@ -83,20 +83,40 @@ func (s *ProjectService) normalizeUserInfo(user *grpc_clients.User) map[string]i
 	userInfo := map[string]interface{}{
 		"id": user.Id,
 	}
+
+	// Email field - set to null if nil or empty
 	if user.Email != nil && user.Email.Value != "" {
 		userInfo["email"] = user.Email.Value
+	} else {
+		userInfo["email"] = nil
 	}
+
+	// Avatar field - set to null if nil or empty
 	if user.Avatar != nil && user.Avatar.Value != "" {
 		userInfo["avatar"] = user.Avatar.Value
+	} else {
+		userInfo["avatar"] = nil
 	}
+
+	// FirstName field - set to null if empty
 	if user.FirstName != "" {
 		userInfo["first_name"] = user.FirstName
+	} else {
+		userInfo["first_name"] = nil
 	}
+
+	// LastName field - set to null if empty
 	if user.LastName != "" {
 		userInfo["last_name"] = user.LastName
+	} else {
+		userInfo["last_name"] = nil
 	}
+
+	// Phone field - set to null if nil or empty
 	if user.Phone != nil && user.Phone.Value != "" {
 		userInfo["phone"] = user.Phone.Value
+	} else {
+		userInfo["phone"] = nil
 	}
 
 	return userInfo

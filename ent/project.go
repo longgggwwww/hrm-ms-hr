@@ -26,9 +26,9 @@ type Project struct {
 	// Description holds the value of the "description" field.
 	Description *string `json:"description,omitempty"`
 	// StartAt holds the value of the "start_at" field.
-	StartAt *time.Time `json:"start_at,omitempty"`
+	StartAt *time.Time `json:"start_at"`
 	// EndAt holds the value of the "end_at" field.
-	EndAt *time.Time `json:"end_at,omitempty"`
+	EndAt *time.Time `json:"end_at"`
 	// CreatorID holds the value of the "creator_id" field.
 	CreatorID int `json:"creator_id,omitempty"`
 	// UpdaterID holds the value of the "updater_id" field.

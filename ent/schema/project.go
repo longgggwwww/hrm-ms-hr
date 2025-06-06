@@ -29,10 +29,12 @@ func (Project) Fields() []ent.Field {
 		field.Time("start_at").
 			Optional().
 			Nillable().
+			StructTag(`json:"start_at"`).
 			Annotations(entproto.Field(5)),
 		field.Time("end_at").
 			Optional().
 			Nillable().
+			StructTag(`json:"end_at"`).
 			Annotations(entproto.Field(6)),
 		field.Int("creator_id").
 			Annotations(entproto.Field(7)),

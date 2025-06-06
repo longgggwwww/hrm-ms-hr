@@ -43,9 +43,13 @@ func (Task) Fields() []ent.Field {
 				})),
 		field.Time("start_at").
 			Optional().
+			Nillable().
+			StructTag(`json:"start_at"`).
 			Annotations(entproto.Field(7)),
 		field.Time("due_date").
 			Optional().
+			Nillable().
+			StructTag(`json:"due_date"`).
 			Annotations(entproto.Field(8)),
 		field.Int("project_id").
 			Optional().
