@@ -9,9 +9,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/ent/appointmenthistory"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type EmployeeService struct {
@@ -83,12 +85,12 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dtos.Empl
 	respb, err := s.UserClient.CreateUser(ctx, &grpc_clients.CreateUserRequest{
 		FirstName: input.User.FirstName,
 		LastName:  input.User.LastName,
-		Email:     input.User.Email,
+		Email:     wrapperspb.String(input.User.Email),
 		Gender:    input.User.Gender,
 		Phone:     input.User.Phone,
-		Avatar:    input.User.Avatar,
-		Address:   input.User.Address,
-		WardCode:  strconv.Itoa(input.User.WardCode),
+		Avatar:    wrapperspb.String(input.User.Avatar),
+		Address:   wrapperspb.String(input.User.Address),
+		WardCode:  wrapperspb.String(strconv.Itoa(input.User.WardCode)),
 		RoleIds:   input.User.RoleIds,
 		PermIds:   input.User.PermIds,
 		Account: &grpc_clients.Account{
@@ -228,17 +230,24 @@ func (s *EmployeeService) DeleteById(ctx context.Context, id int, orgID int) (*e
 		}
 	}()
 
+	// Delete related appointment_histories before deleting employee
+	_, err = tx.AppointmentHistory.Delete().Where(appointmenthistory.EmployeeID(id)).Exec(ctx)
+	if err != nil {
+		tx.Rollback()
+		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#1 DeleteById: failed to delete related appointment histories"}
+	}
+
 	emp, err := tx.Employee.Query().Where(employee.ID(id), employee.OrgID(orgID)).Only(ctx)
 	if err != nil {
 		tx.Rollback()
-		return nil, &ServiceError{Status: http.StatusNotFound, Msg: "#1 DeleteById: not found or not in your organization"}
+		return nil, &ServiceError{Status: http.StatusNotFound, Msg: "#2 DeleteById: not found or not in your organization"}
 	}
 	userID := emp.UserID
 
 	res, err := tx.Employee.Delete().Where(employee.ID(id), employee.OrgID(orgID)).Exec(ctx)
 	if err != nil || res == 0 {
 		tx.Rollback()
-		return nil, &ServiceError{Status: http.StatusNotFound, Msg: "#2 DeleteById: not found or not in your organization"}
+		return nil, &ServiceError{Status: http.StatusNotFound, Msg: err.Error()}
 	}
 
 	// Nếu có user_id thì gọi xóa user bên user service
@@ -304,14 +313,14 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 				Id:        int32(uid),
 				FirstName: u.FirstName,
 				LastName:  u.LastName,
-				Email:     u.Email,
+				Email:     wrapperspb.String(u.Email),
 				Gender:    u.Gender,
 				Phone:     u.Phone,
-				Address:   u.Address,
-				Avatar:    u.Avatar,
+				Address:   wrapperspb.String(u.Address),
+				Avatar:    wrapperspb.String(u.Avatar),
 			}
 			if u.WardCode != 0 {
-				userReq.WardCode = strconv.Itoa(u.WardCode)
+				userReq.WardCode = wrapperspb.String(strconv.Itoa(u.WardCode))
 			}
 			if len(u.RoleIds) > 0 {
 				userReq.RoleIds = u.RoleIds
@@ -408,4 +417,46 @@ func (s *EmployeeService) UpdatePositionAndLogHistory(ctx context.Context, orgID
 		return nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#5 UpdatePositionAndLogHistory: Failed to commit transaction"}
 	}
 	return updatedEmp, nil
+}
+
+// CreateOrgAndRootEmployee tạo mới tổ chức, employee root, và gọi gRPC tạo user
+func (s *EmployeeService) CreateOrgAndRootEmployee(ctx context.Context, input dtos.CreateOrgAndRootEmployeeInput) (*ent.Organization, *ent.Employee, *grpc_clients.User, error) {
+	// tx, err := s.Client.Tx(ctx)
+	// if err != nil {
+	// 	return nil, nil, nil, err
+	// }
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		tx.Rollback()
+	// 	}
+	// }()
+
+	// org, err := tx.Organization.Create().
+	// 	SetName(input.Organization.Name).
+	// 	SetCode(input.Organization.Code).
+	// 	SetLogoURL(input.Organization.LogoUrl).
+	// 	Save(ctx)
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	return nil, nil, nil, err
+	// }
+
+	// empInput := input.Employee
+	// emp, userResp, err := s.Create(ctx, org.ID, empInput)
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	return nil, nil, nil, err
+	// }
+
+	// if err := tx.Commit(); err != nil {
+	// 	return nil, nil, nil, err
+	// }
+
+	// var userInfo *grpc_clients.User
+	// if userResp != nil && userResp.User != nil {
+	// 	userInfo = userResp.User
+	// }
+
+	// return org, emp, userInfo, nil
+	return nil, nil, nil, &ServiceError{Status: http.StatusNotImplemented, Msg: "CreateOrgAndRootEmployee not implemented"}
 }

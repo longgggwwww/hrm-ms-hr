@@ -7,14 +7,16 @@ require (
 	entgo.io/ent v0.14.4
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/huynhthanhthao/hrm-ms-shared v0.0.0-20250602091639-e4980ac913b0
-	github.com/huynhthanhthao/hrm_user_service v0.0.0-20250602023916-043047efdde0
+	github.com/huynhthanhthao/hrm-ms-shared v0.0.0-20250606025213-248473782e51
+	github.com/huynhthanhthao/hrm_user_service v0.0.0-20250606023633-e43fb51a34f0
 	github.com/lib/pq v1.10.9
 	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6
 )
 
 require (
+	github.com/99designs/gqlgen v0.17.48 // indirect
+	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
@@ -31,10 +33,15 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.14 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.12 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/arch v0.17.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30 // indirect
 )
 
 require (

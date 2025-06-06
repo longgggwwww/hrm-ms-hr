@@ -81,20 +81,22 @@ func (s *ProjectService) getUserInfoMap(userIDs []int32) (map[int32]*grpc_client
 // normalizeUserInfo extracts user information from gRPC User struct
 func (s *ProjectService) normalizeUserInfo(user *grpc_clients.User) map[string]interface{} {
 	userInfo := map[string]interface{}{
-		"id":     user.Id,
-		"email":  user.Email,
-		"avatar": user.Avatar, // Avatar is a string field
+		"id": user.Id,
 	}
-
-	// Add other fields that exist in the User struct
+	if user.Email != nil && user.Email.Value != "" {
+		userInfo["email"] = user.Email.Value
+	}
+	if user.Avatar != nil && user.Avatar.Value != "" {
+		userInfo["avatar"] = user.Avatar.Value
+	}
 	if user.FirstName != "" {
 		userInfo["first_name"] = user.FirstName
 	}
 	if user.LastName != "" {
 		userInfo["last_name"] = user.LastName
 	}
-	if user.Phone != "" {
-		userInfo["phone"] = user.Phone
+	if user.Phone != nil && user.Phone.Value != "" {
+		userInfo["phone"] = user.Phone.Value
 	}
 
 	return userInfo

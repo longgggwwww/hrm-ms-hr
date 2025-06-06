@@ -72,7 +72,44 @@ func (h *EmployeeHandler) RegisterRoutes(r *gin.Engine) {
 					h.DeleteById(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
+		employees.POST("/root", h.CreateOrgAndRootEmployee)
 	}
+}
+
+// CreateOrgAndRootEmployee tạo mới tổ chức và employee root đầu tiên
+func (h *EmployeeHandler) CreateOrgAndRootEmployee(c *gin.Context) {
+	var input dtos.CreateOrgAndRootEmployeeInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	svc := services.NewEmployeeService(h.Client, h.UserClient)
+	org, emp, userInfo, err := svc.CreateOrgAndRootEmployee(c.Request.Context(), input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"organization": gin.H{
+			"id":   org.ID,
+			"name": org.Name,
+			"code": org.Code,
+		},
+		"employee": gin.H{
+			"id":          emp.ID,
+			"code":        emp.Code,
+			"status":      emp.Status,
+			"position_id": emp.PositionID,
+			"joining_at":  emp.JoiningAt,
+			"org_id":      emp.OrgID,
+			"created_at":  emp.CreatedAt,
+			"updated_at":  emp.UpdatedAt,
+			"user_id":     emp.UserID,
+		},
+		"user_info": normalizeUserInfo(userInfo),
+	})
 }
 
 func (h *EmployeeHandler) Create(c *gin.Context) {
@@ -117,7 +154,7 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		"created_at":  employeeObj.CreatedAt,
 		"updated_at":  employeeObj.UpdatedAt,
 		"edges":       gin.H{},
-		"user_info":   userInfo,
+		"user_info":   normalizeUserInfo(userInfo),
 	}
 
 	c.JSON(http.StatusCreated, resp)
@@ -151,6 +188,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 	}
 
 	var data []gin.H
+	// In List handler, ensure user_info is always normalized
 	for _, emp := range employees {
 		var userInfo *grpc_clients.User = nil
 		if emp.UserID != "" {
@@ -169,7 +207,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 			"updated_at":  emp.UpdatedAt,
 			"user_id":     emp.UserID,
 			"edges":       emp.Edges,
-			"user_info":   userInfo,
+			"user_info":   normalizeUserInfo(userInfo),
 		}
 		data = append(data, item)
 	}
@@ -216,7 +254,7 @@ func (h *EmployeeHandler) GetById(c *gin.Context) {
 		"updated_at":  emp.UpdatedAt,
 		"user_id":     emp.UserID,
 		"edges":       emp.Edges,
-		"user_info":   userInfo,
+		"user_info":   normalizeUserInfo(userInfo),
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -262,7 +300,7 @@ func (h *EmployeeHandler) UpdateById(c *gin.Context) {
 		"updated_at":  emp.UpdatedAt,
 		"user_id":     emp.UserID,
 		"edges":       gin.H{},
-		"user_info":   userInfo,
+		"user_info":   normalizeUserInfo(userInfo),
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -355,4 +393,34 @@ func (h *EmployeeHandler) DeleteById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func normalizeUserInfo(user *grpc_clients.User) gin.H {
+	if user == nil {
+		return gin.H{}
+	}
+	info := gin.H{
+		"id":         user.Id,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"gender":     user.Gender,
+		"created_at": user.CreatedAt,
+		"updated_at": user.UpdatedAt,
+	}
+	if user.Phone != nil {
+		info["phone"] = user.Phone.Value
+	}
+	if user.Email != nil {
+		info["email"] = user.Email.Value
+	}
+	if user.WardCode != nil {
+		info["ward_code"] = user.WardCode.Value
+	}
+	if user.Address != nil {
+		info["address"] = user.Address.Value
+	}
+	if user.Avatar != nil {
+		info["avatar"] = user.Avatar.Value
+	}
+	return info
 }

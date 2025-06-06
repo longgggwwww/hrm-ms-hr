@@ -5,12 +5,12 @@ import (
 
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
-// AppointmentHistory holds the schema definition for the AppointmentHistory entity.
 type AppointmentHistory struct {
 	ent.Schema
 }
@@ -42,7 +42,7 @@ func (AppointmentHistory) Edges() []ent.Edge {
 			Field("employee_id").
 			Unique().
 			Required().
-			Annotations(entproto.Field(9)),
+			Annotations(entproto.Field(9), entsql.OnDelete(entsql.Cascade)),
 	}
 }
 
