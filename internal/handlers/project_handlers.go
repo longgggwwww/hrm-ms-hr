@@ -59,6 +59,20 @@ func (h *ProjectHandler) RegisterRoutes(r *gin.Engine) {
 					h.DeleteBulk(c)
 				})).ServeHTTP(c.Writer, c.Request)
 		})
+		projs.POST("/:id/members", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{constants.ProjectUpdate},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.AddMembers(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		projs.DELETE("/:id/members", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{constants.ProjectUpdate},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.RemoveMembers(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
 	}
 }
 
@@ -301,4 +315,126 @@ func (h *ProjectHandler) DeleteBulk(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, response)
 	}
+}
+
+func (h *ProjectHandler) AddMembers(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
+	var input dtos.ProjectAddMembersInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Additional validation using the validator
+	validate := validator.New()
+	if err := validate.Struct(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Extract token data
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Failed to extract data from token: " + err.Error(),
+		})
+		return
+	}
+
+	orgID, ok := tokenData["org_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "org_id not found in token",
+		})
+		return
+	}
+
+	employeeID, ok := tokenData["employee_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "employee_id not found in token",
+		})
+		return
+	}
+
+	// Call service
+	response, err := h.Service.AddMembers(c.Request.Context(), id, employeeID, orgID, input)
+	if err != nil {
+		if serviceErr, ok := err.(*project.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *ProjectHandler) RemoveMembers(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
+	var input dtos.ProjectRemoveMembersInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Additional validation using the validator
+	validate := validator.New()
+	if err := validate.Struct(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Extract token data
+	tokenData, err := utils.ExtractIDsFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Failed to extract data from token: " + err.Error(),
+		})
+		return
+	}
+
+	orgID, ok := tokenData["org_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "org_id not found in token",
+		})
+		return
+	}
+
+	employeeID, ok := tokenData["employee_id"]
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "employee_id not found in token",
+		})
+		return
+	}
+
+	// Call service
+	response, err := h.Service.RemoveMembers(c.Request.Context(), id, employeeID, orgID, input)
+	if err != nil {
+		if serviceErr, ok := err.(*project.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }

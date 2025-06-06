@@ -114,6 +114,16 @@ type ProjectCursorPagination struct {
 	NextCursor *string `json:"next_cursor"`
 }
 
+// ProjectAddMembersInput represents the input for adding members to a project
+type ProjectAddMembersInput struct {
+	MemberIDs []int `json:"member_ids" binding:"required" validate:"required,dive,min=1"`
+}
+
+// ProjectRemoveMembersInput represents the input for removing members from a project
+type ProjectRemoveMembersInput struct {
+	MemberIDs []int `json:"member_ids" binding:"required" validate:"required,dive,min=1"`
+}
+
 // RegisterProjectValidators registers custom validators for project DTOs
 func RegisterProjectValidators(v *validator.Validate) {
 	v.RegisterValidation("project_code", projectCodeValidation)
