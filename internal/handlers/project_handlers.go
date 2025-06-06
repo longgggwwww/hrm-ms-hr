@@ -6,8 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/huynhthanhthao/hrm-ms-shared/middleware"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/internal/constants"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/services/project"
@@ -27,12 +29,36 @@ func NewProjectHandler(client *ent.Client, userClient grpc_clients.UserServiceCl
 func (h *ProjectHandler) RegisterRoutes(r *gin.Engine) {
 	projs := r.Group("/projects")
 	{
-		projs.POST("/", h.Create)
+		projs.POST("/", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{constants.ProjectCreate},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.Create(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
 		projs.GET("/", h.List)
 		projs.GET("/:id", h.Get)
-		projs.PATCH("/:id", h.Update)
-		projs.DELETE("/:id", h.Delete)
-		projs.DELETE("/", h.DeleteBulk)
+		projs.PATCH("/:id", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{constants.ProjectUpdate},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.Update(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		projs.DELETE("/:id", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{constants.ProjectDelete},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.Delete(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
+		projs.DELETE("/", func(c *gin.Context) {
+			middleware.AuthMiddleware([]string{constants.ProjectDelete},
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					c.Request = r
+					h.DeleteBulk(c)
+				})).ServeHTTP(c.Writer, c.Request)
+		})
 	}
 }
 

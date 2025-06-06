@@ -33,7 +33,7 @@ func (h *OrgHandler) RegisterRoutes(r *gin.Engine) {
 		orgs.GET("/from-token", h.GetOrgFromToken)
 		orgs.PATCH("/:id", h.Update)
 		orgs.DELETE("/:id", h.Delete)
-		orgs.DELETE("/", h.DeleteBatch)
+		orgs.DELETE("/", h.DeleteBulk)
 	}
 }
 
@@ -199,7 +199,7 @@ func (h *OrgHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *OrgHandler) DeleteBatch(c *gin.Context) {
+func (h *OrgHandler) DeleteBulk(c *gin.Context) {
 	var req struct {
 		IDs []int `json:"ids" binding:"required"`
 	}

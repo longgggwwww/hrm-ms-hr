@@ -330,15 +330,15 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.Description(); ok {
 		_spec.SetField(project.FieldDescription, field.TypeString, value)
-		_node.Description = value
+		_node.Description = &value
 	}
 	if value, ok := pc.mutation.StartAt(); ok {
 		_spec.SetField(project.FieldStartAt, field.TypeTime, value)
-		_node.StartAt = value
+		_node.StartAt = &value
 	}
 	if value, ok := pc.mutation.EndAt(); ok {
 		_spec.SetField(project.FieldEndAt, field.TypeTime, value)
-		_node.EndAt = value
+		_node.EndAt = &value
 	}
 	if value, ok := pc.mutation.Process(); ok {
 		_spec.SetField(project.FieldProcess, field.TypeInt, value)

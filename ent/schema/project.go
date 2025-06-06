@@ -24,12 +24,15 @@ func (Project) Fields() []ent.Field {
 			Annotations(entproto.Field(3)),
 		field.String("description").
 			Optional().
+			Nillable().
 			Annotations(entproto.Field(4)),
 		field.Time("start_at").
 			Optional().
+			Nillable().
 			Annotations(entproto.Field(5)),
 		field.Time("end_at").
 			Optional().
+			Nillable().
 			Annotations(entproto.Field(6)),
 		field.Int("creator_id").
 			Annotations(entproto.Field(7)),

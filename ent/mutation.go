@@ -8057,7 +8057,7 @@ func (m *ProjectMutation) Description() (r string, exists bool) {
 // OldDescription returns the old "description" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldDescription(ctx context.Context) (v string, err error) {
+func (m *ProjectMutation) OldDescription(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -8106,7 +8106,7 @@ func (m *ProjectMutation) StartAt() (r time.Time, exists bool) {
 // OldStartAt returns the old "start_at" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldStartAt(ctx context.Context) (v time.Time, err error) {
+func (m *ProjectMutation) OldStartAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStartAt is only allowed on UpdateOne operations")
 	}
@@ -8155,7 +8155,7 @@ func (m *ProjectMutation) EndAt() (r time.Time, exists bool) {
 // OldEndAt returns the old "end_at" field's value of the Project entity.
 // If the Project object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectMutation) OldEndAt(ctx context.Context) (v time.Time, err error) {
+func (m *ProjectMutation) OldEndAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEndAt is only allowed on UpdateOne operations")
 	}

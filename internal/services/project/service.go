@@ -186,9 +186,9 @@ func (s *ProjectService) enrichProjectWithUserInfo(proj *ent.Project, userMap ma
 		ID:          proj.ID,
 		Name:        proj.Name,
 		Code:        proj.Code,
-		Description: &proj.Description, // Convert to pointer
-		StartAt:     &proj.StartAt,     // Convert to pointer
-		EndAt:       &proj.EndAt,       // Convert to pointer
+		Description: proj.Description, // Convert to pointer
+		StartAt:     proj.StartAt,     // Convert to pointer
+		EndAt:       proj.EndAt,       // Convert to pointer
 		CreatorID:   proj.CreatorID,
 		UpdaterID:   proj.UpdaterID,
 		OrgID:       proj.OrgID,

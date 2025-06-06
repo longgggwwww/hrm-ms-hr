@@ -24,11 +24,11 @@ type Project struct {
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 	// StartAt holds the value of the "start_at" field.
-	StartAt time.Time `json:"start_at,omitempty"`
+	StartAt *time.Time `json:"start_at,omitempty"`
 	// EndAt holds the value of the "end_at" field.
-	EndAt time.Time `json:"end_at,omitempty"`
+	EndAt *time.Time `json:"end_at,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
 	CreatorID int `json:"creator_id,omitempty"`
 	// UpdaterID holds the value of the "updater_id" field.
@@ -165,19 +165,22 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				pr.Description = value.String
+				pr.Description = new(string)
+				*pr.Description = value.String
 			}
 		case project.FieldStartAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field start_at", values[i])
 			} else if value.Valid {
-				pr.StartAt = value.Time
+				pr.StartAt = new(time.Time)
+				*pr.StartAt = value.Time
 			}
 		case project.FieldEndAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field end_at", values[i])
 			} else if value.Valid {
-				pr.EndAt = value.Time
+				pr.EndAt = new(time.Time)
+				*pr.EndAt = value.Time
 			}
 		case project.FieldCreatorID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -288,14 +291,20 @@ func (pr *Project) String() string {
 	builder.WriteString("code=")
 	builder.WriteString(pr.Code)
 	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(pr.Description)
+	if v := pr.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("start_at=")
-	builder.WriteString(pr.StartAt.Format(time.ANSIC))
+	if v := pr.StartAt; v != nil {
+		builder.WriteString("start_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("end_at=")
-	builder.WriteString(pr.EndAt.Format(time.ANSIC))
+	if v := pr.EndAt; v != nil {
+		builder.WriteString("end_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("creator_id=")
 	builder.WriteString(fmt.Sprintf("%v", pr.CreatorID))
