@@ -57,9 +57,9 @@ type TaskEdges struct {
 	// Labels holds the value of the labels edge.
 	Labels []*Label `json:"labels"`
 	// Assignees holds the value of the assignees edge.
-	Assignees []*Employee `json:"assignees,omitempty"`
+	Assignees []*Employee `json:"assignees"`
 	// Reports holds the value of the reports edge.
-	Reports []*TaskReport `json:"reports,omitempty"`
+	Reports []*TaskReport `json:"reports"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool

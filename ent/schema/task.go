@@ -103,8 +103,10 @@ func (Task) Edges() []ent.Edge {
 			StructTag(`json:"labels"`).
 			Annotations(entproto.Field(16)), // Thêm edge tới label
 		edge.To("assignees", Employee.Type).
+			StructTag(`json:"assignees"`).
 			Annotations(entproto.Field(17)), // Edge many-to-many với Employee
 		edge.To("reports", TaskReport.Type).
+			StructTag(`json:"reports"`).
 			Annotations(entproto.Field(18)), // Edge đến TaskReport
 	}
 }

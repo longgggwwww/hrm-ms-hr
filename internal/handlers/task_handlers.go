@@ -9,19 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
-	"github.com/longgggwwww/hrm-ms-hr/ent/label"
-	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
+	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
+	taskService "github.com/longgggwwww/hrm-ms-hr/internal/services/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
 type TaskHandler struct {
-	Client *ent.Client
+	Client      *ent.Client
+	TaskService *taskService.TaskService
 }
 
 func NewTaskHandler(client *ent.Client) *TaskHandler {
 	return &TaskHandler{
-		Client: client,
+		Client:      client,
+		TaskService: taskService.NewTaskService(client),
 	}
 }
 
@@ -40,16 +42,7 @@ func (h *TaskHandler) RegisterRoutes(r *gin.Engine) {
 }
 
 func (h *TaskHandler) Create(c *gin.Context) {
-	var req struct {
-		Name        string  `json:"name" binding:"required"`
-		Code        *string `json:"code"`
-		Type        *string `json:"type"`
-		StartAt     *string `json:"start_at"`
-		DueDate     *string `json:"due_date"`
-		ProjectID   *int    `json:"project_id"`
-		LabelIDs    []int   `json:"label_ids"`
-		AssigneeIDs []int   `json:"assignee_ids"`
-	}
+	var req dtos.TaskCreateInput
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -64,217 +57,18 @@ func (h *TaskHandler) Create(c *gin.Context) {
 	userID := ids["user_id"]
 	employeeID := ids["employee_id"]
 
-	// Validate project membership if project_id is provided
-	if req.ProjectID != nil {
-		// Check if the employee is a member of the specified project
-		projectExists, err := h.Client.Project.Query().
-			Where(project.ID(*req.ProjectID)).
-			Where(project.HasMembersWith(employee.ID(employeeID))).
-			Exist(c.Request.Context())
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate project membership"})
-			return
-		}
-		if !projectExists {
-			c.JSON(http.StatusForbidden, gin.H{"error": "You are not a member of this project"})
-			return
-		}
-	}
-
-	// Parse start_at if provided
-	var startAtPtr *time.Time
-	if req.StartAt != nil {
-		startAt, err := time.Parse(time.RFC3339, *req.StartAt)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid start_at format, must be RFC3339",
-			})
-			return
-		}
-		startAtPtr = &startAt
-	}
-
-	// Parse due_date if provided
-	var dueDatePtr *time.Time
-	if req.DueDate != nil {
-		dueDate, err := time.Parse(time.RFC3339, *req.DueDate)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid due_date format, must be RFC3339",
-			})
-			return
-		}
-		dueDatePtr = &dueDate
-	}
-
-	// Validate and set type
-	var typeVal task.Type
-	if req.Type != nil {
-		switch *req.Type {
-		case string(task.TypeTask),
-			string(task.TypeFeature),
-			string(task.TypeBug),
-			string(task.TypeAnother):
-			typeVal = task.Type(*req.Type)
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid type value. Valid values: task, feature, bug, another",
-			})
-			return
-		}
-	} else {
-		typeVal = task.TypeTask
-	}
-
-	// Auto-generate code if not provided (GitHub-style: #x)
-	var taskCode string
-	if req.Code != nil && *req.Code != "" {
-		taskCode = *req.Code
-
-		// Check if code already exists globally
-		exists, err := h.Client.Task.Query().
-			Where(task.CodeEQ(taskCode)).
-			Exist(c.Request.Context())
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate task code"})
-			return
-		}
-		if exists {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Task code already exists"})
-			return
-		}
-	} else {
-		// Auto-generate code in GitHub-style format: #x
-		// Get the total count of tasks to generate the next sequence number
-		count, err := h.Client.Task.Query().
-			Count(c.Request.Context())
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate task code"})
-			return
-		}
-
-		sequence := count + 1
-		taskCode = "#" + strconv.Itoa(sequence)
-
-		// Double-check uniqueness (in case of concurrent requests)
-		for {
-			exists, err := h.Client.Task.Query().
-				Where(task.CodeEQ(taskCode)).
-				Exist(c.Request.Context())
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate generated task code"})
-				return
-			}
-			if !exists {
-				break
-			}
-			sequence++
-			taskCode = "#" + strconv.Itoa(sequence)
-		}
-	}
-
-	// Create task with basic fields
-	taskCreate := h.Client.Task.Create().
-		SetName(req.Name).
-		SetCode(taskCode).
-		SetType(typeVal).
-		SetNillableStartAt(startAtPtr).
-		SetNillableDueDate(dueDatePtr).
-		SetNillableProjectID(req.ProjectID).
-		SetCreatorID(userID).
-		SetUpdaterID(userID)
-
-	// Validate and add labels if provided
-	if len(req.LabelIDs) > 0 {
-		// Check if all label IDs exist in the label table
-		existingLabels, err := h.Client.Label.Query().
-			Where(label.IDIn(req.LabelIDs...)).
-			Select(label.FieldID).
-			All(c.Request.Context())
-		if err != nil {
-			c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to validate label IDs"})
-			return
-		}
-
-		// Create map of existing label IDs for validation
-		existingIDs := make(map[int]bool)
-		for _, lbl := range existingLabels {
-			existingIDs[lbl.ID] = true
-		}
-
-		// Check if all requested label IDs exist
-		var invalidIDs []int
-		for _, id := range req.LabelIDs {
-			if !existingIDs[id] {
-				invalidIDs = append(invalidIDs, id)
-			}
-		}
-
-		if len(invalidIDs) > 0 {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error":       "Some label IDs do not exist",
-				"invalid_ids": invalidIDs,
-			})
-			return
-		}
-
-		taskCreate = taskCreate.AddLabelIDs(req.LabelIDs...)
-	}
-
-	// Validate and add assignees if provided
-	if len(req.AssigneeIDs) > 0 {
-		// Check if all assignee IDs exist in the employee table
-		existingEmployees, err := h.Client.Employee.Query().
-			Where(employee.IDIn(req.AssigneeIDs...)).
-			Select(employee.FieldID).
-			All(c.Request.Context())
-		if err != nil {
-			c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to validate assignee IDs"})
-			return
-		}
-
-		// Create map of existing employee IDs for validation
-		existingIDs := make(map[int]bool)
-		for _, emp := range existingEmployees {
-			existingIDs[emp.ID] = true
-		}
-
-		// Check if all requested assignee IDs exist
-		var invalidIDs []int
-		for _, id := range req.AssigneeIDs {
-			if !existingIDs[id] {
-				invalidIDs = append(invalidIDs, id)
-			}
-		}
-
-		if len(invalidIDs) > 0 {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error":       "Some assignee IDs do not exist",
-				"invalid_ids": invalidIDs,
-			})
-			return
-		}
-
-		taskCreate = taskCreate.AddAssigneeIDs(req.AssigneeIDs...)
-	}
-
-	row, err := taskCreate.Save(c.Request.Context())
+	// Call the task service to create the task
+	task, err := h.TaskService.Create(c.Request.Context(), userID, employeeID, req)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		// Check if it's a ServiceError
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 
-	// Get the created task with all edges
-	task, err := h.Client.Task.Query().
-		Where(task.ID(row.ID)).
-		WithProject().
-		WithLabels().
-		WithAssignees().
-		Only(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusCreated, row)
-		return
-	}
 	c.JSON(http.StatusCreated, task)
 }
 
@@ -594,19 +388,7 @@ func (h *TaskHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Name        *string `json:"name"`
-		Code        *string `json:"code"`
-		Type        *string `json:"type"`
-		StartAt     *string `json:"start_at"`
-		DueDate     *string `json:"due_date"`
-		ProjectID   *int    `json:"project_id"`
-		LabelIDs    []int   `json:"label_ids"`
-		AssigneeIDs []int   `json:"assignee_ids"`
-		Status      *string `json:"status"`
-		Process     *int    `json:"process"`
-		Description *string `json:"description"`
-	}
+	var req dtos.TaskUpdateInput
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -849,9 +631,7 @@ func (h *TaskHandler) Delete(c *gin.Context) {
 // - failed_ids: array of IDs that failed to delete (if any)
 // - errors: array of error messages for failed deletions (if any)
 func (h *TaskHandler) BulkDelete(c *gin.Context) {
-	var req struct {
-		IDs []int `json:"ids" binding:"required,min=1"`
-	}
+	var req dtos.TaskBulkDeleteInput
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -911,14 +691,14 @@ func (h *TaskHandler) BulkDelete(c *gin.Context) {
 		errors = append(errors, "Task ID "+strconv.Itoa(id)+" not found")
 	}
 
-	response := gin.H{
-		"deleted_count": deletedCount,
+	response := dtos.TaskBulkDeleteResponse{
+		DeletedCount: deletedCount,
 	}
 
 	// Include failed IDs and errors if any
 	if len(failedIDs) > 0 {
-		response["failed_ids"] = failedIDs
-		response["errors"] = errors
+		response.FailedIDs = failedIDs
+		response.Errors = errors
 	}
 
 	// Determine appropriate status code
@@ -1038,10 +818,7 @@ func (h *TaskHandler) UpdateProgress(c *gin.Context) {
 	}
 	userID := ids["user_id"]
 
-	var req struct {
-		Status  *string `json:"status"`
-		Process *int    `json:"process"`
-	}
+	var req dtos.TaskUpdateProgressInput
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
