@@ -334,7 +334,7 @@ func (trq *TaskReportQuery) WithReporter(opts ...func(*EmployeeQuery)) *TaskRepo
 // Example:
 //
 //	var v []struct {
-//		Content string `json:"content,omitempty"`
+//		Content string `json:"content"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -357,7 +357,7 @@ func (trq *TaskReportQuery) GroupBy(field string, fields ...string) *TaskReportG
 // Example:
 //
 //	var v []struct {
-//		Content string `json:"content,omitempty"`
+//		Content string `json:"content"`
 //	}
 //
 //	client.TaskReport.Query().

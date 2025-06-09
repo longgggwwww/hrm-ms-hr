@@ -21,14 +21,17 @@ func (Employee) Fields() []ent.Field {
 		field.String("user_id").
 			Unique(). // mã nhân viên yêu cầu uniq kể cả khác tổ chức
 			Optional().
+			StructTag(`json:"user_id"`).
 			Annotations(entproto.Field(2)),
 		field.String("code").
 			NotEmpty().
 			Unique().
+			StructTag(`json:"code"`).
 			Annotations(entproto.Field(3)),
 		field.Enum("status").
 			Values("active", "inactive").
 			Default("active").
+			StructTag(`json:"status"`).
 			Annotations(entproto.Field(4),
 				entproto.Enum(map[string]int32{
 					"active":   0,
@@ -36,18 +39,23 @@ func (Employee) Fields() []ent.Field {
 				}),
 			),
 		field.Int("position_id").
+			StructTag(`json:"position_id"`).
 			Annotations(entproto.Field(5)),
 		field.Time("joining_at").
+			StructTag(`json:"joining_at"`).
 			Annotations(entproto.Field(6)),
 		field.Int("org_id").
+			StructTag(`json:"org_id"`).
 			Annotations(entproto.Field(7)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(8)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(9)),
 	}
 }

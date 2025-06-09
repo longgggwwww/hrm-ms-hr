@@ -21,18 +21,23 @@ func (Department) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
 			NotEmpty().
+			StructTag(`json:"name"`).
 			Annotations(entproto.Field(2)),
 		field.String("code").
 			NotEmpty().
+			StructTag(`json:"code"`).
 			Annotations(entproto.Field(3)),
 		field.Int("org_id").
+			StructTag(`json:"org_id"`).
 			Annotations(entproto.Field(4)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(5)),
 		field.Time("updated_at").
 			Default(time.Now).
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(6)),
 	}
 }

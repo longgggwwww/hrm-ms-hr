@@ -371,7 +371,7 @@ func (lrq *LeaveRequestQuery) WithOrganization(opts ...func(*OrganizationQuery))
 // Example:
 //
 //	var v []struct {
-//		TotalDays float64 `json:"total_days,omitempty"`
+//		TotalDays float64 `json:"total_days"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -394,7 +394,7 @@ func (lrq *LeaveRequestQuery) GroupBy(field string, fields ...string) *LeaveRequ
 // Example:
 //
 //	var v []struct {
-//		TotalDays float64 `json:"total_days,omitempty"`
+//		TotalDays float64 `json:"total_days"`
 //	}
 //
 //	client.LeaveRequest.Query().

@@ -20,25 +20,25 @@ type LeaveRequest struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// TotalDays holds the value of the "total_days" field.
-	TotalDays float64 `json:"total_days,omitempty"`
+	TotalDays float64 `json:"total_days"`
 	// StartAt holds the value of the "start_at" field.
-	StartAt time.Time `json:"start_at,omitempty"`
+	StartAt time.Time `json:"start_at"`
 	// EndAt holds the value of the "end_at" field.
-	EndAt time.Time `json:"end_at,omitempty"`
+	EndAt time.Time `json:"end_at"`
 	// Reason holds the value of the "reason" field.
-	Reason *string `json:"reason,omitempty"`
+	Reason *string `json:"reason"`
 	// Type holds the value of the "type" field.
-	Type leaverequest.Type `json:"type,omitempty"`
+	Type leaverequest.Type `json:"type"`
 	// Status holds the value of the "status" field.
-	Status leaverequest.Status `json:"status,omitempty"`
+	Status leaverequest.Status `json:"status"`
 	// OrgID holds the value of the "org_id" field.
-	OrgID int `json:"org_id,omitempty"`
+	OrgID int `json:"org_id"`
 	// EmployeeID holds the value of the "employee_id" field.
-	EmployeeID int `json:"employee_id,omitempty"`
+	EmployeeID int `json:"employee_id"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LeaveRequestQuery when eager-loading is set.
 	Edges        LeaveRequestEdges `json:"edges"`

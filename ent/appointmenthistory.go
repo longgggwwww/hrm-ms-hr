@@ -20,19 +20,19 @@ type AppointmentHistory struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// EmployeeID holds the value of the "employee_id" field.
-	EmployeeID int `json:"employee_id,omitempty"`
+	EmployeeID int `json:"employee_id"`
 	// PositionName holds the value of the "position_name" field.
-	PositionName string `json:"position_name,omitempty"`
+	PositionName string `json:"position_name"`
 	// JoiningAt holds the value of the "joining_at" field.
-	JoiningAt time.Time `json:"joining_at,omitempty"`
+	JoiningAt time.Time `json:"joining_at"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// AttachmentUrls holds the value of the "attachment_urls" field.
-	AttachmentUrls []string `json:"attachment_urls,omitempty"`
+	AttachmentUrls []string `json:"attachment_urls"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AppointmentHistoryQuery when eager-loading is set.
 	Edges        AppointmentHistoryEdges `json:"edges"`

@@ -19,21 +19,21 @@ type Employee struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
-	UserID string `json:"user_id,omitempty"`
+	UserID string `json:"user_id"`
 	// Code holds the value of the "code" field.
-	Code string `json:"code,omitempty"`
+	Code string `json:"code"`
 	// Status holds the value of the "status" field.
-	Status employee.Status `json:"status,omitempty"`
+	Status employee.Status `json:"status"`
 	// PositionID holds the value of the "position_id" field.
-	PositionID int `json:"position_id,omitempty"`
+	PositionID int `json:"position_id"`
 	// JoiningAt holds the value of the "joining_at" field.
-	JoiningAt time.Time `json:"joining_at,omitempty"`
+	JoiningAt time.Time `json:"joining_at"`
 	// OrgID holds the value of the "org_id" field.
-	OrgID int `json:"org_id,omitempty"`
+	OrgID int `json:"org_id"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EmployeeQuery when eager-loading is set.
 	Edges        EmployeeEdges `json:"edges"`

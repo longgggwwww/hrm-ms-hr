@@ -335,7 +335,7 @@ func (lq *LabelQuery) WithOrganization(opts ...func(*OrganizationQuery)) *LabelQ
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -358,7 +358,7 @@ func (lq *LabelQuery) GroupBy(field string, fields ...string) *LabelGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		Name string `json:"name"`
 //	}
 //
 //	client.Label.Query().

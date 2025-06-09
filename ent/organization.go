@@ -18,25 +18,25 @@ type Organization struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Code holds the value of the "code" field.
-	Code string `json:"code,omitempty"`
+	Code string `json:"code"`
 	// LogoURL holds the value of the "logo_url" field.
-	LogoURL *string `json:"logo_url,omitempty"`
+	LogoURL *string `json:"logo_url"`
 	// Address holds the value of the "address" field.
-	Address *string `json:"address,omitempty"`
+	Address *string `json:"address"`
 	// Phone holds the value of the "phone" field.
-	Phone *string `json:"phone,omitempty"`
+	Phone *string `json:"phone"`
 	// Email holds the value of the "email" field.
-	Email *string `json:"email,omitempty"`
+	Email *string `json:"email"`
 	// Website holds the value of the "website" field.
-	Website *string `json:"website,omitempty"`
+	Website *string `json:"website"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// ParentID holds the value of the "parent_id" field.
-	ParentID *int `json:"parent_id,omitempty"`
+	ParentID *int `json:"parent_id"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrganizationQuery when eager-loading is set.
 	Edges        OrganizationEdges `json:"edges"`

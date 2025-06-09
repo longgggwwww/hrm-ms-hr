@@ -578,6 +578,7 @@ func (h *TaskHandler) Get(c *gin.Context) {
 		WithProject().
 		WithLabels().
 		WithAssignees().
+		WithReports().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
@@ -810,6 +811,7 @@ func (h *TaskHandler) Update(c *gin.Context) {
 		WithProject().
 		WithLabels().
 		WithAssignees().
+		WithReports().
 		Only(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"id": id})

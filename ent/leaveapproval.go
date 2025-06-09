@@ -20,15 +20,15 @@ type LeaveApproval struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Comment holds the value of the "comment" field.
-	Comment *string `json:"comment,omitempty"`
+	Comment *string `json:"comment"`
 	// LeaveRequestID holds the value of the "leave_request_id" field.
-	LeaveRequestID int `json:"leave_request_id,omitempty"`
+	LeaveRequestID int `json:"leave_request_id"`
 	// ReviewerID holds the value of the "reviewer_id" field.
-	ReviewerID int `json:"reviewer_id,omitempty"`
+	ReviewerID int `json:"reviewer_id"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LeaveApprovalQuery when eager-loading is set.
 	Edges        LeaveApprovalEdges `json:"edges"`

@@ -19,31 +19,31 @@ type Task struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Code holds the value of the "code" field.
-	Code string `json:"code,omitempty"`
+	Code string `json:"code"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description"`
 	// Process holds the value of the "process" field.
-	Process int `json:"process,omitempty"`
+	Process int `json:"process"`
 	// Status holds the value of the "status" field.
-	Status task.Status `json:"status,omitempty"`
+	Status task.Status `json:"status"`
 	// StartAt holds the value of the "start_at" field.
 	StartAt *time.Time `json:"start_at"`
 	// DueDate holds the value of the "due_date" field.
 	DueDate *time.Time `json:"due_date"`
 	// ProjectID holds the value of the "project_id" field.
-	ProjectID int `json:"project_id,omitempty"`
+	ProjectID int `json:"project_id"`
 	// CreatorID holds the value of the "creator_id" field.
-	CreatorID int `json:"creator_id,omitempty"`
+	CreatorID int `json:"creator_id"`
 	// UpdaterID holds the value of the "updater_id" field.
-	UpdaterID int `json:"updater_id,omitempty"`
+	UpdaterID int `json:"updater_id"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Type holds the value of the "type" field.
-	Type task.Type `json:"type,omitempty"`
+	Type task.Type `json:"type"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
 	Edges        TaskEdges `json:"edges"`

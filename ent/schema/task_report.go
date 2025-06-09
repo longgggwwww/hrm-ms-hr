@@ -20,18 +20,23 @@ func (TaskReport) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("content").
 			Optional().
+			StructTag(`json:"content"`).
 			Annotations(entproto.Field(3)),
 		field.Int("task_id").
+			StructTag(`json:"task_id"`).
 			Annotations(entproto.Field(4)),
 		field.Int("reporter_id").
+			StructTag(`json:"reporter_id"`).
 			Annotations(entproto.Field(5)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(6)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(7)),
 	}
 }

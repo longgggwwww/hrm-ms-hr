@@ -20,29 +20,29 @@ type Project struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Code holds the value of the "code" field.
-	Code string `json:"code,omitempty"`
+	Code string `json:"code"`
 	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
+	Description *string `json:"description"`
 	// StartAt holds the value of the "start_at" field.
 	StartAt *time.Time `json:"start_at"`
 	// EndAt holds the value of the "end_at" field.
 	EndAt *time.Time `json:"end_at"`
 	// CreatorID holds the value of the "creator_id" field.
-	CreatorID int `json:"creator_id,omitempty"`
+	CreatorID int `json:"creator_id"`
 	// UpdaterID holds the value of the "updater_id" field.
-	UpdaterID int `json:"updater_id,omitempty"`
+	UpdaterID int `json:"updater_id"`
 	// OrgID holds the value of the "org_id" field.
-	OrgID int `json:"org_id,omitempty"`
+	OrgID int `json:"org_id"`
 	// Process holds the value of the "process" field.
-	Process int `json:"process,omitempty"`
+	Process int `json:"process"`
 	// Status holds the value of the "status" field.
-	Status project.Status `json:"status,omitempty"`
+	Status project.Status `json:"status"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectQuery when eager-loading is set.
 	Edges        ProjectEdges `json:"edges"`

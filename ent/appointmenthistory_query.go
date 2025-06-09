@@ -298,7 +298,7 @@ func (ahq *AppointmentHistoryQuery) WithEmployee(opts ...func(*EmployeeQuery)) *
 // Example:
 //
 //	var v []struct {
-//		EmployeeID int `json:"employee_id,omitempty"`
+//		EmployeeID int `json:"employee_id"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -321,7 +321,7 @@ func (ahq *AppointmentHistoryQuery) GroupBy(field string, fields ...string) *App
 // Example:
 //
 //	var v []struct {
-//		EmployeeID int `json:"employee_id,omitempty"`
+//		EmployeeID int `json:"employee_id"`
 //	}
 //
 //	client.AppointmentHistory.Query().

@@ -585,7 +585,7 @@ func (eq *EmployeeQuery) WithAppointmentHistories(opts ...func(*AppointmentHisto
 // Example:
 //
 //	var v []struct {
-//		UserID string `json:"user_id,omitempty"`
+//		UserID string `json:"user_id"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -608,7 +608,7 @@ func (eq *EmployeeQuery) GroupBy(field string, fields ...string) *EmployeeGroupB
 // Example:
 //
 //	var v []struct {
-//		UserID string `json:"user_id,omitempty"`
+//		UserID string `json:"user_id"`
 //	}
 //
 //	client.Employee.Query().

@@ -19,18 +19,23 @@ type LeaveRequest struct {
 func (LeaveRequest) Fields() []ent.Field {
 	return []ent.Field{
 		field.Float("total_days").
+			StructTag(`json:"total_days"`).
 			Annotations(entproto.Field(2)),
 		field.Time("start_at").
+			StructTag(`json:"start_at"`).
 			Annotations(entproto.Field(3)),
 		field.Time("end_at").
+			StructTag(`json:"end_at"`).
 			Annotations(entproto.Field(4)),
 		field.String("reason").
+			StructTag(`json:"reason"`).
 			Annotations(entproto.Field(5)).
 			Optional().
 			Nillable(),
 		field.Enum("type").
 			Values("annual", "unpaid").
 			Default("annual").
+			StructTag(`json:"type"`).
 			Annotations(
 				entproto.Field(6),
 				entproto.Enum(map[string]int32{
@@ -41,6 +46,7 @@ func (LeaveRequest) Fields() []ent.Field {
 		field.Enum("status").
 			Values("pending", "rejected", "approved").
 			Default("pending").
+			StructTag(`json:"status"`).
 			Annotations(
 				entproto.Field(7),
 				entproto.Enum(map[string]int32{
@@ -50,13 +56,17 @@ func (LeaveRequest) Fields() []ent.Field {
 				}),
 			),
 		field.Int("org_id").
+			StructTag(`json:"org_id"`).
 			Annotations(entproto.Field(8)),
 		field.Int("employee_id").
+			StructTag(`json:"employee_id"`).
 			Annotations(entproto.Field(9)),
 		field.Time("created_at").
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(10)).
 			Default(time.Now),
 		field.Time("updated_at").
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(11)).
 			Default(time.Now).
 			UpdateDefault(time.Now),

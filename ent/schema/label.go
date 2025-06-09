@@ -20,22 +20,28 @@ type Label struct {
 func (Label) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
+			StructTag(`json:"name"`).
 			Annotations(entproto.Field(2)).
 			NotEmpty(),
 		field.String("description").
+			StructTag(`json:"description"`).
 			Annotations(entproto.Field(3)).
 			Optional(),
 		field.String("color").
+			StructTag(`json:"color"`).
 			Annotations(entproto.Field(4)).
 			NotEmpty(),
 		field.Int("org_id").
+			StructTag(`json:"org_id"`).
 			Annotations(entproto.Field(5)).
 			Optional(),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(6)),
 		field.Time("updated_at").
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(7)).
 			Default(time.Now).
 			UpdateDefault(time.Now),

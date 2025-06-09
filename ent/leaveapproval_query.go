@@ -334,7 +334,7 @@ func (laq *LeaveApprovalQuery) WithReviewer(opts ...func(*EmployeeQuery)) *Leave
 // Example:
 //
 //	var v []struct {
-//		Comment string `json:"comment,omitempty"`
+//		Comment string `json:"comment"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -357,7 +357,7 @@ func (laq *LeaveApprovalQuery) GroupBy(field string, fields ...string) *LeaveApp
 // Example:
 //
 //	var v []struct {
-//		Comment string `json:"comment,omitempty"`
+//		Comment string `json:"comment"`
 //	}
 //
 //	client.LeaveApproval.Query().

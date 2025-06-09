@@ -19,17 +19,22 @@ type LeaveApproval struct {
 func (LeaveApproval) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("comment").
+			StructTag(`json:"comment"`).
 			Annotations(entproto.Field(2)).
 			Optional().
 			Nillable(),
 		field.Int("leave_request_id").
+			StructTag(`json:"leave_request_id"`).
 			Annotations(entproto.Field(3)),
 		field.Int("reviewer_id").
+			StructTag(`json:"reviewer_id"`).
 			Annotations(entproto.Field(4)),
 		field.Time("created_at").
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(5)).
 			Default(time.Now),
 		field.Time("updated_at").
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(6)).
 			Default(time.Now).
 			UpdateDefault(time.Now),

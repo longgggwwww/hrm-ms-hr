@@ -19,18 +19,25 @@ type AppointmentHistory struct {
 func (AppointmentHistory) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("employee_id").
+			StructTag(`json:"employee_id"`).
 			Annotations(entproto.Field(2)),
 		field.String("position_name").
+			StructTag(`json:"position_name"`).
 			Annotations(entproto.Field(3)),
 		field.Time("joining_at").
+			StructTag(`json:"joining_at"`).
 			Annotations(entproto.Field(4)),
 		field.String("description").Optional().
+			StructTag(`json:"description"`).
 			Annotations(entproto.Field(5)),
 		field.Strings("attachment_urls").Optional().
+			StructTag(`json:"attachment_urls"`).
 			Annotations(entproto.Field(6)),
 		field.Time("created_at").Default(time.Now).
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(7)),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(8)),
 	}
 }

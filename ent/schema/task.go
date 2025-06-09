@@ -19,9 +19,11 @@ type Task struct {
 func (Task) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
+			StructTag(`json:"name"`).
 			Annotations(entproto.Field(2)),
 		field.String("code").
 			Unique().
+			StructTag(`json:"code"`).
 			Annotations(entproto.Field(3)),
 		field.String("description").
 			Optional().
@@ -29,10 +31,12 @@ func (Task) Fields() []ent.Field {
 			Annotations(entproto.Field(4)),
 		field.Int("process").
 			Default(0).
+			StructTag(`json:"process"`).
 			Annotations(entproto.Field(5)),
 		field.Enum("status").
 			Values("not_received", "received", "in_progress", "completed", "cancelled").
 			Default("not_received").
+			StructTag(`json:"status"`).
 			Annotations(
 				entproto.Field(6),
 				entproto.Enum(map[string]int32{
@@ -54,22 +58,28 @@ func (Task) Fields() []ent.Field {
 			Annotations(entproto.Field(8)),
 		field.Int("project_id").
 			Optional().
+			StructTag(`json:"project_id"`).
 			Annotations(entproto.Field(9)),
 		field.Int("creator_id").
+			StructTag(`json:"creator_id"`).
 			Annotations(entproto.Field(10)),
 		field.Int("updater_id").
+			StructTag(`json:"updater_id"`).
 			Annotations(entproto.Field(11)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
+			StructTag(`json:"created_at"`).
 			Annotations(entproto.Field(12)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
+			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(13)),
 		field.Enum("type").
 			Values("task", "feature", "bug", "another").
 			Default("task").
+			StructTag(`json:"type"`).
 			Annotations(
 				entproto.Field(14),
 				entproto.Enum(map[string]int32{

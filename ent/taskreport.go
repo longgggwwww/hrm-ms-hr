@@ -20,15 +20,15 @@ type TaskReport struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Content holds the value of the "content" field.
-	Content string `json:"content,omitempty"`
+	Content string `json:"content"`
 	// TaskID holds the value of the "task_id" field.
-	TaskID int `json:"task_id,omitempty"`
+	TaskID int `json:"task_id"`
 	// ReporterID holds the value of the "reporter_id" field.
-	ReporterID int `json:"reporter_id,omitempty"`
+	ReporterID int `json:"reporter_id"`
 	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskReportQuery when eager-loading is set.
 	Edges        TaskReportEdges `json:"edges"`
