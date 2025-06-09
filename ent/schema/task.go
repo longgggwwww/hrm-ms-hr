@@ -25,6 +25,7 @@ func (Task) Fields() []ent.Field {
 			Annotations(entproto.Field(3)),
 		field.String("description").
 			Optional().
+			StructTag(`json:"description"`).
 			Annotations(entproto.Field(4)),
 		field.Int("process").
 			Default(0).
@@ -89,6 +90,7 @@ func (Task) Edges() []ent.Edge {
 			Unique().
 			Annotations(entproto.Field(15)),
 		edge.To("labels", Label.Type).
+			StructTag(`json:"labels"`).
 			Annotations(entproto.Field(16)), // Thêm edge tới label
 		edge.To("assignees", Employee.Type).
 			Annotations(entproto.Field(17)), // Edge many-to-many với Employee

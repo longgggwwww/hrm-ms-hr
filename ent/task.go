@@ -23,7 +23,7 @@ type Task struct {
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// Process holds the value of the "process" field.
 	Process int `json:"process,omitempty"`
 	// Status holds the value of the "status" field.
@@ -55,7 +55,7 @@ type TaskEdges struct {
 	// Project holds the value of the project edge.
 	Project *Project `json:"project,omitempty"`
 	// Labels holds the value of the labels edge.
-	Labels []*Label `json:"labels,omitempty"`
+	Labels []*Label `json:"labels"`
 	// Assignees holds the value of the assignees edge.
 	Assignees []*Employee `json:"assignees,omitempty"`
 	// Reports holds the value of the reports edge.
