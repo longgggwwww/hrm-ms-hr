@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
+	"github.com/longgggwwww/hrm-ms-hr/internal/kafka"
 )
 
 // Create creates a new task
@@ -245,5 +247,28 @@ func (s *TaskService) Create(ctx context.Context, userID, employeeID int, input 
 		return row, nil
 	}
 
+	// Send Kafka event for task created
+	s.publishTaskCreatedEvent(ctx, createdTask, employeeID)
+
 	return createdTask, nil
+}
+
+// publishTaskCreatedEvent publishes a task created event to Kafka
+func (s *TaskService) publishTaskCreatedEvent(ctx context.Context, task *ent.Task, employeeID int) {
+	if s.KafkaClient == nil {
+		return
+	}
+
+	// Get organization ID from employee
+	orgID := 0
+	if task.Edges.Assignees != nil && len(task.Edges.Assignees) > 0 {
+		orgID = task.Edges.Assignees[0].OrgID
+	}
+
+	event := kafka.NewTaskCreatedEvent(task, orgID)
+	key := strconv.Itoa(task.ID)
+
+	if err := s.KafkaClient.PublishEvent(ctx, "task-events", key, event); err != nil {
+		log.Printf("Failed to publish task created event: %v", err)
+	}
 }

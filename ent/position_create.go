@@ -99,15 +99,9 @@ func (pc *PositionCreate) AddEmployees(e ...*Employee) *PositionCreate {
 	return pc.AddEmployeeIDs(ids...)
 }
 
-// SetDepartmentsID sets the "departments" edge to the Department entity by ID.
-func (pc *PositionCreate) SetDepartmentsID(id int) *PositionCreate {
-	pc.mutation.SetDepartmentsID(id)
-	return pc
-}
-
-// SetDepartments sets the "departments" edge to the Department entity.
-func (pc *PositionCreate) SetDepartments(d *Department) *PositionCreate {
-	return pc.SetDepartmentsID(d.ID)
+// SetDepartment sets the "department" edge to the Department entity.
+func (pc *PositionCreate) SetDepartment(d *Department) *PositionCreate {
+	return pc.SetDepartmentID(d.ID)
 }
 
 // AddChildIDs adds the "children" edge to the Position entity by IDs.
@@ -197,8 +191,8 @@ func (pc *PositionCreate) check() error {
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Position.updated_at"`)}
 	}
-	if len(pc.mutation.DepartmentsIDs()) == 0 {
-		return &ValidationError{Name: "departments", err: errors.New(`ent: missing required edge "Position.departments"`)}
+	if len(pc.mutation.DepartmentIDs()) == 0 {
+		return &ValidationError{Name: "department", err: errors.New(`ent: missing required edge "Position.department"`)}
 	}
 	return nil
 }
@@ -259,12 +253,12 @@ func (pc *PositionCreate) createSpec() (*Position, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := pc.mutation.DepartmentsIDs(); len(nodes) > 0 {
+	if nodes := pc.mutation.DepartmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   position.DepartmentsTable,
-			Columns: []string{position.DepartmentsColumn},
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),

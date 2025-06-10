@@ -10,6 +10,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
+	"github.com/longgggwwww/hrm-ms-hr/internal/kafka"
 	taskService "github.com/longgggwwww/hrm-ms-hr/internal/services/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
@@ -23,6 +24,17 @@ func NewTaskHandler(client *ent.Client) *TaskHandler {
 	return &TaskHandler{
 		Client:      client,
 		TaskService: taskService.NewTaskService(client),
+	}
+}
+
+// NewTaskHandlerWithKafka creates a new task handler with Kafka support
+func NewTaskHandlerWithKafka(client *ent.Client, kafkaClient *kafka.KafkaClient) *TaskHandler {
+	taskSvc := taskService.NewTaskService(client)
+	taskSvc.SetKafkaClient(kafkaClient)
+
+	return &TaskHandler{
+		Client:      client,
+		TaskService: taskSvc,
 	}
 }
 

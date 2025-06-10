@@ -113,15 +113,9 @@ func (pu *PositionUpdate) AddEmployees(e ...*Employee) *PositionUpdate {
 	return pu.AddEmployeeIDs(ids...)
 }
 
-// SetDepartmentsID sets the "departments" edge to the Department entity by ID.
-func (pu *PositionUpdate) SetDepartmentsID(id int) *PositionUpdate {
-	pu.mutation.SetDepartmentsID(id)
-	return pu
-}
-
-// SetDepartments sets the "departments" edge to the Department entity.
-func (pu *PositionUpdate) SetDepartments(d *Department) *PositionUpdate {
-	return pu.SetDepartmentsID(d.ID)
+// SetDepartment sets the "department" edge to the Department entity.
+func (pu *PositionUpdate) SetDepartment(d *Department) *PositionUpdate {
+	return pu.SetDepartmentID(d.ID)
 }
 
 // AddChildIDs adds the "children" edge to the Position entity by IDs.
@@ -170,9 +164,9 @@ func (pu *PositionUpdate) RemoveEmployees(e ...*Employee) *PositionUpdate {
 	return pu.RemoveEmployeeIDs(ids...)
 }
 
-// ClearDepartments clears the "departments" edge to the Department entity.
-func (pu *PositionUpdate) ClearDepartments() *PositionUpdate {
-	pu.mutation.ClearDepartments()
+// ClearDepartment clears the "department" edge to the Department entity.
+func (pu *PositionUpdate) ClearDepartment() *PositionUpdate {
+	pu.mutation.ClearDepartment()
 	return pu
 }
 
@@ -246,8 +240,8 @@ func (pu *PositionUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Position.name": %w`, err)}
 		}
 	}
-	if pu.mutation.DepartmentsCleared() && len(pu.mutation.DepartmentsIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Position.departments"`)
+	if pu.mutation.DepartmentCleared() && len(pu.mutation.DepartmentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Position.department"`)
 	}
 	return nil
 }
@@ -318,12 +312,12 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pu.mutation.DepartmentsCleared() {
+	if pu.mutation.DepartmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   position.DepartmentsTable,
-			Columns: []string{position.DepartmentsColumn},
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
@@ -331,12 +325,12 @@ func (pu *PositionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.DepartmentsIDs(); len(nodes) > 0 {
+	if nodes := pu.mutation.DepartmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   position.DepartmentsTable,
-			Columns: []string{position.DepartmentsColumn},
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
@@ -524,15 +518,9 @@ func (puo *PositionUpdateOne) AddEmployees(e ...*Employee) *PositionUpdateOne {
 	return puo.AddEmployeeIDs(ids...)
 }
 
-// SetDepartmentsID sets the "departments" edge to the Department entity by ID.
-func (puo *PositionUpdateOne) SetDepartmentsID(id int) *PositionUpdateOne {
-	puo.mutation.SetDepartmentsID(id)
-	return puo
-}
-
-// SetDepartments sets the "departments" edge to the Department entity.
-func (puo *PositionUpdateOne) SetDepartments(d *Department) *PositionUpdateOne {
-	return puo.SetDepartmentsID(d.ID)
+// SetDepartment sets the "department" edge to the Department entity.
+func (puo *PositionUpdateOne) SetDepartment(d *Department) *PositionUpdateOne {
+	return puo.SetDepartmentID(d.ID)
 }
 
 // AddChildIDs adds the "children" edge to the Position entity by IDs.
@@ -581,9 +569,9 @@ func (puo *PositionUpdateOne) RemoveEmployees(e ...*Employee) *PositionUpdateOne
 	return puo.RemoveEmployeeIDs(ids...)
 }
 
-// ClearDepartments clears the "departments" edge to the Department entity.
-func (puo *PositionUpdateOne) ClearDepartments() *PositionUpdateOne {
-	puo.mutation.ClearDepartments()
+// ClearDepartment clears the "department" edge to the Department entity.
+func (puo *PositionUpdateOne) ClearDepartment() *PositionUpdateOne {
+	puo.mutation.ClearDepartment()
 	return puo
 }
 
@@ -670,8 +658,8 @@ func (puo *PositionUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Position.name": %w`, err)}
 		}
 	}
-	if puo.mutation.DepartmentsCleared() && len(puo.mutation.DepartmentsIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Position.departments"`)
+	if puo.mutation.DepartmentCleared() && len(puo.mutation.DepartmentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Position.department"`)
 	}
 	return nil
 }
@@ -759,12 +747,12 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if puo.mutation.DepartmentsCleared() {
+	if puo.mutation.DepartmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   position.DepartmentsTable,
-			Columns: []string{position.DepartmentsColumn},
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
@@ -772,12 +760,12 @@ func (puo *PositionUpdateOne) sqlSave(ctx context.Context) (_node *Position, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.DepartmentsIDs(); len(nodes) > 0 {
+	if nodes := puo.mutation.DepartmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   position.DepartmentsTable,
-			Columns: []string{position.DepartmentsColumn},
+			Table:   position.DepartmentTable,
+			Columns: []string{position.DepartmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),

@@ -20,7 +20,7 @@ type ExtService struct {
 func (s *ExtService) GetEmployeeByUserId(ctx context.Context, req *GetEmployeeByUserIdRequest) (*Employee, error) {
 	log.Println("GetEmployeeByUserId called with UserId:", req.UserId)
 	e, err := s.client.Employee.Query().Where(employee.UserID(req.UserId)).WithPosition(func(pq *ent.PositionQuery) {
-		pq.WithDepartments(func(dq *ent.DepartmentQuery) {
+		pq.WithDepartment(func(dq *ent.DepartmentQuery) {
 			dq.WithOrganization()
 		})
 	}).Only(ctx)
@@ -104,9 +104,9 @@ func toProtoEmployeeWithEdges(e *ent.Employee) (*Employee, error) {
 		}
 
 		// Include Department information
-		if dept := edg.Edges.Departments; dept != nil {
+		if dept := edg.Edges.Department; dept != nil {
 			deptId := int64(dept.ID)
-			position.Departments = &Department{
+			position.Department = &Department{
 				Id:   deptId,
 				Name: dept.Name,
 				Code: dept.Code,
@@ -115,7 +115,7 @@ func toProtoEmployeeWithEdges(e *ent.Employee) (*Employee, error) {
 			// Include Organization information
 			if org := dept.Edges.Organization; org != nil {
 				orgId := int64(org.ID)
-				position.Departments.Organization = &Organization{
+				position.Department.Organization = &Organization{
 					Id:   orgId,
 					Name: org.Name,
 					Code: org.Code,

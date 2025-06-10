@@ -52,13 +52,13 @@ func (Position) Edges() []ent.Edge {
 		edge.To("employees", Employee.Type).
 			StructTag(`json:"employees"`).
 			Annotations(entproto.Field(8)),
-		edge.From("departments", Department.Type). // Lỗi chính tả
-								Ref("positions").
-								Field("department_id").
-								Unique().
-								Required().
-								StructTag(`json:"department"`).
-								Annotations(entproto.Field(9)),
+		edge.From("department", Department.Type).
+			Ref("positions").
+			Field("department_id").
+			Unique().
+			Required().
+			StructTag(`json:"department"`).
+			Annotations(entproto.Field(9)),
 
 		// edge đến con
 		edge.To("children", Position.Type).

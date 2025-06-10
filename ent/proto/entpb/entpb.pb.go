@@ -5015,7 +5015,7 @@ type Position struct {
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	Employees     []*Employee            `protobuf:"bytes,8,rep,name=employees,proto3" json:"employees,omitempty"`
-	Departments   *Department            `protobuf:"bytes,9,opt,name=departments,proto3" json:"departments,omitempty"`
+	Department    *Department            `protobuf:"bytes,9,opt,name=department,proto3" json:"department,omitempty"`
 	Children      []*Position            `protobuf:"bytes,10,rep,name=children,proto3" json:"children,omitempty"`
 	Parent        *Position              `protobuf:"bytes,11,opt,name=parent,proto3" json:"parent,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -5108,9 +5108,9 @@ func (x *Position) GetEmployees() []*Employee {
 	return nil
 }
 
-func (x *Position) GetDepartments() *Department {
+func (x *Position) GetDepartment() *Department {
 	if x != nil {
-		return x.Departments
+		return x.Department
 	}
 	return nil
 }
@@ -7462,7 +7462,7 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"\x1fBatchCreateOrganizationsRequest\x12<\n" +
 	"\brequests\x18\x01 \x03(\v2 .entpb.CreateOrganizationRequestR\brequests\"]\n" +
 	" BatchCreateOrganizationsResponse\x129\n" +
-	"\rorganizations\x18\x01 \x03(\v2\x13.entpb.OrganizationR\rorganizations\"\xd1\x03\n" +
+	"\rorganizations\x18\x01 \x03(\v2\x13.entpb.OrganizationR\rorganizations\"\xcf\x03\n" +
 	"\bPosition\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -7473,8 +7473,10 @@ const file_entpb_entpb_proto_rawDesc = "" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12-\n" +
-	"\temployees\x18\b \x03(\v2\x0f.entpb.EmployeeR\temployees\x123\n" +
-	"\vdepartments\x18\t \x01(\v2\x11.entpb.DepartmentR\vdepartments\x12+\n" +
+	"\temployees\x18\b \x03(\v2\x0f.entpb.EmployeeR\temployees\x121\n" +
+	"\n" +
+	"department\x18\t \x01(\v2\x11.entpb.DepartmentR\n" +
+	"department\x12+\n" +
 	"\bchildren\x18\n" +
 	" \x03(\v2\x0f.entpb.PositionR\bchildren\x12'\n" +
 	"\x06parent\x18\v \x01(\v2\x0f.entpb.PositionR\x06parent\"D\n" +
@@ -8010,7 +8012,7 @@ var file_entpb_entpb_proto_depIdxs = []int32{
 	127, // 108: entpb.Position.created_at:type_name -> google.protobuf.Timestamp
 	127, // 109: entpb.Position.updated_at:type_name -> google.protobuf.Timestamp
 	46,  // 110: entpb.Position.employees:type_name -> entpb.Employee
-	37,  // 111: entpb.Position.departments:type_name -> entpb.Department
+	37,  // 111: entpb.Position.department:type_name -> entpb.Department
 	91,  // 112: entpb.Position.children:type_name -> entpb.Position
 	91,  // 113: entpb.Position.parent:type_name -> entpb.Position
 	91,  // 114: entpb.CreatePositionRequest.position:type_name -> entpb.Position

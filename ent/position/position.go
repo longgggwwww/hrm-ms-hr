@@ -28,8 +28,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeEmployees holds the string denoting the employees edge name in mutations.
 	EdgeEmployees = "employees"
-	// EdgeDepartments holds the string denoting the departments edge name in mutations.
-	EdgeDepartments = "departments"
+	// EdgeDepartment holds the string denoting the department edge name in mutations.
+	EdgeDepartment = "department"
 	// EdgeChildren holds the string denoting the children edge name in mutations.
 	EdgeChildren = "children"
 	// EdgeParent holds the string denoting the parent edge name in mutations.
@@ -43,13 +43,13 @@ const (
 	EmployeesInverseTable = "employees"
 	// EmployeesColumn is the table column denoting the employees relation/edge.
 	EmployeesColumn = "position_id"
-	// DepartmentsTable is the table that holds the departments relation/edge.
-	DepartmentsTable = "positions"
-	// DepartmentsInverseTable is the table name for the Department entity.
+	// DepartmentTable is the table that holds the department relation/edge.
+	DepartmentTable = "positions"
+	// DepartmentInverseTable is the table name for the Department entity.
 	// It exists in this package in order to avoid circular dependency with the "department" package.
-	DepartmentsInverseTable = "departments"
-	// DepartmentsColumn is the table column denoting the departments relation/edge.
-	DepartmentsColumn = "department_id"
+	DepartmentInverseTable = "departments"
+	// DepartmentColumn is the table column denoting the department relation/edge.
+	DepartmentColumn = "department_id"
 	// ChildrenTable is the table that holds the children relation/edge.
 	ChildrenTable = "positions"
 	// ChildrenColumn is the table column denoting the children relation/edge.
@@ -144,10 +144,10 @@ func ByEmployees(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByDepartmentsField orders the results by departments field.
-func ByDepartmentsField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByDepartmentField orders the results by department field.
+func ByDepartmentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newDepartmentsStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newDepartmentStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -178,11 +178,11 @@ func newEmployeesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, EmployeesTable, EmployeesColumn),
 	)
 }
-func newDepartmentsStep() *sqlgraph.Step {
+func newDepartmentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(DepartmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, DepartmentsTable, DepartmentsColumn),
+		sqlgraph.To(DepartmentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DepartmentTable, DepartmentColumn),
 	)
 }
 func newChildrenStep() *sqlgraph.Step {

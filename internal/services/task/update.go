@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
+	"github.com/longgggwwww/hrm-ms-hr/internal/kafka"
 )
 
 // Update updates an existing task
@@ -232,5 +234,28 @@ func (s *TaskService) Update(ctx context.Context, id, userID int, input dtos.Tas
 		}
 	}
 
+	// Send Kafka event for task updated
+	s.publishTaskUpdatedEvent(ctx, updatedTask, userID)
+
 	return updatedTask, nil
+}
+
+// publishTaskUpdatedEvent publishes a task updated event to Kafka
+func (s *TaskService) publishTaskUpdatedEvent(ctx context.Context, task *ent.Task, userID int) {
+	if s.KafkaClient == nil {
+		return
+	}
+
+	// Get organization ID from assignees or project
+	orgID := 0
+	if task.Edges.Assignees != nil && len(task.Edges.Assignees) > 0 {
+		orgID = task.Edges.Assignees[0].OrgID
+	}
+
+	event := kafka.NewTaskUpdatedEvent(task, orgID)
+	key := strconv.Itoa(task.ID)
+
+	if err := s.KafkaClient.PublishEvent(ctx, "task-events", key, event); err != nil {
+		log.Printf("Failed to publish task updated event: %v", err)
+	}
 }

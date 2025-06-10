@@ -21,14 +21,14 @@ import (
 // PositionQuery is the builder for querying Position entities.
 type PositionQuery struct {
 	config
-	ctx             *QueryContext
-	order           []position.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Position
-	withEmployees   *EmployeeQuery
-	withDepartments *DepartmentQuery
-	withChildren    *PositionQuery
-	withParent      *PositionQuery
+	ctx            *QueryContext
+	order          []position.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Position
+	withEmployees  *EmployeeQuery
+	withDepartment *DepartmentQuery
+	withChildren   *PositionQuery
+	withParent     *PositionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -87,8 +87,8 @@ func (pq *PositionQuery) QueryEmployees() *EmployeeQuery {
 	return query
 }
 
-// QueryDepartments chains the current query on the "departments" edge.
-func (pq *PositionQuery) QueryDepartments() *DepartmentQuery {
+// QueryDepartment chains the current query on the "department" edge.
+func (pq *PositionQuery) QueryDepartment() *DepartmentQuery {
 	query := (&DepartmentClient{config: pq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := pq.prepareQuery(ctx); err != nil {
@@ -101,7 +101,7 @@ func (pq *PositionQuery) QueryDepartments() *DepartmentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(position.Table, position.FieldID, selector),
 			sqlgraph.To(department.Table, department.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, position.DepartmentsTable, position.DepartmentsColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, position.DepartmentTable, position.DepartmentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -340,15 +340,15 @@ func (pq *PositionQuery) Clone() *PositionQuery {
 		return nil
 	}
 	return &PositionQuery{
-		config:          pq.config,
-		ctx:             pq.ctx.Clone(),
-		order:           append([]position.OrderOption{}, pq.order...),
-		inters:          append([]Interceptor{}, pq.inters...),
-		predicates:      append([]predicate.Position{}, pq.predicates...),
-		withEmployees:   pq.withEmployees.Clone(),
-		withDepartments: pq.withDepartments.Clone(),
-		withChildren:    pq.withChildren.Clone(),
-		withParent:      pq.withParent.Clone(),
+		config:         pq.config,
+		ctx:            pq.ctx.Clone(),
+		order:          append([]position.OrderOption{}, pq.order...),
+		inters:         append([]Interceptor{}, pq.inters...),
+		predicates:     append([]predicate.Position{}, pq.predicates...),
+		withEmployees:  pq.withEmployees.Clone(),
+		withDepartment: pq.withDepartment.Clone(),
+		withChildren:   pq.withChildren.Clone(),
+		withParent:     pq.withParent.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -366,14 +366,14 @@ func (pq *PositionQuery) WithEmployees(opts ...func(*EmployeeQuery)) *PositionQu
 	return pq
 }
 
-// WithDepartments tells the query-builder to eager-load the nodes that are connected to
-// the "departments" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PositionQuery) WithDepartments(opts ...func(*DepartmentQuery)) *PositionQuery {
+// WithDepartment tells the query-builder to eager-load the nodes that are connected to
+// the "department" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PositionQuery) WithDepartment(opts ...func(*DepartmentQuery)) *PositionQuery {
 	query := (&DepartmentClient{config: pq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	pq.withDepartments = query
+	pq.withDepartment = query
 	return pq
 }
 
@@ -479,7 +479,7 @@ func (pq *PositionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pos
 		_spec       = pq.querySpec()
 		loadedTypes = [4]bool{
 			pq.withEmployees != nil,
-			pq.withDepartments != nil,
+			pq.withDepartment != nil,
 			pq.withChildren != nil,
 			pq.withParent != nil,
 		}
@@ -509,9 +509,9 @@ func (pq *PositionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pos
 			return nil, err
 		}
 	}
-	if query := pq.withDepartments; query != nil {
-		if err := pq.loadDepartments(ctx, query, nodes, nil,
-			func(n *Position, e *Department) { n.Edges.Departments = e }); err != nil {
+	if query := pq.withDepartment; query != nil {
+		if err := pq.loadDepartment(ctx, query, nodes, nil,
+			func(n *Position, e *Department) { n.Edges.Department = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -561,7 +561,7 @@ func (pq *PositionQuery) loadEmployees(ctx context.Context, query *EmployeeQuery
 	}
 	return nil
 }
-func (pq *PositionQuery) loadDepartments(ctx context.Context, query *DepartmentQuery, nodes []*Position, init func(*Position), assign func(*Position, *Department)) error {
+func (pq *PositionQuery) loadDepartment(ctx context.Context, query *DepartmentQuery, nodes []*Position, init func(*Position), assign func(*Position, *Department)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*Position)
 	for i := range nodes {
@@ -675,7 +675,7 @@ func (pq *PositionQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if pq.withDepartments != nil {
+		if pq.withDepartment != nil {
 			_spec.Node.AddColumnOnce(position.FieldDepartmentID)
 		}
 		if pq.withParent != nil {

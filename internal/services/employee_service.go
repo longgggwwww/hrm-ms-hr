@@ -125,7 +125,7 @@ func (s *EmployeeService) List(ctx context.Context, q EmployeeListQuery) ([]*ent
 	query := s.Client.Employee.Query().
 		Where(employee.OrgID(q.OrgID)).
 		WithPosition(func(qp *ent.PositionQuery) {
-			qp.WithDepartments()
+			qp.WithDepartment()
 		})
 
 	if q.Page < 1 {
@@ -196,7 +196,7 @@ func (s *EmployeeService) GetEmployeeWithUserInfo(
 	emp, err := s.Client.Employee.Query().
 		Where(employee.ID(id), employee.OrgID(orgID)).
 		WithPosition(func(q *ent.PositionQuery) {
-			q.WithDepartments()
+			q.WithDepartment()
 		}).
 		WithAppointmentHistories().
 		Only(ctx)

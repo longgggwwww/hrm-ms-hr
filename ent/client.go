@@ -1742,15 +1742,15 @@ func (c *PositionClient) QueryEmployees(po *Position) *EmployeeQuery {
 	return query
 }
 
-// QueryDepartments queries the departments edge of a Position.
-func (c *PositionClient) QueryDepartments(po *Position) *DepartmentQuery {
+// QueryDepartment queries the department edge of a Position.
+func (c *PositionClient) QueryDepartment(po *Position) *DepartmentQuery {
 	query := (&DepartmentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := po.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(position.Table, position.FieldID, id),
 			sqlgraph.To(department.Table, department.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, position.DepartmentsTable, position.DepartmentsColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, position.DepartmentTable, position.DepartmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(po.driver.Dialect(), step)
 		return fromV, nil

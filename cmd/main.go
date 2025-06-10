@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 
@@ -14,14 +13,9 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/proto/entpb"
 	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/handlers"
+	"github.com/longgggwwww/hrm-ms-hr/internal/kafka"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found or error loading .env, relying on system environment variables.")
-	}
-}
 
 func main() {
 	// Initialize custom validators
@@ -30,8 +24,16 @@ func main() {
 	cli := initDatabase()
 	defer cli.Close()
 
+	// Initialize Kafka client
+	kafkaClient := initKafka()
+	defer func() {
+		if kafkaClient != nil {
+			kafkaClient.Close()
+		}
+	}()
+
 	log.Println("Starting HR microservice...")
-	go startHTTPServer(cli)
+	go startHTTPServer(cli, kafkaClient)
 	startGRPCServer(cli)
 }
 
@@ -50,10 +52,10 @@ func initDatabase() *ent.Client {
 	return cli
 }
 
-func startHTTPServer(cli *ent.Client) {
+func startHTTPServer(cli *ent.Client, kafkaClient *kafka.KafkaClient) {
 	r := gin.Default()
 	userServ := setupExternalServices()
-	registerHTTPRoutes(r, cli, userServ)
+	registerHTTPRoutes(r, cli, userServ, kafkaClient)
 
 	log.Println("Starting HTTP server on port 8080...")
 	if err := r.Run(":8080"); err != nil {
@@ -72,7 +74,7 @@ func setupExternalServices() grpc_clients.UserServiceClient {
 	return grpc_clients.NewUserClient(userServiceAddr)
 }
 
-func registerHTTPRoutes(r *gin.Engine, cli *ent.Client, userServ grpc_clients.UserServiceClient) {
+func registerHTTPRoutes(r *gin.Engine, cli *ent.Client, userServ grpc_clients.UserServiceClient, kafkaClient *kafka.KafkaClient) {
 	handlersList := []struct {
 		name     string
 		register func(*gin.Engine)
@@ -82,7 +84,7 @@ func registerHTTPRoutes(r *gin.Engine, cli *ent.Client, userServ grpc_clients.Us
 		{"Position", handlers.NewPositionHandler(cli, nil).RegisterRoutes},
 		{"Employee", handlers.NewEmployeeHandler(cli, userServ).RegisterRoutes},
 		{"Project", handlers.NewProjectHandler(cli, userServ).RegisterRoutes},
-		{"Task", handlers.NewTaskHandler(cli).RegisterRoutes},
+		{"Task", handlers.NewTaskHandlerWithKafka(cli, kafkaClient).RegisterRoutes},
 		{"TaskReport", handlers.NewTaskReportHandler(cli).RegisterRoutes},
 		{"Label", handlers.NewLabelHandler(cli).RegisterRoutes},
 		{"LeaveRequest", handlers.NewLeaveRequestHandler(cli).RegisterRoutes},
@@ -122,4 +124,21 @@ func registerGRPCServices(srv *grpc.Server, cli *ent.Client) {
 	entpb.RegisterExtServiceServer(srv, entpb.NewExtService(cli))
 
 	log.Println("All gRPC services registered successfully")
+}
+
+func initKafka() *kafka.KafkaClient {
+	kafkaConfig := kafka.NewConfig()
+	if !kafkaConfig.Enabled {
+		log.Println("Kafka is disabled (KAFKA_BROKERS not set)")
+		return nil
+	}
+
+	log.Printf("Initializing Kafka client with brokers: %v", kafkaConfig.Brokers)
+	kafkaClient := kafka.NewKafkaClient(kafkaConfig.Brokers)
+
+	if kafkaClient != nil {
+		log.Println("Kafka client initialized successfully")
+	}
+
+	return kafkaClient
 }

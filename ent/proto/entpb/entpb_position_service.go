@@ -40,8 +40,8 @@ func toProtoPosition(e *ent.Position) (*Position, error) {
 	v.Code = code
 	created_at := timestamppb.New(e.CreatedAt)
 	v.CreatedAt = created_at
-	departments := int64(e.DepartmentID)
-	v.DepartmentId = departments
+	department := int64(e.DepartmentID)
+	v.DepartmentId = department
 	id := int64(e.ID)
 	v.Id = id
 	name := e.Name
@@ -56,9 +56,9 @@ func toProtoPosition(e *ent.Position) (*Position, error) {
 			Id: id,
 		})
 	}
-	if edg := e.Edges.Departments; edg != nil {
+	if edg := e.Edges.Department; edg != nil {
 		id := int64(edg.ID)
-		v.Departments = &Department{
+		v.Department = &Department{
 			Id: id,
 		}
 	}
@@ -131,7 +131,7 @@ func (svc *PositionService) Get(ctx context.Context, req *GetPositionRequest) (*
 			WithChildren(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
-			WithDepartments(func(query *ent.DepartmentQuery) {
+			WithDepartment(func(query *ent.DepartmentQuery) {
 				query.Select(department.FieldID)
 			}).
 			WithEmployees(func(query *ent.EmployeeQuery) {
@@ -176,9 +176,9 @@ func (svc *PositionService) Update(ctx context.Context, req *UpdatePositionReque
 		children := int(item.GetId())
 		m.AddChildIDs(children)
 	}
-	if position.GetDepartments() != nil {
-		positionDepartments := int(position.GetDepartments().GetId())
-		m.SetDepartmentsID(positionDepartments)
+	if position.GetDepartment() != nil {
+		positionDepartment := int(position.GetDepartment().GetId())
+		m.SetDepartmentID(positionDepartment)
 	}
 	for _, item := range position.GetEmployees() {
 		employees := int(item.GetId())
@@ -261,7 +261,7 @@ func (svc *PositionService) List(ctx context.Context, req *ListPositionRequest) 
 			WithChildren(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
-			WithDepartments(func(query *ent.DepartmentQuery) {
+			WithDepartment(func(query *ent.DepartmentQuery) {
 				query.Select(department.FieldID)
 			}).
 			WithEmployees(func(query *ent.EmployeeQuery) {
@@ -349,9 +349,9 @@ func (svc *PositionService) createBuilder(position *Position) (*ent.PositionCrea
 		children := int(item.GetId())
 		m.AddChildIDs(children)
 	}
-	if position.GetDepartments() != nil {
-		positionDepartments := int(position.GetDepartments().GetId())
-		m.SetDepartmentsID(positionDepartments)
+	if position.GetDepartment() != nil {
+		positionDepartment := int(position.GetDepartment().GetId())
+		m.SetDepartmentID(positionDepartment)
 	}
 	for _, item := range position.GetEmployees() {
 		employees := int(item.GetId())

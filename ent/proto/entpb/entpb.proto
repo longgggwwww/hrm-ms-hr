@@ -620,7 +620,7 @@ message Position {
 
   repeated Employee employees = 8;
 
-  Department departments = 9;
+  Department department = 9;
 
   repeated Position children = 10;
 
