@@ -76,16 +76,22 @@ func (Organization) Edges() []ent.Edge {
 			Ref("children").
 			Unique().
 			Field("parent_id").
+			StructTag(`json:"parent"`).
 			Annotations(entproto.Field(12)),
 		edge.To("children", Organization.Type).
+			StructTag(`json:"children"`).
 			Annotations(entproto.Field(13)),
 		edge.To("departments", Department.Type).
+			StructTag(`json:"departments"`).
 			Annotations(entproto.Field(14)),
 		edge.To("projects", Project.Type).
+			StructTag(`json:"projects"`).
 			Annotations(entproto.Field(15)),
 		edge.To("labels", Label.Type).
+			StructTag(`json:"labels"`).
 			Annotations(entproto.Field(16)),
 		edge.To("leave_requests", LeaveRequest.Type).
+			StructTag(`json:"leave_requests"`).
 			Annotations(entproto.Field(17)),
 	}
 }

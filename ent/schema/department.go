@@ -46,12 +46,14 @@ func (Department) Fields() []ent.Field {
 func (Department) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("positions", Position.Type).
+			StructTag(`json:"positions"`).
 			Annotations(entproto.Field(7)),
 		edge.From("organization", Organization.Type).
 			Ref("departments").
 			Field("org_id").
 			Unique().
 			Required().
+			StructTag(`json:"organization"`).
 			Annotations(entproto.Field(8)),
 	}
 }

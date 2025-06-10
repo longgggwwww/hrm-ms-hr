@@ -80,26 +80,31 @@ func (Project) Fields() []ent.Field {
 func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("tasks", Task.Type).
+			StructTag(`json:"tasks"`).
 			Annotations(entproto.Field(14)),
 		edge.From("organization", Organization.Type).
 			Ref("projects").
 			Field("org_id").
 			Unique().
 			Required().
+			StructTag(`json:"organization"`).
 			Annotations(entproto.Field(15)),
 		edge.From("creator", Employee.Type).
 			Ref("created_projects").
 			Field("creator_id").
 			Unique().
 			Required().
+			StructTag(`json:"creator"`).
 			Annotations(entproto.Field(16)),
 		edge.From("updater", Employee.Type).
 			Ref("updated_projects").
 			Field("updater_id").
 			Unique().
 			Required().
+			StructTag(`json:"updater"`).
 			Annotations(entproto.Field(17)),
 		edge.To("members", Employee.Type).
+			StructTag(`json:"members"`).
 			Annotations(entproto.Field(18)),
 	}
 }

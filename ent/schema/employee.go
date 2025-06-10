@@ -68,24 +68,33 @@ func (Employee) Edges() []ent.Edge {
 			Field("position_id").
 			Unique().
 			Required().
+			StructTag(`json:"position"`).
 			Annotations(entproto.Field(10)),
 		edge.To("created_projects", Project.Type).
+			StructTag(`json:"created_projects"`).
 			Annotations(entproto.Field(11)),
 		edge.To("updated_projects", Project.Type).
+			StructTag(`json:"updated_projects"`).
 			Annotations(entproto.Field(12)),
 		edge.From("assigned_tasks", Task.Type).
 			Ref("assignees").
+			StructTag(`json:"assigned_tasks"`).
 			Annotations(entproto.Field(13)),
 		edge.To("leave_approves", LeaveApproval.Type).
+			StructTag(`json:"leave_approves"`).
 			Annotations(entproto.Field(14)),
 		edge.To("leave_requests", LeaveRequest.Type).
+			StructTag(`json:"leave_requests"`).
 			Annotations(entproto.Field(15)),
 		edge.To("task_reports", TaskReport.Type).
+			StructTag(`json:"task_reports"`).
 			Annotations(entproto.Field(16)), // Edge đến TaskReport
 		edge.From("projects", Project.Type).
 			Ref("members").
+			StructTag(`json:"projects"`).
 			Annotations(entproto.Field(17)), // Inverse edge for project members
 		edge.To("appointment_histories", AppointmentHistory.Type).
+			StructTag(`json:"appointment_histories"`).
 			Annotations(entproto.Field(18)),
 	}
 }

@@ -52,15 +52,15 @@ type Project struct {
 // ProjectEdges holds the relations/edges for other nodes in the graph.
 type ProjectEdges struct {
 	// Tasks holds the value of the tasks edge.
-	Tasks []*Task `json:"tasks,omitempty"`
+	Tasks []*Task `json:"tasks"`
 	// Organization holds the value of the organization edge.
-	Organization *Organization `json:"organization,omitempty"`
+	Organization *Organization `json:"organization"`
 	// Creator holds the value of the creator edge.
-	Creator *Employee `json:"creator,omitempty"`
+	Creator *Employee `json:"creator"`
 	// Updater holds the value of the updater edge.
-	Updater *Employee `json:"updater,omitempty"`
+	Updater *Employee `json:"updater"`
 	// Members holds the value of the members edge.
-	Members []*Employee `json:"members,omitempty"`
+	Members []*Employee `json:"members"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool

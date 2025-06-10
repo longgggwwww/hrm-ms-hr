@@ -39,13 +39,13 @@ type Position struct {
 // PositionEdges holds the relations/edges for other nodes in the graph.
 type PositionEdges struct {
 	// Employees holds the value of the employees edge.
-	Employees []*Employee `json:"employees,omitempty"`
+	Employees []*Employee `json:"employees"`
 	// Departments holds the value of the departments edge.
-	Departments *Department `json:"departments,omitempty"`
+	Departments *Department `json:"department"`
 	// Children holds the value of the children edge.
-	Children []*Position `json:"children,omitempty"`
+	Children []*Position `json:"children"`
 	// Parent holds the value of the parent edge.
-	Parent *Position `json:"parent,omitempty"`
+	Parent *Position `json:"parent"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool

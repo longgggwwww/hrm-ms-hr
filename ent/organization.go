@@ -46,17 +46,17 @@ type Organization struct {
 // OrganizationEdges holds the relations/edges for other nodes in the graph.
 type OrganizationEdges struct {
 	// Parent holds the value of the parent edge.
-	Parent *Organization `json:"parent,omitempty"`
+	Parent *Organization `json:"parent"`
 	// Children holds the value of the children edge.
-	Children []*Organization `json:"children,omitempty"`
+	Children []*Organization `json:"children"`
 	// Departments holds the value of the departments edge.
-	Departments []*Department `json:"departments,omitempty"`
+	Departments []*Department `json:"departments"`
 	// Projects holds the value of the projects edge.
-	Projects []*Project `json:"projects,omitempty"`
+	Projects []*Project `json:"projects"`
 	// Labels holds the value of the labels edge.
-	Labels []*Label `json:"labels,omitempty"`
+	Labels []*Label `json:"labels"`
 	// LeaveRequests holds the value of the leave_requests edge.
-	LeaveRequests []*LeaveRequest `json:"leave_requests,omitempty"`
+	LeaveRequests []*LeaveRequest `json:"leave_requests"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool

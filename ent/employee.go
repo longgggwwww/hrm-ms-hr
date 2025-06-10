@@ -43,23 +43,23 @@ type Employee struct {
 // EmployeeEdges holds the relations/edges for other nodes in the graph.
 type EmployeeEdges struct {
 	// Position holds the value of the position edge.
-	Position *Position `json:"position,omitempty"`
+	Position *Position `json:"position"`
 	// CreatedProjects holds the value of the created_projects edge.
-	CreatedProjects []*Project `json:"created_projects,omitempty"`
+	CreatedProjects []*Project `json:"created_projects"`
 	// UpdatedProjects holds the value of the updated_projects edge.
-	UpdatedProjects []*Project `json:"updated_projects,omitempty"`
+	UpdatedProjects []*Project `json:"updated_projects"`
 	// AssignedTasks holds the value of the assigned_tasks edge.
-	AssignedTasks []*Task `json:"assigned_tasks,omitempty"`
+	AssignedTasks []*Task `json:"assigned_tasks"`
 	// LeaveApproves holds the value of the leave_approves edge.
-	LeaveApproves []*LeaveApproval `json:"leave_approves,omitempty"`
+	LeaveApproves []*LeaveApproval `json:"leave_approves"`
 	// LeaveRequests holds the value of the leave_requests edge.
-	LeaveRequests []*LeaveRequest `json:"leave_requests,omitempty"`
+	LeaveRequests []*LeaveRequest `json:"leave_requests"`
 	// TaskReports holds the value of the task_reports edge.
-	TaskReports []*TaskReport `json:"task_reports,omitempty"`
+	TaskReports []*TaskReport `json:"task_reports"`
 	// Projects holds the value of the projects edge.
-	Projects []*Project `json:"projects,omitempty"`
+	Projects []*Project `json:"projects"`
 	// AppointmentHistories holds the value of the appointment_histories edge.
-	AppointmentHistories []*AppointmentHistory `json:"appointment_histories,omitempty"`
+	AppointmentHistories []*AppointmentHistory `json:"appointment_histories"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [9]bool

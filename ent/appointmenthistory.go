@@ -42,7 +42,7 @@ type AppointmentHistory struct {
 // AppointmentHistoryEdges holds the relations/edges for other nodes in the graph.
 type AppointmentHistoryEdges struct {
 	// Employee holds the value of the employee edge.
-	Employee *Employee `json:"employee,omitempty"`
+	Employee *Employee `json:"employee"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool

@@ -37,9 +37,9 @@ type Department struct {
 // DepartmentEdges holds the relations/edges for other nodes in the graph.
 type DepartmentEdges struct {
 	// Positions holds the value of the positions edge.
-	Positions []*Position `json:"positions,omitempty"`
+	Positions []*Position `json:"positions"`
 	// Organization holds the value of the organization edge.
-	Organization *Organization `json:"organization,omitempty"`
+	Organization *Organization `json:"organization"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool

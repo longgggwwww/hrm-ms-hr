@@ -53,7 +53,7 @@ type Task struct {
 // TaskEdges holds the relations/edges for other nodes in the graph.
 type TaskEdges struct {
 	// Project holds the value of the project edge.
-	Project *Project `json:"project,omitempty"`
+	Project *Project `json:"project"`
 	// Labels holds the value of the labels edge.
 	Labels []*Label `json:"labels"`
 	// Assignees holds the value of the assignees edge.

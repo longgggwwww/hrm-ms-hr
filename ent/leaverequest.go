@@ -48,11 +48,11 @@ type LeaveRequest struct {
 // LeaveRequestEdges holds the relations/edges for other nodes in the graph.
 type LeaveRequestEdges struct {
 	// LeaveApproves holds the value of the leave_approves edge.
-	LeaveApproves []*LeaveApproval `json:"leave_approves,omitempty"`
+	LeaveApproves []*LeaveApproval `json:"leave_approves"`
 	// Applicant holds the value of the applicant edge.
-	Applicant *Employee `json:"applicant,omitempty"`
+	Applicant *Employee `json:"applicant"`
 	// Organization holds the value of the organization edge.
-	Organization *Organization `json:"organization,omitempty"`
+	Organization *Organization `json:"organization"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool

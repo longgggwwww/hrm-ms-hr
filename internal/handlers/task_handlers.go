@@ -8,7 +8,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
-	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 	taskService "github.com/longgggwwww/hrm-ms-hr/internal/services/task"
@@ -402,204 +401,18 @@ func (h *TaskHandler) Update(c *gin.Context) {
 	}
 	userID := ids["user_id"]
 
-	taskUpdate := h.Client.Task.UpdateOneID(id).SetUpdaterID(userID)
-
-	if req.Name != nil {
-		taskUpdate.SetName(*req.Name)
-	}
-
-	// Handle code update with auto-generation if needed
-	if req.Code != nil {
-		var taskCode string
-		if *req.Code != "" {
-			taskCode = *req.Code
-
-			// Check if the new code already exists (excluding current task)
-			var existsQuery *ent.TaskQuery
-			if req.ProjectID != nil {
-				// Check uniqueness within the project
-				existsQuery = h.Client.Task.Query().
-					Where(task.CodeEQ(taskCode)).
-					Where(task.ProjectIDEQ(*req.ProjectID)).
-					Where(task.IDNEQ(id))
-			} else {
-				// Check global uniqueness if no project
-				existsQuery = h.Client.Task.Query().
-					Where(task.CodeEQ(taskCode)).
-					Where(task.IDNEQ(id))
-			}
-
-			exists, err := existsQuery.Exist(c.Request.Context())
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate task code"})
-				return
-			}
-			if exists {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Task code already exists"})
-				return
-			}
+	// Call service
+	updatedTask, err := h.TaskService.Update(c.Request.Context(), id, userID, req)
+	if err != nil {
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
 		} else {
-			// Auto-generate code in GitHub-style format: #x
-			// Get the total count of tasks to generate the next sequence number
-			count, err := h.Client.Task.Query().
-				Where(task.IDNEQ(id)). // Exclude current task
-				Count(c.Request.Context())
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate task code"})
-				return
-			}
-
-			sequence := count + 1
-			taskCode = "#" + strconv.Itoa(sequence)
-
-			// Double-check uniqueness (in case of concurrent requests)
-			for {
-				exists, err := h.Client.Task.Query().
-					Where(task.CodeEQ(taskCode)).
-					Where(task.IDNEQ(id)).
-					Exist(c.Request.Context())
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate generated task code"})
-					return
-				}
-				if !exists {
-					break
-				}
-				sequence++
-				taskCode = "#" + strconv.Itoa(sequence)
-			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
-		taskUpdate.SetCode(taskCode)
-	}
-	if req.Description != nil {
-		taskUpdate.SetDescription(*req.Description)
-	}
-	if req.Process != nil {
-		taskUpdate.SetProcess(*req.Process)
-	}
-	if req.StartAt != nil {
-		startAt, err := time.Parse(time.RFC3339, *req.StartAt)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_at format, must be RFC3339"})
-			return
-		}
-		taskUpdate.SetStartAt(startAt)
-	}
-	if req.DueDate != nil {
-		dueDate, err := time.Parse(time.RFC3339, *req.DueDate)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid due_date format, must be RFC3339"})
-			return
-		}
-		taskUpdate.SetDueDate(dueDate)
-	}
-	if req.ProjectID != nil {
-		taskUpdate.SetProjectID(*req.ProjectID)
-	}
-	if req.Status != nil {
-		switch *req.Status {
-		case string(task.StatusNotReceived),
-			string(task.StatusReceived),
-			string(task.StatusInProgress),
-			string(task.StatusCompleted),
-			string(task.StatusCancelled):
-			taskUpdate.SetStatus(task.Status(*req.Status))
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid status value. Valid values: not_received, received, in_progress, completed, cancelled",
-			})
-			return
-		}
-	}
-	if req.Type != nil {
-		switch *req.Type {
-		case string(task.TypeTask),
-			string(task.TypeFeature),
-			string(task.TypeBug),
-			string(task.TypeAnother):
-			taskUpdate.SetType(task.Type(*req.Type))
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid type value. Valid values: task, feature, bug, another",
-			})
-			return
-		}
-	}
-
-	// Handle label assignments
-	if req.LabelIDs != nil {
-		// Clear existing labels and add new ones
-		taskUpdate.ClearLabels()
-		if len(req.LabelIDs) > 0 {
-			taskUpdate.AddLabelIDs(req.LabelIDs...)
-		}
-	}
-
-	// Handle assignee assignments
-	if req.AssigneeIDs != nil {
-		// Clear existing assignees first
-		taskUpdate.ClearAssignees()
-
-		if len(req.AssigneeIDs) > 0 {
-			// Validate that all assignee IDs exist in the employee table
-			existingEmployees, err := h.Client.Employee.Query().
-				Where(employee.IDIn(req.AssigneeIDs...)).
-				Select(employee.FieldID).
-				All(c.Request.Context())
-			if err != nil {
-				c.JSON(http.StatusBadGateway, gin.H{"error": "Failed to validate assignee IDs"})
-				return
-			}
-
-			// Create map of existing employee IDs for validation
-			existingIDs := make(map[int]bool)
-			for _, emp := range existingEmployees {
-				existingIDs[emp.ID] = true
-			}
-
-			// Check if all requested assignee IDs exist
-			var invalidIDs []int
-			for _, id := range req.AssigneeIDs {
-				if !existingIDs[id] {
-					invalidIDs = append(invalidIDs, id)
-				}
-			}
-
-			if len(invalidIDs) > 0 {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error":       "Some assignee IDs do not exist",
-					"invalid_ids": invalidIDs,
-				})
-				return
-			}
-
-			taskUpdate.AddAssigneeIDs(req.AssigneeIDs...)
-		}
-	}
-
-	_, err = taskUpdate.Save(c.Request.Context())
-	if err != nil {
-		if ent.IsNotFound(err) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-			return
-		}
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Get the updated task with all edges
-	task, err := h.Client.Task.Query().
-		Where(task.ID(id)).
-		WithProject().
-		WithLabels().
-		WithAssignees().
-		WithReports().
-		Only(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"id": id})
-		return
-	}
-	c.JSON(http.StatusOK, task)
+	c.JSON(http.StatusOK, updatedTask)
 }
 
 func (h *TaskHandler) Delete(c *gin.Context) {

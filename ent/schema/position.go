@@ -50,16 +50,19 @@ func (Position) Fields() []ent.Field {
 func (Position) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("employees", Employee.Type).
+			StructTag(`json:"employees"`).
 			Annotations(entproto.Field(8)),
-		edge.From("departments", Department.Type).
-			Ref("positions").
-			Field("department_id").
-			Unique().
-			Required().
-			Annotations(entproto.Field(9)),
+		edge.From("departments", Department.Type). // Lỗi chính tả
+								Ref("positions").
+								Field("department_id").
+								Unique().
+								Required().
+								StructTag(`json:"department"`).
+								Annotations(entproto.Field(9)),
 
 		// edge đến con
 		edge.To("children", Position.Type).
+			StructTag(`json:"children"`).
 			Annotations(entproto.Field(10)), // QUAN TRỌNG: để entproto generate RPC field
 
 		// edge đến cha
@@ -67,6 +70,7 @@ func (Position) Edges() []ent.Edge {
 			Ref("children").
 			Unique().
 			Field("parent_id").
+			StructTag(`json:"parent"`).
 			Annotations(entproto.Field(11)),
 	}
 }

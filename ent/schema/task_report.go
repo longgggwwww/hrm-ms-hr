@@ -49,12 +49,14 @@ func (TaskReport) Edges() []ent.Edge {
 			Field("task_id").
 			Unique().
 			Required().
+			StructTag(`json:"task"`).
 			Annotations(entproto.Field(8)),
 		edge.From("reporter", Employee.Type).
 			Ref("task_reports").
 			Field("reporter_id").
 			Unique().
 			Required().
+			StructTag(`json:"reporter"`).
 			Annotations(entproto.Field(9)),
 	}
 }

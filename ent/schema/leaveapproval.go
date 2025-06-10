@@ -48,12 +48,14 @@ func (LeaveApproval) Edges() []ent.Edge {
 			Ref("leave_approves").
 			Field("leave_request_id").
 			Required().
+			StructTag(`json:"leave_request"`).
 			Annotations(entproto.Field(7)).
 			Unique(),
 		edge.From("reviewer", Employee.Type).
 			Ref("leave_approves").
 			Field("reviewer_id").
 			Required().
+			StructTag(`json:"reviewer"`).
 			Annotations(entproto.Field(8)).
 			Unique(),
 	}

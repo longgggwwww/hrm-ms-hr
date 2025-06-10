@@ -49,6 +49,7 @@ func (AppointmentHistory) Edges() []ent.Edge {
 			Field("employee_id").
 			Unique().
 			Required().
+			StructTag(`json:"employee"`).
 			Annotations(entproto.Field(9), entsql.OnDelete(entsql.Cascade)),
 	}
 }

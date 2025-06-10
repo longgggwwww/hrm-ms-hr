@@ -53,11 +53,13 @@ func (Label) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("tasks", Task.Type).
 			Ref("labels").
+			StructTag(`json:"tasks"`).
 			Annotations(entproto.Field(8)),
 		edge.From("organization", Organization.Type).
 			Ref("labels").
 			Unique().
 			Field("org_id").
+			StructTag(`json:"organization"`).
 			Annotations(entproto.Field(9)),
 	}
 }

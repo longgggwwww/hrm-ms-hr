@@ -38,9 +38,9 @@ type TaskReport struct {
 // TaskReportEdges holds the relations/edges for other nodes in the graph.
 type TaskReportEdges struct {
 	// Task holds the value of the task edge.
-	Task *Task `json:"task,omitempty"`
+	Task *Task `json:"task"`
 	// Reporter holds the value of the reporter edge.
-	Reporter *Employee `json:"reporter,omitempty"`
+	Reporter *Employee `json:"reporter"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool

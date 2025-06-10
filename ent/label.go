@@ -39,9 +39,9 @@ type Label struct {
 // LabelEdges holds the relations/edges for other nodes in the graph.
 type LabelEdges struct {
 	// Tasks holds the value of the tasks edge.
-	Tasks []*Task `json:"tasks,omitempty"`
+	Tasks []*Task `json:"tasks"`
 	// Organization holds the value of the organization edge.
-	Organization *Organization `json:"organization,omitempty"`
+	Organization *Organization `json:"organization"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool

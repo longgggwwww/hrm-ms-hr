@@ -77,17 +77,20 @@ func (LeaveRequest) Fields() []ent.Field {
 func (LeaveRequest) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("leave_approves", LeaveApproval.Type).
+			StructTag(`json:"leave_approves"`).
 			Annotations(entproto.Field(12)),
 		edge.From("applicant", Employee.Type).
 			Ref("leave_requests").
 			Field("employee_id").
 			Required().
+			StructTag(`json:"applicant"`).
 			Annotations(entproto.Field(13)).
 			Unique(),
 		edge.From("organization", Organization.Type).
 			Ref("leave_requests").
 			Field("org_id").
 			Required().
+			StructTag(`json:"organization"`).
 			Annotations(entproto.Field(14)).
 			Unique(),
 	}

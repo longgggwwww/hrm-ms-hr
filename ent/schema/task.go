@@ -98,6 +98,7 @@ func (Task) Edges() []ent.Edge {
 			Ref("tasks").
 			Field("project_id").
 			Unique().
+			StructTag(`json:"project"`).
 			Annotations(entproto.Field(15)),
 		edge.To("labels", Label.Type).
 			StructTag(`json:"labels"`).
