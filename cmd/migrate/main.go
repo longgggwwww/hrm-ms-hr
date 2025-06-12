@@ -3,19 +3,26 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 )
 
 func main() {
-	client, err := ent.Open("postgres", "host=192.168.1.24 port=5433 user=root password=123456 dbname=postgres sslmode=disable")
+	connStr := os.Getenv("DB_URL")
+	if connStr == "" {
+		log.Fatal("DB_URL environment variable is not set")
+	}
+
+	cli, err := ent.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
-	defer client.Close()
+	defer cli.Close()
+
 	ctx := context.Background()
-	if err := client.Schema.Create(ctx); err != nil {
+	if err := cli.Schema.Create(ctx); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 	log.Println("Migration complete!")
