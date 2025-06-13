@@ -3,12 +3,9 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/longgggwwww/hrm-ms-hr/ent"
-	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 	"github.com/longgggwwww/hrm-ms-hr/internal/kafka"
 	taskService "github.com/longgggwwww/hrm-ms-hr/internal/services/task"
@@ -104,268 +101,36 @@ func (h *TaskHandler) Create(c *gin.Context) {
 //
 // Example: GET /tasks?name=example&status=in_progress&type=feature&order_by=name&order_dir=asc&page=1&limit=20
 func (h *TaskHandler) List(c *gin.Context) {
-	query := h.Client.Task.Query().
-		WithProject().
-		WithLabels().
-		WithAssignees()
-
-	// Filter by name
-	if name := c.Query("name"); name != "" {
-		query = query.Where(task.NameContains(name))
-	}
-
-	// Filter by code
-	if code := c.Query("code"); code != "" {
-		query = query.Where(task.CodeContains(code))
-	}
-
-	// Filter by status
-	if status := c.Query("status"); status != "" {
-		switch status {
-		case string(task.StatusNotReceived),
-			string(task.StatusReceived),
-			string(task.StatusInProgress),
-			string(task.StatusCompleted),
-			string(task.StatusCancelled):
-			query = query.Where(task.StatusEQ(task.Status(status)))
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid status value. Valid values: not_received, received, in_progress, completed, cancelled",
-			})
-			return
-		}
-	}
-
-	// Filter by type
-	if taskType := c.Query("type"); taskType != "" {
-		switch taskType {
-		case string(task.TypeTask),
-			string(task.TypeFeature),
-			string(task.TypeBug),
-			string(task.TypeAnother):
-			query = query.Where(task.TypeEQ(task.Type(taskType)))
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid type value. Valid values: task, feature, bug, another",
-			})
-			return
-		}
-	}
-
-	// Filter by project_id
-	if projectIDStr := c.Query("project_id"); projectIDStr != "" {
-		projectID, err := strconv.Atoi(projectIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid project_id format",
-			})
-			return
-		}
-		query = query.Where(task.ProjectIDEQ(projectID))
-	}
-
-	// Filter by creator_id
-	if creatorIDStr := c.Query("creator_id"); creatorIDStr != "" {
-		creatorID, err := strconv.Atoi(creatorIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid creator_id format",
-			})
-			return
-		}
-		query = query.Where(task.CreatorIDEQ(creatorID))
-	}
-
-	// Filter by process (percentage)
-	if processStr := c.Query("process"); processStr != "" {
-		process, err := strconv.Atoi(processStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid process format",
-			})
-			return
-		}
-		query = query.Where(task.ProcessEQ(process))
-	}
-
-	// Date range filtering
-	if startDateStr := c.Query("start_date_from"); startDateStr != "" {
-		startDate, err := time.Parse(time.RFC3339, startDateStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid start_date_from format, must be RFC3339",
-			})
-			return
-		}
-		query = query.Where(task.StartAtGTE(startDate))
-	}
-
-	if startDateStr := c.Query("start_date_to"); startDateStr != "" {
-		startDate, err := time.Parse(time.RFC3339, startDateStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid start_date_to format, must be RFC3339",
-			})
-			return
-		}
-		query = query.Where(task.StartAtLTE(startDate))
-	}
-
-	// Due date range filtering
-	if dueDateStr := c.Query("due_date_from"); dueDateStr != "" {
-		dueDate, err := time.Parse(time.RFC3339, dueDateStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid due_date_from format, must be RFC3339",
-			})
-			return
-		}
-		query = query.Where(task.DueDateGTE(dueDate))
-	}
-
-	if dueDateStr := c.Query("due_date_to"); dueDateStr != "" {
-		dueDate, err := time.Parse(time.RFC3339, dueDateStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid due_date_to format, must be RFC3339",
-			})
-			return
-		}
-		query = query.Where(task.DueDateLTE(dueDate))
-	}
-
-	// Order by field and direction
-	orderBy := c.DefaultQuery("order_by", "created_at")
-	orderDir := c.DefaultQuery("order_dir", "desc")
-
-	var orderOption task.OrderOption
-	switch orderBy {
-	case "id":
-		if orderDir == "asc" {
-			orderOption = task.ByID()
-		} else {
-			orderOption = task.ByID(sql.OrderDesc())
-		}
-	case "name":
-		if orderDir == "asc" {
-			orderOption = task.ByName()
-		} else {
-			orderOption = task.ByName(sql.OrderDesc())
-		}
-	case "code":
-		if orderDir == "asc" {
-			orderOption = task.ByCode()
-		} else {
-			orderOption = task.ByCode(sql.OrderDesc())
-		}
-	case "status":
-		if orderDir == "asc" {
-			orderOption = task.ByStatus()
-		} else {
-			orderOption = task.ByStatus(sql.OrderDesc())
-		}
-	case "type":
-		if orderDir == "asc" {
-			orderOption = task.ByType()
-		} else {
-			orderOption = task.ByType(sql.OrderDesc())
-		}
-	case "process":
-		if orderDir == "asc" {
-			orderOption = task.ByProcess()
-		} else {
-			orderOption = task.ByProcess(sql.OrderDesc())
-		}
-	case "project_id":
-		if orderDir == "asc" {
-			orderOption = task.ByProjectID()
-		} else {
-			orderOption = task.ByProjectID(sql.OrderDesc())
-		}
-	case "creator_id":
-		if orderDir == "asc" {
-			orderOption = task.ByCreatorID()
-		} else {
-			orderOption = task.ByCreatorID(sql.OrderDesc())
-		}
-	case "start_at":
-		if orderDir == "asc" {
-			orderOption = task.ByStartAt()
-		} else {
-			orderOption = task.ByStartAt(sql.OrderDesc())
-		}
-	case "due_date":
-		if orderDir == "asc" {
-			orderOption = task.ByDueDate()
-		} else {
-			orderOption = task.ByDueDate(sql.OrderDesc())
-		}
-	case "created_at":
-		if orderDir == "asc" {
-			orderOption = task.ByCreatedAt()
-		} else {
-			orderOption = task.ByCreatedAt(sql.OrderDesc())
-		}
-	case "updated_at":
-		if orderDir == "asc" {
-			orderOption = task.ByUpdatedAt()
-		} else {
-			orderOption = task.ByUpdatedAt(sql.OrderDesc())
-		}
-	default:
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid order_by field. Valid fields: id, name, code, status, type, process, project_id, creator_id, start_at, due_date, created_at, updated_at",
-		})
+	// Parse query parameters
+	var query dtos.TaskListQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Apply ordering
-	query = query.Order(orderOption)
-
-	// Pagination
-	page := 1
-	limit := 10
-	if pageStr := c.Query("page"); pageStr != "" {
-		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
-			page = p
-		}
+	// Set default values for pagination
+	if query.Page == 0 {
+		query.Page = 1
 	}
-	if limitStr := c.Query("limit"); limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
-			limit = l
-		}
+	if query.Limit == 0 {
+		query.Limit = 10
+	}
+	if query.OrderBy == "" {
+		query.OrderBy = "created_at"
+	}
+	if query.OrderDir == "" {
+		query.OrderDir = "desc"
 	}
 
-	offset := (page - 1) * limit
-	query = query.Offset(offset).Limit(limit)
-
-	tasks, err := query.All(c.Request.Context())
+	// Call service
+	response, err := h.TaskService.List(c.Request.Context(), query)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{
-			"error": err.Error(),
-		})
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		}
 		return
-	}
-
-	// Get total count for pagination info
-	total, err := h.Client.Task.Query().Count(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	totalPages := (total + limit - 1) / limit
-
-	response := gin.H{
-		"data": tasks,
-		"pagination": gin.H{
-			"current_page": page,
-			"total_pages":  totalPages,
-			"total_items":  total,
-			"per_page":     limit,
-		},
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -378,17 +143,17 @@ func (h *TaskHandler) Get(c *gin.Context) {
 		return
 	}
 
-	task, err := h.Client.Task.Query().
-		Where(task.ID(id)).
-		WithProject().
-		WithLabels().
-		WithAssignees().
-		WithReports().
-		Only(c.Request.Context())
+	// Call service
+	task, err := h.TaskService.Get(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		}
 		return
 	}
+
 	c.JSON(http.StatusOK, task)
 }
 
@@ -434,9 +199,14 @@ func (h *TaskHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	_, err = h.Client.Task.Delete().Where(task.ID(id)).Exec(c.Request.Context())
+	// Call service
+	err = h.TaskService.Delete(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		}
 		return
 	}
 
@@ -462,74 +232,21 @@ func (h *TaskHandler) BulkDelete(c *gin.Context) {
 		return
 	}
 
-	// Validate maximum number of IDs to prevent abuse
-	if len(req.IDs) > 100 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Maximum 100 IDs allowed per bulk delete operation"})
-		return
-	}
-
-	// Check which tasks exist before attempting deletion
-	existingTasks, err := h.Client.Task.Query().
-		Where(task.IDIn(req.IDs...)).
-		Select(task.FieldID).
-		All(c.Request.Context())
+	// Call service
+	response, err := h.TaskService.BulkDelete(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Create a map of existing task IDs for quick lookup
-	existingIDs := make(map[int]bool)
-	for _, t := range existingTasks {
-		existingIDs[t.ID] = true
-	}
-
-	// Separate existing and non-existing IDs
-	var validIDs []int
-	var notFoundIDs []int
-	for _, id := range req.IDs {
-		if existingIDs[id] {
-			validIDs = append(validIDs, id)
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
 		} else {
-			notFoundIDs = append(notFoundIDs, id)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
-	}
-
-	// Perform bulk deletion for valid IDs
-	var deletedCount int
-	var failedIDs []int
-	var errors []string
-
-	if len(validIDs) > 0 {
-		deletedCount, err = h.Client.Task.Delete().
-			Where(task.IDIn(validIDs...)).
-			Exec(c.Request.Context())
-		if err != nil {
-			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-			return
-		}
-	}
-
-	// Add not found IDs to failed IDs
-	failedIDs = append(failedIDs, notFoundIDs...)
-	for _, id := range notFoundIDs {
-		errors = append(errors, "Task ID "+strconv.Itoa(id)+" not found")
-	}
-
-	response := dtos.TaskBulkDeleteResponse{
-		DeletedCount: deletedCount,
-	}
-
-	// Include failed IDs and errors if any
-	if len(failedIDs) > 0 {
-		response.FailedIDs = failedIDs
-		response.Errors = errors
+		return
 	}
 
 	// Determine appropriate status code
-	if deletedCount == 0 {
+	if response.DeletedCount == 0 {
 		c.JSON(http.StatusNotFound, response)
-	} else if len(failedIDs) > 0 {
+	} else if len(response.FailedIDs) > 0 {
 		c.JSON(http.StatusPartialContent, response)
 	} else {
 		c.JSON(http.StatusOK, response)
@@ -554,62 +271,14 @@ func (h *TaskHandler) ReceiveTask(c *gin.Context) {
 	}
 	userID := ids["user_id"]
 
-	// Get the task with assignees to check if user is assigned
-	taskEntity, err := h.Client.Task.Query().
-		Where(task.ID(id)).
-		WithAssignees().
-		Only(c.Request.Context())
+	// Call service
+	taskWithEdges, err := h.TaskService.ReceiveTask(c.Request.Context(), id, userID)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-			return
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Check if the current user is assigned to this task
-	isAssigned := false
-	for _, assignee := range taskEntity.Edges.Assignees {
-		if assignee.ID == userID {
-			isAssigned = true
-			break
-		}
-	}
-
-	if !isAssigned {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not assigned to this task"})
-		return
-	}
-
-	// Check if task is in the correct status to be received
-	if taskEntity.Status != task.StatusNotReceived {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":          "Task can only be received when status is 'not_received'",
-			"current_status": string(taskEntity.Status),
-		})
-		return
-	}
-
-	// Update task status to "received"
-	updatedTask, err := h.Client.Task.UpdateOneID(id).
-		SetStatus(task.StatusReceived).
-		SetUpdaterID(userID).
-		Save(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Get the updated task with all edges
-	taskWithEdges, err := h.Client.Task.Query().
-		Where(task.IDEQ(updatedTask.ID)).
-		WithProject().
-		WithLabels().
-		WithAssignees().
-		Only(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusOK, updatedTask)
 		return
 	}
 
@@ -649,109 +318,14 @@ func (h *TaskHandler) UpdateProgress(c *gin.Context) {
 		return
 	}
 
-	// Validate at least one field is provided
-	if req.Status == nil && req.Process == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "At least one field (status or process) must be provided",
-		})
-		return
-	}
-
-	// Get the task with assignees to check if user is assigned
-	taskEntity, err := h.Client.Task.Query().
-		Where(task.ID(id)).
-		WithAssignees().
-		Only(c.Request.Context())
+	// Call service
+	taskWithEdges, err := h.TaskService.UpdateProgress(c.Request.Context(), id, userID, req)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-			return
+		if serviceErr, ok := err.(*taskService.ServiceError); ok {
+			c.JSON(serviceErr.Status, gin.H{"error": serviceErr.Msg})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Check if the current user is assigned to this task
-	isAssigned := false
-	for _, assignee := range taskEntity.Edges.Assignees {
-		if assignee.ID == userID {
-			isAssigned = true
-			break
-		}
-	}
-
-	if !isAssigned {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not assigned to this task"})
-		return
-	}
-
-	// Check if task is in a valid status for progress updates
-	if taskEntity.Status == task.StatusNotReceived {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":          "Task must be received before updating progress",
-			"current_status": string(taskEntity.Status),
-		})
-		return
-	}
-
-	if taskEntity.Status == task.StatusCompleted || taskEntity.Status == task.StatusCancelled {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":          "Cannot update progress for completed or cancelled tasks",
-			"current_status": string(taskEntity.Status),
-		})
-		return
-	}
-
-	taskUpdate := h.Client.Task.UpdateOneID(id).SetUpdaterID(userID)
-
-	// Validate and set status if provided
-	if req.Status != nil {
-		switch *req.Status {
-		case string(task.StatusInProgress),
-			string(task.StatusCompleted),
-			string(task.StatusCancelled):
-			taskUpdate.SetStatus(task.Status(*req.Status))
-		default:
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid status value. Valid values for progress update: in_progress, completed, cancelled",
-			})
-			return
-		}
-	}
-
-	// Validate and set process if provided
-	if req.Process != nil {
-		if *req.Process < 0 || *req.Process > 100 {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Process must be between 0 and 100",
-			})
-			return
-		}
-		taskUpdate.SetProcess(*req.Process)
-
-		// Auto-update status based on process
-		if *req.Process == 100 && req.Status == nil {
-			taskUpdate.SetStatus(task.StatusCompleted)
-		} else if *req.Process > 0 && *req.Process < 100 && req.Status == nil && taskEntity.Status == task.StatusReceived {
-			taskUpdate.SetStatus(task.StatusInProgress)
-		}
-	}
-
-	updatedTask, err := taskUpdate.Save(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Get the updated task with all edges
-	taskWithEdges, err := h.Client.Task.Query().
-		Where(task.IDEQ(updatedTask.ID)).
-		WithProject().
-		WithLabels().
-		WithAssignees().
-		Only(c.Request.Context())
-	if err != nil {
-		c.JSON(http.StatusOK, updatedTask)
 		return
 	}
 
