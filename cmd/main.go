@@ -80,7 +80,7 @@ func registerHTTPRoutes(r *gin.Engine, cli *ent.Client, userServ grpc_clients.Us
 		register func(*gin.Engine)
 	}{
 		{"Organization", handlers.NewOrgHandler(cli, nil).RegisterRoutes},
-		{"Department", handlers.NewDeptHandler(cli, nil).RegisterRoutes},
+		{"Department", handlers.NewDeptHandler(cli).RegisterRoutes},
 		{"Position", handlers.NewPositionHandler(cli, nil).RegisterRoutes},
 		{"Employee", handlers.NewEmployeeHandler(cli, userServ).RegisterRoutes},
 		{"Project", handlers.NewProjectHandler(cli, userServ).RegisterRoutes},
