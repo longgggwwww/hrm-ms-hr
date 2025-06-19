@@ -91,6 +91,9 @@ func (h *EmployeeHandler) CreateRootEmployee(c *gin.Context) {
 		return
 	}
 
+	// Get ZaloUID for the employee
+	zaloUID, _ := svc.GetZaloUIDByEmployeeID(c.Request.Context(), emp.ID)
+
 	c.JSON(http.StatusCreated, gin.H{
 		"organization": gin.H{
 			"id":       org.ID,
@@ -108,6 +111,7 @@ func (h *EmployeeHandler) CreateRootEmployee(c *gin.Context) {
 			"created_at":  emp.CreatedAt,
 			"updated_at":  emp.UpdatedAt,
 			"user_id":     emp.UserID,
+			"zalo_uid":    zaloUID,
 		},
 		"user_info": normalizeUserInfo(userInfo),
 	})
@@ -145,6 +149,9 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		userInfo = userResp.User
 	}
 
+	// Get ZaloUID for the employee
+	zaloUID, _ := svc.GetZaloUIDByEmployeeID(c.Request.Context(), employeeObj.ID)
+
 	resp := gin.H{
 		"id":          employeeObj.ID,
 		"code":        employeeObj.Code,
@@ -154,6 +161,7 @@ func (h *EmployeeHandler) Create(c *gin.Context) {
 		"org_id":      employeeObj.OrgID,
 		"created_at":  employeeObj.CreatedAt,
 		"updated_at":  employeeObj.UpdatedAt,
+		"zalo_uid":    zaloUID,
 		"edges":       gin.H{},
 		"user_info":   normalizeUserInfo(userInfo),
 	}
@@ -197,6 +205,10 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 				userInfo = userInfoMap[int32(id)]
 			}
 		}
+
+		// Get ZaloUID for the employee
+		zaloUID, _ := svc.GetZaloUIDByEmployeeID(c.Request.Context(), emp.ID)
+
 		item := gin.H{
 			"id":          emp.ID,
 			"code":        emp.Code,
@@ -207,6 +219,7 @@ func (h *EmployeeHandler) List(c *gin.Context) {
 			"created_at":  emp.CreatedAt,
 			"updated_at":  emp.UpdatedAt,
 			"user_id":     emp.UserID,
+			"zalo_uid":    zaloUID,
 			"edges":       emp.Edges,
 			"user_info":   normalizeUserInfo(userInfo),
 		}
@@ -244,6 +257,9 @@ func (h *EmployeeHandler) GetById(c *gin.Context) {
 		return
 	}
 
+	// Get ZaloUID for the employee
+	zaloUID, _ := svc.GetZaloUIDByEmployeeID(c.Request.Context(), emp.ID)
+
 	resp := gin.H{
 		"id":          emp.ID,
 		"code":        emp.Code,
@@ -254,6 +270,7 @@ func (h *EmployeeHandler) GetById(c *gin.Context) {
 		"created_at":  emp.CreatedAt,
 		"updated_at":  emp.UpdatedAt,
 		"user_id":     emp.UserID,
+		"zalo_uid":    zaloUID,
 		"edges":       emp.Edges,
 		"user_info":   normalizeUserInfo(userInfo),
 	}
@@ -290,6 +307,9 @@ func (h *EmployeeHandler) UpdateById(c *gin.Context) {
 		return
 	}
 
+	// Get ZaloUID for the employee
+	zaloUID, _ := svc.GetZaloUIDByEmployeeID(c.Request.Context(), emp.ID)
+
 	resp := gin.H{
 		"id":          emp.ID,
 		"code":        emp.Code,
@@ -300,6 +320,7 @@ func (h *EmployeeHandler) UpdateById(c *gin.Context) {
 		"created_at":  emp.CreatedAt,
 		"updated_at":  emp.UpdatedAt,
 		"user_id":     emp.UserID,
+		"zalo_uid":    zaloUID,
 		"edges":       gin.H{},
 		"user_info":   normalizeUserInfo(userInfo),
 	}

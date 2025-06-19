@@ -198,6 +198,8 @@ message Employee {
 
   repeated AppointmentHistory appointment_histories = 18;
 
+  ZaloEmployee zalo_employee = 19;
+
   enum Status {
     STATUS_ACTIVE = 0;
 
@@ -973,6 +975,20 @@ message BatchCreateTaskReportsRequest {
 
 message BatchCreateTaskReportsResponse {
   repeated TaskReport task_reports = 1;
+}
+
+message ZaloEmployee {
+  int64 id = 1;
+
+  string zalo_uid = 2;
+
+  int64 employee_id = 3;
+
+  google.protobuf.Timestamp created_at = 4;
+
+  google.protobuf.Timestamp updated_at = 5;
+
+  Employee employee = 6;
 }
 
 service AppointmentHistoryService {

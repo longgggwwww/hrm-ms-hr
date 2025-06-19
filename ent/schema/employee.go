@@ -96,6 +96,10 @@ func (Employee) Edges() []ent.Edge {
 		edge.To("appointment_histories", AppointmentHistory.Type).
 			StructTag(`json:"appointment_histories"`).
 			Annotations(entproto.Field(18)),
+		edge.To("zalo_employee", ZaloEmployee.Type).
+			Unique().
+			StructTag(`json:"zalo_employee"`).
+			Annotations(entproto.Field(19)),
 	}
 }
 

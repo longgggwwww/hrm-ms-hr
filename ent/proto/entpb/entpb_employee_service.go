@@ -17,6 +17,7 @@ import (
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
 	taskreport "github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	zaloemployee "github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -139,6 +140,12 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 			Id: id,
 		})
 	}
+	if edg := e.Edges.ZaloEmployee; edg != nil {
+		id := int64(edg.ID)
+		v.ZaloEmployee = &ZaloEmployee{
+			Id: id,
+		}
+	}
 	return v, nil
 }
 
@@ -220,6 +227,9 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 			WithUpdatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
+			WithZaloEmployee(func(query *ent.ZaloEmployeeQuery) {
+				query.Select(zaloemployee.FieldID)
+			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -291,6 +301,10 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	for _, item := range employee.GetUpdatedProjects() {
 		updatedprojects := int(item.GetId())
 		m.AddUpdatedProjectIDs(updatedprojects)
+	}
+	if employee.GetZaloEmployee() != nil {
+		employeeZaloEmployee := int(employee.GetZaloEmployee().GetId())
+		m.SetZaloEmployeeID(employeeZaloEmployee)
 	}
 
 	res, err := m.Save(ctx)
@@ -388,6 +402,9 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 			}).
 			WithUpdatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
+			}).
+			WithZaloEmployee(func(query *ent.ZaloEmployeeQuery) {
+				query.Select(zaloemployee.FieldID)
 			}).
 			All(ctx)
 	}
@@ -503,6 +520,10 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	for _, item := range employee.GetUpdatedProjects() {
 		updatedprojects := int(item.GetId())
 		m.AddUpdatedProjectIDs(updatedprojects)
+	}
+	if employee.GetZaloEmployee() != nil {
+		employeeZaloEmployee := int(employee.GetZaloEmployee().GetId())
+		m.SetZaloEmployeeID(employeeZaloEmployee)
 	}
 	return m, nil
 }

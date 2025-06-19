@@ -20,6 +20,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // EmployeeUpdate is the builder for updating Employee entities.
@@ -263,6 +264,25 @@ func (eu *EmployeeUpdate) AddAppointmentHistories(a ...*AppointmentHistory) *Emp
 	return eu.AddAppointmentHistoryIDs(ids...)
 }
 
+// SetZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID.
+func (eu *EmployeeUpdate) SetZaloEmployeeID(id int) *EmployeeUpdate {
+	eu.mutation.SetZaloEmployeeID(id)
+	return eu
+}
+
+// SetNillableZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID if the given value is not nil.
+func (eu *EmployeeUpdate) SetNillableZaloEmployeeID(id *int) *EmployeeUpdate {
+	if id != nil {
+		eu = eu.SetZaloEmployeeID(*id)
+	}
+	return eu
+}
+
+// SetZaloEmployee sets the "zalo_employee" edge to the ZaloEmployee entity.
+func (eu *EmployeeUpdate) SetZaloEmployee(z *ZaloEmployee) *EmployeeUpdate {
+	return eu.SetZaloEmployeeID(z.ID)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (eu *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return eu.mutation
@@ -440,6 +460,12 @@ func (eu *EmployeeUpdate) RemoveAppointmentHistories(a ...*AppointmentHistory) *
 		ids[i] = a[i].ID
 	}
 	return eu.RemoveAppointmentHistoryIDs(ids...)
+}
+
+// ClearZaloEmployee clears the "zalo_employee" edge to the ZaloEmployee entity.
+func (eu *EmployeeUpdate) ClearZaloEmployee() *EmployeeUpdate {
+	eu.mutation.ClearZaloEmployee()
+	return eu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -921,6 +947,35 @@ func (eu *EmployeeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.ZaloEmployeeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   employee.ZaloEmployeeTable,
+			Columns: []string{employee.ZaloEmployeeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zaloemployee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.ZaloEmployeeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   employee.ZaloEmployeeTable,
+			Columns: []string{employee.ZaloEmployeeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zaloemployee.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{employee.Label}
@@ -1169,6 +1224,25 @@ func (euo *EmployeeUpdateOne) AddAppointmentHistories(a ...*AppointmentHistory) 
 	return euo.AddAppointmentHistoryIDs(ids...)
 }
 
+// SetZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID.
+func (euo *EmployeeUpdateOne) SetZaloEmployeeID(id int) *EmployeeUpdateOne {
+	euo.mutation.SetZaloEmployeeID(id)
+	return euo
+}
+
+// SetNillableZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID if the given value is not nil.
+func (euo *EmployeeUpdateOne) SetNillableZaloEmployeeID(id *int) *EmployeeUpdateOne {
+	if id != nil {
+		euo = euo.SetZaloEmployeeID(*id)
+	}
+	return euo
+}
+
+// SetZaloEmployee sets the "zalo_employee" edge to the ZaloEmployee entity.
+func (euo *EmployeeUpdateOne) SetZaloEmployee(z *ZaloEmployee) *EmployeeUpdateOne {
+	return euo.SetZaloEmployeeID(z.ID)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (euo *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return euo.mutation
@@ -1346,6 +1420,12 @@ func (euo *EmployeeUpdateOne) RemoveAppointmentHistories(a ...*AppointmentHistor
 		ids[i] = a[i].ID
 	}
 	return euo.RemoveAppointmentHistoryIDs(ids...)
+}
+
+// ClearZaloEmployee clears the "zalo_employee" edge to the ZaloEmployee entity.
+func (euo *EmployeeUpdateOne) ClearZaloEmployee() *EmployeeUpdateOne {
+	euo.mutation.ClearZaloEmployee()
+	return euo
 }
 
 // Where appends a list predicates to the EmployeeUpdate builder.
@@ -1850,6 +1930,35 @@ func (euo *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.ZaloEmployeeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   employee.ZaloEmployeeTable,
+			Columns: []string{employee.ZaloEmployeeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zaloemployee.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.ZaloEmployeeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   employee.ZaloEmployeeTable,
+			Columns: []string{employee.ZaloEmployeeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zaloemployee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

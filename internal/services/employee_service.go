@@ -113,6 +113,18 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dtos.Empl
 		}
 	}
 
+	// Create ZaloEmployee record if ZaloUID is provided
+	if input.ZaloUID != "" {
+		_, err := tx.ZaloEmployee.Create().
+			SetZaloUID(input.ZaloUID).
+			SetEmployeeID(employeeObj.ID).
+			Save(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, nil, err
+		}
+	}
+
 	if err := tx.Commit(); err != nil {
 		return nil, nil, err
 	}
@@ -347,6 +359,42 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 		}
 	}
 
+	// Handle ZaloUID update
+	if input.ZaloUID != "" {
+		// Check if ZaloEmployee record exists for this employee
+		existing, err := tx.ZaloEmployee.Query().
+			Where(func(s *sql.Selector) {
+				s.Where(sql.EQ(s.C("employee_id"), id))
+			}).
+			Only(ctx)
+
+		if err != nil && !ent.IsNotFound(err) {
+			tx.Rollback()
+			return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "Failed to check existing ZaloEmployee record"}
+		}
+
+		if existing != nil {
+			// Update existing ZaloEmployee record
+			_, err = tx.ZaloEmployee.UpdateOneID(existing.ID).
+				SetZaloUID(input.ZaloUID).
+				Save(ctx)
+			if err != nil {
+				tx.Rollback()
+				return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "Failed to update ZaloEmployee record"}
+			}
+		} else {
+			// Create new ZaloEmployee record
+			_, err = tx.ZaloEmployee.Create().
+				SetZaloUID(input.ZaloUID).
+				SetEmployeeID(id).
+				Save(ctx)
+			if err != nil {
+				tx.Rollback()
+				return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "Failed to create ZaloEmployee record"}
+			}
+		}
+	}
+
 	if err := tx.Commit(); err != nil {
 		return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "#4 UpdateById: Failed to commit transaction"}
 	}
@@ -469,4 +517,22 @@ func (s *EmployeeService) CreateRootEmployee(ctx context.Context, input dtos.Cre
 	}
 
 	return org, emp, userInfo, nil
+}
+
+// GetZaloUIDByEmployeeID returns the ZaloUID for an employee if exists
+func (s *EmployeeService) GetZaloUIDByEmployeeID(ctx context.Context, employeeID int) (string, error) {
+	zaloEmp, err := s.Client.ZaloEmployee.Query().
+		Where(func(s *sql.Selector) {
+			s.Where(sql.EQ(s.C("employee_id"), employeeID))
+		}).
+		Only(ctx)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return "", nil // No ZaloEmployee record found, return empty string
+		}
+		return "", err
+	}
+
+	return zaloEmp.ZaloUID, nil
 }

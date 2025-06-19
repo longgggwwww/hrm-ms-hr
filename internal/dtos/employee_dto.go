@@ -25,6 +25,7 @@ type EmployeeCreateInput struct {
 	PositionID int       `json:"position_id" binding:"required"`
 	JoiningAt  string    `json:"joining_at"`
 	Status     string    `json:"status" binding:"required"`
+	ZaloUID    string    `json:"zalo_uid"`
 	User       UserInput `json:"user" binding:"required"`
 }
 
@@ -32,5 +33,6 @@ type EmployeeUpdateInput struct {
 	Code      string    `json:"code"`
 	JoiningAt string    `json:"joining_at"`
 	Status    string    `json:"status"`
+	ZaloUID   string    `json:"zalo_uid"`
 	User      UserInput `json:"user"`
 }

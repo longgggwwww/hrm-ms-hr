@@ -23,6 +23,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 const (
@@ -45,6 +46,7 @@ const (
 	TypeProject            = "Project"
 	TypeTask               = "Task"
 	TypeTaskReport         = "TaskReport"
+	TypeZaloEmployee       = "ZaloEmployee"
 )
 
 // AppointmentHistoryMutation represents an operation that mutates the AppointmentHistory nodes in the graph.
@@ -1550,6 +1552,8 @@ type EmployeeMutation struct {
 	appointment_histories        map[int]struct{}
 	removedappointment_histories map[int]struct{}
 	clearedappointment_histories bool
+	zalo_employee                *int
+	clearedzalo_employee         bool
 	done                         bool
 	oldValue                     func(context.Context) (*Employee, error)
 	predicates                   []predicate.Employee
@@ -2433,6 +2437,45 @@ func (m *EmployeeMutation) ResetAppointmentHistories() {
 	m.removedappointment_histories = nil
 }
 
+// SetZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by id.
+func (m *EmployeeMutation) SetZaloEmployeeID(id int) {
+	m.zalo_employee = &id
+}
+
+// ClearZaloEmployee clears the "zalo_employee" edge to the ZaloEmployee entity.
+func (m *EmployeeMutation) ClearZaloEmployee() {
+	m.clearedzalo_employee = true
+}
+
+// ZaloEmployeeCleared reports if the "zalo_employee" edge to the ZaloEmployee entity was cleared.
+func (m *EmployeeMutation) ZaloEmployeeCleared() bool {
+	return m.clearedzalo_employee
+}
+
+// ZaloEmployeeID returns the "zalo_employee" edge ID in the mutation.
+func (m *EmployeeMutation) ZaloEmployeeID() (id int, exists bool) {
+	if m.zalo_employee != nil {
+		return *m.zalo_employee, true
+	}
+	return
+}
+
+// ZaloEmployeeIDs returns the "zalo_employee" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ZaloEmployeeID instead. It exists only for internal usage by the builders.
+func (m *EmployeeMutation) ZaloEmployeeIDs() (ids []int) {
+	if id := m.zalo_employee; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetZaloEmployee resets all changes to the "zalo_employee" edge.
+func (m *EmployeeMutation) ResetZaloEmployee() {
+	m.zalo_employee = nil
+	m.clearedzalo_employee = false
+}
+
 // Where appends a list predicates to the EmployeeMutation builder.
 func (m *EmployeeMutation) Where(ps ...predicate.Employee) {
 	m.predicates = append(m.predicates, ps...)
@@ -2709,7 +2752,7 @@ func (m *EmployeeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EmployeeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.position != nil {
 		edges = append(edges, employee.EdgePosition)
 	}
@@ -2736,6 +2779,9 @@ func (m *EmployeeMutation) AddedEdges() []string {
 	}
 	if m.appointment_histories != nil {
 		edges = append(edges, employee.EdgeAppointmentHistories)
+	}
+	if m.zalo_employee != nil {
+		edges = append(edges, employee.EdgeZaloEmployee)
 	}
 	return edges
 }
@@ -2796,13 +2842,17 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeZaloEmployee:
+		if id := m.zalo_employee; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EmployeeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.removedcreated_projects != nil {
 		edges = append(edges, employee.EdgeCreatedProjects)
 	}
@@ -2888,7 +2938,7 @@ func (m *EmployeeMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EmployeeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 9)
+	edges := make([]string, 0, 10)
 	if m.clearedposition {
 		edges = append(edges, employee.EdgePosition)
 	}
@@ -2916,6 +2966,9 @@ func (m *EmployeeMutation) ClearedEdges() []string {
 	if m.clearedappointment_histories {
 		edges = append(edges, employee.EdgeAppointmentHistories)
 	}
+	if m.clearedzalo_employee {
+		edges = append(edges, employee.EdgeZaloEmployee)
+	}
 	return edges
 }
 
@@ -2941,6 +2994,8 @@ func (m *EmployeeMutation) EdgeCleared(name string) bool {
 		return m.clearedprojects
 	case employee.EdgeAppointmentHistories:
 		return m.clearedappointment_histories
+	case employee.EdgeZaloEmployee:
+		return m.clearedzalo_employee
 	}
 	return false
 }
@@ -2951,6 +3006,9 @@ func (m *EmployeeMutation) ClearEdge(name string) error {
 	switch name {
 	case employee.EdgePosition:
 		m.ClearPosition()
+		return nil
+	case employee.EdgeZaloEmployee:
+		m.ClearZaloEmployee()
 		return nil
 	}
 	return fmt.Errorf("unknown Employee unique edge %s", name)
@@ -2986,6 +3044,9 @@ func (m *EmployeeMutation) ResetEdge(name string) error {
 		return nil
 	case employee.EdgeAppointmentHistories:
 		m.ResetAppointmentHistories()
+		return nil
+	case employee.EdgeZaloEmployee:
+		m.ResetZaloEmployee()
 		return nil
 	}
 	return fmt.Errorf("unknown Employee edge %s", name)
@@ -11311,4 +11372,549 @@ func (m *TaskReportMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown TaskReport edge %s", name)
+}
+
+// ZaloEmployeeMutation represents an operation that mutates the ZaloEmployee nodes in the graph.
+type ZaloEmployeeMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	zalo_uid        *string
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	employee        *int
+	clearedemployee bool
+	done            bool
+	oldValue        func(context.Context) (*ZaloEmployee, error)
+	predicates      []predicate.ZaloEmployee
+}
+
+var _ ent.Mutation = (*ZaloEmployeeMutation)(nil)
+
+// zaloemployeeOption allows management of the mutation configuration using functional options.
+type zaloemployeeOption func(*ZaloEmployeeMutation)
+
+// newZaloEmployeeMutation creates new mutation for the ZaloEmployee entity.
+func newZaloEmployeeMutation(c config, op Op, opts ...zaloemployeeOption) *ZaloEmployeeMutation {
+	m := &ZaloEmployeeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeZaloEmployee,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withZaloEmployeeID sets the ID field of the mutation.
+func withZaloEmployeeID(id int) zaloemployeeOption {
+	return func(m *ZaloEmployeeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ZaloEmployee
+		)
+		m.oldValue = func(ctx context.Context) (*ZaloEmployee, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ZaloEmployee.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withZaloEmployee sets the old ZaloEmployee of the mutation.
+func withZaloEmployee(node *ZaloEmployee) zaloemployeeOption {
+	return func(m *ZaloEmployeeMutation) {
+		m.oldValue = func(context.Context) (*ZaloEmployee, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ZaloEmployeeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ZaloEmployeeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ZaloEmployeeMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ZaloEmployeeMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ZaloEmployee.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetZaloUID sets the "zalo_uid" field.
+func (m *ZaloEmployeeMutation) SetZaloUID(s string) {
+	m.zalo_uid = &s
+}
+
+// ZaloUID returns the value of the "zalo_uid" field in the mutation.
+func (m *ZaloEmployeeMutation) ZaloUID() (r string, exists bool) {
+	v := m.zalo_uid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldZaloUID returns the old "zalo_uid" field's value of the ZaloEmployee entity.
+// If the ZaloEmployee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ZaloEmployeeMutation) OldZaloUID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldZaloUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldZaloUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldZaloUID: %w", err)
+	}
+	return oldValue.ZaloUID, nil
+}
+
+// ResetZaloUID resets all changes to the "zalo_uid" field.
+func (m *ZaloEmployeeMutation) ResetZaloUID() {
+	m.zalo_uid = nil
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (m *ZaloEmployeeMutation) SetEmployeeID(i int) {
+	m.employee = &i
+}
+
+// EmployeeID returns the value of the "employee_id" field in the mutation.
+func (m *ZaloEmployeeMutation) EmployeeID() (r int, exists bool) {
+	v := m.employee
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmployeeID returns the old "employee_id" field's value of the ZaloEmployee entity.
+// If the ZaloEmployee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ZaloEmployeeMutation) OldEmployeeID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmployeeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmployeeID: %w", err)
+	}
+	return oldValue.EmployeeID, nil
+}
+
+// ResetEmployeeID resets all changes to the "employee_id" field.
+func (m *ZaloEmployeeMutation) ResetEmployeeID() {
+	m.employee = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ZaloEmployeeMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ZaloEmployeeMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ZaloEmployee entity.
+// If the ZaloEmployee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ZaloEmployeeMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ZaloEmployeeMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ZaloEmployeeMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ZaloEmployeeMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the ZaloEmployee entity.
+// If the ZaloEmployee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ZaloEmployeeMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ZaloEmployeeMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// ClearEmployee clears the "employee" edge to the Employee entity.
+func (m *ZaloEmployeeMutation) ClearEmployee() {
+	m.clearedemployee = true
+	m.clearedFields[zaloemployee.FieldEmployeeID] = struct{}{}
+}
+
+// EmployeeCleared reports if the "employee" edge to the Employee entity was cleared.
+func (m *ZaloEmployeeMutation) EmployeeCleared() bool {
+	return m.clearedemployee
+}
+
+// EmployeeIDs returns the "employee" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// EmployeeID instead. It exists only for internal usage by the builders.
+func (m *ZaloEmployeeMutation) EmployeeIDs() (ids []int) {
+	if id := m.employee; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetEmployee resets all changes to the "employee" edge.
+func (m *ZaloEmployeeMutation) ResetEmployee() {
+	m.employee = nil
+	m.clearedemployee = false
+}
+
+// Where appends a list predicates to the ZaloEmployeeMutation builder.
+func (m *ZaloEmployeeMutation) Where(ps ...predicate.ZaloEmployee) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ZaloEmployeeMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ZaloEmployeeMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ZaloEmployee, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ZaloEmployeeMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ZaloEmployeeMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ZaloEmployee).
+func (m *ZaloEmployeeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ZaloEmployeeMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.zalo_uid != nil {
+		fields = append(fields, zaloemployee.FieldZaloUID)
+	}
+	if m.employee != nil {
+		fields = append(fields, zaloemployee.FieldEmployeeID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, zaloemployee.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, zaloemployee.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ZaloEmployeeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case zaloemployee.FieldZaloUID:
+		return m.ZaloUID()
+	case zaloemployee.FieldEmployeeID:
+		return m.EmployeeID()
+	case zaloemployee.FieldCreatedAt:
+		return m.CreatedAt()
+	case zaloemployee.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ZaloEmployeeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case zaloemployee.FieldZaloUID:
+		return m.OldZaloUID(ctx)
+	case zaloemployee.FieldEmployeeID:
+		return m.OldEmployeeID(ctx)
+	case zaloemployee.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case zaloemployee.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown ZaloEmployee field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ZaloEmployeeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case zaloemployee.FieldZaloUID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetZaloUID(v)
+		return nil
+	case zaloemployee.FieldEmployeeID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmployeeID(v)
+		return nil
+	case zaloemployee.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case zaloemployee.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ZaloEmployee field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ZaloEmployeeMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ZaloEmployeeMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ZaloEmployeeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ZaloEmployee numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ZaloEmployeeMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ZaloEmployeeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ZaloEmployeeMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ZaloEmployee nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ZaloEmployeeMutation) ResetField(name string) error {
+	switch name {
+	case zaloemployee.FieldZaloUID:
+		m.ResetZaloUID()
+		return nil
+	case zaloemployee.FieldEmployeeID:
+		m.ResetEmployeeID()
+		return nil
+	case zaloemployee.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case zaloemployee.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ZaloEmployee field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ZaloEmployeeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.employee != nil {
+		edges = append(edges, zaloemployee.EdgeEmployee)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ZaloEmployeeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case zaloemployee.EdgeEmployee:
+		if id := m.employee; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ZaloEmployeeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ZaloEmployeeMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ZaloEmployeeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedemployee {
+		edges = append(edges, zaloemployee.EdgeEmployee)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ZaloEmployeeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case zaloemployee.EdgeEmployee:
+		return m.clearedemployee
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ZaloEmployeeMutation) ClearEdge(name string) error {
+	switch name {
+	case zaloemployee.EdgeEmployee:
+		m.ClearEmployee()
+		return nil
+	}
+	return fmt.Errorf("unknown ZaloEmployee unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ZaloEmployeeMutation) ResetEdge(name string) error {
+	switch name {
+	case zaloemployee.EdgeEmployee:
+		m.ResetEmployee()
+		return nil
+	}
+	return fmt.Errorf("unknown ZaloEmployee edge %s", name)
 }

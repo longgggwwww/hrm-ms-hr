@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // Employee is the model entity for the Employee schema.
@@ -60,9 +61,11 @@ type EmployeeEdges struct {
 	Projects []*Project `json:"projects"`
 	// AppointmentHistories holds the value of the appointment_histories edge.
 	AppointmentHistories []*AppointmentHistory `json:"appointment_histories"`
+	// ZaloEmployee holds the value of the zalo_employee edge.
+	ZaloEmployee *ZaloEmployee `json:"zalo_employee"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // PositionOrErr returns the Position value or an error if the edge
@@ -146,6 +149,17 @@ func (e EmployeeEdges) AppointmentHistoriesOrErr() ([]*AppointmentHistory, error
 		return e.AppointmentHistories, nil
 	}
 	return nil, &NotLoadedError{edge: "appointment_histories"}
+}
+
+// ZaloEmployeeOrErr returns the ZaloEmployee value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e EmployeeEdges) ZaloEmployeeOrErr() (*ZaloEmployee, error) {
+	if e.ZaloEmployee != nil {
+		return e.ZaloEmployee, nil
+	} else if e.loadedTypes[9] {
+		return nil, &NotFoundError{label: zaloemployee.Label}
+	}
+	return nil, &NotLoadedError{edge: "zalo_employee"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -284,6 +298,11 @@ func (e *Employee) QueryProjects() *ProjectQuery {
 // QueryAppointmentHistories queries the "appointment_histories" edge of the Employee entity.
 func (e *Employee) QueryAppointmentHistories() *AppointmentHistoryQuery {
 	return NewEmployeeClient(e.config).QueryAppointmentHistories(e)
+}
+
+// QueryZaloEmployee queries the "zalo_employee" edge of the Employee entity.
+func (e *Employee) QueryZaloEmployee() *ZaloEmployeeQuery {
+	return NewEmployeeClient(e.config).QueryZaloEmployee(e)
 }
 
 // Update returns a builder for updating this Employee.

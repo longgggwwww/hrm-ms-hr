@@ -26,6 +26,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // Client is the client that holds all ent builders.
@@ -55,6 +56,8 @@ type Client struct {
 	Task *TaskClient
 	// TaskReport is the client for interacting with the TaskReport builders.
 	TaskReport *TaskReportClient
+	// ZaloEmployee is the client for interacting with the ZaloEmployee builders.
+	ZaloEmployee *ZaloEmployeeClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -77,6 +80,7 @@ func (c *Client) init() {
 	c.Project = NewProjectClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.TaskReport = NewTaskReportClient(c.config)
+	c.ZaloEmployee = NewZaloEmployeeClient(c.config)
 }
 
 type (
@@ -180,6 +184,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Project:            NewProjectClient(cfg),
 		Task:               NewTaskClient(cfg),
 		TaskReport:         NewTaskReportClient(cfg),
+		ZaloEmployee:       NewZaloEmployeeClient(cfg),
 	}, nil
 }
 
@@ -210,6 +215,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Project:            NewProjectClient(cfg),
 		Task:               NewTaskClient(cfg),
 		TaskReport:         NewTaskReportClient(cfg),
+		ZaloEmployee:       NewZaloEmployeeClient(cfg),
 	}, nil
 }
 
@@ -241,6 +247,7 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AppointmentHistory, c.Department, c.Employee, c.Label, c.LeaveApproval,
 		c.LeaveRequest, c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
+		c.ZaloEmployee,
 	} {
 		n.Use(hooks...)
 	}
@@ -252,6 +259,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AppointmentHistory, c.Department, c.Employee, c.Label, c.LeaveApproval,
 		c.LeaveRequest, c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
+		c.ZaloEmployee,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -282,6 +290,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Task.mutate(ctx, m)
 	case *TaskReportMutation:
 		return c.TaskReport.mutate(ctx, m)
+	case *ZaloEmployeeMutation:
+		return c.ZaloEmployee.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -846,6 +856,22 @@ func (c *EmployeeClient) QueryAppointmentHistories(e *Employee) *AppointmentHist
 			sqlgraph.From(employee.Table, employee.FieldID, id),
 			sqlgraph.To(appointmenthistory.Table, appointmenthistory.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, employee.AppointmentHistoriesTable, employee.AppointmentHistoriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryZaloEmployee queries the zalo_employee edge of a Employee.
+func (c *EmployeeClient) QueryZaloEmployee(e *Employee) *ZaloEmployeeQuery {
+	query := (&ZaloEmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(zaloemployee.Table, zaloemployee.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, employee.ZaloEmployeeTable, employee.ZaloEmployeeColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -2390,14 +2416,164 @@ func (c *TaskReportClient) mutate(ctx context.Context, m *TaskReportMutation) (V
 	}
 }
 
+// ZaloEmployeeClient is a client for the ZaloEmployee schema.
+type ZaloEmployeeClient struct {
+	config
+}
+
+// NewZaloEmployeeClient returns a client for the ZaloEmployee from the given config.
+func NewZaloEmployeeClient(c config) *ZaloEmployeeClient {
+	return &ZaloEmployeeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `zaloemployee.Hooks(f(g(h())))`.
+func (c *ZaloEmployeeClient) Use(hooks ...Hook) {
+	c.hooks.ZaloEmployee = append(c.hooks.ZaloEmployee, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `zaloemployee.Intercept(f(g(h())))`.
+func (c *ZaloEmployeeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ZaloEmployee = append(c.inters.ZaloEmployee, interceptors...)
+}
+
+// Create returns a builder for creating a ZaloEmployee entity.
+func (c *ZaloEmployeeClient) Create() *ZaloEmployeeCreate {
+	mutation := newZaloEmployeeMutation(c.config, OpCreate)
+	return &ZaloEmployeeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ZaloEmployee entities.
+func (c *ZaloEmployeeClient) CreateBulk(builders ...*ZaloEmployeeCreate) *ZaloEmployeeCreateBulk {
+	return &ZaloEmployeeCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ZaloEmployeeClient) MapCreateBulk(slice any, setFunc func(*ZaloEmployeeCreate, int)) *ZaloEmployeeCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ZaloEmployeeCreateBulk{err: fmt.Errorf("calling to ZaloEmployeeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ZaloEmployeeCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ZaloEmployeeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ZaloEmployee.
+func (c *ZaloEmployeeClient) Update() *ZaloEmployeeUpdate {
+	mutation := newZaloEmployeeMutation(c.config, OpUpdate)
+	return &ZaloEmployeeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ZaloEmployeeClient) UpdateOne(ze *ZaloEmployee) *ZaloEmployeeUpdateOne {
+	mutation := newZaloEmployeeMutation(c.config, OpUpdateOne, withZaloEmployee(ze))
+	return &ZaloEmployeeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ZaloEmployeeClient) UpdateOneID(id int) *ZaloEmployeeUpdateOne {
+	mutation := newZaloEmployeeMutation(c.config, OpUpdateOne, withZaloEmployeeID(id))
+	return &ZaloEmployeeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ZaloEmployee.
+func (c *ZaloEmployeeClient) Delete() *ZaloEmployeeDelete {
+	mutation := newZaloEmployeeMutation(c.config, OpDelete)
+	return &ZaloEmployeeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ZaloEmployeeClient) DeleteOne(ze *ZaloEmployee) *ZaloEmployeeDeleteOne {
+	return c.DeleteOneID(ze.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ZaloEmployeeClient) DeleteOneID(id int) *ZaloEmployeeDeleteOne {
+	builder := c.Delete().Where(zaloemployee.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ZaloEmployeeDeleteOne{builder}
+}
+
+// Query returns a query builder for ZaloEmployee.
+func (c *ZaloEmployeeClient) Query() *ZaloEmployeeQuery {
+	return &ZaloEmployeeQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeZaloEmployee},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ZaloEmployee entity by its id.
+func (c *ZaloEmployeeClient) Get(ctx context.Context, id int) (*ZaloEmployee, error) {
+	return c.Query().Where(zaloemployee.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ZaloEmployeeClient) GetX(ctx context.Context, id int) *ZaloEmployee {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEmployee queries the employee edge of a ZaloEmployee.
+func (c *ZaloEmployeeClient) QueryEmployee(ze *ZaloEmployee) *EmployeeQuery {
+	query := (&EmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ze.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(zaloemployee.Table, zaloemployee.FieldID, id),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, zaloemployee.EmployeeTable, zaloemployee.EmployeeColumn),
+		)
+		fromV = sqlgraph.Neighbors(ze.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ZaloEmployeeClient) Hooks() []Hook {
+	return c.hooks.ZaloEmployee
+}
+
+// Interceptors returns the client interceptors.
+func (c *ZaloEmployeeClient) Interceptors() []Interceptor {
+	return c.inters.ZaloEmployee
+}
+
+func (c *ZaloEmployeeClient) mutate(ctx context.Context, m *ZaloEmployeeMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ZaloEmployeeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ZaloEmployeeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ZaloEmployeeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ZaloEmployeeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ZaloEmployee mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		AppointmentHistory, Department, Employee, Label, LeaveApproval, LeaveRequest,
-		Organization, Position, Project, Task, TaskReport []ent.Hook
+		Organization, Position, Project, Task, TaskReport, ZaloEmployee []ent.Hook
 	}
 	inters struct {
 		AppointmentHistory, Department, Employee, Label, LeaveApproval, LeaveRequest,
-		Organization, Position, Project, Task, TaskReport []ent.Interceptor
+		Organization, Position, Project, Task, TaskReport,
+		ZaloEmployee []ent.Interceptor
 	}
 )

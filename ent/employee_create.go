@@ -19,6 +19,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // EmployeeCreate is the builder for creating a Employee entity.
@@ -232,6 +233,25 @@ func (ec *EmployeeCreate) AddAppointmentHistories(a ...*AppointmentHistory) *Emp
 		ids[i] = a[i].ID
 	}
 	return ec.AddAppointmentHistoryIDs(ids...)
+}
+
+// SetZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID.
+func (ec *EmployeeCreate) SetZaloEmployeeID(id int) *EmployeeCreate {
+	ec.mutation.SetZaloEmployeeID(id)
+	return ec
+}
+
+// SetNillableZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID if the given value is not nil.
+func (ec *EmployeeCreate) SetNillableZaloEmployeeID(id *int) *EmployeeCreate {
+	if id != nil {
+		ec = ec.SetZaloEmployeeID(*id)
+	}
+	return ec
+}
+
+// SetZaloEmployee sets the "zalo_employee" edge to the ZaloEmployee entity.
+func (ec *EmployeeCreate) SetZaloEmployee(z *ZaloEmployee) *EmployeeCreate {
+	return ec.SetZaloEmployeeID(z.ID)
 }
 
 // Mutation returns the EmployeeMutation object of the builder.
@@ -512,6 +532,22 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.ZaloEmployeeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   employee.ZaloEmployeeTable,
+			Columns: []string{employee.ZaloEmployeeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zaloemployee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

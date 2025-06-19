@@ -17,6 +17,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/schema"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -189,4 +190,20 @@ func init() {
 	taskreport.DefaultUpdatedAt = taskreportDescUpdatedAt.Default.(func() time.Time)
 	// taskreport.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	taskreport.UpdateDefaultUpdatedAt = taskreportDescUpdatedAt.UpdateDefault.(func() time.Time)
+	zaloemployeeFields := schema.ZaloEmployee{}.Fields()
+	_ = zaloemployeeFields
+	// zaloemployeeDescZaloUID is the schema descriptor for zalo_uid field.
+	zaloemployeeDescZaloUID := zaloemployeeFields[0].Descriptor()
+	// zaloemployee.ZaloUIDValidator is a validator for the "zalo_uid" field. It is called by the builders before save.
+	zaloemployee.ZaloUIDValidator = zaloemployeeDescZaloUID.Validators[0].(func(string) error)
+	// zaloemployeeDescCreatedAt is the schema descriptor for created_at field.
+	zaloemployeeDescCreatedAt := zaloemployeeFields[2].Descriptor()
+	// zaloemployee.DefaultCreatedAt holds the default value on creation for the created_at field.
+	zaloemployee.DefaultCreatedAt = zaloemployeeDescCreatedAt.Default.(func() time.Time)
+	// zaloemployeeDescUpdatedAt is the schema descriptor for updated_at field.
+	zaloemployeeDescUpdatedAt := zaloemployeeFields[3].Descriptor()
+	// zaloemployee.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	zaloemployee.DefaultUpdatedAt = zaloemployeeDescUpdatedAt.Default.(func() time.Time)
+	// zaloemployee.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	zaloemployee.UpdateDefaultUpdatedAt = zaloemployeeDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

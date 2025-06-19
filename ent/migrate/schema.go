@@ -350,6 +350,40 @@ var (
 			},
 		},
 	}
+	// ZaloEmployeesColumns holds the columns for the "zalo_employees" table.
+	ZaloEmployeesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "zalo_uid", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "employee_id", Type: field.TypeInt, Unique: true},
+	}
+	// ZaloEmployeesTable holds the schema information for the "zalo_employees" table.
+	ZaloEmployeesTable = &schema.Table{
+		Name:       "zalo_employees",
+		Columns:    ZaloEmployeesColumns,
+		PrimaryKey: []*schema.Column{ZaloEmployeesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "zalo_employees_employees_zalo_employee",
+				Columns:    []*schema.Column{ZaloEmployeesColumns[4]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "zaloemployee_employee_id",
+				Unique:  true,
+				Columns: []*schema.Column{ZaloEmployeesColumns[4]},
+			},
+			{
+				Name:    "zaloemployee_zalo_uid",
+				Unique:  false,
+				Columns: []*schema.Column{ZaloEmployeesColumns[1]},
+			},
+		},
+	}
 	// ProjectMembersColumns holds the columns for the "project_members" table.
 	ProjectMembersColumns = []*schema.Column{
 		{Name: "project_id", Type: field.TypeInt},
@@ -438,6 +472,7 @@ var (
 		ProjectsTable,
 		TasksTable,
 		TaskReportsTable,
+		ZaloEmployeesTable,
 		ProjectMembersTable,
 		TaskLabelsTable,
 		TaskAssigneesTable,
@@ -462,6 +497,7 @@ func init() {
 	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
 	TaskReportsTable.ForeignKeys[0].RefTable = EmployeesTable
 	TaskReportsTable.ForeignKeys[1].RefTable = TasksTable
+	ZaloEmployeesTable.ForeignKeys[0].RefTable = EmployeesTable
 	ProjectMembersTable.ForeignKeys[0].RefTable = ProjectsTable
 	ProjectMembersTable.ForeignKeys[1].RefTable = EmployeesTable
 	TaskLabelsTable.ForeignKeys[0].RefTable = TasksTable

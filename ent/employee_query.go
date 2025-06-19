@@ -21,6 +21,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // EmployeeQuery is the builder for querying Employee entities.
@@ -39,6 +40,7 @@ type EmployeeQuery struct {
 	withTaskReports          *TaskReportQuery
 	withProjects             *ProjectQuery
 	withAppointmentHistories *AppointmentHistoryQuery
+	withZaloEmployee         *ZaloEmployeeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -273,6 +275,28 @@ func (eq *EmployeeQuery) QueryAppointmentHistories() *AppointmentHistoryQuery {
 	return query
 }
 
+// QueryZaloEmployee chains the current query on the "zalo_employee" edge.
+func (eq *EmployeeQuery) QueryZaloEmployee() *ZaloEmployeeQuery {
+	query := (&ZaloEmployeeClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(zaloemployee.Table, zaloemployee.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, employee.ZaloEmployeeTable, employee.ZaloEmployeeColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Employee entity from the query.
 // Returns a *NotFoundError when no Employee was found.
 func (eq *EmployeeQuery) First(ctx context.Context) (*Employee, error) {
@@ -474,6 +498,7 @@ func (eq *EmployeeQuery) Clone() *EmployeeQuery {
 		withTaskReports:          eq.withTaskReports.Clone(),
 		withProjects:             eq.withProjects.Clone(),
 		withAppointmentHistories: eq.withAppointmentHistories.Clone(),
+		withZaloEmployee:         eq.withZaloEmployee.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -579,6 +604,17 @@ func (eq *EmployeeQuery) WithAppointmentHistories(opts ...func(*AppointmentHisto
 	return eq
 }
 
+// WithZaloEmployee tells the query-builder to eager-load the nodes that are connected to
+// the "zalo_employee" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EmployeeQuery) WithZaloEmployee(opts ...func(*ZaloEmployeeQuery)) *EmployeeQuery {
+	query := (&ZaloEmployeeClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withZaloEmployee = query
+	return eq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -657,7 +693,7 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	var (
 		nodes       = []*Employee{}
 		_spec       = eq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			eq.withPosition != nil,
 			eq.withCreatedProjects != nil,
 			eq.withUpdatedProjects != nil,
@@ -667,6 +703,7 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 			eq.withTaskReports != nil,
 			eq.withProjects != nil,
 			eq.withAppointmentHistories != nil,
+			eq.withZaloEmployee != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -748,6 +785,12 @@ func (eq *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 			func(n *Employee, e *AppointmentHistory) {
 				n.Edges.AppointmentHistories = append(n.Edges.AppointmentHistories, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withZaloEmployee; query != nil {
+		if err := eq.loadZaloEmployee(ctx, query, nodes, nil,
+			func(n *Employee, e *ZaloEmployee) { n.Edges.ZaloEmployee = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1070,6 +1113,33 @@ func (eq *EmployeeQuery) loadAppointmentHistories(ctx context.Context, query *Ap
 	}
 	query.Where(predicate.AppointmentHistory(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(employee.AppointmentHistoriesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EmployeeID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "employee_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (eq *EmployeeQuery) loadZaloEmployee(ctx context.Context, query *ZaloEmployeeQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *ZaloEmployee)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(zaloemployee.FieldEmployeeID)
+	}
+	query.Where(predicate.ZaloEmployee(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.ZaloEmployeeColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

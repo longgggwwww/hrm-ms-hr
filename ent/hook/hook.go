@@ -141,6 +141,18 @@ func (f TaskReportFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TaskReportMutation", m)
 }
 
+// The ZaloEmployeeFunc type is an adapter to allow the use of ordinary
+// function as ZaloEmployee mutator.
+type ZaloEmployeeFunc func(context.Context, *ent.ZaloEmployeeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ZaloEmployeeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ZaloEmployeeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ZaloEmployeeMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 
