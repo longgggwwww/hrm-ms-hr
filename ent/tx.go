@@ -34,6 +34,8 @@ type Tx struct {
 	Task *TaskClient
 	// TaskReport is the client for interacting with the TaskReport builders.
 	TaskReport *TaskReportClient
+	// ZaloDepartment is the client for interacting with the ZaloDepartment builders.
+	ZaloDepartment *ZaloDepartmentClient
 	// ZaloEmployee is the client for interacting with the ZaloEmployee builders.
 	ZaloEmployee *ZaloEmployeeClient
 
@@ -178,6 +180,7 @@ func (tx *Tx) init() {
 	tx.Project = NewProjectClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.TaskReport = NewTaskReportClient(tx.config)
+	tx.ZaloDepartment = NewZaloDepartmentClient(tx.config)
 	tx.ZaloEmployee = NewZaloEmployeeClient(tx.config)
 }
 

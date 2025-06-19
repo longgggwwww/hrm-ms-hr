@@ -55,6 +55,9 @@ func (Department) Edges() []ent.Edge {
 			Required().
 			StructTag(`json:"organization"`).
 			Annotations(entproto.Field(8)),
+		edge.To("zalo_department", ZaloDepartment.Type).
+			StructTag(`json:"zalo_department"`).
+			Annotations(entproto.Field(9)),
 	}
 }
 

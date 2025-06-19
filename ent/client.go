@@ -26,6 +26,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
 	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
@@ -56,6 +57,8 @@ type Client struct {
 	Task *TaskClient
 	// TaskReport is the client for interacting with the TaskReport builders.
 	TaskReport *TaskReportClient
+	// ZaloDepartment is the client for interacting with the ZaloDepartment builders.
+	ZaloDepartment *ZaloDepartmentClient
 	// ZaloEmployee is the client for interacting with the ZaloEmployee builders.
 	ZaloEmployee *ZaloEmployeeClient
 }
@@ -80,6 +83,7 @@ func (c *Client) init() {
 	c.Project = NewProjectClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.TaskReport = NewTaskReportClient(c.config)
+	c.ZaloDepartment = NewZaloDepartmentClient(c.config)
 	c.ZaloEmployee = NewZaloEmployeeClient(c.config)
 }
 
@@ -184,6 +188,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Project:            NewProjectClient(cfg),
 		Task:               NewTaskClient(cfg),
 		TaskReport:         NewTaskReportClient(cfg),
+		ZaloDepartment:     NewZaloDepartmentClient(cfg),
 		ZaloEmployee:       NewZaloEmployeeClient(cfg),
 	}, nil
 }
@@ -215,6 +220,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Project:            NewProjectClient(cfg),
 		Task:               NewTaskClient(cfg),
 		TaskReport:         NewTaskReportClient(cfg),
+		ZaloDepartment:     NewZaloDepartmentClient(cfg),
 		ZaloEmployee:       NewZaloEmployeeClient(cfg),
 	}, nil
 }
@@ -247,7 +253,7 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AppointmentHistory, c.Department, c.Employee, c.Label, c.LeaveApproval,
 		c.LeaveRequest, c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
-		c.ZaloEmployee,
+		c.ZaloDepartment, c.ZaloEmployee,
 	} {
 		n.Use(hooks...)
 	}
@@ -259,7 +265,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AppointmentHistory, c.Department, c.Employee, c.Label, c.LeaveApproval,
 		c.LeaveRequest, c.Organization, c.Position, c.Project, c.Task, c.TaskReport,
-		c.ZaloEmployee,
+		c.ZaloDepartment, c.ZaloEmployee,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -290,6 +296,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Task.mutate(ctx, m)
 	case *TaskReportMutation:
 		return c.TaskReport.mutate(ctx, m)
+	case *ZaloDepartmentMutation:
+		return c.ZaloDepartment.mutate(ctx, m)
 	case *ZaloEmployeeMutation:
 		return c.ZaloEmployee.mutate(ctx, m)
 	default:
@@ -579,6 +587,22 @@ func (c *DepartmentClient) QueryOrganization(d *Department) *OrganizationQuery {
 			sqlgraph.From(department.Table, department.FieldID, id),
 			sqlgraph.To(organization.Table, organization.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, department.OrganizationTable, department.OrganizationColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryZaloDepartment queries the zalo_department edge of a Department.
+func (c *DepartmentClient) QueryZaloDepartment(d *Department) *ZaloDepartmentQuery {
+	query := (&ZaloDepartmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, id),
+			sqlgraph.To(zalodepartment.Table, zalodepartment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, department.ZaloDepartmentTable, department.ZaloDepartmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -2416,6 +2440,155 @@ func (c *TaskReportClient) mutate(ctx context.Context, m *TaskReportMutation) (V
 	}
 }
 
+// ZaloDepartmentClient is a client for the ZaloDepartment schema.
+type ZaloDepartmentClient struct {
+	config
+}
+
+// NewZaloDepartmentClient returns a client for the ZaloDepartment from the given config.
+func NewZaloDepartmentClient(c config) *ZaloDepartmentClient {
+	return &ZaloDepartmentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `zalodepartment.Hooks(f(g(h())))`.
+func (c *ZaloDepartmentClient) Use(hooks ...Hook) {
+	c.hooks.ZaloDepartment = append(c.hooks.ZaloDepartment, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `zalodepartment.Intercept(f(g(h())))`.
+func (c *ZaloDepartmentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ZaloDepartment = append(c.inters.ZaloDepartment, interceptors...)
+}
+
+// Create returns a builder for creating a ZaloDepartment entity.
+func (c *ZaloDepartmentClient) Create() *ZaloDepartmentCreate {
+	mutation := newZaloDepartmentMutation(c.config, OpCreate)
+	return &ZaloDepartmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ZaloDepartment entities.
+func (c *ZaloDepartmentClient) CreateBulk(builders ...*ZaloDepartmentCreate) *ZaloDepartmentCreateBulk {
+	return &ZaloDepartmentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ZaloDepartmentClient) MapCreateBulk(slice any, setFunc func(*ZaloDepartmentCreate, int)) *ZaloDepartmentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ZaloDepartmentCreateBulk{err: fmt.Errorf("calling to ZaloDepartmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ZaloDepartmentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ZaloDepartmentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ZaloDepartment.
+func (c *ZaloDepartmentClient) Update() *ZaloDepartmentUpdate {
+	mutation := newZaloDepartmentMutation(c.config, OpUpdate)
+	return &ZaloDepartmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ZaloDepartmentClient) UpdateOne(zd *ZaloDepartment) *ZaloDepartmentUpdateOne {
+	mutation := newZaloDepartmentMutation(c.config, OpUpdateOne, withZaloDepartment(zd))
+	return &ZaloDepartmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ZaloDepartmentClient) UpdateOneID(id int) *ZaloDepartmentUpdateOne {
+	mutation := newZaloDepartmentMutation(c.config, OpUpdateOne, withZaloDepartmentID(id))
+	return &ZaloDepartmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ZaloDepartment.
+func (c *ZaloDepartmentClient) Delete() *ZaloDepartmentDelete {
+	mutation := newZaloDepartmentMutation(c.config, OpDelete)
+	return &ZaloDepartmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ZaloDepartmentClient) DeleteOne(zd *ZaloDepartment) *ZaloDepartmentDeleteOne {
+	return c.DeleteOneID(zd.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ZaloDepartmentClient) DeleteOneID(id int) *ZaloDepartmentDeleteOne {
+	builder := c.Delete().Where(zalodepartment.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ZaloDepartmentDeleteOne{builder}
+}
+
+// Query returns a query builder for ZaloDepartment.
+func (c *ZaloDepartmentClient) Query() *ZaloDepartmentQuery {
+	return &ZaloDepartmentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeZaloDepartment},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ZaloDepartment entity by its id.
+func (c *ZaloDepartmentClient) Get(ctx context.Context, id int) (*ZaloDepartment, error) {
+	return c.Query().Where(zalodepartment.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ZaloDepartmentClient) GetX(ctx context.Context, id int) *ZaloDepartment {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryDepartment queries the department edge of a ZaloDepartment.
+func (c *ZaloDepartmentClient) QueryDepartment(zd *ZaloDepartment) *DepartmentQuery {
+	query := (&DepartmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := zd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(zalodepartment.Table, zalodepartment.FieldID, id),
+			sqlgraph.To(department.Table, department.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, zalodepartment.DepartmentTable, zalodepartment.DepartmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(zd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ZaloDepartmentClient) Hooks() []Hook {
+	return c.hooks.ZaloDepartment
+}
+
+// Interceptors returns the client interceptors.
+func (c *ZaloDepartmentClient) Interceptors() []Interceptor {
+	return c.inters.ZaloDepartment
+}
+
+func (c *ZaloDepartmentClient) mutate(ctx context.Context, m *ZaloDepartmentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ZaloDepartmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ZaloDepartmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ZaloDepartmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ZaloDepartmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ZaloDepartment mutation op: %q", m.Op())
+	}
+}
+
 // ZaloEmployeeClient is a client for the ZaloEmployee schema.
 type ZaloEmployeeClient struct {
 	config
@@ -2569,11 +2742,12 @@ func (c *ZaloEmployeeClient) mutate(ctx context.Context, m *ZaloEmployeeMutation
 type (
 	hooks struct {
 		AppointmentHistory, Department, Employee, Label, LeaveApproval, LeaveRequest,
-		Organization, Position, Project, Task, TaskReport, ZaloEmployee []ent.Hook
+		Organization, Position, Project, Task, TaskReport, ZaloDepartment,
+		ZaloEmployee []ent.Hook
 	}
 	inters struct {
 		AppointmentHistory, Department, Employee, Label, LeaveApproval, LeaveRequest,
-		Organization, Position, Project, Task, TaskReport,
+		Organization, Position, Project, Task, TaskReport, ZaloDepartment,
 		ZaloEmployee []ent.Interceptor
 	}
 )

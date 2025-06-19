@@ -12,6 +12,7 @@ import (
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
 	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
+	zalodepartment "github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -56,6 +57,12 @@ func toProtoDepartment(e *ent.Department) (*Department, error) {
 	for _, edg := range e.Edges.Positions {
 		id := int64(edg.ID)
 		v.Positions = append(v.Positions, &Position{
+			Id: id,
+		})
+	}
+	for _, edg := range e.Edges.ZaloDepartment {
+		id := int64(edg.ID)
+		v.ZaloDepartment = append(v.ZaloDepartment, &ZaloDepartment{
 			Id: id,
 		})
 	}
@@ -119,6 +126,9 @@ func (svc *DepartmentService) Get(ctx context.Context, req *GetDepartmentRequest
 			WithPositions(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
+			WithZaloDepartment(func(query *ent.ZaloDepartmentQuery) {
+				query.Select(zalodepartment.FieldID)
+			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -154,6 +164,10 @@ func (svc *DepartmentService) Update(ctx context.Context, req *UpdateDepartmentR
 	for _, item := range department.GetPositions() {
 		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
+	}
+	for _, item := range department.GetZaloDepartment() {
+		zalodepartment := int(item.GetId())
+		m.AddZaloDepartmentIDs(zalodepartment)
 	}
 
 	res, err := m.Save(ctx)
@@ -230,6 +244,9 @@ func (svc *DepartmentService) List(ctx context.Context, req *ListDepartmentReque
 			}).
 			WithPositions(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
+			}).
+			WithZaloDepartment(func(query *ent.ZaloDepartmentQuery) {
+				query.Select(zalodepartment.FieldID)
 			}).
 			All(ctx)
 	}
@@ -309,6 +326,10 @@ func (svc *DepartmentService) createBuilder(department *Department) (*ent.Depart
 	for _, item := range department.GetPositions() {
 		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
+	}
+	for _, item := range department.GetZaloDepartment() {
+		zalodepartment := int(item.GetId())
+		m.AddZaloDepartmentIDs(zalodepartment)
 	}
 	return m, nil
 }

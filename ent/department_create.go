@@ -14,6 +14,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
 )
 
 // DepartmentCreate is the builder for creating a Department entity.
@@ -94,6 +95,21 @@ func (dc *DepartmentCreate) SetOrganizationID(id int) *DepartmentCreate {
 // SetOrganization sets the "organization" edge to the Organization entity.
 func (dc *DepartmentCreate) SetOrganization(o *Organization) *DepartmentCreate {
 	return dc.SetOrganizationID(o.ID)
+}
+
+// AddZaloDepartmentIDs adds the "zalo_department" edge to the ZaloDepartment entity by IDs.
+func (dc *DepartmentCreate) AddZaloDepartmentIDs(ids ...int) *DepartmentCreate {
+	dc.mutation.AddZaloDepartmentIDs(ids...)
+	return dc
+}
+
+// AddZaloDepartment adds the "zalo_department" edges to the ZaloDepartment entity.
+func (dc *DepartmentCreate) AddZaloDepartment(z ...*ZaloDepartment) *DepartmentCreate {
+	ids := make([]int, len(z))
+	for i := range z {
+		ids[i] = z[i].ID
+	}
+	return dc.AddZaloDepartmentIDs(ids...)
 }
 
 // Mutation returns the DepartmentMutation object of the builder.
@@ -245,6 +261,22 @@ func (dc *DepartmentCreate) createSpec() (*Department, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.OrgID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.ZaloDepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.ZaloDepartmentTable,
+			Columns: []string{department.ZaloDepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

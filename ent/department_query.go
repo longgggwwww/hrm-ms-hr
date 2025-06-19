@@ -16,17 +16,19 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
+	"github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
 )
 
 // DepartmentQuery is the builder for querying Department entities.
 type DepartmentQuery struct {
 	config
-	ctx              *QueryContext
-	order            []department.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.Department
-	withPositions    *PositionQuery
-	withOrganization *OrganizationQuery
+	ctx                *QueryContext
+	order              []department.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Department
+	withPositions      *PositionQuery
+	withOrganization   *OrganizationQuery
+	withZaloDepartment *ZaloDepartmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -100,6 +102,28 @@ func (dq *DepartmentQuery) QueryOrganization() *OrganizationQuery {
 			sqlgraph.From(department.Table, department.FieldID, selector),
 			sqlgraph.To(organization.Table, organization.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, department.OrganizationTable, department.OrganizationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryZaloDepartment chains the current query on the "zalo_department" edge.
+func (dq *DepartmentQuery) QueryZaloDepartment() *ZaloDepartmentQuery {
+	query := (&ZaloDepartmentClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, selector),
+			sqlgraph.To(zalodepartment.Table, zalodepartment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, department.ZaloDepartmentTable, department.ZaloDepartmentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -294,13 +318,14 @@ func (dq *DepartmentQuery) Clone() *DepartmentQuery {
 		return nil
 	}
 	return &DepartmentQuery{
-		config:           dq.config,
-		ctx:              dq.ctx.Clone(),
-		order:            append([]department.OrderOption{}, dq.order...),
-		inters:           append([]Interceptor{}, dq.inters...),
-		predicates:       append([]predicate.Department{}, dq.predicates...),
-		withPositions:    dq.withPositions.Clone(),
-		withOrganization: dq.withOrganization.Clone(),
+		config:             dq.config,
+		ctx:                dq.ctx.Clone(),
+		order:              append([]department.OrderOption{}, dq.order...),
+		inters:             append([]Interceptor{}, dq.inters...),
+		predicates:         append([]predicate.Department{}, dq.predicates...),
+		withPositions:      dq.withPositions.Clone(),
+		withOrganization:   dq.withOrganization.Clone(),
+		withZaloDepartment: dq.withZaloDepartment.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -326,6 +351,17 @@ func (dq *DepartmentQuery) WithOrganization(opts ...func(*OrganizationQuery)) *D
 		opt(query)
 	}
 	dq.withOrganization = query
+	return dq
+}
+
+// WithZaloDepartment tells the query-builder to eager-load the nodes that are connected to
+// the "zalo_department" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DepartmentQuery) WithZaloDepartment(opts ...func(*ZaloDepartmentQuery)) *DepartmentQuery {
+	query := (&ZaloDepartmentClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withZaloDepartment = query
 	return dq
 }
 
@@ -407,9 +443,10 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 	var (
 		nodes       = []*Department{}
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			dq.withPositions != nil,
 			dq.withOrganization != nil,
+			dq.withZaloDepartment != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -440,6 +477,13 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 	if query := dq.withOrganization; query != nil {
 		if err := dq.loadOrganization(ctx, query, nodes, nil,
 			func(n *Department, e *Organization) { n.Edges.Organization = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withZaloDepartment; query != nil {
+		if err := dq.loadZaloDepartment(ctx, query, nodes,
+			func(n *Department) { n.Edges.ZaloDepartment = []*ZaloDepartment{} },
+			func(n *Department, e *ZaloDepartment) { n.Edges.ZaloDepartment = append(n.Edges.ZaloDepartment, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -502,6 +546,36 @@ func (dq *DepartmentQuery) loadOrganization(ctx context.Context, query *Organiza
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (dq *DepartmentQuery) loadZaloDepartment(ctx context.Context, query *ZaloDepartmentQuery, nodes []*Department, init func(*Department), assign func(*Department, *ZaloDepartment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Department)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(zalodepartment.FieldDepartmentID)
+	}
+	query.Where(predicate.ZaloDepartment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(department.ZaloDepartmentColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.DepartmentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "department_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

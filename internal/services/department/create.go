@@ -31,7 +31,71 @@ func (s *DepartmentService) Create(ctx context.Context, orgID int, input dtos.De
 		}
 	}
 
-	// Create the department
+	// Start transaction if group_id is provided
+	if input.GroupID != nil && *input.GroupID != "" {
+		tx, err := s.Client.Tx(ctx)
+		if err != nil {
+			return nil, &ServiceError{
+				Status: http.StatusInternalServerError,
+				Msg:    "Failed to start transaction",
+			}
+		}
+		defer func() {
+			if r := recover(); r != nil {
+				tx.Rollback()
+			}
+		}()
+
+		// Create the department
+		dept, err := tx.Department.Create().
+			SetName(input.Name).
+			SetCode(input.Code).
+			SetOrgID(orgID).
+			Save(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, &ServiceError{
+				Status: http.StatusInternalServerError,
+				Msg:    "Failed to create department",
+			}
+		}
+
+		// Create zalo_department record
+		_, err = tx.ZaloDepartment.Create().
+			SetGroupID(*input.GroupID).
+			SetDepartmentID(dept.ID).
+			Save(ctx)
+		if err != nil {
+			tx.Rollback()
+			return nil, &ServiceError{
+				Status: http.StatusInternalServerError,
+				Msg:    "Failed to create zalo department mapping",
+			}
+		}
+
+		if err := tx.Commit(); err != nil {
+			return nil, &ServiceError{
+				Status: http.StatusInternalServerError,
+				Msg:    "Failed to commit transaction",
+			}
+		}
+
+		// Reload with edges
+		dept, err = s.Client.Department.Query().
+			Where(department.ID(dept.ID)).
+			WithZaloDepartment().
+			Only(ctx)
+		if err != nil {
+			return nil, &ServiceError{
+				Status: http.StatusInternalServerError,
+				Msg:    "Failed to reload department with edges",
+			}
+		}
+
+		return dept, nil
+	}
+
+	// Create the department without group_id
 	dept, err := s.Client.Department.Create().
 		SetName(input.Name).
 		SetCode(input.Code).
@@ -101,9 +165,41 @@ func (s *DepartmentService) CreateBulk(ctx context.Context, orgID int, input dto
 			}
 		}
 
+		// Create zalo_department record if group_id is provided
+		if deptInput.GroupID != nil && *deptInput.GroupID != "" {
+			_, err = tx.ZaloDepartment.Create().
+				SetGroupID(*deptInput.GroupID).
+				SetDepartmentID(dept.ID).
+				Save(ctx)
+			if err != nil {
+				tx.Rollback()
+				return nil, &ServiceError{
+					Status: http.StatusInternalServerError,
+					Msg:    "Failed to create zalo department mapping for: " + deptInput.Name,
+				}
+			}
+		}
+
 		// Get position count (will be 0 for newly created departments)
 		positionCount, _ := s.getPositionCount(ctx, dept.ID)
-		responses = append(responses, s.buildDepartmentResponse(dept, positionCount))
+
+		// Build response with group_id if available
+		var groupID *string
+		if deptInput.GroupID != nil && *deptInput.GroupID != "" {
+			groupID = deptInput.GroupID
+		}
+
+		response := dtos.DepartmentResponse{
+			ID:            dept.ID,
+			Name:          dept.Name,
+			Code:          dept.Code,
+			OrgID:         dept.OrgID,
+			CreatedAt:     dept.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			UpdatedAt:     dept.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			PositionCount: positionCount,
+			GroupID:       groupID,
+		}
+		responses = append(responses, response)
 	}
 
 	if err := tx.Commit(); err != nil {

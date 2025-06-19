@@ -6,14 +6,16 @@ import (
 
 // DepartmentCreateInput represents the input for creating a department
 type DepartmentCreateInput struct {
-	Name string `json:"name" binding:"required" validate:"required,min=1,max=100"`
-	Code string `json:"code" binding:"required" validate:"required,min=1,max=50"`
+	Name    string  `json:"name" binding:"required" validate:"required,min=1,max=100"`
+	Code    string  `json:"code" binding:"required" validate:"required,min=1,max=50"`
+	GroupID *string `json:"group_id" validate:"omitempty,min=1"`
 }
 
 // DepartmentUpdateInput represents the input for updating a department
 type DepartmentUpdateInput struct {
-	Name *string `json:"name" validate:"omitempty,min=1,max=100"`
-	Code *string `json:"code" validate:"omitempty,min=1,max=50"`
+	Name    *string `json:"name" validate:"omitempty,min=1,max=100"`
+	Code    *string `json:"code" validate:"omitempty,min=1,max=50"`
+	GroupID *string `json:"group_id" validate:"omitempty,min=1"`
 }
 
 // DepartmentBulkCreateInput represents the input for bulk creating departments
@@ -42,13 +44,14 @@ type DepartmentDeleteBulkInput struct {
 
 // DepartmentResponse represents a department with additional computed fields
 type DepartmentResponse struct {
-	ID            int    `json:"id"`
-	Name          string `json:"name"`
-	Code          string `json:"code"`
-	OrgID         int    `json:"org_id"`
-	CreatedAt     string `json:"created_at"`
-	UpdatedAt     string `json:"updated_at"`
-	PositionCount int    `json:"position_count"`
+	ID            int     `json:"id"`
+	Name          string  `json:"name"`
+	Code          string  `json:"code"`
+	OrgID         int     `json:"org_id"`
+	CreatedAt     string  `json:"created_at"`
+	UpdatedAt     string  `json:"updated_at"`
+	PositionCount int     `json:"position_count"`
+	GroupID       *string `json:"group_id,omitempty"`
 }
 
 // DepartmentListResponse represents the response for department list with pagination

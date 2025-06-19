@@ -40,9 +40,11 @@ type DepartmentEdges struct {
 	Positions []*Position `json:"positions"`
 	// Organization holds the value of the organization edge.
 	Organization *Organization `json:"organization"`
+	// ZaloDepartment holds the value of the zalo_department edge.
+	ZaloDepartment []*ZaloDepartment `json:"zalo_department"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // PositionsOrErr returns the Positions value or an error if the edge
@@ -63,6 +65,15 @@ func (e DepartmentEdges) OrganizationOrErr() (*Organization, error) {
 		return nil, &NotFoundError{label: organization.Label}
 	}
 	return nil, &NotLoadedError{edge: "organization"}
+}
+
+// ZaloDepartmentOrErr returns the ZaloDepartment value or an error if the edge
+// was not loaded in eager-loading.
+func (e DepartmentEdges) ZaloDepartmentOrErr() ([]*ZaloDepartment, error) {
+	if e.loadedTypes[2] {
+		return e.ZaloDepartment, nil
+	}
+	return nil, &NotLoadedError{edge: "zalo_department"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -148,6 +159,11 @@ func (d *Department) QueryPositions() *PositionQuery {
 // QueryOrganization queries the "organization" edge of the Department entity.
 func (d *Department) QueryOrganization() *OrganizationQuery {
 	return NewDepartmentClient(d.config).QueryOrganization(d)
+}
+
+// QueryZaloDepartment queries the "zalo_department" edge of the Department entity.
+func (d *Department) QueryZaloDepartment() *ZaloDepartmentQuery {
+	return NewDepartmentClient(d.config).QueryZaloDepartment(d)
 }
 
 // Update returns a builder for updating this Department.

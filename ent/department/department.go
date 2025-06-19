@@ -28,6 +28,8 @@ const (
 	EdgePositions = "positions"
 	// EdgeOrganization holds the string denoting the organization edge name in mutations.
 	EdgeOrganization = "organization"
+	// EdgeZaloDepartment holds the string denoting the zalo_department edge name in mutations.
+	EdgeZaloDepartment = "zalo_department"
 	// Table holds the table name of the department in the database.
 	Table = "departments"
 	// PositionsTable is the table that holds the positions relation/edge.
@@ -44,6 +46,13 @@ const (
 	OrganizationInverseTable = "organizations"
 	// OrganizationColumn is the table column denoting the organization relation/edge.
 	OrganizationColumn = "org_id"
+	// ZaloDepartmentTable is the table that holds the zalo_department relation/edge.
+	ZaloDepartmentTable = "zalo_departments"
+	// ZaloDepartmentInverseTable is the table name for the ZaloDepartment entity.
+	// It exists in this package in order to avoid circular dependency with the "zalodepartment" package.
+	ZaloDepartmentInverseTable = "zalo_departments"
+	// ZaloDepartmentColumn is the table column denoting the zalo_department relation/edge.
+	ZaloDepartmentColumn = "department_id"
 )
 
 // Columns holds all SQL columns for department fields.
@@ -130,6 +139,20 @@ func ByOrganizationField(field string, opts ...sql.OrderTermOption) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newOrganizationStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByZaloDepartmentCount orders the results by zalo_department count.
+func ByZaloDepartmentCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newZaloDepartmentStep(), opts...)
+	}
+}
+
+// ByZaloDepartment orders the results by zalo_department terms.
+func ByZaloDepartment(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newZaloDepartmentStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPositionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -142,5 +165,12 @@ func newOrganizationStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OrganizationInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, OrganizationTable, OrganizationColumn),
+	)
+}
+func newZaloDepartmentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ZaloDepartmentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ZaloDepartmentTable, ZaloDepartmentColumn),
 	)
 }

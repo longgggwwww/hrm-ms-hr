@@ -141,6 +141,18 @@ func (f TaskReportFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TaskReportMutation", m)
 }
 
+// The ZaloDepartmentFunc type is an adapter to allow the use of ordinary
+// function as ZaloDepartment mutator.
+type ZaloDepartmentFunc func(context.Context, *ent.ZaloDepartmentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ZaloDepartmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ZaloDepartmentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ZaloDepartmentMutation", m)
+}
+
 // The ZaloEmployeeFunc type is an adapter to allow the use of ordinary
 // function as ZaloEmployee mutator.
 type ZaloEmployeeFunc func(context.Context, *ent.ZaloEmployeeMutation) (ent.Value, error)

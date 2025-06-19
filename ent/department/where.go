@@ -356,6 +356,29 @@ func HasOrganizationWith(preds ...predicate.Organization) predicate.Department {
 	})
 }
 
+// HasZaloDepartment applies the HasEdge predicate on the "zalo_department" edge.
+func HasZaloDepartment() predicate.Department {
+	return predicate.Department(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ZaloDepartmentTable, ZaloDepartmentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasZaloDepartmentWith applies the HasEdge predicate on the "zalo_department" edge with a given conditions (other predicates).
+func HasZaloDepartmentWith(preds ...predicate.ZaloDepartment) predicate.Department {
+	return predicate.Department(func(s *sql.Selector) {
+		step := newZaloDepartmentStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Department) predicate.Department {
 	return predicate.Department(sql.AndPredicates(predicates...))

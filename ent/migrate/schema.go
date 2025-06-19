@@ -350,6 +350,40 @@ var (
 			},
 		},
 	}
+	// ZaloDepartmentsColumns holds the columns for the "zalo_departments" table.
+	ZaloDepartmentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "group_id", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "department_id", Type: field.TypeInt},
+	}
+	// ZaloDepartmentsTable holds the schema information for the "zalo_departments" table.
+	ZaloDepartmentsTable = &schema.Table{
+		Name:       "zalo_departments",
+		Columns:    ZaloDepartmentsColumns,
+		PrimaryKey: []*schema.Column{ZaloDepartmentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "zalo_departments_departments_zalo_department",
+				Columns:    []*schema.Column{ZaloDepartmentsColumns[4]},
+				RefColumns: []*schema.Column{DepartmentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "zalodepartment_department_id",
+				Unique:  true,
+				Columns: []*schema.Column{ZaloDepartmentsColumns[4]},
+			},
+			{
+				Name:    "zalodepartment_group_id",
+				Unique:  false,
+				Columns: []*schema.Column{ZaloDepartmentsColumns[1]},
+			},
+		},
+	}
 	// ZaloEmployeesColumns holds the columns for the "zalo_employees" table.
 	ZaloEmployeesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -472,6 +506,7 @@ var (
 		ProjectsTable,
 		TasksTable,
 		TaskReportsTable,
+		ZaloDepartmentsTable,
 		ZaloEmployeesTable,
 		ProjectMembersTable,
 		TaskLabelsTable,
@@ -497,6 +532,7 @@ func init() {
 	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
 	TaskReportsTable.ForeignKeys[0].RefTable = EmployeesTable
 	TaskReportsTable.ForeignKeys[1].RefTable = TasksTable
+	ZaloDepartmentsTable.ForeignKeys[0].RefTable = DepartmentsTable
 	ZaloEmployeesTable.ForeignKeys[0].RefTable = EmployeesTable
 	ProjectMembersTable.ForeignKeys[0].RefTable = ProjectsTable
 	ProjectMembersTable.ForeignKeys[1].RefTable = EmployeesTable
