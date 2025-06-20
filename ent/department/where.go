@@ -80,6 +80,11 @@ func UpdatedAt(v time.Time) predicate.Department {
 	return predicate.Department(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// ZaloGid applies equality check predicate on the "zalo_gid" field. It's identical to ZaloGidEQ.
+func ZaloGid(v string) predicate.Department {
+	return predicate.Department(sql.FieldEQ(FieldZaloGid, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Department {
 	return predicate.Department(sql.FieldEQ(FieldName, v))
@@ -310,6 +315,81 @@ func UpdatedAtLTE(v time.Time) predicate.Department {
 	return predicate.Department(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
+// ZaloGidEQ applies the EQ predicate on the "zalo_gid" field.
+func ZaloGidEQ(v string) predicate.Department {
+	return predicate.Department(sql.FieldEQ(FieldZaloGid, v))
+}
+
+// ZaloGidNEQ applies the NEQ predicate on the "zalo_gid" field.
+func ZaloGidNEQ(v string) predicate.Department {
+	return predicate.Department(sql.FieldNEQ(FieldZaloGid, v))
+}
+
+// ZaloGidIn applies the In predicate on the "zalo_gid" field.
+func ZaloGidIn(vs ...string) predicate.Department {
+	return predicate.Department(sql.FieldIn(FieldZaloGid, vs...))
+}
+
+// ZaloGidNotIn applies the NotIn predicate on the "zalo_gid" field.
+func ZaloGidNotIn(vs ...string) predicate.Department {
+	return predicate.Department(sql.FieldNotIn(FieldZaloGid, vs...))
+}
+
+// ZaloGidGT applies the GT predicate on the "zalo_gid" field.
+func ZaloGidGT(v string) predicate.Department {
+	return predicate.Department(sql.FieldGT(FieldZaloGid, v))
+}
+
+// ZaloGidGTE applies the GTE predicate on the "zalo_gid" field.
+func ZaloGidGTE(v string) predicate.Department {
+	return predicate.Department(sql.FieldGTE(FieldZaloGid, v))
+}
+
+// ZaloGidLT applies the LT predicate on the "zalo_gid" field.
+func ZaloGidLT(v string) predicate.Department {
+	return predicate.Department(sql.FieldLT(FieldZaloGid, v))
+}
+
+// ZaloGidLTE applies the LTE predicate on the "zalo_gid" field.
+func ZaloGidLTE(v string) predicate.Department {
+	return predicate.Department(sql.FieldLTE(FieldZaloGid, v))
+}
+
+// ZaloGidContains applies the Contains predicate on the "zalo_gid" field.
+func ZaloGidContains(v string) predicate.Department {
+	return predicate.Department(sql.FieldContains(FieldZaloGid, v))
+}
+
+// ZaloGidHasPrefix applies the HasPrefix predicate on the "zalo_gid" field.
+func ZaloGidHasPrefix(v string) predicate.Department {
+	return predicate.Department(sql.FieldHasPrefix(FieldZaloGid, v))
+}
+
+// ZaloGidHasSuffix applies the HasSuffix predicate on the "zalo_gid" field.
+func ZaloGidHasSuffix(v string) predicate.Department {
+	return predicate.Department(sql.FieldHasSuffix(FieldZaloGid, v))
+}
+
+// ZaloGidIsNil applies the IsNil predicate on the "zalo_gid" field.
+func ZaloGidIsNil() predicate.Department {
+	return predicate.Department(sql.FieldIsNull(FieldZaloGid))
+}
+
+// ZaloGidNotNil applies the NotNil predicate on the "zalo_gid" field.
+func ZaloGidNotNil() predicate.Department {
+	return predicate.Department(sql.FieldNotNull(FieldZaloGid))
+}
+
+// ZaloGidEqualFold applies the EqualFold predicate on the "zalo_gid" field.
+func ZaloGidEqualFold(v string) predicate.Department {
+	return predicate.Department(sql.FieldEqualFold(FieldZaloGid, v))
+}
+
+// ZaloGidContainsFold applies the ContainsFold predicate on the "zalo_gid" field.
+func ZaloGidContainsFold(v string) predicate.Department {
+	return predicate.Department(sql.FieldContainsFold(FieldZaloGid, v))
+}
+
 // HasPositions applies the HasEdge predicate on the "positions" edge.
 func HasPositions() predicate.Department {
 	return predicate.Department(func(s *sql.Selector) {
@@ -348,29 +428,6 @@ func HasOrganization() predicate.Department {
 func HasOrganizationWith(preds ...predicate.Organization) predicate.Department {
 	return predicate.Department(func(s *sql.Selector) {
 		step := newOrganizationStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasZaloDepartment applies the HasEdge predicate on the "zalo_department" edge.
-func HasZaloDepartment() predicate.Department {
-	return predicate.Department(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ZaloDepartmentTable, ZaloDepartmentColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasZaloDepartmentWith applies the HasEdge predicate on the "zalo_department" edge with a given conditions (other predicates).
-func HasZaloDepartmentWith(preds ...predicate.ZaloDepartment) predicate.Department {
-	return predicate.Department(func(s *sql.Selector) {
-		step := newZaloDepartmentStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

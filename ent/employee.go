@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
-	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // Employee is the model entity for the Employee schema.
@@ -35,6 +34,8 @@ type Employee struct {
 	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at"`
+	// ZaloUID holds the value of the "zalo_uid" field.
+	ZaloUID *string `json:"zalo_uid"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EmployeeQuery when eager-loading is set.
 	Edges        EmployeeEdges `json:"edges"`
@@ -61,11 +62,9 @@ type EmployeeEdges struct {
 	Projects []*Project `json:"projects"`
 	// AppointmentHistories holds the value of the appointment_histories edge.
 	AppointmentHistories []*AppointmentHistory `json:"appointment_histories"`
-	// ZaloEmployee holds the value of the zalo_employee edge.
-	ZaloEmployee *ZaloEmployee `json:"zalo_employee"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [9]bool
 }
 
 // PositionOrErr returns the Position value or an error if the edge
@@ -151,17 +150,6 @@ func (e EmployeeEdges) AppointmentHistoriesOrErr() ([]*AppointmentHistory, error
 	return nil, &NotLoadedError{edge: "appointment_histories"}
 }
 
-// ZaloEmployeeOrErr returns the ZaloEmployee value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e EmployeeEdges) ZaloEmployeeOrErr() (*ZaloEmployee, error) {
-	if e.ZaloEmployee != nil {
-		return e.ZaloEmployee, nil
-	} else if e.loadedTypes[9] {
-		return nil, &NotFoundError{label: zaloemployee.Label}
-	}
-	return nil, &NotLoadedError{edge: "zalo_employee"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Employee) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -169,7 +157,7 @@ func (*Employee) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case employee.FieldID, employee.FieldPositionID, employee.FieldOrgID:
 			values[i] = new(sql.NullInt64)
-		case employee.FieldUserID, employee.FieldCode, employee.FieldStatus:
+		case employee.FieldUserID, employee.FieldCode, employee.FieldStatus, employee.FieldZaloUID:
 			values[i] = new(sql.NullString)
 		case employee.FieldJoiningAt, employee.FieldCreatedAt, employee.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -242,6 +230,13 @@ func (e *Employee) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.UpdatedAt = value.Time
 			}
+		case employee.FieldZaloUID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field zalo_uid", values[i])
+			} else if value.Valid {
+				e.ZaloUID = new(string)
+				*e.ZaloUID = value.String
+			}
 		default:
 			e.selectValues.Set(columns[i], values[i])
 		}
@@ -300,11 +295,6 @@ func (e *Employee) QueryAppointmentHistories() *AppointmentHistoryQuery {
 	return NewEmployeeClient(e.config).QueryAppointmentHistories(e)
 }
 
-// QueryZaloEmployee queries the "zalo_employee" edge of the Employee entity.
-func (e *Employee) QueryZaloEmployee() *ZaloEmployeeQuery {
-	return NewEmployeeClient(e.config).QueryZaloEmployee(e)
-}
-
 // Update returns a builder for updating this Employee.
 // Note that you need to call Employee.Unwrap() before calling this method if this Employee
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -351,6 +341,11 @@ func (e *Employee) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(e.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := e.ZaloUID; v != nil {
+		builder.WriteString("zalo_uid=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

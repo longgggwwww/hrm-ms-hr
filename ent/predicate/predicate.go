@@ -38,9 +38,3 @@ type Task func(*sql.Selector)
 
 // TaskReport is the predicate function for taskreport builders.
 type TaskReport func(*sql.Selector)
-
-// ZaloDepartment is the predicate function for zalodepartment builders.
-type ZaloDepartment func(*sql.Selector)
-
-// ZaloEmployee is the predicate function for zaloemployee builders.
-type ZaloEmployee func(*sql.Selector)

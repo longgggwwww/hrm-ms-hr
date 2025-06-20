@@ -6,7 +6,6 @@ import (
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
-	"github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
 )
 
@@ -50,8 +49,8 @@ func (s *DepartmentService) Update(ctx context.Context, id int, input dtos.Depar
 		}
 	}
 
-	// Start transaction if group_id is being updated
-	if input.GroupID != nil {
+	// Start transaction if zalo_gid is being updated
+	if input.ZaloGID != nil {
 		tx, err := s.Client.Tx(ctx)
 		if err != nil {
 			return nil, &ServiceError{
@@ -75,6 +74,13 @@ func (s *DepartmentService) Update(ctx context.Context, id int, input dtos.Depar
 		if input.Code != nil {
 			update = update.SetCode(*input.Code)
 		}
+		if input.ZaloGID != nil {
+			if *input.ZaloGID == "" {
+				update = update.ClearZaloGid()
+			} else {
+				update = update.SetZaloGid(*input.ZaloGID)
+			}
+		}
 
 		// Save the updated department
 		updatedDept, err := update.Save(ctx)
@@ -83,61 +89,6 @@ func (s *DepartmentService) Update(ctx context.Context, id int, input dtos.Depar
 			return nil, &ServiceError{
 				Status: http.StatusInternalServerError,
 				Msg:    "Failed to update department",
-			}
-		}
-
-		// Handle zalo_department update
-		if *input.GroupID == "" {
-			// Remove zalo_department if group_id is empty
-			_, err = tx.ZaloDepartment.Delete().
-				Where(zalodepartment.DepartmentID(id)).
-				Exec(ctx)
-			if err != nil {
-				tx.Rollback()
-				return nil, &ServiceError{
-					Status: http.StatusInternalServerError,
-					Msg:    "Failed to remove zalo department mapping",
-				}
-			}
-		} else {
-			// Check if zalo_department exists
-			exists, err := tx.ZaloDepartment.Query().
-				Where(zalodepartment.DepartmentID(id)).
-				Exist(ctx)
-			if err != nil {
-				tx.Rollback()
-				return nil, &ServiceError{
-					Status: http.StatusInternalServerError,
-					Msg:    "Failed to check zalo department existence",
-				}
-			}
-
-			if exists {
-				// Update existing zalo_department
-				_, err = tx.ZaloDepartment.Update().
-					Where(zalodepartment.DepartmentID(id)).
-					SetGroupID(*input.GroupID).
-					Save(ctx)
-				if err != nil {
-					tx.Rollback()
-					return nil, &ServiceError{
-						Status: http.StatusInternalServerError,
-						Msg:    "Failed to update zalo department mapping",
-					}
-				}
-			} else {
-				// Create new zalo_department
-				_, err = tx.ZaloDepartment.Create().
-					SetGroupID(*input.GroupID).
-					SetDepartmentID(id).
-					Save(ctx)
-				if err != nil {
-					tx.Rollback()
-					return nil, &ServiceError{
-						Status: http.StatusInternalServerError,
-						Msg:    "Failed to create zalo department mapping",
-					}
-				}
 			}
 		}
 
@@ -151,7 +102,6 @@ func (s *DepartmentService) Update(ctx context.Context, id int, input dtos.Depar
 		// Reload with edges
 		updatedDept, err = s.Client.Department.Query().
 			Where(department.ID(id)).
-			WithZaloDepartment().
 			Only(ctx)
 		if err != nil {
 			return nil, &ServiceError{
@@ -163,7 +113,7 @@ func (s *DepartmentService) Update(ctx context.Context, id int, input dtos.Depar
 		return updatedDept, nil
 	}
 
-	// Update department without group_id changes
+	// Update department without zalo_gid changes
 	update := s.Client.Department.UpdateOneID(id)
 
 	// Apply updates

@@ -17,7 +17,6 @@ import (
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
 	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
 	taskreport "github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
-	zaloemployee "github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -86,6 +85,10 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 	v.UpdatedAt = updated_at
 	user_id := wrapperspb.String(e.UserID)
 	v.UserId = user_id
+	if e.ZaloUID != nil {
+		zalo_uid := wrapperspb.String(*e.ZaloUID)
+		v.ZaloUid = zalo_uid
+	}
 	for _, edg := range e.Edges.AppointmentHistories {
 		id := int64(edg.ID)
 		v.AppointmentHistories = append(v.AppointmentHistories, &AppointmentHistory{
@@ -139,12 +142,6 @@ func toProtoEmployee(e *ent.Employee) (*Employee, error) {
 		v.UpdatedProjects = append(v.UpdatedProjects, &Project{
 			Id: id,
 		})
-	}
-	if edg := e.Edges.ZaloEmployee; edg != nil {
-		id := int64(edg.ID)
-		v.ZaloEmployee = &ZaloEmployee{
-			Id: id,
-		}
 	}
 	return v, nil
 }
@@ -227,9 +224,6 @@ func (svc *EmployeeService) Get(ctx context.Context, req *GetEmployeeRequest) (*
 			WithUpdatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
-			WithZaloEmployee(func(query *ent.ZaloEmployeeQuery) {
-				query.Select(zaloemployee.FieldID)
-			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -266,6 +260,10 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
 	}
+	if employee.GetZaloUid() != nil {
+		employeeZaloUID := employee.GetZaloUid().GetValue()
+		m.SetZaloUID(employeeZaloUID)
+	}
 	for _, item := range employee.GetAppointmentHistories() {
 		appointmenthistories := int(item.GetId())
 		m.AddAppointmentHistoryIDs(appointmenthistories)
@@ -301,10 +299,6 @@ func (svc *EmployeeService) Update(ctx context.Context, req *UpdateEmployeeReque
 	for _, item := range employee.GetUpdatedProjects() {
 		updatedprojects := int(item.GetId())
 		m.AddUpdatedProjectIDs(updatedprojects)
-	}
-	if employee.GetZaloEmployee() != nil {
-		employeeZaloEmployee := int(employee.GetZaloEmployee().GetId())
-		m.SetZaloEmployeeID(employeeZaloEmployee)
 	}
 
 	res, err := m.Save(ctx)
@@ -403,9 +397,6 @@ func (svc *EmployeeService) List(ctx context.Context, req *ListEmployeeRequest) 
 			WithUpdatedProjects(func(query *ent.ProjectQuery) {
 				query.Select(project.FieldID)
 			}).
-			WithZaloEmployee(func(query *ent.ZaloEmployeeQuery) {
-				query.Select(zaloemployee.FieldID)
-			}).
 			All(ctx)
 	}
 	switch {
@@ -485,6 +476,10 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 		employeeUserID := employee.GetUserId().GetValue()
 		m.SetUserID(employeeUserID)
 	}
+	if employee.GetZaloUid() != nil {
+		employeeZaloUID := employee.GetZaloUid().GetValue()
+		m.SetZaloUID(employeeZaloUID)
+	}
 	for _, item := range employee.GetAppointmentHistories() {
 		appointmenthistories := int(item.GetId())
 		m.AddAppointmentHistoryIDs(appointmenthistories)
@@ -520,10 +515,6 @@ func (svc *EmployeeService) createBuilder(employee *Employee) (*ent.EmployeeCrea
 	for _, item := range employee.GetUpdatedProjects() {
 		updatedprojects := int(item.GetId())
 		m.AddUpdatedProjectIDs(updatedprojects)
-	}
-	if employee.GetZaloEmployee() != nil {
-		employeeZaloEmployee := int(employee.GetZaloEmployee().GetId())
-		m.SetZaloEmployeeID(employeeZaloEmployee)
 	}
 	return m, nil
 }

@@ -52,13 +52,6 @@ func (s *DepartmentService) decodeCursor(cursor string) (map[string]interface{},
 
 // buildDepartmentResponse creates a DepartmentResponse from an ent.Department
 func (s *DepartmentService) buildDepartmentResponse(dept *ent.Department, positionCount int) dtos.DepartmentResponse {
-	var groupID *string
-
-	// Get group_id from zalo_department edge if exists
-	if len(dept.Edges.ZaloDepartment) > 0 {
-		groupID = &dept.Edges.ZaloDepartment[0].GroupID
-	}
-
 	return dtos.DepartmentResponse{
 		ID:            dept.ID,
 		Name:          dept.Name,
@@ -67,7 +60,7 @@ func (s *DepartmentService) buildDepartmentResponse(dept *ent.Department, positi
 		CreatedAt:     dept.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt:     dept.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		PositionCount: positionCount,
-		GroupID:       groupID,
+		ZaloGID:       dept.ZaloGid,
 	}
 }
 

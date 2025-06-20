@@ -57,6 +57,11 @@ func (Employee) Fields() []ent.Field {
 			UpdateDefault(time.Now).
 			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(9)),
+		field.String("zalo_uid").
+			Optional().
+			Nillable().
+			StructTag(`json:"zalo_uid"`).
+			Annotations(entproto.Field(20)),
 	}
 }
 
@@ -96,10 +101,6 @@ func (Employee) Edges() []ent.Edge {
 		edge.To("appointment_histories", AppointmentHistory.Type).
 			StructTag(`json:"appointment_histories"`).
 			Annotations(entproto.Field(18)),
-		edge.To("zalo_employee", ZaloEmployee.Type).
-			Unique().
-			StructTag(`json:"zalo_employee"`).
-			Annotations(entproto.Field(19)),
 	}
 }
 

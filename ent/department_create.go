@@ -14,7 +14,6 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
-	"github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
 )
 
 // DepartmentCreate is the builder for creating a Department entity.
@@ -71,6 +70,20 @@ func (dc *DepartmentCreate) SetNillableUpdatedAt(t *time.Time) *DepartmentCreate
 	return dc
 }
 
+// SetZaloGid sets the "zalo_gid" field.
+func (dc *DepartmentCreate) SetZaloGid(s string) *DepartmentCreate {
+	dc.mutation.SetZaloGid(s)
+	return dc
+}
+
+// SetNillableZaloGid sets the "zalo_gid" field if the given value is not nil.
+func (dc *DepartmentCreate) SetNillableZaloGid(s *string) *DepartmentCreate {
+	if s != nil {
+		dc.SetZaloGid(*s)
+	}
+	return dc
+}
+
 // AddPositionIDs adds the "positions" edge to the Position entity by IDs.
 func (dc *DepartmentCreate) AddPositionIDs(ids ...int) *DepartmentCreate {
 	dc.mutation.AddPositionIDs(ids...)
@@ -95,21 +108,6 @@ func (dc *DepartmentCreate) SetOrganizationID(id int) *DepartmentCreate {
 // SetOrganization sets the "organization" edge to the Organization entity.
 func (dc *DepartmentCreate) SetOrganization(o *Organization) *DepartmentCreate {
 	return dc.SetOrganizationID(o.ID)
-}
-
-// AddZaloDepartmentIDs adds the "zalo_department" edge to the ZaloDepartment entity by IDs.
-func (dc *DepartmentCreate) AddZaloDepartmentIDs(ids ...int) *DepartmentCreate {
-	dc.mutation.AddZaloDepartmentIDs(ids...)
-	return dc
-}
-
-// AddZaloDepartment adds the "zalo_department" edges to the ZaloDepartment entity.
-func (dc *DepartmentCreate) AddZaloDepartment(z ...*ZaloDepartment) *DepartmentCreate {
-	ids := make([]int, len(z))
-	for i := range z {
-		ids[i] = z[i].ID
-	}
-	return dc.AddZaloDepartmentIDs(ids...)
 }
 
 // Mutation returns the DepartmentMutation object of the builder.
@@ -230,6 +228,10 @@ func (dc *DepartmentCreate) createSpec() (*Department, *sqlgraph.CreateSpec) {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := dc.mutation.ZaloGid(); ok {
+		_spec.SetField(department.FieldZaloGid, field.TypeString, value)
+		_node.ZaloGid = &value
+	}
 	if nodes := dc.mutation.PositionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -261,22 +263,6 @@ func (dc *DepartmentCreate) createSpec() (*Department, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.OrgID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := dc.mutation.ZaloDepartmentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   department.ZaloDepartmentTable,
-			Columns: []string{department.ZaloDepartmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -379,6 +365,24 @@ func (u *DepartmentUpsert) UpdateUpdatedAt() *DepartmentUpsert {
 	return u
 }
 
+// SetZaloGid sets the "zalo_gid" field.
+func (u *DepartmentUpsert) SetZaloGid(v string) *DepartmentUpsert {
+	u.Set(department.FieldZaloGid, v)
+	return u
+}
+
+// UpdateZaloGid sets the "zalo_gid" field to the value that was provided on create.
+func (u *DepartmentUpsert) UpdateZaloGid() *DepartmentUpsert {
+	u.SetExcluded(department.FieldZaloGid)
+	return u
+}
+
+// ClearZaloGid clears the value of the "zalo_gid" field.
+func (u *DepartmentUpsert) ClearZaloGid() *DepartmentUpsert {
+	u.SetNull(department.FieldZaloGid)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -477,6 +481,27 @@ func (u *DepartmentUpsertOne) SetUpdatedAt(v time.Time) *DepartmentUpsertOne {
 func (u *DepartmentUpsertOne) UpdateUpdatedAt() *DepartmentUpsertOne {
 	return u.Update(func(s *DepartmentUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetZaloGid sets the "zalo_gid" field.
+func (u *DepartmentUpsertOne) SetZaloGid(v string) *DepartmentUpsertOne {
+	return u.Update(func(s *DepartmentUpsert) {
+		s.SetZaloGid(v)
+	})
+}
+
+// UpdateZaloGid sets the "zalo_gid" field to the value that was provided on create.
+func (u *DepartmentUpsertOne) UpdateZaloGid() *DepartmentUpsertOne {
+	return u.Update(func(s *DepartmentUpsert) {
+		s.UpdateZaloGid()
+	})
+}
+
+// ClearZaloGid clears the value of the "zalo_gid" field.
+func (u *DepartmentUpsertOne) ClearZaloGid() *DepartmentUpsertOne {
+	return u.Update(func(s *DepartmentUpsert) {
+		s.ClearZaloGid()
 	})
 }
 
@@ -744,6 +769,27 @@ func (u *DepartmentUpsertBulk) SetUpdatedAt(v time.Time) *DepartmentUpsertBulk {
 func (u *DepartmentUpsertBulk) UpdateUpdatedAt() *DepartmentUpsertBulk {
 	return u.Update(func(s *DepartmentUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetZaloGid sets the "zalo_gid" field.
+func (u *DepartmentUpsertBulk) SetZaloGid(v string) *DepartmentUpsertBulk {
+	return u.Update(func(s *DepartmentUpsert) {
+		s.SetZaloGid(v)
+	})
+}
+
+// UpdateZaloGid sets the "zalo_gid" field to the value that was provided on create.
+func (u *DepartmentUpsertBulk) UpdateZaloGid() *DepartmentUpsertBulk {
+	return u.Update(func(s *DepartmentUpsert) {
+		s.UpdateZaloGid()
+	})
+}
+
+// ClearZaloGid clears the value of the "zalo_gid" field.
+func (u *DepartmentUpsertBulk) ClearZaloGid() *DepartmentUpsertBulk {
+	return u.Update(func(s *DepartmentUpsert) {
+		s.ClearZaloGid()
 	})
 }
 

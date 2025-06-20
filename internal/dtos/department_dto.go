@@ -8,14 +8,14 @@ import (
 type DepartmentCreateInput struct {
 	Name    string  `json:"name" binding:"required" validate:"required,min=1,max=100"`
 	Code    string  `json:"code" binding:"required" validate:"required,min=1,max=50"`
-	GroupID *string `json:"group_id" validate:"omitempty,min=1"`
+	ZaloGID *string `json:"zalo_gid" validate:"omitempty,min=1"`
 }
 
 // DepartmentUpdateInput represents the input for updating a department
 type DepartmentUpdateInput struct {
 	Name    *string `json:"name" validate:"omitempty,min=1,max=100"`
 	Code    *string `json:"code" validate:"omitempty,min=1,max=50"`
-	GroupID *string `json:"group_id" validate:"omitempty,min=1"`
+	ZaloGID *string `json:"zalo_gid" validate:"omitempty,min=1"`
 }
 
 // DepartmentBulkCreateInput represents the input for bulk creating departments
@@ -51,7 +51,7 @@ type DepartmentResponse struct {
 	CreatedAt     string  `json:"created_at"`
 	UpdatedAt     string  `json:"updated_at"`
 	PositionCount int     `json:"position_count"`
-	GroupID       *string `json:"group_id,omitempty"`
+	ZaloGID       *string `json:"zalo_gid,omitempty"`
 }
 
 // DepartmentListResponse represents the response for department list with pagination

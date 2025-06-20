@@ -90,6 +90,11 @@ func UpdatedAt(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// ZaloUID applies equality check predicate on the "zalo_uid" field. It's identical to ZaloUIDEQ.
+func ZaloUID(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldZaloUID, v))
+}
+
 // UserIDEQ applies the EQ predicate on the "user_id" field.
 func UserIDEQ(v string) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldUserID, v))
@@ -430,6 +435,81 @@ func UpdatedAtLTE(v time.Time) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
+// ZaloUIDEQ applies the EQ predicate on the "zalo_uid" field.
+func ZaloUIDEQ(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldZaloUID, v))
+}
+
+// ZaloUIDNEQ applies the NEQ predicate on the "zalo_uid" field.
+func ZaloUIDNEQ(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldNEQ(FieldZaloUID, v))
+}
+
+// ZaloUIDIn applies the In predicate on the "zalo_uid" field.
+func ZaloUIDIn(vs ...string) predicate.Employee {
+	return predicate.Employee(sql.FieldIn(FieldZaloUID, vs...))
+}
+
+// ZaloUIDNotIn applies the NotIn predicate on the "zalo_uid" field.
+func ZaloUIDNotIn(vs ...string) predicate.Employee {
+	return predicate.Employee(sql.FieldNotIn(FieldZaloUID, vs...))
+}
+
+// ZaloUIDGT applies the GT predicate on the "zalo_uid" field.
+func ZaloUIDGT(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldGT(FieldZaloUID, v))
+}
+
+// ZaloUIDGTE applies the GTE predicate on the "zalo_uid" field.
+func ZaloUIDGTE(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldGTE(FieldZaloUID, v))
+}
+
+// ZaloUIDLT applies the LT predicate on the "zalo_uid" field.
+func ZaloUIDLT(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldLT(FieldZaloUID, v))
+}
+
+// ZaloUIDLTE applies the LTE predicate on the "zalo_uid" field.
+func ZaloUIDLTE(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldLTE(FieldZaloUID, v))
+}
+
+// ZaloUIDContains applies the Contains predicate on the "zalo_uid" field.
+func ZaloUIDContains(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldContains(FieldZaloUID, v))
+}
+
+// ZaloUIDHasPrefix applies the HasPrefix predicate on the "zalo_uid" field.
+func ZaloUIDHasPrefix(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldHasPrefix(FieldZaloUID, v))
+}
+
+// ZaloUIDHasSuffix applies the HasSuffix predicate on the "zalo_uid" field.
+func ZaloUIDHasSuffix(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldHasSuffix(FieldZaloUID, v))
+}
+
+// ZaloUIDIsNil applies the IsNil predicate on the "zalo_uid" field.
+func ZaloUIDIsNil() predicate.Employee {
+	return predicate.Employee(sql.FieldIsNull(FieldZaloUID))
+}
+
+// ZaloUIDNotNil applies the NotNil predicate on the "zalo_uid" field.
+func ZaloUIDNotNil() predicate.Employee {
+	return predicate.Employee(sql.FieldNotNull(FieldZaloUID))
+}
+
+// ZaloUIDEqualFold applies the EqualFold predicate on the "zalo_uid" field.
+func ZaloUIDEqualFold(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEqualFold(FieldZaloUID, v))
+}
+
+// ZaloUIDContainsFold applies the ContainsFold predicate on the "zalo_uid" field.
+func ZaloUIDContainsFold(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldContainsFold(FieldZaloUID, v))
+}
+
 // HasPosition applies the HasEdge predicate on the "position" edge.
 func HasPosition() predicate.Employee {
 	return predicate.Employee(func(s *sql.Selector) {
@@ -629,29 +709,6 @@ func HasAppointmentHistories() predicate.Employee {
 func HasAppointmentHistoriesWith(preds ...predicate.AppointmentHistory) predicate.Employee {
 	return predicate.Employee(func(s *sql.Selector) {
 		step := newAppointmentHistoriesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasZaloEmployee applies the HasEdge predicate on the "zalo_employee" edge.
-func HasZaloEmployee() predicate.Employee {
-	return predicate.Employee(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, ZaloEmployeeTable, ZaloEmployeeColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasZaloEmployeeWith applies the HasEdge predicate on the "zalo_employee" edge with a given conditions (other predicates).
-func HasZaloEmployeeWith(preds ...predicate.ZaloEmployee) predicate.Employee {
-	return predicate.Employee(func(s *sql.Selector) {
-		step := newZaloEmployeeStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

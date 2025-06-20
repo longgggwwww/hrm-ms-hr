@@ -23,8 +23,6 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
-	"github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
-	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -96,8 +94,6 @@ func checkColumn(table, column string) error {
 			project.Table:            project.ValidColumn,
 			task.Table:               task.ValidColumn,
 			taskreport.Table:         taskreport.ValidColumn,
-			zalodepartment.Table:     zalodepartment.ValidColumn,
-			zaloemployee.Table:       zaloemployee.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

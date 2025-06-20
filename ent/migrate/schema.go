@@ -40,6 +40,7 @@ var (
 		{Name: "code", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "zalo_gid", Type: field.TypeString, Nullable: true},
 		{Name: "org_id", Type: field.TypeInt},
 	}
 	// DepartmentsTable holds the schema information for the "departments" table.
@@ -50,7 +51,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "departments_organizations_departments",
-				Columns:    []*schema.Column{DepartmentsColumns[5]},
+				Columns:    []*schema.Column{DepartmentsColumns[6]},
 				RefColumns: []*schema.Column{OrganizationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -59,7 +60,7 @@ var (
 			{
 				Name:    "department_code_org_id",
 				Unique:  true,
-				Columns: []*schema.Column{DepartmentsColumns[2], DepartmentsColumns[5]},
+				Columns: []*schema.Column{DepartmentsColumns[2], DepartmentsColumns[6]},
 			},
 		},
 	}
@@ -73,6 +74,7 @@ var (
 		{Name: "org_id", Type: field.TypeInt},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "zalo_uid", Type: field.TypeString, Nullable: true},
 		{Name: "position_id", Type: field.TypeInt},
 	}
 	// EmployeesTable holds the schema information for the "employees" table.
@@ -83,7 +85,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "employees_positions_employees",
-				Columns:    []*schema.Column{EmployeesColumns[8]},
+				Columns:    []*schema.Column{EmployeesColumns[9]},
 				RefColumns: []*schema.Column{PositionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -350,74 +352,6 @@ var (
 			},
 		},
 	}
-	// ZaloDepartmentsColumns holds the columns for the "zalo_departments" table.
-	ZaloDepartmentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "group_id", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "department_id", Type: field.TypeInt},
-	}
-	// ZaloDepartmentsTable holds the schema information for the "zalo_departments" table.
-	ZaloDepartmentsTable = &schema.Table{
-		Name:       "zalo_departments",
-		Columns:    ZaloDepartmentsColumns,
-		PrimaryKey: []*schema.Column{ZaloDepartmentsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "zalo_departments_departments_zalo_department",
-				Columns:    []*schema.Column{ZaloDepartmentsColumns[4]},
-				RefColumns: []*schema.Column{DepartmentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "zalodepartment_department_id",
-				Unique:  true,
-				Columns: []*schema.Column{ZaloDepartmentsColumns[4]},
-			},
-			{
-				Name:    "zalodepartment_group_id",
-				Unique:  false,
-				Columns: []*schema.Column{ZaloDepartmentsColumns[1]},
-			},
-		},
-	}
-	// ZaloEmployeesColumns holds the columns for the "zalo_employees" table.
-	ZaloEmployeesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "zalo_uid", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "employee_id", Type: field.TypeInt, Unique: true},
-	}
-	// ZaloEmployeesTable holds the schema information for the "zalo_employees" table.
-	ZaloEmployeesTable = &schema.Table{
-		Name:       "zalo_employees",
-		Columns:    ZaloEmployeesColumns,
-		PrimaryKey: []*schema.Column{ZaloEmployeesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "zalo_employees_employees_zalo_employee",
-				Columns:    []*schema.Column{ZaloEmployeesColumns[4]},
-				RefColumns: []*schema.Column{EmployeesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "zaloemployee_employee_id",
-				Unique:  true,
-				Columns: []*schema.Column{ZaloEmployeesColumns[4]},
-			},
-			{
-				Name:    "zaloemployee_zalo_uid",
-				Unique:  false,
-				Columns: []*schema.Column{ZaloEmployeesColumns[1]},
-			},
-		},
-	}
 	// ProjectMembersColumns holds the columns for the "project_members" table.
 	ProjectMembersColumns = []*schema.Column{
 		{Name: "project_id", Type: field.TypeInt},
@@ -506,8 +440,6 @@ var (
 		ProjectsTable,
 		TasksTable,
 		TaskReportsTable,
-		ZaloDepartmentsTable,
-		ZaloEmployeesTable,
 		ProjectMembersTable,
 		TaskLabelsTable,
 		TaskAssigneesTable,
@@ -532,8 +464,6 @@ func init() {
 	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
 	TaskReportsTable.ForeignKeys[0].RefTable = EmployeesTable
 	TaskReportsTable.ForeignKeys[1].RefTable = TasksTable
-	ZaloDepartmentsTable.ForeignKeys[0].RefTable = DepartmentsTable
-	ZaloEmployeesTable.ForeignKeys[0].RefTable = EmployeesTable
 	ProjectMembersTable.ForeignKeys[0].RefTable = ProjectsTable
 	ProjectMembersTable.ForeignKeys[1].RefTable = EmployeesTable
 	TaskLabelsTable.ForeignKeys[0].RefTable = TasksTable

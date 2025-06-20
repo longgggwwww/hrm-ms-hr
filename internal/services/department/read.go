@@ -17,7 +17,6 @@ func (s *DepartmentService) Get(ctx context.Context, id int) (*ent.Department, e
 		Where(department.ID(id)).
 		WithOrganization().
 		WithPositions().
-		WithZaloDepartment().
 		Only(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -41,8 +40,7 @@ func (s *DepartmentService) List(ctx context.Context, query dtos.DepartmentListQ
 	q := s.Client.Department.Query().
 		Where(department.OrgID(query.OrgID)).
 		WithOrganization().
-		WithPositions().
-		WithZaloDepartment()
+		WithPositions()
 
 	// Apply filters
 	if query.Name != "" {

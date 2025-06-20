@@ -28,6 +28,8 @@ type Department struct {
 	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at"`
+	// ZaloGid holds the value of the "zalo_gid" field.
+	ZaloGid *string `json:"zalo_gid"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DepartmentQuery when eager-loading is set.
 	Edges        DepartmentEdges `json:"edges"`
@@ -40,11 +42,9 @@ type DepartmentEdges struct {
 	Positions []*Position `json:"positions"`
 	// Organization holds the value of the organization edge.
 	Organization *Organization `json:"organization"`
-	// ZaloDepartment holds the value of the zalo_department edge.
-	ZaloDepartment []*ZaloDepartment `json:"zalo_department"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // PositionsOrErr returns the Positions value or an error if the edge
@@ -67,15 +67,6 @@ func (e DepartmentEdges) OrganizationOrErr() (*Organization, error) {
 	return nil, &NotLoadedError{edge: "organization"}
 }
 
-// ZaloDepartmentOrErr returns the ZaloDepartment value or an error if the edge
-// was not loaded in eager-loading.
-func (e DepartmentEdges) ZaloDepartmentOrErr() ([]*ZaloDepartment, error) {
-	if e.loadedTypes[2] {
-		return e.ZaloDepartment, nil
-	}
-	return nil, &NotLoadedError{edge: "zalo_department"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Department) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -83,7 +74,7 @@ func (*Department) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case department.FieldID, department.FieldOrgID:
 			values[i] = new(sql.NullInt64)
-		case department.FieldName, department.FieldCode:
+		case department.FieldName, department.FieldCode, department.FieldZaloGid:
 			values[i] = new(sql.NullString)
 		case department.FieldCreatedAt, department.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -138,6 +129,13 @@ func (d *Department) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				d.UpdatedAt = value.Time
 			}
+		case department.FieldZaloGid:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field zalo_gid", values[i])
+			} else if value.Valid {
+				d.ZaloGid = new(string)
+				*d.ZaloGid = value.String
+			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
 		}
@@ -159,11 +157,6 @@ func (d *Department) QueryPositions() *PositionQuery {
 // QueryOrganization queries the "organization" edge of the Department entity.
 func (d *Department) QueryOrganization() *OrganizationQuery {
 	return NewDepartmentClient(d.config).QueryOrganization(d)
-}
-
-// QueryZaloDepartment queries the "zalo_department" edge of the Department entity.
-func (d *Department) QueryZaloDepartment() *ZaloDepartmentQuery {
-	return NewDepartmentClient(d.config).QueryZaloDepartment(d)
 }
 
 // Update returns a builder for updating this Department.
@@ -203,6 +196,11 @@ func (d *Department) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(d.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := d.ZaloGid; v != nil {
+		builder.WriteString("zalo_gid=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

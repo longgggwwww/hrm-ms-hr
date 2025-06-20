@@ -100,11 +100,11 @@ message Department {
 
   google.protobuf.Timestamp updated_at = 6;
 
+  google.protobuf.StringValue zalo_gid = 10;
+
   repeated Position positions = 7;
 
   Organization organization = 8;
-
-  repeated ZaloDepartment zalo_department = 9;
 }
 
 message CreateDepartmentRequest {
@@ -182,6 +182,8 @@ message Employee {
 
   google.protobuf.Timestamp updated_at = 9;
 
+  google.protobuf.StringValue zalo_uid = 20;
+
   Position position = 10;
 
   repeated Project created_projects = 11;
@@ -199,8 +201,6 @@ message Employee {
   repeated Project projects = 17;
 
   repeated AppointmentHistory appointment_histories = 18;
-
-  ZaloEmployee zalo_employee = 19;
 
   enum Status {
     STATUS_ACTIVE = 0;
@@ -977,34 +977,6 @@ message BatchCreateTaskReportsRequest {
 
 message BatchCreateTaskReportsResponse {
   repeated TaskReport task_reports = 1;
-}
-
-message ZaloDepartment {
-  int64 id = 1;
-
-  string group_id = 2;
-
-  int64 department_id = 3;
-
-  google.protobuf.Timestamp created_at = 4;
-
-  google.protobuf.Timestamp updated_at = 5;
-
-  Department department = 6;
-}
-
-message ZaloEmployee {
-  int64 id = 1;
-
-  string zalo_uid = 2;
-
-  int64 employee_id = 3;
-
-  google.protobuf.Timestamp created_at = 4;
-
-  google.protobuf.Timestamp updated_at = 5;
-
-  Employee employee = 6;
 }
 
 service AppointmentHistoryService {

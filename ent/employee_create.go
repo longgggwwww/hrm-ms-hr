@@ -19,7 +19,6 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/ent/taskreport"
-	"github.com/longgggwwww/hrm-ms-hr/ent/zaloemployee"
 )
 
 // EmployeeCreate is the builder for creating a Employee entity.
@@ -106,6 +105,20 @@ func (ec *EmployeeCreate) SetUpdatedAt(t time.Time) *EmployeeCreate {
 func (ec *EmployeeCreate) SetNillableUpdatedAt(t *time.Time) *EmployeeCreate {
 	if t != nil {
 		ec.SetUpdatedAt(*t)
+	}
+	return ec
+}
+
+// SetZaloUID sets the "zalo_uid" field.
+func (ec *EmployeeCreate) SetZaloUID(s string) *EmployeeCreate {
+	ec.mutation.SetZaloUID(s)
+	return ec
+}
+
+// SetNillableZaloUID sets the "zalo_uid" field if the given value is not nil.
+func (ec *EmployeeCreate) SetNillableZaloUID(s *string) *EmployeeCreate {
+	if s != nil {
+		ec.SetZaloUID(*s)
 	}
 	return ec
 }
@@ -233,25 +246,6 @@ func (ec *EmployeeCreate) AddAppointmentHistories(a ...*AppointmentHistory) *Emp
 		ids[i] = a[i].ID
 	}
 	return ec.AddAppointmentHistoryIDs(ids...)
-}
-
-// SetZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID.
-func (ec *EmployeeCreate) SetZaloEmployeeID(id int) *EmployeeCreate {
-	ec.mutation.SetZaloEmployeeID(id)
-	return ec
-}
-
-// SetNillableZaloEmployeeID sets the "zalo_employee" edge to the ZaloEmployee entity by ID if the given value is not nil.
-func (ec *EmployeeCreate) SetNillableZaloEmployeeID(id *int) *EmployeeCreate {
-	if id != nil {
-		ec = ec.SetZaloEmployeeID(*id)
-	}
-	return ec
-}
-
-// SetZaloEmployee sets the "zalo_employee" edge to the ZaloEmployee entity.
-func (ec *EmployeeCreate) SetZaloEmployee(z *ZaloEmployee) *EmployeeCreate {
-	return ec.SetZaloEmployeeID(z.ID)
 }
 
 // Mutation returns the EmployeeMutation object of the builder.
@@ -394,6 +388,10 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 		_spec.SetField(employee.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if value, ok := ec.mutation.ZaloUID(); ok {
+		_spec.SetField(employee.FieldZaloUID, field.TypeString, value)
+		_node.ZaloUID = &value
+	}
 	if nodes := ec.mutation.PositionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -532,22 +530,6 @@ func (ec *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(appointmenthistory.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ec.mutation.ZaloEmployeeIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   employee.ZaloEmployeeTable,
-			Columns: []string{employee.ZaloEmployeeColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zaloemployee.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -700,6 +682,24 @@ func (u *EmployeeUpsert) SetUpdatedAt(v time.Time) *EmployeeUpsert {
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *EmployeeUpsert) UpdateUpdatedAt() *EmployeeUpsert {
 	u.SetExcluded(employee.FieldUpdatedAt)
+	return u
+}
+
+// SetZaloUID sets the "zalo_uid" field.
+func (u *EmployeeUpsert) SetZaloUID(v string) *EmployeeUpsert {
+	u.Set(employee.FieldZaloUID, v)
+	return u
+}
+
+// UpdateZaloUID sets the "zalo_uid" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateZaloUID() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldZaloUID)
+	return u
+}
+
+// ClearZaloUID clears the value of the "zalo_uid" field.
+func (u *EmployeeUpsert) ClearZaloUID() *EmployeeUpsert {
+	u.SetNull(employee.FieldZaloUID)
 	return u
 }
 
@@ -857,6 +857,27 @@ func (u *EmployeeUpsertOne) SetUpdatedAt(v time.Time) *EmployeeUpsertOne {
 func (u *EmployeeUpsertOne) UpdateUpdatedAt() *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetZaloUID sets the "zalo_uid" field.
+func (u *EmployeeUpsertOne) SetZaloUID(v string) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetZaloUID(v)
+	})
+}
+
+// UpdateZaloUID sets the "zalo_uid" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateZaloUID() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateZaloUID()
+	})
+}
+
+// ClearZaloUID clears the value of the "zalo_uid" field.
+func (u *EmployeeUpsertOne) ClearZaloUID() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.ClearZaloUID()
 	})
 }
 
@@ -1180,6 +1201,27 @@ func (u *EmployeeUpsertBulk) SetUpdatedAt(v time.Time) *EmployeeUpsertBulk {
 func (u *EmployeeUpsertBulk) UpdateUpdatedAt() *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetZaloUID sets the "zalo_uid" field.
+func (u *EmployeeUpsertBulk) SetZaloUID(v string) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetZaloUID(v)
+	})
+}
+
+// UpdateZaloUID sets the "zalo_uid" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateZaloUID() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateZaloUID()
+	})
+}
+
+// ClearZaloUID clears the value of the "zalo_uid" field.
+func (u *EmployeeUpsertBulk) ClearZaloUID() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.ClearZaloUID()
 	})
 }
 

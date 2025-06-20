@@ -39,6 +39,11 @@ func (Department) Fields() []ent.Field {
 			Default(time.Now).
 			StructTag(`json:"updated_at"`).
 			Annotations(entproto.Field(6)),
+		field.String("zalo_gid").
+			Optional().
+			Nillable().
+			StructTag(`json:"zalo_gid"`).
+			Annotations(entproto.Field(10)),
 	}
 }
 
@@ -55,9 +60,6 @@ func (Department) Edges() []ent.Edge {
 			Required().
 			StructTag(`json:"organization"`).
 			Annotations(entproto.Field(8)),
-		edge.To("zalo_department", ZaloDepartment.Type).
-			StructTag(`json:"zalo_department"`).
-			Annotations(entproto.Field(9)),
 	}
 }
 

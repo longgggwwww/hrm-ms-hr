@@ -72,6 +72,7 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dtos.Empl
 		SetJoiningAt(joiningAt).
 		SetStatus(status).
 		SetOrgID(orgID).
+		SetNillableZaloUID(&input.ZaloUID).
 		Save(ctx)
 	if err != nil {
 		tx.Rollback()
@@ -107,18 +108,6 @@ func (s *EmployeeService) Create(ctx context.Context, orgID int, input dtos.Empl
 	if respb != nil && respb.User != nil && respb.User.Id > 0 {
 		userIDStr := strconv.FormatInt(int64(respb.User.Id), 10)
 		_, err := tx.Employee.UpdateOneID(employeeObj.ID).SetUserID(userIDStr).Save(ctx)
-		if err != nil {
-			tx.Rollback()
-			return nil, nil, err
-		}
-	}
-
-	// Create ZaloEmployee record if ZaloUID is provided
-	if input.ZaloUID != "" {
-		_, err := tx.ZaloEmployee.Create().
-			SetZaloUID(input.ZaloUID).
-			SetEmployeeID(employeeObj.ID).
-			Save(ctx)
 		if err != nil {
 			tx.Rollback()
 			return nil, nil, err
@@ -311,6 +300,9 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 	if input.Status != "" {
 		upd.SetStatus(employee.Status(input.Status))
 	}
+	if input.ZaloUID != "" {
+		upd.SetZaloUID(input.ZaloUID)
+	}
 
 	updatedEmp, err := upd.Save(ctx)
 	if err != nil {
@@ -355,42 +347,6 @@ func (s *EmployeeService) UpdateById(ctx context.Context, id int, orgID int, inp
 			}
 			if userResp != nil {
 				userInfo = userResp.User
-			}
-		}
-	}
-
-	// Handle ZaloUID update
-	if input.ZaloUID != "" {
-		// Check if ZaloEmployee record exists for this employee
-		existing, err := tx.ZaloEmployee.Query().
-			Where(func(s *sql.Selector) {
-				s.Where(sql.EQ(s.C("employee_id"), id))
-			}).
-			Only(ctx)
-
-		if err != nil && !ent.IsNotFound(err) {
-			tx.Rollback()
-			return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "Failed to check existing ZaloEmployee record"}
-		}
-
-		if existing != nil {
-			// Update existing ZaloEmployee record
-			_, err = tx.ZaloEmployee.UpdateOneID(existing.ID).
-				SetZaloUID(input.ZaloUID).
-				Save(ctx)
-			if err != nil {
-				tx.Rollback()
-				return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "Failed to update ZaloEmployee record"}
-			}
-		} else {
-			// Create new ZaloEmployee record
-			_, err = tx.ZaloEmployee.Create().
-				SetZaloUID(input.ZaloUID).
-				SetEmployeeID(id).
-				Save(ctx)
-			if err != nil {
-				tx.Rollback()
-				return nil, nil, &ServiceError{Status: http.StatusInternalServerError, Msg: "Failed to create ZaloEmployee record"}
 			}
 		}
 	}
@@ -521,18 +477,21 @@ func (s *EmployeeService) CreateRootEmployee(ctx context.Context, input dtos.Cre
 
 // GetZaloUIDByEmployeeID returns the ZaloUID for an employee if exists
 func (s *EmployeeService) GetZaloUIDByEmployeeID(ctx context.Context, employeeID int) (string, error) {
-	zaloEmp, err := s.Client.ZaloEmployee.Query().
+	emp, err := s.Client.Employee.Query().
 		Where(func(s *sql.Selector) {
-			s.Where(sql.EQ(s.C("employee_id"), employeeID))
+			s.Where(sql.EQ(s.C("id"), employeeID))
 		}).
 		Only(ctx)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return "", nil // No ZaloEmployee record found, return empty string
+			return "", nil // No Employee record found, return empty string
 		}
 		return "", err
 	}
 
-	return zaloEmp.ZaloUID, nil
+	if emp.ZaloUID != nil {
+		return *emp.ZaloUID, nil
+	}
+	return "", nil
 }

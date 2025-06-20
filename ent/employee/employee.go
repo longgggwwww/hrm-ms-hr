@@ -31,6 +31,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldZaloUID holds the string denoting the zalo_uid field in the database.
+	FieldZaloUID = "zalo_uid"
 	// EdgePosition holds the string denoting the position edge name in mutations.
 	EdgePosition = "position"
 	// EdgeCreatedProjects holds the string denoting the created_projects edge name in mutations.
@@ -49,8 +51,6 @@ const (
 	EdgeProjects = "projects"
 	// EdgeAppointmentHistories holds the string denoting the appointment_histories edge name in mutations.
 	EdgeAppointmentHistories = "appointment_histories"
-	// EdgeZaloEmployee holds the string denoting the zalo_employee edge name in mutations.
-	EdgeZaloEmployee = "zalo_employee"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 	// PositionTable is the table that holds the position relation/edge.
@@ -112,13 +112,6 @@ const (
 	AppointmentHistoriesInverseTable = "appointment_histories"
 	// AppointmentHistoriesColumn is the table column denoting the appointment_histories relation/edge.
 	AppointmentHistoriesColumn = "employee_id"
-	// ZaloEmployeeTable is the table that holds the zalo_employee relation/edge.
-	ZaloEmployeeTable = "zalo_employees"
-	// ZaloEmployeeInverseTable is the table name for the ZaloEmployee entity.
-	// It exists in this package in order to avoid circular dependency with the "zaloemployee" package.
-	ZaloEmployeeInverseTable = "zalo_employees"
-	// ZaloEmployeeColumn is the table column denoting the zalo_employee relation/edge.
-	ZaloEmployeeColumn = "employee_id"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -132,6 +125,7 @@ var Columns = []string{
 	FieldOrgID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldZaloUID,
 }
 
 var (
@@ -236,6 +230,11 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByZaloUID orders the results by the zalo_uid field.
+func ByZaloUID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldZaloUID, opts...).ToFunc()
 }
 
 // ByPositionField orders the results by position field.
@@ -356,13 +355,6 @@ func ByAppointmentHistories(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOpt
 		sqlgraph.OrderByNeighborTerms(s, newAppointmentHistoriesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByZaloEmployeeField orders the results by zalo_employee field.
-func ByZaloEmployeeField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newZaloEmployeeStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newPositionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -424,12 +416,5 @@ func newAppointmentHistoriesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AppointmentHistoriesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AppointmentHistoriesTable, AppointmentHistoriesColumn),
-	)
-}
-func newZaloEmployeeStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ZaloEmployeeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, ZaloEmployeeTable, ZaloEmployeeColumn),
 	)
 }

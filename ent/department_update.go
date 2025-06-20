@@ -15,7 +15,6 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
-	"github.com/longgggwwww/hrm-ms-hr/ent/zalodepartment"
 )
 
 // DepartmentUpdate is the builder for updating Department entities.
@@ -87,6 +86,26 @@ func (du *DepartmentUpdate) SetNillableUpdatedAt(t *time.Time) *DepartmentUpdate
 	return du
 }
 
+// SetZaloGid sets the "zalo_gid" field.
+func (du *DepartmentUpdate) SetZaloGid(s string) *DepartmentUpdate {
+	du.mutation.SetZaloGid(s)
+	return du
+}
+
+// SetNillableZaloGid sets the "zalo_gid" field if the given value is not nil.
+func (du *DepartmentUpdate) SetNillableZaloGid(s *string) *DepartmentUpdate {
+	if s != nil {
+		du.SetZaloGid(*s)
+	}
+	return du
+}
+
+// ClearZaloGid clears the value of the "zalo_gid" field.
+func (du *DepartmentUpdate) ClearZaloGid() *DepartmentUpdate {
+	du.mutation.ClearZaloGid()
+	return du
+}
+
 // AddPositionIDs adds the "positions" edge to the Position entity by IDs.
 func (du *DepartmentUpdate) AddPositionIDs(ids ...int) *DepartmentUpdate {
 	du.mutation.AddPositionIDs(ids...)
@@ -111,21 +130,6 @@ func (du *DepartmentUpdate) SetOrganizationID(id int) *DepartmentUpdate {
 // SetOrganization sets the "organization" edge to the Organization entity.
 func (du *DepartmentUpdate) SetOrganization(o *Organization) *DepartmentUpdate {
 	return du.SetOrganizationID(o.ID)
-}
-
-// AddZaloDepartmentIDs adds the "zalo_department" edge to the ZaloDepartment entity by IDs.
-func (du *DepartmentUpdate) AddZaloDepartmentIDs(ids ...int) *DepartmentUpdate {
-	du.mutation.AddZaloDepartmentIDs(ids...)
-	return du
-}
-
-// AddZaloDepartment adds the "zalo_department" edges to the ZaloDepartment entity.
-func (du *DepartmentUpdate) AddZaloDepartment(z ...*ZaloDepartment) *DepartmentUpdate {
-	ids := make([]int, len(z))
-	for i := range z {
-		ids[i] = z[i].ID
-	}
-	return du.AddZaloDepartmentIDs(ids...)
 }
 
 // Mutation returns the DepartmentMutation object of the builder.
@@ -158,27 +162,6 @@ func (du *DepartmentUpdate) RemovePositions(p ...*Position) *DepartmentUpdate {
 func (du *DepartmentUpdate) ClearOrganization() *DepartmentUpdate {
 	du.mutation.ClearOrganization()
 	return du
-}
-
-// ClearZaloDepartment clears all "zalo_department" edges to the ZaloDepartment entity.
-func (du *DepartmentUpdate) ClearZaloDepartment() *DepartmentUpdate {
-	du.mutation.ClearZaloDepartment()
-	return du
-}
-
-// RemoveZaloDepartmentIDs removes the "zalo_department" edge to ZaloDepartment entities by IDs.
-func (du *DepartmentUpdate) RemoveZaloDepartmentIDs(ids ...int) *DepartmentUpdate {
-	du.mutation.RemoveZaloDepartmentIDs(ids...)
-	return du
-}
-
-// RemoveZaloDepartment removes "zalo_department" edges to ZaloDepartment entities.
-func (du *DepartmentUpdate) RemoveZaloDepartment(z ...*ZaloDepartment) *DepartmentUpdate {
-	ids := make([]int, len(z))
-	for i := range z {
-		ids[i] = z[i].ID
-	}
-	return du.RemoveZaloDepartmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -247,6 +230,12 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := du.mutation.UpdatedAt(); ok {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := du.mutation.ZaloGid(); ok {
+		_spec.SetField(department.FieldZaloGid, field.TypeString, value)
+	}
+	if du.mutation.ZaloGidCleared() {
+		_spec.ClearField(department.FieldZaloGid, field.TypeString)
+	}
 	if du.mutation.PositionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -314,51 +303,6 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if du.mutation.ZaloDepartmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   department.ZaloDepartmentTable,
-			Columns: []string{department.ZaloDepartmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.RemovedZaloDepartmentIDs(); len(nodes) > 0 && !du.mutation.ZaloDepartmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   department.ZaloDepartmentTable,
-			Columns: []string{department.ZaloDepartmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.ZaloDepartmentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   department.ZaloDepartmentTable,
-			Columns: []string{department.ZaloDepartmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -442,6 +386,26 @@ func (duo *DepartmentUpdateOne) SetNillableUpdatedAt(t *time.Time) *DepartmentUp
 	return duo
 }
 
+// SetZaloGid sets the "zalo_gid" field.
+func (duo *DepartmentUpdateOne) SetZaloGid(s string) *DepartmentUpdateOne {
+	duo.mutation.SetZaloGid(s)
+	return duo
+}
+
+// SetNillableZaloGid sets the "zalo_gid" field if the given value is not nil.
+func (duo *DepartmentUpdateOne) SetNillableZaloGid(s *string) *DepartmentUpdateOne {
+	if s != nil {
+		duo.SetZaloGid(*s)
+	}
+	return duo
+}
+
+// ClearZaloGid clears the value of the "zalo_gid" field.
+func (duo *DepartmentUpdateOne) ClearZaloGid() *DepartmentUpdateOne {
+	duo.mutation.ClearZaloGid()
+	return duo
+}
+
 // AddPositionIDs adds the "positions" edge to the Position entity by IDs.
 func (duo *DepartmentUpdateOne) AddPositionIDs(ids ...int) *DepartmentUpdateOne {
 	duo.mutation.AddPositionIDs(ids...)
@@ -466,21 +430,6 @@ func (duo *DepartmentUpdateOne) SetOrganizationID(id int) *DepartmentUpdateOne {
 // SetOrganization sets the "organization" edge to the Organization entity.
 func (duo *DepartmentUpdateOne) SetOrganization(o *Organization) *DepartmentUpdateOne {
 	return duo.SetOrganizationID(o.ID)
-}
-
-// AddZaloDepartmentIDs adds the "zalo_department" edge to the ZaloDepartment entity by IDs.
-func (duo *DepartmentUpdateOne) AddZaloDepartmentIDs(ids ...int) *DepartmentUpdateOne {
-	duo.mutation.AddZaloDepartmentIDs(ids...)
-	return duo
-}
-
-// AddZaloDepartment adds the "zalo_department" edges to the ZaloDepartment entity.
-func (duo *DepartmentUpdateOne) AddZaloDepartment(z ...*ZaloDepartment) *DepartmentUpdateOne {
-	ids := make([]int, len(z))
-	for i := range z {
-		ids[i] = z[i].ID
-	}
-	return duo.AddZaloDepartmentIDs(ids...)
 }
 
 // Mutation returns the DepartmentMutation object of the builder.
@@ -513,27 +462,6 @@ func (duo *DepartmentUpdateOne) RemovePositions(p ...*Position) *DepartmentUpdat
 func (duo *DepartmentUpdateOne) ClearOrganization() *DepartmentUpdateOne {
 	duo.mutation.ClearOrganization()
 	return duo
-}
-
-// ClearZaloDepartment clears all "zalo_department" edges to the ZaloDepartment entity.
-func (duo *DepartmentUpdateOne) ClearZaloDepartment() *DepartmentUpdateOne {
-	duo.mutation.ClearZaloDepartment()
-	return duo
-}
-
-// RemoveZaloDepartmentIDs removes the "zalo_department" edge to ZaloDepartment entities by IDs.
-func (duo *DepartmentUpdateOne) RemoveZaloDepartmentIDs(ids ...int) *DepartmentUpdateOne {
-	duo.mutation.RemoveZaloDepartmentIDs(ids...)
-	return duo
-}
-
-// RemoveZaloDepartment removes "zalo_department" edges to ZaloDepartment entities.
-func (duo *DepartmentUpdateOne) RemoveZaloDepartment(z ...*ZaloDepartment) *DepartmentUpdateOne {
-	ids := make([]int, len(z))
-	for i := range z {
-		ids[i] = z[i].ID
-	}
-	return duo.RemoveZaloDepartmentIDs(ids...)
 }
 
 // Where appends a list predicates to the DepartmentUpdate builder.
@@ -632,6 +560,12 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 	if value, ok := duo.mutation.UpdatedAt(); ok {
 		_spec.SetField(department.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := duo.mutation.ZaloGid(); ok {
+		_spec.SetField(department.FieldZaloGid, field.TypeString, value)
+	}
+	if duo.mutation.ZaloGidCleared() {
+		_spec.ClearField(department.FieldZaloGid, field.TypeString)
+	}
 	if duo.mutation.PositionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -699,51 +633,6 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if duo.mutation.ZaloDepartmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   department.ZaloDepartmentTable,
-			Columns: []string{department.ZaloDepartmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.RemovedZaloDepartmentIDs(); len(nodes) > 0 && !duo.mutation.ZaloDepartmentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   department.ZaloDepartmentTable,
-			Columns: []string{department.ZaloDepartmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.ZaloDepartmentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   department.ZaloDepartmentTable,
-			Columns: []string{department.ZaloDepartmentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(zalodepartment.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
