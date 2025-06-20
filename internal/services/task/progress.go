@@ -13,10 +13,10 @@ import (
 // Only employees who are assigned to the task can update its progress
 func (s *TaskService) UpdateProgress(ctx context.Context, taskID, userID int, input dtos.TaskUpdateProgressInput) (*ent.Task, error) {
 	// Validate at least one field is provided
-	if input.Status == nil && input.Process == nil {
+	if input.Status == nil && input.Process == nil && input.Description == nil {
 		return nil, &ServiceError{
 			Status: http.StatusBadRequest,
-			Msg:    "At least one field (status or process) must be provided",
+			Msg:    "At least one field (status, process, or description) must be provided",
 		}
 	}
 
@@ -102,6 +102,11 @@ func (s *TaskService) UpdateProgress(ctx context.Context, taskID, userID int, in
 		} else if *input.Process > 0 && *input.Process < 100 && input.Status == nil && taskEntity.Status == task.StatusReceived {
 			taskUpdate.SetStatus(task.StatusInProgress)
 		}
+	}
+
+	// Set description if provided
+	if input.Description != nil {
+		taskUpdate.SetDescription(*input.Description)
 	}
 
 	updatedTask, err := taskUpdate.Save(ctx)

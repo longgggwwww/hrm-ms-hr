@@ -307,6 +307,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"task", "feature", "bug", "another"}, Default: "task"},
+		{Name: "department_id", Type: field.TypeInt, Nullable: true},
 		{Name: "project_id", Type: field.TypeInt, Nullable: true},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
@@ -316,8 +317,14 @@ var (
 		PrimaryKey: []*schema.Column{TasksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "tasks_projects_tasks",
+				Symbol:     "tasks_departments_tasks",
 				Columns:    []*schema.Column{TasksColumns[13]},
+				RefColumns: []*schema.Column{DepartmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "tasks_projects_tasks",
+				Columns:    []*schema.Column{TasksColumns[14]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -461,7 +468,8 @@ func init() {
 	ProjectsTable.ForeignKeys[0].RefTable = EmployeesTable
 	ProjectsTable.ForeignKeys[1].RefTable = EmployeesTable
 	ProjectsTable.ForeignKeys[2].RefTable = OrganizationsTable
-	TasksTable.ForeignKeys[0].RefTable = ProjectsTable
+	TasksTable.ForeignKeys[0].RefTable = DepartmentsTable
+	TasksTable.ForeignKeys[1].RefTable = ProjectsTable
 	TaskReportsTable.ForeignKeys[0].RefTable = EmployeesTable
 	TaskReportsTable.ForeignKeys[1].RefTable = TasksTable
 	ProjectMembersTable.ForeignKeys[0].RefTable = ProjectsTable

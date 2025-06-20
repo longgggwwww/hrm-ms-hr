@@ -9,6 +9,7 @@ import (
 	sqlgraph "entgo.io/ent/dialect/sql/sqlgraph"
 	fmt "fmt"
 	ent "github.com/longgggwwww/hrm-ms-hr/ent"
+	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
 	employee "github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	label "github.com/longgggwwww/hrm-ms-hr/ent/label"
 	project "github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -99,6 +100,8 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 	v.CreatedAt = created_at
 	creator_id := int64(e.CreatorID)
 	v.CreatorId = creator_id
+	department := wrapperspb.Int64(int64(e.DepartmentID))
+	v.DepartmentId = department
 	description := wrapperspb.String(e.Description)
 	v.Description = description
 	if e.DueDate != nil {
@@ -130,6 +133,12 @@ func toProtoTask(e *ent.Task) (*Task, error) {
 		v.Assignees = append(v.Assignees, &Employee{
 			Id: id,
 		})
+	}
+	if edg := e.Edges.Department; edg != nil {
+		id := int64(edg.ID)
+		v.Department = &Department{
+			Id: id,
+		}
 	}
 	for _, edg := range e.Edges.Labels {
 		id := int64(edg.ID)
@@ -206,6 +215,9 @@ func (svc *TaskService) Get(ctx context.Context, req *GetTaskRequest) (*Task, er
 			WithAssignees(func(query *ent.EmployeeQuery) {
 				query.Select(employee.FieldID)
 			}).
+			WithDepartment(func(query *ent.DepartmentQuery) {
+				query.Select(department.FieldID)
+			}).
 			WithLabels(func(query *ent.LabelQuery) {
 				query.Select(label.FieldID)
 			}).
@@ -239,6 +251,10 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 	m.SetCode(taskCode)
 	taskCreatorID := int(task.GetCreatorId())
 	m.SetCreatorID(taskCreatorID)
+	if task.GetDepartmentId() != nil {
+		taskDepartmentID := int(task.GetDepartmentId().GetValue())
+		m.SetDepartmentID(taskDepartmentID)
+	}
 	if task.GetDescription() != nil {
 		taskDescription := task.GetDescription().GetValue()
 		m.SetDescription(taskDescription)
@@ -270,6 +286,10 @@ func (svc *TaskService) Update(ctx context.Context, req *UpdateTaskRequest) (*Ta
 	for _, item := range task.GetAssignees() {
 		assignees := int(item.GetId())
 		m.AddAssigneeIDs(assignees)
+	}
+	if task.GetDepartment() != nil {
+		taskDepartment := int(task.GetDepartment().GetId())
+		m.SetDepartmentID(taskDepartment)
 	}
 	for _, item := range task.GetLabels() {
 		labels := int(item.GetId())
@@ -356,6 +376,9 @@ func (svc *TaskService) List(ctx context.Context, req *ListTaskRequest) (*ListTa
 			WithAssignees(func(query *ent.EmployeeQuery) {
 				query.Select(employee.FieldID)
 			}).
+			WithDepartment(func(query *ent.DepartmentQuery) {
+				query.Select(department.FieldID)
+			}).
 			WithLabels(func(query *ent.LabelQuery) {
 				query.Select(label.FieldID)
 			}).
@@ -432,6 +455,10 @@ func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 	m.SetCreatedAt(taskCreatedAt)
 	taskCreatorID := int(task.GetCreatorId())
 	m.SetCreatorID(taskCreatorID)
+	if task.GetDepartmentId() != nil {
+		taskDepartmentID := int(task.GetDepartmentId().GetValue())
+		m.SetDepartmentID(taskDepartmentID)
+	}
 	if task.GetDescription() != nil {
 		taskDescription := task.GetDescription().GetValue()
 		m.SetDescription(taskDescription)
@@ -463,6 +490,10 @@ func (svc *TaskService) createBuilder(task *Task) (*ent.TaskCreate, error) {
 	for _, item := range task.GetAssignees() {
 		assignees := int(item.GetId())
 		m.AddAssigneeIDs(assignees)
+	}
+	if task.GetDepartment() != nil {
+		taskDepartment := int(task.GetDepartment().GetId())
+		m.SetDepartmentID(taskDepartment)
 	}
 	for _, item := range task.GetLabels() {
 		labels := int(item.GetId())

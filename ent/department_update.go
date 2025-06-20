@@ -15,6 +15,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
+	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
 
 // DepartmentUpdate is the builder for updating Department entities.
@@ -121,6 +122,21 @@ func (du *DepartmentUpdate) AddPositions(p ...*Position) *DepartmentUpdate {
 	return du.AddPositionIDs(ids...)
 }
 
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (du *DepartmentUpdate) AddTaskIDs(ids ...int) *DepartmentUpdate {
+	du.mutation.AddTaskIDs(ids...)
+	return du
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (du *DepartmentUpdate) AddTasks(t ...*Task) *DepartmentUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return du.AddTaskIDs(ids...)
+}
+
 // SetOrganizationID sets the "organization" edge to the Organization entity by ID.
 func (du *DepartmentUpdate) SetOrganizationID(id int) *DepartmentUpdate {
 	du.mutation.SetOrganizationID(id)
@@ -156,6 +172,27 @@ func (du *DepartmentUpdate) RemovePositions(p ...*Position) *DepartmentUpdate {
 		ids[i] = p[i].ID
 	}
 	return du.RemovePositionIDs(ids...)
+}
+
+// ClearTasks clears all "tasks" edges to the Task entity.
+func (du *DepartmentUpdate) ClearTasks() *DepartmentUpdate {
+	du.mutation.ClearTasks()
+	return du
+}
+
+// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
+func (du *DepartmentUpdate) RemoveTaskIDs(ids ...int) *DepartmentUpdate {
+	du.mutation.RemoveTaskIDs(ids...)
+	return du
+}
+
+// RemoveTasks removes "tasks" edges to Task entities.
+func (du *DepartmentUpdate) RemoveTasks(t ...*Task) *DepartmentUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return du.RemoveTaskIDs(ids...)
 }
 
 // ClearOrganization clears the "organization" edge to the Organization entity.
@@ -274,6 +311,51 @@ func (du *DepartmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.TasksTable,
+			Columns: []string{department.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedTasksIDs(); len(nodes) > 0 && !du.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.TasksTable,
+			Columns: []string{department.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.TasksTable,
+			Columns: []string{department.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -421,6 +503,21 @@ func (duo *DepartmentUpdateOne) AddPositions(p ...*Position) *DepartmentUpdateOn
 	return duo.AddPositionIDs(ids...)
 }
 
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (duo *DepartmentUpdateOne) AddTaskIDs(ids ...int) *DepartmentUpdateOne {
+	duo.mutation.AddTaskIDs(ids...)
+	return duo
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (duo *DepartmentUpdateOne) AddTasks(t ...*Task) *DepartmentUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return duo.AddTaskIDs(ids...)
+}
+
 // SetOrganizationID sets the "organization" edge to the Organization entity by ID.
 func (duo *DepartmentUpdateOne) SetOrganizationID(id int) *DepartmentUpdateOne {
 	duo.mutation.SetOrganizationID(id)
@@ -456,6 +553,27 @@ func (duo *DepartmentUpdateOne) RemovePositions(p ...*Position) *DepartmentUpdat
 		ids[i] = p[i].ID
 	}
 	return duo.RemovePositionIDs(ids...)
+}
+
+// ClearTasks clears all "tasks" edges to the Task entity.
+func (duo *DepartmentUpdateOne) ClearTasks() *DepartmentUpdateOne {
+	duo.mutation.ClearTasks()
+	return duo
+}
+
+// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
+func (duo *DepartmentUpdateOne) RemoveTaskIDs(ids ...int) *DepartmentUpdateOne {
+	duo.mutation.RemoveTaskIDs(ids...)
+	return duo
+}
+
+// RemoveTasks removes "tasks" edges to Task entities.
+func (duo *DepartmentUpdateOne) RemoveTasks(t ...*Task) *DepartmentUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return duo.RemoveTaskIDs(ids...)
 }
 
 // ClearOrganization clears the "organization" edge to the Organization entity.
@@ -604,6 +722,51 @@ func (duo *DepartmentUpdateOne) sqlSave(ctx context.Context) (_node *Department,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.TasksTable,
+			Columns: []string{department.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedTasksIDs(); len(nodes) > 0 && !duo.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.TasksTable,
+			Columns: []string{department.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.TasksTable,
+			Columns: []string{department.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

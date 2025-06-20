@@ -827,6 +827,9 @@ type DepartmentMutation struct {
 	positions           map[int]struct{}
 	removedpositions    map[int]struct{}
 	clearedpositions    bool
+	tasks               map[int]struct{}
+	removedtasks        map[int]struct{}
+	clearedtasks        bool
 	organization        *int
 	clearedorganization bool
 	done                bool
@@ -1215,6 +1218,60 @@ func (m *DepartmentMutation) ResetPositions() {
 	m.removedpositions = nil
 }
 
+// AddTaskIDs adds the "tasks" edge to the Task entity by ids.
+func (m *DepartmentMutation) AddTaskIDs(ids ...int) {
+	if m.tasks == nil {
+		m.tasks = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.tasks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTasks clears the "tasks" edge to the Task entity.
+func (m *DepartmentMutation) ClearTasks() {
+	m.clearedtasks = true
+}
+
+// TasksCleared reports if the "tasks" edge to the Task entity was cleared.
+func (m *DepartmentMutation) TasksCleared() bool {
+	return m.clearedtasks
+}
+
+// RemoveTaskIDs removes the "tasks" edge to the Task entity by IDs.
+func (m *DepartmentMutation) RemoveTaskIDs(ids ...int) {
+	if m.removedtasks == nil {
+		m.removedtasks = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.tasks, ids[i])
+		m.removedtasks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTasks returns the removed IDs of the "tasks" edge to the Task entity.
+func (m *DepartmentMutation) RemovedTasksIDs() (ids []int) {
+	for id := range m.removedtasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TasksIDs returns the "tasks" edge IDs in the mutation.
+func (m *DepartmentMutation) TasksIDs() (ids []int) {
+	for id := range m.tasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTasks resets all changes to the "tasks" edge.
+func (m *DepartmentMutation) ResetTasks() {
+	m.tasks = nil
+	m.clearedtasks = false
+	m.removedtasks = nil
+}
+
 // SetOrganizationID sets the "organization" edge to the Organization entity by id.
 func (m *DepartmentMutation) SetOrganizationID(id int) {
 	m.organization = &id
@@ -1485,9 +1542,12 @@ func (m *DepartmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DepartmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.positions != nil {
 		edges = append(edges, department.EdgePositions)
+	}
+	if m.tasks != nil {
+		edges = append(edges, department.EdgeTasks)
 	}
 	if m.organization != nil {
 		edges = append(edges, department.EdgeOrganization)
@@ -1505,6 +1565,12 @@ func (m *DepartmentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case department.EdgeTasks:
+		ids := make([]ent.Value, 0, len(m.tasks))
+		for id := range m.tasks {
+			ids = append(ids, id)
+		}
+		return ids
 	case department.EdgeOrganization:
 		if id := m.organization; id != nil {
 			return []ent.Value{*id}
@@ -1515,9 +1581,12 @@ func (m *DepartmentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DepartmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedpositions != nil {
 		edges = append(edges, department.EdgePositions)
+	}
+	if m.removedtasks != nil {
+		edges = append(edges, department.EdgeTasks)
 	}
 	return edges
 }
@@ -1532,15 +1601,24 @@ func (m *DepartmentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case department.EdgeTasks:
+		ids := make([]ent.Value, 0, len(m.removedtasks))
+		for id := range m.removedtasks {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DepartmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedpositions {
 		edges = append(edges, department.EdgePositions)
+	}
+	if m.clearedtasks {
+		edges = append(edges, department.EdgeTasks)
 	}
 	if m.clearedorganization {
 		edges = append(edges, department.EdgeOrganization)
@@ -1554,6 +1632,8 @@ func (m *DepartmentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case department.EdgePositions:
 		return m.clearedpositions
+	case department.EdgeTasks:
+		return m.clearedtasks
 	case department.EdgeOrganization:
 		return m.clearedorganization
 	}
@@ -1577,6 +1657,9 @@ func (m *DepartmentMutation) ResetEdge(name string) error {
 	switch name {
 	case department.EdgePositions:
 		m.ResetPositions()
+		return nil
+	case department.EdgeTasks:
+		m.ResetTasks()
 		return nil
 	case department.EdgeOrganization:
 		m.ResetOrganization()
@@ -9338,39 +9421,41 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 // TaskMutation represents an operation that mutates the Task nodes in the graph.
 type TaskMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *int
-	name             *string
-	code             *string
-	description      *string
-	process          *int
-	addprocess       *int
-	status           *task.Status
-	start_at         *time.Time
-	due_date         *time.Time
-	creator_id       *int
-	addcreator_id    *int
-	updater_id       *int
-	addupdater_id    *int
-	created_at       *time.Time
-	updated_at       *time.Time
-	_type            *task.Type
-	clearedFields    map[string]struct{}
-	project          *int
-	clearedproject   bool
-	labels           map[int]struct{}
-	removedlabels    map[int]struct{}
-	clearedlabels    bool
-	assignees        map[int]struct{}
-	removedassignees map[int]struct{}
-	clearedassignees bool
-	reports          map[int]struct{}
-	removedreports   map[int]struct{}
-	clearedreports   bool
-	done             bool
-	oldValue         func(context.Context) (*Task, error)
-	predicates       []predicate.Task
+	op                Op
+	typ               string
+	id                *int
+	name              *string
+	code              *string
+	description       *string
+	process           *int
+	addprocess        *int
+	status            *task.Status
+	start_at          *time.Time
+	due_date          *time.Time
+	creator_id        *int
+	addcreator_id     *int
+	updater_id        *int
+	addupdater_id     *int
+	created_at        *time.Time
+	updated_at        *time.Time
+	_type             *task.Type
+	clearedFields     map[string]struct{}
+	project           *int
+	clearedproject    bool
+	department        *int
+	cleareddepartment bool
+	labels            map[int]struct{}
+	removedlabels     map[int]struct{}
+	clearedlabels     bool
+	assignees         map[int]struct{}
+	removedassignees  map[int]struct{}
+	clearedassignees  bool
+	reports           map[int]struct{}
+	removedreports    map[int]struct{}
+	clearedreports    bool
+	done              bool
+	oldValue          func(context.Context) (*Task, error)
+	predicates        []predicate.Task
 }
 
 var _ ent.Mutation = (*TaskMutation)(nil)
@@ -9831,6 +9916,55 @@ func (m *TaskMutation) ResetProjectID() {
 	delete(m.clearedFields, task.FieldProjectID)
 }
 
+// SetDepartmentID sets the "department_id" field.
+func (m *TaskMutation) SetDepartmentID(i int) {
+	m.department = &i
+}
+
+// DepartmentID returns the value of the "department_id" field in the mutation.
+func (m *TaskMutation) DepartmentID() (r int, exists bool) {
+	v := m.department
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDepartmentID returns the old "department_id" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldDepartmentID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDepartmentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDepartmentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDepartmentID: %w", err)
+	}
+	return oldValue.DepartmentID, nil
+}
+
+// ClearDepartmentID clears the value of the "department_id" field.
+func (m *TaskMutation) ClearDepartmentID() {
+	m.department = nil
+	m.clearedFields[task.FieldDepartmentID] = struct{}{}
+}
+
+// DepartmentIDCleared returns if the "department_id" field was cleared in this mutation.
+func (m *TaskMutation) DepartmentIDCleared() bool {
+	_, ok := m.clearedFields[task.FieldDepartmentID]
+	return ok
+}
+
+// ResetDepartmentID resets all changes to the "department_id" field.
+func (m *TaskMutation) ResetDepartmentID() {
+	m.department = nil
+	delete(m.clearedFields, task.FieldDepartmentID)
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (m *TaskMutation) SetCreatorID(i int) {
 	m.creator_id = &i
@@ -10078,6 +10212,33 @@ func (m *TaskMutation) ResetProject() {
 	m.clearedproject = false
 }
 
+// ClearDepartment clears the "department" edge to the Department entity.
+func (m *TaskMutation) ClearDepartment() {
+	m.cleareddepartment = true
+	m.clearedFields[task.FieldDepartmentID] = struct{}{}
+}
+
+// DepartmentCleared reports if the "department" edge to the Department entity was cleared.
+func (m *TaskMutation) DepartmentCleared() bool {
+	return m.DepartmentIDCleared() || m.cleareddepartment
+}
+
+// DepartmentIDs returns the "department" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DepartmentID instead. It exists only for internal usage by the builders.
+func (m *TaskMutation) DepartmentIDs() (ids []int) {
+	if id := m.department; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDepartment resets all changes to the "department" edge.
+func (m *TaskMutation) ResetDepartment() {
+	m.department = nil
+	m.cleareddepartment = false
+}
+
 // AddLabelIDs adds the "labels" edge to the Label entity by ids.
 func (m *TaskMutation) AddLabelIDs(ids ...int) {
 	if m.labels == nil {
@@ -10274,7 +10435,7 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.name != nil {
 		fields = append(fields, task.FieldName)
 	}
@@ -10298,6 +10459,9 @@ func (m *TaskMutation) Fields() []string {
 	}
 	if m.project != nil {
 		fields = append(fields, task.FieldProjectID)
+	}
+	if m.department != nil {
+		fields = append(fields, task.FieldDepartmentID)
 	}
 	if m.creator_id != nil {
 		fields = append(fields, task.FieldCreatorID)
@@ -10338,6 +10502,8 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.DueDate()
 	case task.FieldProjectID:
 		return m.ProjectID()
+	case task.FieldDepartmentID:
+		return m.DepartmentID()
 	case task.FieldCreatorID:
 		return m.CreatorID()
 	case task.FieldUpdaterID:
@@ -10373,6 +10539,8 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDueDate(ctx)
 	case task.FieldProjectID:
 		return m.OldProjectID(ctx)
+	case task.FieldDepartmentID:
+		return m.OldDepartmentID(ctx)
 	case task.FieldCreatorID:
 		return m.OldCreatorID(ctx)
 	case task.FieldUpdaterID:
@@ -10447,6 +10615,13 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProjectID(v)
+		return nil
+	case task.FieldDepartmentID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDepartmentID(v)
 		return nil
 	case task.FieldCreatorID:
 		v, ok := value.(int)
@@ -10564,6 +10739,9 @@ func (m *TaskMutation) ClearedFields() []string {
 	if m.FieldCleared(task.FieldProjectID) {
 		fields = append(fields, task.FieldProjectID)
 	}
+	if m.FieldCleared(task.FieldDepartmentID) {
+		fields = append(fields, task.FieldDepartmentID)
+	}
 	return fields
 }
 
@@ -10589,6 +10767,9 @@ func (m *TaskMutation) ClearField(name string) error {
 		return nil
 	case task.FieldProjectID:
 		m.ClearProjectID()
+		return nil
+	case task.FieldDepartmentID:
+		m.ClearDepartmentID()
 		return nil
 	}
 	return fmt.Errorf("unknown Task nullable field %s", name)
@@ -10622,6 +10803,9 @@ func (m *TaskMutation) ResetField(name string) error {
 	case task.FieldProjectID:
 		m.ResetProjectID()
 		return nil
+	case task.FieldDepartmentID:
+		m.ResetDepartmentID()
+		return nil
 	case task.FieldCreatorID:
 		m.ResetCreatorID()
 		return nil
@@ -10643,9 +10827,12 @@ func (m *TaskMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.project != nil {
 		edges = append(edges, task.EdgeProject)
+	}
+	if m.department != nil {
+		edges = append(edges, task.EdgeDepartment)
 	}
 	if m.labels != nil {
 		edges = append(edges, task.EdgeLabels)
@@ -10665,6 +10852,10 @@ func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case task.EdgeProject:
 		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case task.EdgeDepartment:
+		if id := m.department; id != nil {
 			return []ent.Value{*id}
 		}
 	case task.EdgeLabels:
@@ -10691,7 +10882,7 @@ func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedlabels != nil {
 		edges = append(edges, task.EdgeLabels)
 	}
@@ -10732,9 +10923,12 @@ func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedproject {
 		edges = append(edges, task.EdgeProject)
+	}
+	if m.cleareddepartment {
+		edges = append(edges, task.EdgeDepartment)
 	}
 	if m.clearedlabels {
 		edges = append(edges, task.EdgeLabels)
@@ -10754,6 +10948,8 @@ func (m *TaskMutation) EdgeCleared(name string) bool {
 	switch name {
 	case task.EdgeProject:
 		return m.clearedproject
+	case task.EdgeDepartment:
+		return m.cleareddepartment
 	case task.EdgeLabels:
 		return m.clearedlabels
 	case task.EdgeAssignees:
@@ -10771,6 +10967,9 @@ func (m *TaskMutation) ClearEdge(name string) error {
 	case task.EdgeProject:
 		m.ClearProject()
 		return nil
+	case task.EdgeDepartment:
+		m.ClearDepartment()
+		return nil
 	}
 	return fmt.Errorf("unknown Task unique edge %s", name)
 }
@@ -10781,6 +10980,9 @@ func (m *TaskMutation) ResetEdge(name string) error {
 	switch name {
 	case task.EdgeProject:
 		m.ResetProject()
+		return nil
+	case task.EdgeDepartment:
+		m.ResetDepartment()
 		return nil
 	case task.EdgeLabels:
 		m.ResetLabels()

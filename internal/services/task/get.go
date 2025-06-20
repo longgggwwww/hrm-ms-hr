@@ -13,6 +13,7 @@ func (s *TaskService) Get(ctx context.Context, id int) (*ent.Task, error) {
 	task, err := s.Client.Task.Query().
 		Where(task.ID(id)).
 		WithProject().
+		WithDepartment().
 		WithLabels().
 		WithAssignees().
 		WithReports().

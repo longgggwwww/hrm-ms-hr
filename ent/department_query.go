@@ -16,6 +16,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
+	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
 
 // DepartmentQuery is the builder for querying Department entities.
@@ -26,6 +27,7 @@ type DepartmentQuery struct {
 	inters           []Interceptor
 	predicates       []predicate.Department
 	withPositions    *PositionQuery
+	withTasks        *TaskQuery
 	withOrganization *OrganizationQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -78,6 +80,28 @@ func (dq *DepartmentQuery) QueryPositions() *PositionQuery {
 			sqlgraph.From(department.Table, department.FieldID, selector),
 			sqlgraph.To(position.Table, position.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, department.PositionsTable, department.PositionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTasks chains the current query on the "tasks" edge.
+func (dq *DepartmentQuery) QueryTasks() *TaskQuery {
+	query := (&TaskClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, selector),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, department.TasksTable, department.TasksColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -300,6 +324,7 @@ func (dq *DepartmentQuery) Clone() *DepartmentQuery {
 		inters:           append([]Interceptor{}, dq.inters...),
 		predicates:       append([]predicate.Department{}, dq.predicates...),
 		withPositions:    dq.withPositions.Clone(),
+		withTasks:        dq.withTasks.Clone(),
 		withOrganization: dq.withOrganization.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
@@ -315,6 +340,17 @@ func (dq *DepartmentQuery) WithPositions(opts ...func(*PositionQuery)) *Departme
 		opt(query)
 	}
 	dq.withPositions = query
+	return dq
+}
+
+// WithTasks tells the query-builder to eager-load the nodes that are connected to
+// the "tasks" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DepartmentQuery) WithTasks(opts ...func(*TaskQuery)) *DepartmentQuery {
+	query := (&TaskClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withTasks = query
 	return dq
 }
 
@@ -407,8 +443,9 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 	var (
 		nodes       = []*Department{}
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			dq.withPositions != nil,
+			dq.withTasks != nil,
 			dq.withOrganization != nil,
 		}
 	)
@@ -437,6 +474,13 @@ func (dq *DepartmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*D
 			return nil, err
 		}
 	}
+	if query := dq.withTasks; query != nil {
+		if err := dq.loadTasks(ctx, query, nodes,
+			func(n *Department) { n.Edges.Tasks = []*Task{} },
+			func(n *Department, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := dq.withOrganization; query != nil {
 		if err := dq.loadOrganization(ctx, query, nodes, nil,
 			func(n *Department, e *Organization) { n.Edges.Organization = e }); err != nil {
@@ -461,6 +505,36 @@ func (dq *DepartmentQuery) loadPositions(ctx context.Context, query *PositionQue
 	}
 	query.Where(predicate.Position(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(department.PositionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.DepartmentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "department_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (dq *DepartmentQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Department, init func(*Department), assign func(*Department, *Task)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Department)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(task.FieldDepartmentID)
+	}
+	query.Where(predicate.Task(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(department.TasksColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

@@ -40,11 +40,13 @@ type Department struct {
 type DepartmentEdges struct {
 	// Positions holds the value of the positions edge.
 	Positions []*Position `json:"positions"`
+	// Tasks holds the value of the tasks edge.
+	Tasks []*Task `json:"tasks"`
 	// Organization holds the value of the organization edge.
 	Organization *Organization `json:"organization"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // PositionsOrErr returns the Positions value or an error if the edge
@@ -56,12 +58,21 @@ func (e DepartmentEdges) PositionsOrErr() ([]*Position, error) {
 	return nil, &NotLoadedError{edge: "positions"}
 }
 
+// TasksOrErr returns the Tasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e DepartmentEdges) TasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[1] {
+		return e.Tasks, nil
+	}
+	return nil, &NotLoadedError{edge: "tasks"}
+}
+
 // OrganizationOrErr returns the Organization value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e DepartmentEdges) OrganizationOrErr() (*Organization, error) {
 	if e.Organization != nil {
 		return e.Organization, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: organization.Label}
 	}
 	return nil, &NotLoadedError{edge: "organization"}
@@ -152,6 +163,11 @@ func (d *Department) Value(name string) (ent.Value, error) {
 // QueryPositions queries the "positions" edge of the Department entity.
 func (d *Department) QueryPositions() *PositionQuery {
 	return NewDepartmentClient(d.config).QueryPositions(d)
+}
+
+// QueryTasks queries the "tasks" edge of the Department entity.
+func (d *Department) QueryTasks() *TaskQuery {
+	return NewDepartmentClient(d.config).QueryTasks(d)
 }
 
 // QueryOrganization queries the "organization" edge of the Department entity.

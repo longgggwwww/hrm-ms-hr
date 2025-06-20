@@ -88,18 +88,19 @@ func (h *TaskHandler) Create(c *gin.Context) {
 // - status: Filter by status (not_received, received, in_progress, completed, cancelled)
 // - type: Filter by type (task, feature, bug, another)
 // - project_id: Filter by project ID
+// - department_id: Filter by department ID
 // - creator_id: Filter by creator ID
 // - process: Filter by process percentage
 // - start_date_from: Filter tasks that start from this date (RFC3339 format)
 // - start_date_to: Filter tasks that start before this date (RFC3339 format)
 // - due_date_from: Filter tasks with due date from this date (RFC3339 format)
 // - due_date_to: Filter tasks with due date before this date (RFC3339 format)
-// - order_by: Sort field (id, name, code, status, type, process, project_id, creator_id, start_at, due_date, created_at, updated_at)
+// - order_by: Sort field (id, name, code, status, type, process, project_id, department_id, creator_id, start_at, due_date, created_at, updated_at)
 // - order_dir: Sort direction (asc, desc) - default: desc
 // - page: Page number (default: 1)
 // - limit: Items per page (default: 10, max: 100)
 //
-// Example: GET /tasks?name=example&status=in_progress&type=feature&order_by=name&order_dir=asc&page=1&limit=20
+// Example: GET /tasks?name=example&status=in_progress&type=feature&department_id=1&order_by=name&order_dir=asc&page=1&limit=20
 func (h *TaskHandler) List(c *gin.Context) {
 	// Parse query parameters
 	var query dtos.TaskListQuery

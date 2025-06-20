@@ -14,6 +14,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	"github.com/longgggwwww/hrm-ms-hr/ent/position"
+	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
 
 // DepartmentCreate is the builder for creating a Department entity.
@@ -97,6 +98,21 @@ func (dc *DepartmentCreate) AddPositions(p ...*Position) *DepartmentCreate {
 		ids[i] = p[i].ID
 	}
 	return dc.AddPositionIDs(ids...)
+}
+
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (dc *DepartmentCreate) AddTaskIDs(ids ...int) *DepartmentCreate {
+	dc.mutation.AddTaskIDs(ids...)
+	return dc
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (dc *DepartmentCreate) AddTasks(t ...*Task) *DepartmentCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return dc.AddTaskIDs(ids...)
 }
 
 // SetOrganizationID sets the "organization" edge to the Organization entity by ID.
@@ -241,6 +257,22 @@ func (dc *DepartmentCreate) createSpec() (*Department, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(position.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   department.TasksTable,
+			Columns: []string{department.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

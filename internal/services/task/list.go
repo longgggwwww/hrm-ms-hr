@@ -15,6 +15,7 @@ import (
 func (s *TaskService) List(ctx context.Context, query dtos.TaskListQuery) (map[string]interface{}, error) {
 	taskQuery := s.Client.Task.Query().
 		WithProject().
+		WithDepartment().
 		WithLabels().
 		WithAssignees()
 
@@ -26,6 +27,11 @@ func (s *TaskService) List(ctx context.Context, query dtos.TaskListQuery) (map[s
 	// Filter by code
 	if query.Code != "" {
 		taskQuery = taskQuery.Where(task.CodeContains(query.Code))
+	}
+
+	// Filter by description
+	if query.Description != "" {
+		taskQuery = taskQuery.Where(task.DescriptionContains(query.Description))
 	}
 
 	// Filter by status
@@ -71,6 +77,18 @@ func (s *TaskService) List(ctx context.Context, query dtos.TaskListQuery) (map[s
 			}
 		}
 		taskQuery = taskQuery.Where(task.ProjectIDEQ(projectID))
+	}
+
+	// Filter by department_id
+	if query.DepartmentID != "" {
+		departmentID, err := strconv.Atoi(query.DepartmentID)
+		if err != nil {
+			return nil, &ServiceError{
+				Status: http.StatusBadRequest,
+				Msg:    "Invalid department_id format",
+			}
+		}
+		taskQuery = taskQuery.Where(task.DepartmentIDEQ(departmentID))
 	}
 
 	// Filter by creator_id
@@ -173,6 +191,12 @@ func (s *TaskService) List(ctx context.Context, query dtos.TaskListQuery) (map[s
 		} else {
 			orderOption = task.ByCode(sql.OrderDesc())
 		}
+	case "description":
+		if orderDir == "asc" {
+			orderOption = task.ByDescription()
+		} else {
+			orderOption = task.ByDescription(sql.OrderDesc())
+		}
 	case "status":
 		if orderDir == "asc" {
 			orderOption = task.ByStatus()
@@ -196,6 +220,12 @@ func (s *TaskService) List(ctx context.Context, query dtos.TaskListQuery) (map[s
 			orderOption = task.ByProjectID()
 		} else {
 			orderOption = task.ByProjectID(sql.OrderDesc())
+		}
+	case "department_id":
+		if orderDir == "asc" {
+			orderOption = task.ByDepartmentID()
+		} else {
+			orderOption = task.ByDepartmentID(sql.OrderDesc())
 		}
 	case "creator_id":
 		if orderDir == "asc" {
@@ -230,7 +260,7 @@ func (s *TaskService) List(ctx context.Context, query dtos.TaskListQuery) (map[s
 	default:
 		return nil, &ServiceError{
 			Status: http.StatusBadRequest,
-			Msg:    "Invalid order_by field. Valid fields: id, name, code, status, type, process, project_id, creator_id, start_at, due_date, created_at, updated_at",
+			Msg:    "Invalid order_by field. Valid fields: id, name, code, description, status, type, process, project_id, department_id, creator_id, start_at, due_date, created_at, updated_at",
 		}
 	}
 

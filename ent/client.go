@@ -560,6 +560,22 @@ func (c *DepartmentClient) QueryPositions(d *Department) *PositionQuery {
 	return query
 }
 
+// QueryTasks queries the tasks edge of a Department.
+func (c *DepartmentClient) QueryTasks(d *Department) *TaskQuery {
+	query := (&TaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(department.Table, department.FieldID, id),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, department.TasksTable, department.TasksColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryOrganization queries the organization edge of a Department.
 func (c *DepartmentClient) QueryOrganization(d *Department) *OrganizationQuery {
 	query := (&OrganizationClient{config: c.config}).Query()
@@ -2145,6 +2161,22 @@ func (c *TaskClient) QueryProject(t *Task) *ProjectQuery {
 			sqlgraph.From(task.Table, task.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, task.ProjectTable, task.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDepartment queries the department edge of a Task.
+func (c *TaskClient) QueryDepartment(t *Task) *DepartmentQuery {
+	query := (&DepartmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(department.Table, department.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, task.DepartmentTable, task.DepartmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

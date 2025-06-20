@@ -12,6 +12,7 @@ import (
 	department "github.com/longgggwwww/hrm-ms-hr/ent/department"
 	organization "github.com/longgggwwww/hrm-ms-hr/ent/organization"
 	position "github.com/longgggwwww/hrm-ms-hr/ent/position"
+	task "github.com/longgggwwww/hrm-ms-hr/ent/task"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -61,6 +62,12 @@ func toProtoDepartment(e *ent.Department) (*Department, error) {
 	for _, edg := range e.Edges.Positions {
 		id := int64(edg.ID)
 		v.Positions = append(v.Positions, &Position{
+			Id: id,
+		})
+	}
+	for _, edg := range e.Edges.Tasks {
+		id := int64(edg.ID)
+		v.Tasks = append(v.Tasks, &Task{
 			Id: id,
 		})
 	}
@@ -124,6 +131,9 @@ func (svc *DepartmentService) Get(ctx context.Context, req *GetDepartmentRequest
 			WithPositions(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
 			}).
+			WithTasks(func(query *ent.TaskQuery) {
+				query.Select(task.FieldID)
+			}).
 			Only(ctx)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "invalid argument: unknown view")
@@ -163,6 +173,10 @@ func (svc *DepartmentService) Update(ctx context.Context, req *UpdateDepartmentR
 	for _, item := range department.GetPositions() {
 		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
+	}
+	for _, item := range department.GetTasks() {
+		tasks := int(item.GetId())
+		m.AddTaskIDs(tasks)
 	}
 
 	res, err := m.Save(ctx)
@@ -239,6 +253,9 @@ func (svc *DepartmentService) List(ctx context.Context, req *ListDepartmentReque
 			}).
 			WithPositions(func(query *ent.PositionQuery) {
 				query.Select(position.FieldID)
+			}).
+			WithTasks(func(query *ent.TaskQuery) {
+				query.Select(task.FieldID)
 			}).
 			All(ctx)
 	}
@@ -322,6 +339,10 @@ func (svc *DepartmentService) createBuilder(department *Department) (*ent.Depart
 	for _, item := range department.GetPositions() {
 		positions := int(item.GetId())
 		m.AddPositionIDs(positions)
+	}
+	for _, item := range department.GetTasks() {
+		tasks := int(item.GetId())
+		m.AddTaskIDs(tasks)
 	}
 	return m, nil
 }

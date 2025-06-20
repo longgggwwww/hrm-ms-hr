@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 )
@@ -34,6 +35,8 @@ type Task struct {
 	DueDate *time.Time `json:"due_date"`
 	// ProjectID holds the value of the "project_id" field.
 	ProjectID int `json:"project_id"`
+	// DepartmentID holds the value of the "department_id" field.
+	DepartmentID int `json:"department_id"`
 	// CreatorID holds the value of the "creator_id" field.
 	CreatorID int `json:"creator_id"`
 	// UpdaterID holds the value of the "updater_id" field.
@@ -54,6 +57,8 @@ type Task struct {
 type TaskEdges struct {
 	// Project holds the value of the project edge.
 	Project *Project `json:"project"`
+	// Department holds the value of the department edge.
+	Department *Department `json:"department"`
 	// Labels holds the value of the labels edge.
 	Labels []*Label `json:"labels"`
 	// Assignees holds the value of the assignees edge.
@@ -62,7 +67,7 @@ type TaskEdges struct {
 	Reports []*TaskReport `json:"reports"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -76,10 +81,21 @@ func (e TaskEdges) ProjectOrErr() (*Project, error) {
 	return nil, &NotLoadedError{edge: "project"}
 }
 
+// DepartmentOrErr returns the Department value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TaskEdges) DepartmentOrErr() (*Department, error) {
+	if e.Department != nil {
+		return e.Department, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: department.Label}
+	}
+	return nil, &NotLoadedError{edge: "department"}
+}
+
 // LabelsOrErr returns the Labels value or an error if the edge
 // was not loaded in eager-loading.
 func (e TaskEdges) LabelsOrErr() ([]*Label, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Labels, nil
 	}
 	return nil, &NotLoadedError{edge: "labels"}
@@ -88,7 +104,7 @@ func (e TaskEdges) LabelsOrErr() ([]*Label, error) {
 // AssigneesOrErr returns the Assignees value or an error if the edge
 // was not loaded in eager-loading.
 func (e TaskEdges) AssigneesOrErr() ([]*Employee, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Assignees, nil
 	}
 	return nil, &NotLoadedError{edge: "assignees"}
@@ -97,7 +113,7 @@ func (e TaskEdges) AssigneesOrErr() ([]*Employee, error) {
 // ReportsOrErr returns the Reports value or an error if the edge
 // was not loaded in eager-loading.
 func (e TaskEdges) ReportsOrErr() ([]*TaskReport, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Reports, nil
 	}
 	return nil, &NotLoadedError{edge: "reports"}
@@ -108,7 +124,7 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldID, task.FieldProcess, task.FieldProjectID, task.FieldCreatorID, task.FieldUpdaterID:
+		case task.FieldID, task.FieldProcess, task.FieldProjectID, task.FieldDepartmentID, task.FieldCreatorID, task.FieldUpdaterID:
 			values[i] = new(sql.NullInt64)
 		case task.FieldName, task.FieldCode, task.FieldDescription, task.FieldStatus, task.FieldType:
 			values[i] = new(sql.NullString)
@@ -185,6 +201,12 @@ func (t *Task) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.ProjectID = int(value.Int64)
 			}
+		case task.FieldDepartmentID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field department_id", values[i])
+			} else if value.Valid {
+				t.DepartmentID = int(value.Int64)
+			}
 		case task.FieldCreatorID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field creator_id", values[i])
@@ -231,6 +253,11 @@ func (t *Task) Value(name string) (ent.Value, error) {
 // QueryProject queries the "project" edge of the Task entity.
 func (t *Task) QueryProject() *ProjectQuery {
 	return NewTaskClient(t.config).QueryProject(t)
+}
+
+// QueryDepartment queries the "department" edge of the Task entity.
+func (t *Task) QueryDepartment() *DepartmentQuery {
+	return NewTaskClient(t.config).QueryDepartment(t)
 }
 
 // QueryLabels queries the "labels" edge of the Task entity.
@@ -298,6 +325,9 @@ func (t *Task) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("project_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.ProjectID))
+	builder.WriteString(", ")
+	builder.WriteString("department_id=")
+	builder.WriteString(fmt.Sprintf("%v", t.DepartmentID))
 	builder.WriteString(", ")
 	builder.WriteString("creator_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.CreatorID))

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -37,6 +38,27 @@ func (s *TaskService) Create(ctx context.Context, userID, employeeID int, input 
 				Msg:    "You are not a member of this project",
 			}
 		}
+	}
+
+	// Validate department exists if department_id is provided
+	var departmentValidated bool
+	if input.DepartmentID != nil {
+		departmentExists, err := s.Client.Department.Query().
+			Where(department.ID(*input.DepartmentID)).
+			Exist(ctx)
+		if err != nil {
+			return nil, &ServiceError{
+				Status: http.StatusInternalServerError,
+				Msg:    "Failed to validate department",
+			}
+		}
+		if !departmentExists {
+			return nil, &ServiceError{
+				Status: http.StatusNotFound,
+				Msg:    "Department not found",
+			}
+		}
+		departmentValidated = true
 	}
 
 	// Parse start_at if provided
@@ -143,10 +165,12 @@ func (s *TaskService) Create(ctx context.Context, userID, employeeID int, input 
 	taskCreate := s.Client.Task.Create().
 		SetName(input.Name).
 		SetCode(taskCode).
+		SetNillableDescription(input.Description).
 		SetType(typeVal).
 		SetNillableStartAt(startAtPtr).
 		SetNillableDueDate(dueDatePtr).
 		SetNillableProjectID(input.ProjectID).
+		SetNillableDepartmentID(input.DepartmentID).
 		SetCreatorID(userID).
 		SetUpdaterID(userID)
 
@@ -188,8 +212,8 @@ func (s *TaskService) Create(ctx context.Context, userID, employeeID int, input 
 		taskCreate = taskCreate.AddLabelIDs(input.LabelIDs...)
 	}
 
-	// Validate and add assignees if provided
-	if len(input.AssigneeIDs) > 0 {
+	// Validate and add assignees if provided (only if department validation passed or no department_id provided)
+	if len(input.AssigneeIDs) > 0 && (departmentValidated || input.DepartmentID == nil) {
 		// Check if all assignee IDs exist in the employee table
 		existingEmployees, err := s.Client.Employee.Query().
 			Where(employee.IDIn(input.AssigneeIDs...)).
@@ -238,6 +262,7 @@ func (s *TaskService) Create(ctx context.Context, userID, employeeID int, input 
 	createdTask, err := s.Client.Task.Query().
 		Where(task.ID(row.ID)).
 		WithProject().
+		WithDepartment().
 		WithLabels().
 		WithAssignees().
 		WithReports().

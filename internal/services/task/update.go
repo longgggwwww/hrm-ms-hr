@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/longgggwwww/hrm-ms-hr/ent"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/task"
 	"github.com/longgggwwww/hrm-ms-hr/internal/dtos"
@@ -123,6 +124,57 @@ func (s *TaskService) Update(ctx context.Context, id, userID int, input dtos.Tas
 	if input.ProjectID != nil {
 		taskUpdate.SetProjectID(*input.ProjectID)
 	}
+	if input.DepartmentID != nil {
+		// Validate department exists
+		departmentExists, err := s.Client.Department.Query().
+			Where(department.ID(*input.DepartmentID)).
+			Exist(ctx)
+		if err != nil {
+			return nil, &ServiceError{
+				Status: http.StatusInternalServerError,
+				Msg:    "Failed to validate department",
+			}
+		}
+		if !departmentExists {
+			return nil, &ServiceError{
+				Status: http.StatusNotFound,
+				Msg:    "Department not found",
+			}
+		}
+
+		// Validate that existing assignees belong to the new department
+		// (only if we're not updating assignees in the same request)
+		if input.AssigneeIDs == nil {
+			currentTask, err := s.Client.Task.Query().
+				Where(task.ID(id)).
+				WithAssignees(func(eq *ent.EmployeeQuery) {
+					eq.WithPosition()
+				}).
+				Only(ctx)
+			if err != nil {
+				return nil, &ServiceError{
+					Status: http.StatusInternalServerError,
+					Msg:    "Failed to fetch current task assignees",
+				}
+			}
+
+			var invalidAssignees []int
+			for _, assignee := range currentTask.Edges.Assignees {
+				if assignee.Edges.Position == nil || assignee.Edges.Position.DepartmentID != *input.DepartmentID {
+					invalidAssignees = append(invalidAssignees, assignee.ID)
+				}
+			}
+
+			if len(invalidAssignees) > 0 {
+				return nil, &ServiceError{
+					Status: http.StatusBadRequest,
+					Msg:    "Current assignees do not belong to the new department. Please update assignees first or choose a different department.",
+				}
+			}
+		}
+
+		taskUpdate.SetDepartmentID(*input.DepartmentID)
+	}
 	if input.Status != nil {
 		switch *input.Status {
 		case string(task.StatusNotReceived),
@@ -168,10 +220,10 @@ func (s *TaskService) Update(ctx context.Context, id, userID int, input dtos.Tas
 		taskUpdate.ClearAssignees()
 
 		if len(input.AssigneeIDs) > 0 {
-			// Validate that all assignee IDs exist in the employee table
+			// Validate that all assignee IDs exist in the employee table and get their positions
 			existingEmployees, err := s.Client.Employee.Query().
 				Where(employee.IDIn(input.AssigneeIDs...)).
-				Select(employee.FieldID).
+				WithPosition().
 				All(ctx)
 			if err != nil {
 				return nil, &ServiceError{
@@ -201,6 +253,23 @@ func (s *TaskService) Update(ctx context.Context, id, userID int, input dtos.Tas
 				}
 			}
 
+			// If department is specified, validate that all assignees belong to that department
+			if input.DepartmentID != nil {
+				var invalidAssignees []int
+				for _, emp := range existingEmployees {
+					if emp.Edges.Position == nil || emp.Edges.Position.DepartmentID != *input.DepartmentID {
+						invalidAssignees = append(invalidAssignees, emp.ID)
+					}
+				}
+
+				if len(invalidAssignees) > 0 {
+					return nil, &ServiceError{
+						Status: http.StatusBadRequest,
+						Msg:    "Some assignees do not belong to the specified department",
+					}
+				}
+			}
+
 			taskUpdate.AddAssigneeIDs(input.AssigneeIDs...)
 		}
 	}
@@ -223,6 +292,7 @@ func (s *TaskService) Update(ctx context.Context, id, userID int, input dtos.Tas
 	updatedTask, err := s.Client.Task.Query().
 		Where(task.ID(id)).
 		WithProject().
+		WithDepartment().
 		WithLabels().
 		WithAssignees().
 		WithReports().

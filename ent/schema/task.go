@@ -60,28 +60,32 @@ func (Task) Fields() []ent.Field {
 			Optional().
 			StructTag(`json:"project_id"`).
 			Annotations(entproto.Field(9)),
+		field.Int("department_id").
+			Optional().
+			StructTag(`json:"department_id"`).
+			Annotations(entproto.Field(10)),
 		field.Int("creator_id").
 			StructTag(`json:"creator_id"`).
-			Annotations(entproto.Field(10)),
+			Annotations(entproto.Field(11)),
 		field.Int("updater_id").
 			StructTag(`json:"updater_id"`).
-			Annotations(entproto.Field(11)),
+			Annotations(entproto.Field(12)),
 		field.Time("created_at").
 			Immutable().
 			Default(time.Now).
 			StructTag(`json:"created_at"`).
-			Annotations(entproto.Field(12)),
+			Annotations(entproto.Field(13)),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now).
 			StructTag(`json:"updated_at"`).
-			Annotations(entproto.Field(13)),
+			Annotations(entproto.Field(14)),
 		field.Enum("type").
 			Values("task", "feature", "bug", "another").
 			Default("task").
 			StructTag(`json:"type"`).
 			Annotations(
-				entproto.Field(14),
+				entproto.Field(15),
 				entproto.Enum(map[string]int32{
 					"task":    0,
 					"feature": 1,
@@ -99,16 +103,22 @@ func (Task) Edges() []ent.Edge {
 			Field("project_id").
 			Unique().
 			StructTag(`json:"project"`).
-			Annotations(entproto.Field(15)),
+			Annotations(entproto.Field(16)),
+		edge.From("department", Department.Type).
+			Ref("tasks").
+			Field("department_id").
+			Unique().
+			StructTag(`json:"department"`).
+			Annotations(entproto.Field(17)),
 		edge.To("labels", Label.Type).
 			StructTag(`json:"labels"`).
-			Annotations(entproto.Field(16)), // Thêm edge tới label
+			Annotations(entproto.Field(18)), // Thêm edge tới label
 		edge.To("assignees", Employee.Type).
 			StructTag(`json:"assignees"`).
-			Annotations(entproto.Field(17)), // Edge many-to-many với Employee
+			Annotations(entproto.Field(19)), // Edge many-to-many với Employee
 		edge.To("reports", TaskReport.Type).
 			StructTag(`json:"reports"`).
-			Annotations(entproto.Field(18)), // Edge đến TaskReport
+			Annotations(entproto.Field(20)), // Edge đến TaskReport
 	}
 }
 

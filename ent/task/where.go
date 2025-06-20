@@ -90,6 +90,11 @@ func ProjectID(v int) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldProjectID, v))
 }
 
+// DepartmentID applies equality check predicate on the "department_id" field. It's identical to DepartmentIDEQ.
+func DepartmentID(v int) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDepartmentID, v))
+}
+
 // CreatorID applies equality check predicate on the "creator_id" field. It's identical to CreatorIDEQ.
 func CreatorID(v int) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldCreatorID, v))
@@ -505,6 +510,36 @@ func ProjectIDNotNil() predicate.Task {
 	return predicate.Task(sql.FieldNotNull(FieldProjectID))
 }
 
+// DepartmentIDEQ applies the EQ predicate on the "department_id" field.
+func DepartmentIDEQ(v int) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDepartmentID, v))
+}
+
+// DepartmentIDNEQ applies the NEQ predicate on the "department_id" field.
+func DepartmentIDNEQ(v int) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldDepartmentID, v))
+}
+
+// DepartmentIDIn applies the In predicate on the "department_id" field.
+func DepartmentIDIn(vs ...int) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldDepartmentID, vs...))
+}
+
+// DepartmentIDNotIn applies the NotIn predicate on the "department_id" field.
+func DepartmentIDNotIn(vs ...int) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldDepartmentID, vs...))
+}
+
+// DepartmentIDIsNil applies the IsNil predicate on the "department_id" field.
+func DepartmentIDIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldDepartmentID))
+}
+
+// DepartmentIDNotNil applies the NotNil predicate on the "department_id" field.
+func DepartmentIDNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldDepartmentID))
+}
+
 // CreatorIDEQ applies the EQ predicate on the "creator_id" field.
 func CreatorIDEQ(v int) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldCreatorID, v))
@@ -700,6 +735,29 @@ func HasProject() predicate.Task {
 func HasProjectWith(preds ...predicate.Project) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := newProjectStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDepartment applies the HasEdge predicate on the "department" edge.
+func HasDepartment() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DepartmentTable, DepartmentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDepartmentWith applies the HasEdge predicate on the "department" edge with a given conditions (other predicates).
+func HasDepartmentWith(preds ...predicate.Department) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := newDepartmentStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

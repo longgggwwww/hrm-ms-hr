@@ -53,6 +53,9 @@ func (Department) Edges() []ent.Edge {
 		edge.To("positions", Position.Type).
 			StructTag(`json:"positions"`).
 			Annotations(entproto.Field(7)),
+		edge.To("tasks", Task.Type).
+			StructTag(`json:"tasks"`).
+			Annotations(entproto.Field(9)),
 		edge.From("organization", Organization.Type).
 			Ref("departments").
 			Field("org_id").

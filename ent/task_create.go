@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/project"
@@ -122,6 +123,20 @@ func (tc *TaskCreate) SetNillableProjectID(i *int) *TaskCreate {
 	return tc
 }
 
+// SetDepartmentID sets the "department_id" field.
+func (tc *TaskCreate) SetDepartmentID(i int) *TaskCreate {
+	tc.mutation.SetDepartmentID(i)
+	return tc
+}
+
+// SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableDepartmentID(i *int) *TaskCreate {
+	if i != nil {
+		tc.SetDepartmentID(*i)
+	}
+	return tc
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (tc *TaskCreate) SetCreatorID(i int) *TaskCreate {
 	tc.mutation.SetCreatorID(i)
@@ -179,6 +194,11 @@ func (tc *TaskCreate) SetNillableType(t *task.Type) *TaskCreate {
 // SetProject sets the "project" edge to the Project entity.
 func (tc *TaskCreate) SetProject(p *Project) *TaskCreate {
 	return tc.SetProjectID(p.ID)
+}
+
+// SetDepartment sets the "department" edge to the Department entity.
+func (tc *TaskCreate) SetDepartment(d *Department) *TaskCreate {
+	return tc.SetDepartmentID(d.ID)
 }
 
 // AddLabelIDs adds the "labels" edge to the Label entity by IDs.
@@ -414,6 +434,23 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_node.ProjectID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := tc.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.DepartmentTable,
+			Columns: []string{task.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.DepartmentID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := tc.mutation.LabelsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -637,6 +674,24 @@ func (u *TaskUpsert) UpdateProjectID() *TaskUpsert {
 // ClearProjectID clears the value of the "project_id" field.
 func (u *TaskUpsert) ClearProjectID() *TaskUpsert {
 	u.SetNull(task.FieldProjectID)
+	return u
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *TaskUpsert) SetDepartmentID(v int) *TaskUpsert {
+	u.Set(task.FieldDepartmentID, v)
+	return u
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *TaskUpsert) UpdateDepartmentID() *TaskUpsert {
+	u.SetExcluded(task.FieldDepartmentID)
+	return u
+}
+
+// ClearDepartmentID clears the value of the "department_id" field.
+func (u *TaskUpsert) ClearDepartmentID() *TaskUpsert {
+	u.SetNull(task.FieldDepartmentID)
 	return u
 }
 
@@ -889,6 +944,27 @@ func (u *TaskUpsertOne) UpdateProjectID() *TaskUpsertOne {
 func (u *TaskUpsertOne) ClearProjectID() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearProjectID()
+	})
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *TaskUpsertOne) SetDepartmentID(v int) *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDepartmentID(v)
+	})
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *TaskUpsertOne) UpdateDepartmentID() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDepartmentID()
+	})
+}
+
+// ClearDepartmentID clears the value of the "department_id" field.
+func (u *TaskUpsertOne) ClearDepartmentID() *TaskUpsertOne {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDepartmentID()
 	})
 }
 
@@ -1317,6 +1393,27 @@ func (u *TaskUpsertBulk) UpdateProjectID() *TaskUpsertBulk {
 func (u *TaskUpsertBulk) ClearProjectID() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearProjectID()
+	})
+}
+
+// SetDepartmentID sets the "department_id" field.
+func (u *TaskUpsertBulk) SetDepartmentID(v int) *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.SetDepartmentID(v)
+	})
+}
+
+// UpdateDepartmentID sets the "department_id" field to the value that was provided on create.
+func (u *TaskUpsertBulk) UpdateDepartmentID() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.UpdateDepartmentID()
+	})
+}
+
+// ClearDepartmentID clears the value of the "department_id" field.
+func (u *TaskUpsertBulk) ClearDepartmentID() *TaskUpsertBulk {
+	return u.Update(func(s *TaskUpsert) {
+		s.ClearDepartmentID()
 	})
 }
 

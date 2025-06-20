@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
@@ -175,6 +176,26 @@ func (tu *TaskUpdate) ClearProjectID() *TaskUpdate {
 	return tu
 }
 
+// SetDepartmentID sets the "department_id" field.
+func (tu *TaskUpdate) SetDepartmentID(i int) *TaskUpdate {
+	tu.mutation.SetDepartmentID(i)
+	return tu
+}
+
+// SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableDepartmentID(i *int) *TaskUpdate {
+	if i != nil {
+		tu.SetDepartmentID(*i)
+	}
+	return tu
+}
+
+// ClearDepartmentID clears the value of the "department_id" field.
+func (tu *TaskUpdate) ClearDepartmentID() *TaskUpdate {
+	tu.mutation.ClearDepartmentID()
+	return tu
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (tu *TaskUpdate) SetCreatorID(i int) *TaskUpdate {
 	tu.mutation.ResetCreatorID()
@@ -242,6 +263,11 @@ func (tu *TaskUpdate) SetProject(p *Project) *TaskUpdate {
 	return tu.SetProjectID(p.ID)
 }
 
+// SetDepartment sets the "department" edge to the Department entity.
+func (tu *TaskUpdate) SetDepartment(d *Department) *TaskUpdate {
+	return tu.SetDepartmentID(d.ID)
+}
+
 // AddLabelIDs adds the "labels" edge to the Label entity by IDs.
 func (tu *TaskUpdate) AddLabelIDs(ids ...int) *TaskUpdate {
 	tu.mutation.AddLabelIDs(ids...)
@@ -295,6 +321,12 @@ func (tu *TaskUpdate) Mutation() *TaskMutation {
 // ClearProject clears the "project" edge to the Project entity.
 func (tu *TaskUpdate) ClearProject() *TaskUpdate {
 	tu.mutation.ClearProject()
+	return tu
+}
+
+// ClearDepartment clears the "department" edge to the Department entity.
+func (tu *TaskUpdate) ClearDepartment() *TaskUpdate {
+	tu.mutation.ClearDepartment()
 	return tu
 }
 
@@ -497,6 +529,35 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tu.mutation.DepartmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.DepartmentTable,
+			Columns: []string{task.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.DepartmentTable,
+			Columns: []string{task.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -802,6 +863,26 @@ func (tuo *TaskUpdateOne) ClearProjectID() *TaskUpdateOne {
 	return tuo
 }
 
+// SetDepartmentID sets the "department_id" field.
+func (tuo *TaskUpdateOne) SetDepartmentID(i int) *TaskUpdateOne {
+	tuo.mutation.SetDepartmentID(i)
+	return tuo
+}
+
+// SetNillableDepartmentID sets the "department_id" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableDepartmentID(i *int) *TaskUpdateOne {
+	if i != nil {
+		tuo.SetDepartmentID(*i)
+	}
+	return tuo
+}
+
+// ClearDepartmentID clears the value of the "department_id" field.
+func (tuo *TaskUpdateOne) ClearDepartmentID() *TaskUpdateOne {
+	tuo.mutation.ClearDepartmentID()
+	return tuo
+}
+
 // SetCreatorID sets the "creator_id" field.
 func (tuo *TaskUpdateOne) SetCreatorID(i int) *TaskUpdateOne {
 	tuo.mutation.ResetCreatorID()
@@ -869,6 +950,11 @@ func (tuo *TaskUpdateOne) SetProject(p *Project) *TaskUpdateOne {
 	return tuo.SetProjectID(p.ID)
 }
 
+// SetDepartment sets the "department" edge to the Department entity.
+func (tuo *TaskUpdateOne) SetDepartment(d *Department) *TaskUpdateOne {
+	return tuo.SetDepartmentID(d.ID)
+}
+
 // AddLabelIDs adds the "labels" edge to the Label entity by IDs.
 func (tuo *TaskUpdateOne) AddLabelIDs(ids ...int) *TaskUpdateOne {
 	tuo.mutation.AddLabelIDs(ids...)
@@ -922,6 +1008,12 @@ func (tuo *TaskUpdateOne) Mutation() *TaskMutation {
 // ClearProject clears the "project" edge to the Project entity.
 func (tuo *TaskUpdateOne) ClearProject() *TaskUpdateOne {
 	tuo.mutation.ClearProject()
+	return tuo
+}
+
+// ClearDepartment clears the "department" edge to the Department entity.
+func (tuo *TaskUpdateOne) ClearDepartment() *TaskUpdateOne {
+	tuo.mutation.ClearDepartment()
 	return tuo
 }
 
@@ -1154,6 +1246,35 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if tuo.mutation.DepartmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.DepartmentTable,
+			Columns: []string{task.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.DepartmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.DepartmentTable,
+			Columns: []string{task.DepartmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(department.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/longgggwwww/hrm-ms-hr/ent/department"
 	"github.com/longgggwwww/hrm-ms-hr/ent/employee"
 	"github.com/longgggwwww/hrm-ms-hr/ent/label"
 	"github.com/longgggwwww/hrm-ms-hr/ent/predicate"
@@ -23,14 +24,15 @@ import (
 // TaskQuery is the builder for querying Task entities.
 type TaskQuery struct {
 	config
-	ctx           *QueryContext
-	order         []task.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.Task
-	withProject   *ProjectQuery
-	withLabels    *LabelQuery
-	withAssignees *EmployeeQuery
-	withReports   *TaskReportQuery
+	ctx            *QueryContext
+	order          []task.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Task
+	withProject    *ProjectQuery
+	withDepartment *DepartmentQuery
+	withLabels     *LabelQuery
+	withAssignees  *EmployeeQuery
+	withReports    *TaskReportQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -82,6 +84,28 @@ func (tq *TaskQuery) QueryProject() *ProjectQuery {
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, task.ProjectTable, task.ProjectColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDepartment chains the current query on the "department" edge.
+func (tq *TaskQuery) QueryDepartment() *DepartmentQuery {
+	query := (&DepartmentClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(department.Table, department.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, task.DepartmentTable, task.DepartmentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -342,15 +366,16 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		return nil
 	}
 	return &TaskQuery{
-		config:        tq.config,
-		ctx:           tq.ctx.Clone(),
-		order:         append([]task.OrderOption{}, tq.order...),
-		inters:        append([]Interceptor{}, tq.inters...),
-		predicates:    append([]predicate.Task{}, tq.predicates...),
-		withProject:   tq.withProject.Clone(),
-		withLabels:    tq.withLabels.Clone(),
-		withAssignees: tq.withAssignees.Clone(),
-		withReports:   tq.withReports.Clone(),
+		config:         tq.config,
+		ctx:            tq.ctx.Clone(),
+		order:          append([]task.OrderOption{}, tq.order...),
+		inters:         append([]Interceptor{}, tq.inters...),
+		predicates:     append([]predicate.Task{}, tq.predicates...),
+		withProject:    tq.withProject.Clone(),
+		withDepartment: tq.withDepartment.Clone(),
+		withLabels:     tq.withLabels.Clone(),
+		withAssignees:  tq.withAssignees.Clone(),
+		withReports:    tq.withReports.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -365,6 +390,17 @@ func (tq *TaskQuery) WithProject(opts ...func(*ProjectQuery)) *TaskQuery {
 		opt(query)
 	}
 	tq.withProject = query
+	return tq
+}
+
+// WithDepartment tells the query-builder to eager-load the nodes that are connected to
+// the "department" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithDepartment(opts ...func(*DepartmentQuery)) *TaskQuery {
+	query := (&DepartmentClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withDepartment = query
 	return tq
 }
 
@@ -479,8 +515,9 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	var (
 		nodes       = []*Task{}
 		_spec       = tq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			tq.withProject != nil,
+			tq.withDepartment != nil,
 			tq.withLabels != nil,
 			tq.withAssignees != nil,
 			tq.withReports != nil,
@@ -507,6 +544,12 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	if query := tq.withProject; query != nil {
 		if err := tq.loadProject(ctx, query, nodes, nil,
 			func(n *Task, e *Project) { n.Edges.Project = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withDepartment; query != nil {
+		if err := tq.loadDepartment(ctx, query, nodes, nil,
+			func(n *Task, e *Department) { n.Edges.Department = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -556,6 +599,35 @@ func (tq *TaskQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "project_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (tq *TaskQuery) loadDepartment(ctx context.Context, query *DepartmentQuery, nodes []*Task, init func(*Task), assign func(*Task, *Department)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Task)
+	for i := range nodes {
+		fk := nodes[i].DepartmentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(department.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "department_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -743,6 +815,9 @@ func (tq *TaskQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if tq.withProject != nil {
 			_spec.Node.AddColumnOnce(task.FieldProjectID)
+		}
+		if tq.withDepartment != nil {
+			_spec.Node.AddColumnOnce(task.FieldDepartmentID)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {
