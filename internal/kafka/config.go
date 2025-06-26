@@ -35,5 +35,6 @@ func NewConfig() *Config {
 
 // Topics contains the Kafka topics used by the application
 const (
-	TopicTaskEvents = "task-events"
+	TopicTaskEvents       = "task-events"
+	TopicTaskReportEvents = "task-report-events"
 )

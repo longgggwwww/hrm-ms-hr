@@ -14,6 +14,14 @@ const (
 	TaskUpdated TaskEventType = "task.updated"
 )
 
+// TaskReportEventType represents the type of task report event
+type TaskReportEventType string
+
+const (
+	TaskReportCreated TaskReportEventType = "task_report.created"
+	TaskReportUpdated TaskReportEventType = "task_report.updated"
+)
+
 // TaskEvent represents a task event
 type TaskEvent struct {
 	EventID      string        `json:"event_id"`
@@ -39,6 +47,21 @@ type TaskEvent struct {
 	LabelIDs     []int         `json:"label_ids,omitempty"`
 	OrgID        int           `json:"org_id,omitempty"`
 	ZaloGid      *string       `json:"zalo_gid,omitempty"`
+}
+
+// TaskReportEvent represents a task report event
+type TaskReportEvent struct {
+	EventID    string              `json:"event_id"`
+	EventType  TaskReportEventType `json:"event_type"`
+	Timestamp  time.Time           `json:"timestamp"`
+	Source     string              `json:"source"`
+	ReportID   int                 `json:"report_id"`
+	TaskID     int                 `json:"task_id"`
+	ReporterID int                 `json:"reporter_id"`
+	Content    string              `json:"content"`
+	CreatedAt  time.Time           `json:"created_at"`
+	UpdatedAt  time.Time           `json:"updated_at"`
+	OrgID      int                 `json:"org_id,omitempty"`
 }
 
 // NewTaskCreatedEvent creates a new task created event
@@ -160,6 +183,40 @@ func NewTaskUpdatedEvent(task *ent.Task, orgID int) *TaskEvent {
 		LabelIDs:     labelIDs,
 		OrgID:        orgID,
 		ZaloGid:      zaloGid,
+	}
+}
+
+// NewTaskReportCreatedEvent creates a new task report created event
+func NewTaskReportCreatedEvent(report *ent.TaskReport, orgID int) *TaskReportEvent {
+	return &TaskReportEvent{
+		EventID:    generateEventID(),
+		EventType:  TaskReportCreated,
+		Timestamp:  time.Now(),
+		Source:     "hrm-ms-hr",
+		ReportID:   report.ID,
+		TaskID:     report.TaskID,
+		ReporterID: report.ReporterID,
+		Content:    report.Content,
+		CreatedAt:  report.CreatedAt,
+		UpdatedAt:  report.UpdatedAt,
+		OrgID:      orgID,
+	}
+}
+
+// NewTaskReportUpdatedEvent creates a new task report updated event
+func NewTaskReportUpdatedEvent(report *ent.TaskReport, orgID int) *TaskReportEvent {
+	return &TaskReportEvent{
+		EventID:    generateEventID(),
+		EventType:  TaskReportUpdated,
+		Timestamp:  time.Now(),
+		Source:     "hrm-ms-hr",
+		ReportID:   report.ID,
+		TaskID:     report.TaskID,
+		ReporterID: report.ReporterID,
+		Content:    report.Content,
+		CreatedAt:  report.CreatedAt,
+		UpdatedAt:  report.UpdatedAt,
+		OrgID:      orgID,
 	}
 }
 

@@ -14,6 +14,7 @@ import (
 	"github.com/longgggwwww/hrm-ms-hr/internal/grpc_clients"
 	"github.com/longgggwwww/hrm-ms-hr/internal/handlers"
 	"github.com/longgggwwww/hrm-ms-hr/internal/kafka"
+	"github.com/longgggwwww/hrm-ms-hr/internal/services"
 	"github.com/longgggwwww/hrm-ms-hr/internal/utils"
 )
 
@@ -75,6 +76,11 @@ func setupExternalServices() grpc_clients.UserServiceClient {
 }
 
 func registerHTTPRoutes(r *gin.Engine, cli *ent.Client, userServ grpc_clients.UserServiceClient, kafkaClient *kafka.KafkaClient) {
+	// Set Kafka client for task report services
+	if kafkaClient != nil {
+		services.SetTaskReportKafkaClient(kafkaClient)
+	}
+
 	handlersList := []struct {
 		name     string
 		register func(*gin.Engine)
